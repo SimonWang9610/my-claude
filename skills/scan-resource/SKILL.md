@@ -1,0 +1,99 @@
+---
+name: scan-resource
+description: Audit one or more legacy folders/resources and distill each into its own compact markdown reference, building a recallable knowledge base for a migration agent (typically migrating an old Flutter project to React). Saves one reference per folder plus an index, so the agent looks logic and abstractions up instead of re-scanning the source every time. Use whenever the user says things like "audit these folders to understand them to help build/migrate", or asks to "scan", "survey", "index", "map", or "extract references from" code, packages, or directories — especially across multiple folders. Trigger even without the word "audit" when the user is clearly asking you to study legacy resources now so later migration phases can rely on saved references rather than reading everything again.
+---
+
+# Scan Resource
+
+Build a **recallable reference base** for a migration agent. Given a set of legacy folders/resources, produce **one markdown reference per folder** plus an **index**, so a downstream agent migrating the code (typically Flutter → React) can recall business logic and abstractions on demand instead of re-scanning the source.
+
+The references are the agent's memory of the legacy system. Optimize so that, later, the agent reads the index, picks the relevant reference, and acts — only re-opening source files when the reference flags a gap.
+
+## Inputs
+
+1. **Resources** — one or more folders (and possibly files/URLs). Each folder becomes its own reference.
+2. **Instruction** — the purpose/scope (e.g. "to help migrate them to React"). Authoritative; if it names a functionality, scope each scan to that.
+3. **Output directory** — where references are saved. If missing, default to `.specflow/specs/<name>/references`
+
+## Output layout
+
+Save references separately under the output directory, one file per audited folder, plus a single index:
+
+```
+<output-dir>/
+├── INDEX.md              # what exists, so the agent recalls without re-scanning
+├── <folder-slug>.md      # one reference per audited folder
+├── <folder-slug>.md
+└── ...
+```
+
+Derive `<folder-slug>` from the folder's path (e.g. `lib/features/auth/` → `features-auth.md`). Keep slugs stable across runs so re-audits overwrite the same file rather than duplicating it.
+
+## Workflow
+
+1. **Resolve scope** from the instruction. For each folder, decide what's in scope; if the instruction names a functionality, scan only that.
+2. **For each folder**: scan it as a unit (grep first, open only relevant files), then write `<folder-slug>.md` using the reference template. Don't merge folders into one file.
+3. **Write/refresh `INDEX.md`** so the agent can recall what's available at a glance.
+4. **Re-audit behavior**: if a reference already exists, update it in place. Only re-scan source for a folder when its reference is missing, stale, or flagged incomplete.
+
+## INDEX.md format
+
+```markdown
+# Migration Reference Index
+
+_Source: <root path(s)> · Scope: <instruction> · Updated: <date>_
+
+| Reference          | Source folder      | Covers                                           | For migration                          |
+| ------------------ | ------------------ | ------------------------------------------------ | -------------------------------------- |
+| `features-auth.md` | lib/features/auth/ | <1-line: business logic / abstractions captured> | <1-line: what it helps build in React> |
+```
+
+## Reference format (one per folder)
+
+ALWAYS use this structure. Omit a section only if it has no in-scope content.
+
+```markdown
+# <Folder name / what it is>
+
+## Resource
+
+- **Source:** <folder path>
+- **Scope:** <one line: the instruction this is scoped to>
+
+## Overview
+
+<2–4 sentences: what this legacy area does and the business purpose it serves. Big-picture, migration-oriented.>
+
+## Business Logic & Abstractions
+
+<The reusable substance the agent will port — rules, state machines, models, services, contracts. Framework-agnostic where possible (the migration target may differ from the source):>
+
+- `<entity / rule / abstraction>` — <what it does; inputs/outputs or shape; where it lives>
+
+## Map
+
+<Where things live, so the agent can jump straight to source if needed. One line per file/area:>
+
+- `<file or area>` — <its role>
+
+## How It Connects
+
+<Data/control flow and dependencies — entry points, what calls what, what holds state. Short.>
+
+## Migration Notes
+
+<Optional. Flutter-specific coupling to unwind, anti-patterns, framework-bound vs. portable logic, and anything that will bite when rebuilding in the target stack. Skip if none.>
+
+## Gaps
+
+<Optional. Anything not fully captured here that may require re-opening the source. Skip if complete.>
+```
+
+## Principles
+
+- **One reference per folder**, saved separately — never merge folders into a single file.
+- **Recall over re-scan** — the index + references are the agent's memory; re-reading source is the exception, signalled by the `Gaps` section.
+- **Capture portable substance** — favor business logic and abstractions that survive the framework change over framework-specific implementation detail.
+- **Instruction is the filter** — out-of-scope content stays out.
+- **Stable slugs** — re-audits overwrite the matching file; don't duplicate.
+- **Don't invent** — record only what's in the source; flag ambiguity in `Gaps` instead of guessing.
