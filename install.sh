@@ -18,6 +18,9 @@ echo "  repo:   $REPO"
 echo "  target: $CLAUDE_DIR"
 mkdir -p "$CLAUDE_DIR"
 
+# Refresh the inner layer first: expose the oac-specflow bundle through the repo dirs.
+[ -x "$REPO/link-oac-specflow.sh" ] && "$REPO/link-oac-specflow.sh"
+
 for d in "${DIRS[@]}"; do
   src="$REPO/$d"
   dst="$CLAUDE_DIR/$d"
