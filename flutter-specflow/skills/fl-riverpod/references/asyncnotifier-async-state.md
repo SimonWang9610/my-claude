@@ -68,7 +68,7 @@ ref.watch(alarmListProvider).when(
 ```dart
 // ❌ FutureProvider — read-only, no command surface
 final alarmListProvider = FutureProvider<List<Alarm>>(
-  (ref) => ref.read(alarmRepositoryProvider).getAlarms(),
+  (ref) => ref.watch(alarmRepositoryProvider).getAlarms(),
 );
 
 // ❌ hand-written AsyncNotifierProvider — legacy boilerplate the generator replaces

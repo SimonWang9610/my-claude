@@ -25,7 +25,7 @@ Future<List<Alarm>> alarmList(Ref ref) =>
 class AlarmList extends _$AlarmList {
   @override
   Future<List<Alarm>> build() =>
-      ref.read(alarmRepositoryProvider).getAlarms();
+      ref.watch(alarmRepositoryProvider).getAlarms();
 
   Future<void> add(Alarm a) async {
     state = const AsyncValue.loading();
