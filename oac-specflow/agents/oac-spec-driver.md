@@ -66,6 +66,15 @@ Skills live under [`../skills/<name>/SKILL.md`](../skills/); rules under [`../ru
 Observability and steering run any time: [`../commands/oac-spec-status.md`](../commands/oac-spec-status.md),
 [`../commands/oac-spec-steer.md`](../commands/oac-spec-steer.md).
 
+**Preflight is conditional — I decide whether stage 2 applies before running it.** I **run**
+`oac-spec-preflight` when the change may sit on top of existing surfaces or touch shared components, or
+when it's a UI surface with a Figma design to decompose (the usual case for a `feature` or `brownfield`
+workflow). I **skip** it — marking the `preflight` phase `skipped` in `.meta.yaml` with a one-line
+reason — when the change is self-contained: a narrowly-scoped quickfix/bugfix in a known file, or a
+greenfield unit with no shared-component or existing-surface overlap and no design. When the call is
+genuinely unclear I run it rather than skip (skipping a needed preflight risks building blind on
+existing code); downstream stages already treat `preflight.md` as an optional input.
+
 ## How you operate
 
 1. **Seed from your instructions, then pick the workflow.** Treat the invocation instructions as the
