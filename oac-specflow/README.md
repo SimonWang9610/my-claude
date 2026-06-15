@@ -10,7 +10,7 @@ It is **fully self-contained**: every command, skill, and rule references only f
 this folder, by **relative path**. Nothing depends on an external or installed skill being available
 (in particular it never invokes `/react-architecture-review` — those rules are bundled here).
 
-## General by design; project-specific at one seam
+## General by design; project-specific at the seams
 
 The **skills and rules are general React/TS best practices** — they apply unchanged to any project on
 this stack. The **commands are the project-specific layer**: thin per-stage process wrappers you adapt
@@ -18,6 +18,7 @@ to your repo's conventions. The clearest example is
 [`commands/_oac-jira-status-automation.md`](commands/_oac-jira-status-automation.md), the **per-project
 adaptation point**: a worked issue-tracker playbook (wired here to a Jira workflow) that you rewrite
 for your own tracker, or delete if you have none. Everything else ships as-is.
+The other place project specifics live is *data the general skills read* — most visibly `oac-figma-decompose`'s `references/token-map.md` and the project's `.claude/figma-reference.md`, which you fill in per project; the skill's procedure stays general.
 
 ## How this maps to the `.claude/` directory
 
@@ -70,26 +71,40 @@ oac-specflow/
     │   └── references/rules-architecture/ (23) + rules-performance/ (22) + gate-procedure, principle-examples/checks
     ├── oac-qa-report/                ← QA audit → sign-off-ready report (build gate, authenticity, scope, coverage, silent-failure)
     ├── oac-journey-tests/            ← optional: E2E journey tests behind a human-approved plan
-    └── oac-test-forensics/           ← gap-class + false-positive/mock-shape detection (QA/drift)
+    ├── oac-test-forensics/           ← gap-class + false-positive/mock-shape detection (QA/drift)
+    └── oac-figma-decompose/          ← decompose a Figma screen into a component map (EXISTING/PARTIAL/NEW) for preflight
 ```
 
-## The lifecycle (gates marked `[gate]`)
+## The lifecycle
 
-```
-   ┌──── rules/architecture-principles.md (P1–P7) ────┐  ┌── rules/test-quality.md ──┐  ┌─ rules/engineering-discipline.md ─┐
-   │ authored-against by requirements, design, implement│  │ on every *.test.* edit    │  │ on every code-writing turn         │
-   └─────────────────────────────────────────────────────┘  └────────────────────────────┘  └─────────────────────────────────────┘
+```mermaid
+flowchart TD
+    FL[/"Figma links — captured at init if the change is UI"/]:::io
+    FC[/"references/figma-components.md<br/>EXISTING · PARTIAL · NEW"/]:::io
 
- init → preflight → requirements → clarify → design → tasks → implement → validate → qa → drift
-   │       │            │            │      [gate]      │      [gate]      [gate]      │      │
-   │     reuse        AC-IDs +     flag      arch-     test    "completed"  clause→    test   shared-
-   │     scan         observable   untest-   gate +    task    = AC test    test +     foren- comp
-   │                  phrasing     able ACs  princi-   per AC   passes      arch-gate  sics   drift +
-   │                                         ples      + edge   + useMut.                     unspec'd
-   │                                                   cases    write rule                    (forensic)
-   ▼       ▼            ▼            ▼         ▼         ▼         ▼           ▼          ▼      ▼
- (oac-spec-status, oac-spec-steer: observability + steering files — run any time)
+    init["1 · init<br/>scaffold .meta.yaml · capture figma_links"]
+    pre["2 · preflight<br/>reuse scan · shared-component impact · decompose Figma"]
+    req["3 · requirements<br/>AC-IDs + observable phrasing"]
+    cla["4 · clarify<br/>surface untestable ACs"]
+    des["5 · design — gate<br/>contracts/ + arch gate PASS or justification"]:::gate
+    tsk["6 · tasks<br/>test task per AC + edge cases"]
+    imp["7 · implement — gate<br/>WorkAgent/TestAgent · completed ⇒ AC-test green"]:::gate
+    val["8 · validate — gate<br/>clause→test coverage + arch gate"]:::gate
+    qa["9 · qa<br/>qa-report.md → human sign-off"]
+    dft["10 · drift<br/>shared-component drift · no unspecced behavior"]
+
+    FL -.-> init
+    init --> pre
+    pre -.->|decompose| FC
+    FC -.-> req
+    FC -.-> des
+    pre --> req --> cla --> des --> tsk --> imp --> val --> qa --> dft
+
+    classDef gate fill:#fbe0e0,stroke:#cc3333,color:#000;
+    classDef io fill:#e6ecff,stroke:#6677aa,color:#000,stroke-dasharray:4 3;
 ```
+
+> Always-on across every relevant turn: **architecture-principles** (P1–P7 — authored against at requirements, design, implement), **test-quality** (every `*.test.*` / `*.spec.*` edit), **engineering-discipline** (every code-writing turn). Dashed nodes are the optional Figma seam; `oac-spec-status` / `oac-spec-steer` run any time.
 
 ## Command → delegation map
 
@@ -98,7 +113,7 @@ Skills (`../skills/…`) carry the procedure; rules (`../rules/…`) are always-
 | Stage command | Skills | Rules | Blocking gate |
 |---|---|---|---|
 | `oac-spec-init` | — | engineering-discipline | — |
-| `oac-spec-preflight` | — | — | reuse verdict + shared-component impact table |
+| `oac-spec-preflight` | oac-figma-decompose (when a design exists) | — | reuse verdict + shared-component impact table |
 | `oac-spec-requirements` | oac-acceptance-criteria | — | every AC has a stable ID + observable phrasing |
 | `oac-spec-clarify` | oac-acceptance-criteria | — | untestable ACs surfaced |
 | `oac-spec-design` | oac-architecture-gate | architecture-principles | **design.md + contracts/ drafted; arch gate PASS or justification** |
@@ -135,6 +150,7 @@ These encode general best practices, with worked right/wrong code examples in ea
   `qa-report.md`; reuses oac-test-forensics + oac-test-contract for the test-quality dimension.
 - **oac-journey-tests** — optional: author end-to-end journey tests for the user stories, behind a
   human-approved journey plan (the per-unit tests are written at implement).
+- **oac-figma-decompose** — turn a Figma screen into a compact component map (EXISTING / PARTIAL / NEW vs. the codebase); Figma links are captured at `oac-spec-init` (`figma_links` in `.meta.yaml`), decomposed at `oac-spec-preflight` into `references/figma-components.md`, and consumed by requirements and design; extracts only genuinely new components via parallel agents.
 
 ## Rules (general, always-on, path-gated)
 
@@ -166,6 +182,7 @@ works even when the originals are absent):
 | gap-class + test-quality heuristics | distilled (React/TS) from general testing/QA best practices | `skills/oac-test-forensics/`, `skills/oac-test-contract/` |
 | QA audit + sign-off report standards | distilled from the target project's `spec-qa` playbook, generalized (stack / Figma-visual / tracker specifics dropped) | `skills/oac-qa-report/` |
 | E2E journey-test authoring (plan + approval gate) | distilled from the target project's `spec-qa` Steps 3–5, generalized (runner-agnostic) | `skills/oac-journey-tests/` |
+| Figma component decomposition (generalized, spec-agnostic) | the project's `figma-decompose` skill (tesseract) | `skills/oac-figma-decompose/` |
 
 No command, skill, or rule invokes an external/installed skill. The only outward references are HTTPS
 links to public best-practice sources (cited as links, never required to run) and the provenance links

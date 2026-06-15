@@ -52,7 +52,7 @@ Each row marks delegated assets as **skill** (invoke for the concrete procedure,
 | # | Stage command | Skills | Rules | Blocking gate |
 |---|---|---|---|---|
 | 1 | [`../commands/oac-spec-init.md`](../commands/oac-spec-init.md) | — | engineering-discipline | — |
-| 2 | [`../commands/oac-spec-preflight.md`](../commands/oac-spec-preflight.md) | — | — | reuse verdict + shared-component impact table |
+| 2 | [`../commands/oac-spec-preflight.md`](../commands/oac-spec-preflight.md) | oac-figma-decompose (when a design exists) | — | reuse verdict + shared-component impact table |
 | 3 | [`../commands/oac-spec-requirements.md`](../commands/oac-spec-requirements.md) | oac-acceptance-criteria | — | every AC has a stable ID + observable phrasing |
 | 4 | [`../commands/oac-spec-clarify.md`](../commands/oac-spec-clarify.md) | oac-acceptance-criteria | — | untestable ACs surfaced |
 | 5 | [`../commands/oac-spec-design.md`](../commands/oac-spec-design.md) | oac-architecture-gate | architecture-principles | **design.md + contracts/; arch gate PASS or justification** |
@@ -72,7 +72,7 @@ Observability and steering run any time: [`../commands/oac-spec-status.md`](../c
    feature/bug description. Choose `feature` (full lifecycle), `bugfix` (reproduce-first test → fix →
    validate → drift), or `quickfix` (minimal change; still ≥1 AC-traceable test — no 0-test specs),
    asking only if the choice isn't obvious. Record it in `.meta.yaml`. If a spec already exists, resume
-   at its first non-`complete` phase instead of re-scaffolding.
+   at its first non-`complete` phase instead of re-scaffolding. If the change is UI-facing (a new or changed screen, component, or visual surface), I ask you for any related Figma links and record them in `.meta.yaml` as `figma_links` — preflight then decomposes them via `oac-figma-decompose` into `references/figma-components.md`, which seeds the reuse scan and the requirements/design that follow.
 2. **Run each stage by invoking its command** and following it exactly. A command is thin and points
    you at the skill/rule that carries the concrete procedure — read that skill/rule's `SKILL.md` (or
    rule file) and its `references/` before acting.
@@ -94,10 +94,15 @@ alternatives, then wait for your answer. I batch related questions and never re-
 - **Ambiguous instructions** — your description omits a decision I can't safely default (scope, data
   model, a user-facing behavior). I ask before writing requirements.
 - **Workflow choice** — if `feature` / `bugfix` / `quickfix` isn't obvious.
+- **Design inputs (UI changes)** — when the change touches UI, I ask you for related Figma links at init and record them as `figma_links` in `.meta.yaml`; preflight decomposes them into `references/figma-components.md`. If you have none, I proceed without and preflight skips decomposition.
 - **Clarify stage** — the `oac-spec-clarify` Q&A is interactive by design: I present the top ambiguities
   (ranked Impact × Uncertainty), one at a time, each with a recommended answer.
 - **Architecture-gate justification** — if the gate fires and the resolution is to *defer* (record a
   justification) rather than extract, that's your call; I propose both and ask.
+- **Design approval (before tasks)** — mandatory. After `oac-spec-design` produces `design.md` +
+  `contracts/` and the architecture gate is PASS (or justified), I **stop** and present the design for
+  your review. I do **not** start `oac-spec-tasks` until you approve; if you raise clarifications or
+  changes, I fold them into the design and re-present. This pause is required even when no gate failed.
 - **Journey-plan approval** (QA, optional) — I write no E2E tests until you `approve` the plan
   (`oac-journey-tests`).
 - **QA disposition** — `oac-spec-qa` surfaces findings; I never approve or block. You disposition each

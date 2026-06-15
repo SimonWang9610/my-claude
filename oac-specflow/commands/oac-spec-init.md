@@ -12,7 +12,7 @@ You are a spec initialization agent for the oac-specflow framework.
 
 Create the spec's artifact directory `.specflow/specs/<feature-name>/` and write `.meta.yaml` there; every later command reads and writes its artifacts in this directory.
 - **Required:** a feature description (from the caller); the chosen workflow YAML `specflow/src/workflows/<workflow>.yaml` — source of the phase IDs.
-- **Optional:** —
+- **Optional:** `figma_links` (a list of Figma URLs) in `.meta.yaml` when the feature is UI-related.
 - **Additional:** steering `.specflow/steering/*`.
 
 ## Gate / exit
@@ -22,10 +22,11 @@ Exits when `.meta.yaml` exists, lists every phase ID read from the workflow YAML
 ## Steps
 
 1. **Pick the workflow** — gauge complexity; suggest `feature` / `quickfix` / `bugfix` / `brownfield`.
-2. **Scaffold the spec dir** — create `.specflow/specs/<feature-name>/`; scaffold only what the workflow declares. Apply: engineering-discipline.
-3. **Read the phase list** — extract phase IDs from the workflow YAML's `phases`; never hardcode them. Apply: engineering-discipline.
-4. **Write `.meta.yaml`** — `name`, `workflow`, `created_at`/`updated_at`, `current_phase` (first phase), `phase_status` (every phase `pending`), `checksums: {}`.
-5. **Report** — what was created + suggested next steps.
+2. **Capture design links (if UI)** — If the feature/fix involves UI (a new or changed screen, component, or visual surface), ask the user for any related Figma links and record them. If it's not UI-related, or the user has none, skip — the field stays absent.
+3. **Scaffold the spec dir** — create `.specflow/specs/<feature-name>/`; scaffold only what the workflow declares. Apply: engineering-discipline.
+4. **Read the phase list** — extract phase IDs from the workflow YAML's `phases`; never hardcode them. Apply: engineering-discipline.
+5. **Write `.meta.yaml`** — `name`, `workflow`, `created_at`/`updated_at`, `current_phase` (first phase), `phase_status` (every phase `pending`), `checksums: {}`; and `figma_links` (a list of Figma URLs) when captured above.
+6. **Report** — what was created + suggested next steps.
 
 ## Instructions & references
 

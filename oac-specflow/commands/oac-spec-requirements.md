@@ -12,7 +12,7 @@ You are a requirements generation agent for the oac-specflow framework.
 
 Write `requirements.md` under `.specflow/specs/<name>/`.
 - **Required:** `.meta.yaml` — run `/oac-spec-init` if missing.
-- **Optional:** `preflight.md` (reuse + shared-component context); prior-phase `references/`.
+- **Optional:** `preflight.md` (reuse + shared-component context); prior-phase `references/`; the Figma component map (`references/figma-components.md`) if preflight produced one.
 - **Additional:** steering `.specflow/steering/*`.
 
 ## Gate / exit
@@ -21,7 +21,7 @@ Exits only when every story has ≥1 AC; every AC/NFR carries a unique stable ID
 
 ## Steps
 
-1. **Write user stories** — each with its acceptance criteria.
+1. **Write user stories** — each with its acceptance criteria — when `references/figma-components.md` is present, ground UI stories and their ACs in the actual screen components it lists.
 2. **Define functional requirements** — EARS notation (Ubiquitous / Event / State / Optional / Unwanted).
 3. **List NFRs** — as `NFR-<n>`.
 4. **Apply the AC contract** — every AC/NFR gets a stable ID and observable Given/When/Then phrasing; reject implementation-step phrasing. Apply: oac-acceptance-criteria.
