@@ -73,6 +73,11 @@ green.
 **Build/verify gate.** At validate and (when run) QA the build gate is `flutter analyze` (zero issues)
 followed by `flutter test` (all tests green; `flutter test --coverage` at the QA stage).
 
+**State-management package skill.** When the project uses Riverpod (detected via `flutter_riverpod` /
+`riverpod_generator`, `@riverpod`, or `ref.watch`/`ref.read`), I load the
+[`fl-riverpod`](../skills/fl-riverpod/SKILL.md) skill for package-specific idioms while implementing the
+fix; the agnostic core rules still apply.
+
 **Human test gate (before QA) — when QA runs.** When the fix is non-trivial enough to run `fl-spec-qa`,
 I **stop after validate and before QA** and hand the fix to you for **manual testing**: I summarize the
 bug, the change, and how to verify the fix (and check for regressions), then wait for your bug reports /

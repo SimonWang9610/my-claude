@@ -50,7 +50,7 @@ Follows the official Claude Code directory model — see <https://code.claude.co
 | **commands** | `commands/` | One thin `/fl-spec-<stage>` command per lifecycle stage — its process, gate/exit criteria, and which skill/rule it delegates to. The project-specific process layer. |
 | **skills** | `skills/` | Self-contained problem-solvers, each carrying its own `references/` (where the worked Dart examples live). |
 | **rules** | `rules/` | Short, path-gated topic files of always-on discipline (`paths: **/*.dart`), no long code listings. |
-| **agents** | `agents/` | One orchestrator per workflow (`fl-{feature,bugfix}-workflow`) — drives the phases in order and enforces the gates. |
+| **agents** | `agents/` | One orchestrator per workflow (`fl-{feature,brownfield,bugfix,quickfix}-workflow`) — drives the phases in order and enforces the gates. |
 
 ```
 agents/     ── orchestration: drive a spec through the lifecycle, enforce gates
@@ -68,7 +68,9 @@ flutter-specflow/
 ├── README.md                          ← this file
 ├── agents/
 │   ├── fl-feature-workflow.md         ← full feature lifecycle; optional legacy/cross-stack port via scan-resource
-│   └── fl-bugfix-workflow.md          ← root-cause + failing reproduction test → smallest fix to green
+│   ├── fl-brownfield-workflow.md      ← in-place change to an existing feature (mandatory impact analysis)
+│   ├── fl-bugfix-workflow.md          ← root-cause + failing reproduction test → smallest fix to green
+│   └── fl-quickfix-workflow.md        ← minimal change + ≥1 AC-traceable test; escalates if it grows
 ├── commands/                          ← thin, process, one per stage
 │   ├── fl-spec-init.md  fl-spec-preflight.md  fl-spec-requirements.md  fl-spec-clarify.md
 │   ├── fl-spec-design.md  fl-spec-tasks.md  fl-spec-implement.md  fl-spec-validate.md
@@ -118,7 +120,9 @@ flowchart TD
 | Driver agent | Phases | Use when |
 |---|---|---|
 | `fl-feature-workflow` | init → preflight → requirements → clarify → design → tasks → implement → validate → qa → drift | New feature, greenfield **or a legacy/cross-stack port** (it scans the legacy source with `scan-resource` to seed requirements/design) |
+| `fl-brownfield-workflow` | init → preflight (impact analysis · mandatory) → requirements → design → tasks → implement → validate → qa → drift | Modifying an existing Flutter feature in place; impact analysis is the safety gate (no clarify) |
 | `fl-bugfix-workflow` | init → analysis (failing reproduction test) → tasks → implement → validate → qa (opt) → drift | Fixing a defect; reproduction-test-first |
+| `fl-quickfix-workflow` | init → describe (one AC) → implement → validate → qa (opt) | A small, self-contained change; still ≥1 AC-traceable test; escalates to feature/bugfix if it grows |
 
 ## Command → delegation map
 
@@ -195,12 +199,12 @@ categories.
 ## What's included vs. deferred
 
 This is the **core flow** build. Included: a lean ~13-rule high-level `core/` plus the `conditional/performance` pack, seven skills (`fl-architecture-design`, `fl-architecture-gate`, `fl-acceptance-criteria`, `fl-test-contract`,
-`fl-test-forensics`, `fl-pr-review`, `fl-riverpod`), all twelve `fl-spec-*` stage commands, and two drivers (`fl-feature-workflow`,
-`fl-bugfix-workflow`).
+`fl-test-forensics`, `fl-pr-review`, `fl-riverpod`), all twelve `fl-spec-*` stage commands, and all four
+drivers (`fl-feature-workflow`, `fl-brownfield-workflow`, `fl-bugfix-workflow`, `fl-quickfix-workflow`).
 
 **Deferred** (can be added later, each mirroring its `oac-specflow` counterpart): a dedicated
-`fl-qa-report` skill, an `fl-journey-tests` skill (integration_test/patrol E2E), an `fl-figma-decompose`
-skill (Figma → widget map), and the `fl-{brownfield,quickfix}-workflow` drivers. Until then,
+`fl-qa-report` skill, an `fl-journey-tests` skill (integration_test/patrol E2E), and an
+`fl-figma-decompose` skill (Figma → widget map). Until then,
 `fl-spec-qa` runs forensics + the build gate, and `fl-spec-preflight` does the reuse/impact scan
 without Figma decomposition.
 
@@ -230,7 +234,7 @@ cp -R flutter-specflow/rules/*      <project>/.claude/rules/
 ```
 
 Then **load the `fl-riverpod` skill** when the project uses Riverpod (adapt it, or write an analogous
-package skill), and drive a spec end-to-end with `fl-feature-workflow` / `fl-bugfix-workflow` — or run
+package skill), and drive a spec end-to-end with the matching driver (`fl-feature-workflow` / `fl-brownfield-workflow` / `fl-bugfix-workflow` / `fl-quickfix-workflow`) — or run
 the stage commands in order (`fl-spec-init` → … → `fl-spec-drift`). Because skills and rules are
 referenced by relative path *within the bundle*, keep the four directories together under one parent
 when you copy them over.
