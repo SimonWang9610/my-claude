@@ -31,7 +31,7 @@ subdirectory:
 | **commands** | `commands/` | A markdown file `commands/<name>.md` is invoked as `/<name>`. Here: one thin command per lifecycle stage — the stage's process, its gate/exit criteria, and which skill/rule it delegates to. |
 | **skills** | `skills/` | Each skill is a folder with a `SKILL.md` plus any supporting files it needs; invoked as `/<name>` or auto-invoked by its `description`. Here: self-contained problem-solvers, each carrying its own `references/` (where the worked code examples live). |
 | **rules** | `rules/` | "Topic-scoped instructions, optionally gated by file paths." A rule with `paths:` frontmatter loads only when a matching file enters context; without `paths:` it loads at session start. Here: short, path-gated topic files of always-on discipline — **no long code listings** (those live in skill `references/`). |
-| **agents** | `agents/` | Each markdown file defines a subagent with its own context window, system prompt, and tool access. Here: the orchestrator that drives a spec through the lifecycle and enforces the gates. |
+| **agents** | `agents/` | Each markdown file defines a subagent with its own context window, system prompt, and tool access. Here: **one orchestrator per workflow** (`oac-{feature,brownfield,bugfix,quickfix}-workflow`) — each drives its workflow's phases in order and enforces the gates. |
 
 ```
 agents/     ── orchestration: drive a spec through the lifecycle, enforce gates
@@ -52,7 +52,10 @@ rules/      ── GENERAL & ALWAYS-ON: short, path-gated topic files applied on
 oac-specflow/
 ├── README.md                         ← this file
 ├── agents/
-│   └── oac-spec-driver.md            ← orchestrator: runs the lifecycle, enforces gates
+│   ├── oac-feature-workflow.md    ← full feature lifecycle; legacy→React port via scan-resource
+│   ├── oac-brownfield-workflow.md ← in-place change to an existing feature (mandatory impact analysis)
+│   ├── oac-bugfix-workflow.md     ← root-cause + failing reproduction test → fix
+│   └── oac-quickfix-workflow.md   ← minimal change + one AC-traceable test
 ├── commands/                         ← thin, process, one per stage (the project-specific layer)
 │   ├── oac-spec-init.md  oac-spec-preflight.md  oac-spec-requirements.md  oac-spec-clarify.md
 │   ├── oac-spec-design.md  oac-spec-tasks.md  oac-spec-implement.md  oac-spec-validate.md
@@ -105,6 +108,19 @@ flowchart TD
 ```
 
 > Always-on across every relevant turn: **architecture-principles** (P1–P7 — authored against at requirements, design, implement), **test-quality** (every `*.test.*` / `*.spec.*` edit), **engineering-discipline** (every code-writing turn). Dashed nodes are the optional Figma seam; `oac-spec-status` / `oac-spec-steer` run any time.
+
+## Workflows — pick the driver that matches your change
+
+Each workflow runs a different subset of the lifecycle. Invoke the matching agent directly.
+
+| Driver agent | Phases (oac stages) | Use when |
+|---|---|---|
+| `oac-feature-workflow` | init → preflight → requirements → clarify → design → tasks → implement → validate → qa → drift | New feature, greenfield **or a legacy→React port** (it scans the legacy source with `scan-resource` to seed requirements/design) |
+| `oac-brownfield-workflow` | init → preflight (impact analysis) → requirements → design → tasks → implement → validate → qa → drift | Modifying an existing React feature in place; impact analysis is mandatory |
+| `oac-bugfix-workflow` | init → analysis (failing reproduction test) → tasks → implement → validate → qa (opt) → drift | Fixing a defect; reproduction-test-first |
+| `oac-quickfix-workflow` | init → describe → implement → validate → qa (opt) | A small, self-contained change; still ≥1 AC-traceable test |
+
+> The `feature` driver's **legacy port mode** is the one place the bundle reaches outside itself — it invokes the installed `scan-resource` skill (only on the migration path) to turn legacy folders into a recallable reference base under `references/`.
 
 ## Command → delegation map
 
@@ -184,7 +200,7 @@ works even when the originals are absent):
 | E2E journey-test authoring (plan + approval gate) | distilled from the target project's `spec-qa` Steps 3–5, generalized (runner-agnostic) | `skills/oac-journey-tests/` |
 | Figma component decomposition (generalized, spec-agnostic) | the project's `figma-decompose` skill (tesseract) | `skills/oac-figma-decompose/` |
 
-No command, skill, or rule invokes an external/installed skill. The only outward references are HTTPS
+No command, skill, or rule invokes an external/installed skill. The sole optional exception lives in the agent layer: `oac-feature-workflow`'s legacy-migration mode invokes the installed `scan-resource` skill to extract references from a legacy codebase — used only when porting, and never by a command/skill/rule. The only outward references are HTTPS
 links to public best-practice sources (cited as links, never required to run) and the provenance links
 to the originating analysis in the analysis workspace.
 
@@ -207,6 +223,6 @@ cp -R oac-specflow/rules/*           <project>/.claude/rules/
 ```
 
 Then **adapt `commands/_oac-jira-status-automation.md`** to your issue tracker (or delete it if you have
-none), and drive a spec end-to-end with the **oac-spec-driver** agent — or run the stage commands in
+none), and drive a spec end-to-end with the per-workflow driver agent that matches your change (`oac-{feature,brownfield,bugfix,quickfix}-workflow`) — or run the stage commands in
 order (`oac-spec-init` → … → `oac-spec-drift`). Because skills and rules are referenced by relative
 path *within the bundle*, keep the four directories together under one parent when you copy them over.
