@@ -1,1 +1,1 @@
-/Users/simonwang/projects/my-claude/oac-specflow/commands/oac-spec-steer.md
+../oac-specflow/commands/oac-spec-steer.md

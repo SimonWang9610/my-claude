@@ -1,1 +1,1 @@
-/Users/simonwang/projects/my-claude/oac-specflow/agents/oac-spec-driver.md
+../oac-specflow/agents/oac-spec-driver.md

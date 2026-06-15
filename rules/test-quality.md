@@ -1,1 +1,1 @@
-/Users/simonwang/projects/my-claude/oac-specflow/rules/test-quality.md
+../oac-specflow/rules/test-quality.md

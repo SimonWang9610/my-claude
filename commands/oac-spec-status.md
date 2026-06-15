@@ -1,1 +1,1 @@
-/Users/simonwang/projects/my-claude/oac-specflow/commands/oac-spec-status.md
+../oac-specflow/commands/oac-spec-status.md

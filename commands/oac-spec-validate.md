@@ -1,1 +1,1 @@
-/Users/simonwang/projects/my-claude/oac-specflow/commands/oac-spec-validate.md
+../oac-specflow/commands/oac-spec-validate.md

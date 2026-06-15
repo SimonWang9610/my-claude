@@ -1,1 +1,1 @@
-/Users/simonwang/projects/my-claude/oac-specflow/rules/engineering-discipline.md
+../oac-specflow/rules/engineering-discipline.md

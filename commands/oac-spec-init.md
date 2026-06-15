@@ -1,1 +1,1 @@
-/Users/simonwang/projects/my-claude/oac-specflow/commands/oac-spec-init.md
+../oac-specflow/commands/oac-spec-init.md
