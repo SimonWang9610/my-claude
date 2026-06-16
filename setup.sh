@@ -2,7 +2,9 @@
 #
 # setup.sh — LAYER 2: link (or remove) the my-claude aggregation dirs into a target .claude/.
 #
-# Links agents/, commands/, and skills/ from this repo into <dest>/.claude/ as RELATIVE symlinks.
+# Links each selected type (agents, commands, skills) as ONE relative DIRECTORY symlink:
+#   <dest>/.claude/<type>  →  this repo's <type>/
+# The per-file relative symlinks inside those dirs are owned by install.sh (Layer 1).
 # (Rules are consumed via CLAUDE.md @-imports, not ~/.claude, so they are not linked here.)
 #
 #     ./setup.sh                          # interactive: choose global or a project, then types
@@ -14,6 +16,11 @@
 # Bare `setup.sh` (no link|remove) auto-detects whether the chosen target is already linked with
 # this repo's symlinks and offers to unlink them. Passing link or remove explicitly skips that
 # prompt — explicit intent wins.
+#
+# Linking agents also installs a SessionStart hook (matcher: "startup") in <dest>/.claude/settings.json
+# that runs `git submodule update --init --recursive` on session start. The hook is merged into the
+# existing settings.json (other keys/hooks are never clobbered; bails on invalid JSON). Removing
+# agents takes the hook out. Requires python3; skipped with a warning if not found.
 #
 # See install.sh to populate the aggregation dirs from stack source dirs (Layer 1).
 # See uninstall.sh to reverse Layer 1.
@@ -56,52 +63,167 @@ read_line() {
 # count <dir> — count entries in a directory
 count() { local d="$1"; [ -d "$d" ] || { echo 0; return; }; ls "$d" 2>/dev/null | wc -l | tr -d ' '; }
 
-# link_group <label> <src_dir> <dst_dir> — relative-symlink each entry of src_dir into dst_dir
-link_group() {
-  local label="$1" src_dir="$2" dst_dir="$3"
-  if [ ! -d "$src_dir" ]; then echo "    (nothing at $src_dir — skipped)"; return; fi
-  mkdir -p "$dst_dir"
-  local linked=0 skipped=0 src name dst rel
-  for src in "$src_dir"/*; do
-    [ -e "$src" ] || [ -L "$src" ] || continue
-    name="$(basename "$src")"
-    dst="$dst_dir/$name"
-    rel="$(relpath "$dst_dir" "$src")"
-    if [ -L "$dst" ]; then
-      if [ "$(readlink "$dst")" = "$rel" ]; then skipped=$((skipped + 1)); continue; fi
-      rm "$dst"; ln -s "$rel" "$dst"; linked=$((linked + 1))
-    elif [ -e "$dst" ]; then
-      echo "    WARN  $name is a real file in $dst_dir — left as-is"
-    else
-      ln -s "$rel" "$dst"; linked=$((linked + 1))
-    fi
+# dir_is_safe_to_replace <dir> — true if <dir> is empty OR every entry is a symlink resolving under $REPO/
+#   (i.e. the legacy per-file bundle layout, or an empty dir — safe to delete and replace with a dir symlink)
+dir_is_safe_to_replace() {
+  local d="$1" e
+  [ -d "$d" ] || return 1
+  for e in "$d"/* "$d"/.[!.]*; do
+    [ -e "$e" ] || [ -L "$e" ] || continue
+    [ -L "$e" ] || return 1
+    case "$(resolve "$e")" in "$REPO/"*) ;; *) return 1 ;; esac
   done
-  echo "    $linked linked, $skipped already-linked"
+  return 0
 }
 
-# remove_group <label> <dir> — remove symlinks in <dir> that resolve under $REPO/
-remove_group() {
-  local label="$1" dir="$2" e removed=0
-  [ -d "$dir" ] || { echo "    (no $dir — skipped)"; return; }
-  for e in "$dir"/*; do
-    [ -L "$e" ] || continue
-    case "$(resolve "$e")" in
-      "$REPO/"*) rm -f "$e"; echo "    removed $(basename "$e")"; removed=$((removed + 1)) ;;
+# link_type <type> — symlink $CLAUDE/<type> → $REPO/<type> as one relative directory symlink
+link_type() {
+  local ltype="$1" src="$REPO/$1" dst="$CLAUDE/$1" rel
+  if [ ! -d "$src" ]; then echo "    (nothing at $src — skipped)"; return; fi
+  mkdir -p "$CLAUDE"
+  rel="$(relpath "$CLAUDE" "$src")"
+  if [ -L "$dst" ]; then
+    if [ "$(readlink "$dst")" = "$rel" ]; then echo "    already linked"; return; fi
+    case "$(resolve "$dst")" in
+      "$REPO/"*) rm "$dst"; ln -s "$rel" "$dst"; echo "    re-linked" ;;
+      *)         echo "    WARN  $dst is a foreign symlink — left as-is" ;;
     esac
-  done
-  echo "    $removed removed"
+  elif [ -e "$dst" ]; then
+    if dir_is_safe_to_replace "$dst"; then
+      rm -rf "$dst"; ln -s "$rel" "$dst"; echo "    linked (migrated legacy per-file links)"
+    else
+      echo "    WARN  $dst already exists with your own content — left as-is (move it, then re-run)"
+    fi
+  else
+    ln -s "$rel" "$dst"; echo "    linked"
+  fi
 }
 
-# count_linked <claude_dir> — count symlinks across agents/commands/skills that resolve under $REPO/
+# remove_type <type> — remove $CLAUDE/<type> if it links into this repo (or is a legacy bundle dir)
+remove_type() {
+  local ltype="$1" dst="$CLAUDE/$1" e removed=0
+  if [ -L "$dst" ]; then
+    case "$(resolve "$dst")" in
+      "$REPO/"*) rm "$dst"; echo "    unlinked" ;;
+      *)         echo "    WARN  $dst is a foreign symlink — left as-is" ;;
+    esac
+  elif [ -d "$dst" ]; then
+    if dir_is_safe_to_replace "$dst"; then
+      rm -rf "$dst"; echo "    unlinked (legacy per-file dir removed)"
+    else
+      for e in "$dst"/*; do
+        [ -L "$e" ] || continue
+        case "$(resolve "$e")" in "$REPO/"*) rm -f "$e"; removed=$((removed + 1)) ;; esac
+      done
+      rmdir "$dst" 2>/dev/null && echo "    unlinked" || echo "    removed $removed bundle link(s), kept your own files"
+    fi
+  else
+    echo "    nothing linked"
+  fi
+}
+
+# manage_hook <add|remove> <settings_path> — install/remove the submodule-sync SessionStart hook
+manage_hook() {
+  local mode="$1" sfile="$2" out
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "    (python3 not found — skipped submodule-sync hook; add it to $sfile manually)"
+    return
+  fi
+  mkdir -p "$(dirname "$sfile")"
+  out="$(python3 - "$sfile" "$mode" <<'PY'
+import json, os, sys
+
+path, action = sys.argv[1], sys.argv[2]
+MARKER = "my-claude:submodule-sync"
+COMMAND = (
+    'git rev-parse --is-inside-work-tree >/dev/null 2>&1 '
+    '&& test -f "$(git rev-parse --show-toplevel 2>/dev/null)/.gitmodules" '
+    '&& git submodule update --init --recursive || true  # ' + MARKER
+)
+
+data = {}
+if os.path.exists(path) and os.path.getsize(path) > 0:
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except Exception:
+        print("INVALID_JSON"); sys.exit(3)
+if not isinstance(data, dict):
+    print("INVALID_JSON"); sys.exit(3)
+
+hooks = data.get("hooks")
+if hooks is not None and not isinstance(hooks, dict):
+    print("INVALID_HOOKS"); sys.exit(3)
+
+def has_marker(entry):
+    if not isinstance(entry, dict):
+        return False
+    for h in entry.get("hooks", []) or []:
+        if isinstance(h, dict) and MARKER in (h.get("command") or ""):
+            return True
+    return False
+
+def save():
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+if action == "add":
+    hooks = data.setdefault("hooks", {})
+    ss = hooks.get("SessionStart")
+    if ss is None:
+        ss = []
+        hooks["SessionStart"] = ss
+    if not isinstance(ss, list):
+        print("INVALID_SESSIONSTART"); sys.exit(3)
+    if any(has_marker(e) for e in ss):
+        print("EXISTS"); sys.exit(0)
+    ss.append({"matcher": "startup",
+               "hooks": [{"type": "command", "command": COMMAND}]})
+    save(); print("ADDED"); sys.exit(0)
+
+if action == "remove":
+    if not isinstance(hooks, dict):
+        print("ABSENT"); sys.exit(0)
+    ss = hooks.get("SessionStart")
+    if not isinstance(ss, list):
+        print("ABSENT"); sys.exit(0)
+    kept = [e for e in ss if not has_marker(e)]
+    if len(kept) == len(ss):
+        print("ABSENT"); sys.exit(0)
+    if kept:
+        hooks["SessionStart"] = kept
+    else:
+        del hooks["SessionStart"]
+    if not hooks:
+        del data["hooks"]
+    save(); print("REMOVED"); sys.exit(0)
+
+print("BAD_ACTION"); sys.exit(2)
+PY
+)" || { echo "    WARN  could not update submodule-sync hook in $sfile (left as-is): $out"; return; }
+  case "$out" in
+    ADDED)   echo "    submodule-sync hook added to $sfile" ;;
+    EXISTS)  echo "    submodule-sync hook already present in $sfile" ;;
+    REMOVED) echo "    submodule-sync hook removed from $sfile" ;;
+    ABSENT)  echo "    no submodule-sync hook to remove in $sfile" ;;
+    *)       echo "    WARN  unexpected hook-tool output for $sfile: $out" ;;
+  esac
+}
+
+# count_linked <claude_dir> — count linked types (dir symlink into $REPO, or a legacy bundle dir)
 count_linked() {
-  local claude="$1" t dir e total=0
+  local claude="$1" t dst e total=0
   for t in $LINK_TYPES; do
-    dir="$claude/$t"
-    [ -d "$dir" ] || continue
-    for e in "$dir"/*; do
-      [ -L "$e" ] || continue
-      case "$(resolve "$e")" in "$REPO/"*) total=$((total + 1)) ;; esac
-    done
+    dst="$claude/$t"
+    if [ -L "$dst" ]; then
+      case "$(resolve "$dst")" in "$REPO/"*) total=$((total + 1)) ;; esac
+    elif [ -d "$dst" ]; then
+      for e in "$dst"/*; do
+        [ -L "$e" ] || continue
+        case "$(resolve "$e")" in "$REPO/"*) total=$((total + 1)); break ;; esac
+      done
+    fi
   done
   echo "$total"
 }
@@ -206,13 +328,13 @@ sel() {
 did=0
 echo
 if [ "$action" = "link" ]; then
-  if sel 1 agents;   then echo "→ agents:   linking $n_agt entry(s) into $CLAUDE/agents/";   link_group   agents   "$REPO/agents"   "$CLAUDE/agents";   did=1; else echo "· agents: not selected — skipped"; fi
-  if sel 2 commands; then echo "→ commands: linking $n_cmd entry(s) into $CLAUDE/commands/"; link_group   commands "$REPO/commands" "$CLAUDE/commands"; did=1; else echo "· commands: not selected — skipped"; fi
-  if sel 3 skills;   then echo "→ skills:   linking $n_skl entry(s) into $CLAUDE/skills/";   link_group   skills   "$REPO/skills"   "$CLAUDE/skills";   did=1; else echo "· skills: not selected — skipped"; fi
+  if sel 1 agents;   then echo "→ agents:   linking $CLAUDE/agents → $REPO/agents";       link_type agents;   manage_hook add    "$CLAUDE/settings.json"; did=1; else echo "· agents: not selected — skipped"; fi
+  if sel 2 commands; then echo "→ commands: linking $CLAUDE/commands → $REPO/commands";   link_type commands; did=1; else echo "· commands: not selected — skipped"; fi
+  if sel 3 skills;   then echo "→ skills:   linking $CLAUDE/skills → $REPO/skills";       link_type skills;   did=1; else echo "· skills: not selected — skipped"; fi
 else
-  if sel 1 agents;   then echo "→ agents:   removing bundle symlinks from $CLAUDE/agents/";   remove_group agents   "$CLAUDE/agents";   did=1; else echo "· agents: not selected — skipped"; fi
-  if sel 2 commands; then echo "→ commands: removing bundle symlinks from $CLAUDE/commands/"; remove_group commands "$CLAUDE/commands"; did=1; else echo "· commands: not selected — skipped"; fi
-  if sel 3 skills;   then echo "→ skills:   removing bundle symlinks from $CLAUDE/skills/";   remove_group skills   "$CLAUDE/skills";   did=1; else echo "· skills: not selected — skipped"; fi
+  if sel 1 agents;   then echo "→ agents:   unlinking $CLAUDE/agents";   remove_type agents;   manage_hook remove "$CLAUDE/settings.json"; did=1; else echo "· agents: not selected — skipped"; fi
+  if sel 2 commands; then echo "→ commands: unlinking $CLAUDE/commands"; remove_type commands; did=1; else echo "· commands: not selected — skipped"; fi
+  if sel 3 skills;   then echo "→ skills:   unlinking $CLAUDE/skills";   remove_type skills;   did=1; else echo "· skills: not selected — skipped"; fi
 fi
 
 echo

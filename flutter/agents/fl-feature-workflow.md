@@ -27,12 +27,28 @@ cross-stack port). I treat that as the spec's seed:
    *Human-in-the-loop* below.
 3. I keep `.meta.yaml` current and report progress as I go.
 
-## Before any task
+## Before any task — mandatory preflight
 
-If a `.gitmodules` file exists at the repo root, run `git submodule update --init --recursive`
-**before** scaffolding or starting any stage, so vendored assets and specs are checked out.
+Run this **in order, before `/spec-init` or any stage**, and report each result. If a step fails,
+STOP and surface it — never start a stage with the preflight unmet.
 
-If a `/command` or skill I invoke is not available by name, find its definition under `.claude/commands/` (commands) or `.claude/skills/` (skills) in the project root and follow it.
+1. **Work in isolation — never write to the default branch; root every path at the worktree.** Run
+   `git rev-parse --abbrev-ref HEAD` and `git rev-parse --show-toplevel`. If HEAD is the repo's
+   default branch (`main`/`master`) — or the checkout is not a dedicated git worktree for this spec —
+   STOP: create no `.specflow/` artifacts, code, or commits. Either the user relaunches in a worktree
+   (`claude --agent <this-workflow> --worktree <name>`, preferred — see README), or, with their
+   go-ahead, create a dedicated branch (`git switch -c spec/<spec-name>`). Record the worktree root
+   as `ROOT` (= `git rev-parse --show-toplevel`) and write **every** artifact, file, and test as an
+   **absolute path under `$ROOT`** (e.g. `$ROOT/.specflow/specs/<name>/…`) — never a bare relative
+   path, so outputs never depend on the tool's working directory. Every artifact and commit must
+   live on that worktree/branch — never on the default branch. **Re-check before each stage** that
+   I'm still off the default branch and writing under `$ROOT`.
+2. **Sync submodules.** If a `.gitmodules` file exists at the repo root, run
+   `git submodule update --init --recursive` and confirm it succeeds — before scaffolding or any
+   stage — so vendored assets and specs are checked out. If it fails, STOP and surface the error.
+3. **Resolve commands/skills.** If a `/command` or skill I invoke is not available by name, find its
+   definition under `.claude/commands/` (commands) or `.claude/skills/` (skills) in the project root
+   and follow it.
 
 ## Lifecycle (this workflow)
 
@@ -95,11 +111,17 @@ For a **greenfield** feature (no legacy source) I skip this entirely.
 1. **Seed from your instructions.** Record `feature` in `.meta.yaml`. Resume at first non-`complete`
    phase if a spec already exists. Ask whether there is a legacy source when the change is a new or
    changed screen/widget surface.
-2. **Invoke `/command` by name**, apply the skills in the Apply-skills column, and hand each
-   stage's outputs to the next — confirming artifacts exist before advancing. Supply the Flutter
-   stack-specific *how*: four-layer model (UI → Provider → Data → Service), build/verify commands,
-   `/fl-riverpod` when applicable. Design-source decomposer and tracker steps are N/A — skip them.
-   Read the bound skill's `SKILL.md` and its `references/` before acting.
+2. **Run each stage through its bound skill — not from memory.** Invoke each `/spec-<stage>` command
+   by name; then, *before producing that stage's output*, invoke **every** skill listed in that
+   stage's Apply-skills column with the Skill tool (e.g. `/fl-acceptance-criteria`). If a skill is
+   not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it.
+   Produce the stage's artifacts *through* the skill's procedure — a stage written without loading
+   its bound skill(s) is **incomplete**: redo it. State in each stage's progress note which skill(s)
+   were invoked. Hand each stage's outputs to the next, confirming the artifacts exist before
+   advancing. Supply the Flutter stack-specific *how*: four-layer model (UI → Provider → Data →
+   Service), build/verify commands, `/fl-riverpod` when applicable. Design-source decomposer and
+   tracker steps are N/A — skip them. Read the bound skill's `SKILL.md` and its `references/`
+   before acting.
 3. **Enforce gates as hard stops.** If `/fl-architecture-design` or the clause→test gate reports
    `FAIL (blocking)`, stop: surface the failing trigger, the named unit/AC, and the required action.
    Resolve (extract / add test) or record a justification, then re-run the gate.

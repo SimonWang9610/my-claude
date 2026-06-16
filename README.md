@@ -99,15 +99,29 @@ resolve back into the named stack are ever created or removed.
 ./setup.sh remove --project ../app  # remove from ../app/.claude
 ```
 
-`setup.sh` multi-selects which of `agents`, `commands`, `skills` to link. Rules are **not** linked
-— they are loaded via `CLAUDE.md` `@`-imports. Re-running is safe; real files in the destination
-are never clobbered. `remove` only removes symlinks that resolve back into this repo. Bare
-`./setup.sh` (no `link`/`remove`) auto-detects a target that's already linked with this repo and
-offers to unlink it instead; passing `link` or `remove` explicitly skips that prompt.
+`setup.sh` multi-selects which of `agents`, `commands`, `skills` to link. For each selected type it
+creates **one directory symlink**: `<dest>/.claude/<type>` → this repo's `<type>/`. The per-file
+relative symlinks inside those dirs are owned by `install.sh`. Rules are **not** linked — they are
+loaded via `CLAUDE.md` `@`-imports. Re-running is safe: if the destination already has a legacy
+per-file bundle (the old per-file layout), `setup.sh` auto-migrates it to the single dir symlink. A
+directory that contains your own files is never clobbered — the script warns and leaves it intact
+(move it, then re-run). `remove` only removes a dir symlink (or legacy per-file dir) that resolves
+back into this repo. Bare `./setup.sh` (no `link`/`remove`) auto-detects a target that's already
+linked with this repo and offers to unlink it instead; passing `link` or `remove` explicitly skips
+that prompt.
 
-> **Submodule tip.** When this repo is vendored in your project, have the workflow run
-> `git submodule update --init --recursive` first (the driver agents already do this), then
-> `./install.sh all` and `./setup.sh link --project .` from the project root.
+**Linking `agents` also merges a `SessionStart` hook** into the target's `.claude/settings.json`.
+The hook has `matcher: "startup"` and runs `git submodule update --init --recursive` automatically
+on every session start, so worktree sessions get their submodules without manual steps. It is
+merged non-destructively — all other keys and hooks in `settings.json` are preserved; the script
+bails with a warning on invalid JSON rather than overwriting. Running `remove` for `agents` takes
+the hook back out, again leaving everything else intact. Requires `python3` on `$PATH`; skipped
+with a notice if not found.
+
+> **Submodule tip.** When this repo is vendored in your project, link `agents` with `setup.sh` and
+> the `SessionStart` hook will keep submodules up-to-date automatically on every session start. The
+> driver-agent preflight (`git submodule update --init --recursive`) remains as a fallback for
+> environments where the hook hasn't been installed.
 
 > **Windows symlink note.** Git restores the in-repo symlinks only when `core.symlinks=true` (default
 > on macOS/Linux). On Windows, enable Developer Mode or `git config core.symlinks true && git checkout -- .`.
