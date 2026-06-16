@@ -30,72 +30,46 @@ Invoke me with a bug report or description (optionally a spec name or affected f
 Run this **in order, before `/spec-init` or any stage**, and report each result. If a step fails,
 STOP and surface it — never start a stage with the preflight unmet.
 
-1. **Work in isolation — never write to the default branch; root every path at the worktree.** Run
-   `git rev-parse --abbrev-ref HEAD` and `git rev-parse --show-toplevel`. If HEAD is the repo's
-   default branch (`main`/`master`) — or the checkout is not a dedicated git worktree for this spec —
-   STOP: create no `.specflow/` artifacts, code, or commits. Either the user relaunches in a worktree
-   (`claude --agent <this-workflow> --worktree <name>`, preferred — see README), or, with their
-   go-ahead, create a dedicated branch (`git switch -c spec/<spec-name>`). Record the worktree root
-   as `ROOT` (= `git rev-parse --show-toplevel`) and write **every** artifact, file, and test as an
-   **absolute path under `$ROOT`** (e.g. `$ROOT/.specflow/specs/<name>/…`) — never a bare relative
-   path, so outputs never depend on the tool's working directory. Every artifact and commit must
-   live on that worktree/branch — never on the default branch. **Re-check before each stage** that
-   I'm still off the default branch and writing under `$ROOT`.
-2. **Sync submodules.** If a `.gitmodules` file exists at the repo root, run
+1. **Sync submodules.** If a `.gitmodules` file exists at the repo root, run
    `git submodule update --init --recursive` and confirm it succeeds — before scaffolding or any
    stage — so vendored assets and specs are checked out. If it fails, STOP and surface the error.
-3. **Resolve commands/skills.** If a `/command` or skill I invoke is not available by name, find its
+2. **Resolve commands/skills.** If a `/command` or skill I invoke is not available by name, find its
    definition under `.claude/commands/` (commands) or `.claude/skills/` (skills) in the project root
    and follow it.
 
 ## Lifecycle (this workflow)
 
-| # | Stage `/command` | Apply skills | Outputs → next stage | Gate / approval |
-|---|---|---|---|---|
-| 1 | `/spec-init` | — | `.meta.yaml` | — |
-| 2 | **analysis** — root-cause + failing reproduction test (no dedicated command; I author it) | `/oac-test-contract`, `/oac-acceptance-criteria` | a failing reproduction test (the bug's AC) | named failing test asserts correct behavior · **human approval** |
-| 3 | `/spec-tasks` | `/oac-test-contract` | `tasks.md` | minimal fix tasks; reproduction AC has a test task |
-| 4 | `/spec-implement` | `/oac-test-contract` | implementation + AC-traceable tests (+ `tasks.md` status) | smallest change that turns the reproduction test green · **human verifies code before validate/qa** |
-| 5 | `/spec-validate` | `/oac-test-contract`, `/oac-architecture-design` (verify) | clause→test coverage + architecture-verify result | reproduction passes + arch gate if structure changed |
-| 6 | `/spec-qa` (optional) | `/oac-qa-report`, `/oac-test-forensics` | `qa-report.md` | run when non-trivial / touches shared components · human sign-off |
-| 7 | `/spec-drift` | `/oac-test-forensics` | drift findings | no unspecced behavior |
+**Stages (run in order):** `/spec-init` → `analysis` → `/spec-tasks` → `/spec-implement` → `/spec-validate` → `/spec-qa` → `/spec-drift`. Observe or steer any time with `/spec-status` and `/spec-steer`.
 
-Observability and steering run any time: `/spec-status`, `/spec-steer`.
+Run each stage yourself or delegate it to a subagent. These prompts are **delegation-ready**. A subagent does **not** inherit this agent's Operating rules — so when you delegate, copy into its prompt: (a) the stage's command + skill(s), (b) the **Operating rules** below verbatim, and (c) the worktree/`$ROOT` context (stay on the worktree branch; write every artifact under `$ROOT`). When you run a stage yourself, you already follow these.
+
+1. **`/spec-init`** — Run `/spec-init`; apply the Operating rules. On the worktree branch, scaffold `.meta.yaml` recording `bugfix` as the workflow. → writes `.meta.yaml` under `$ROOT`; feeds `analysis`. *Gate:* —
+2. **analysis** — (no command; author it) use `/oac-test-contract`, `/oac-acceptance-criteria` as much as possible; apply the Operating rules. On the worktree branch, perform root-cause analysis and author a failing reproduction test that asserts the correct behavior (the bug's AC). → writes a failing reproduction test (the bug's AC) under `$ROOT`; feeds `/spec-tasks`. *Gate:* named failing test asserts correct behavior · **human approval**
+3. **`/spec-tasks`** — Run `/spec-tasks`; use `/oac-test-contract` as much as possible; apply the Operating rules. On the worktree branch, produce minimal fix tasks ensuring the reproduction AC has a test task. → writes `tasks.md` under `$ROOT`; feeds `/spec-implement`. *Gate:* minimal fix tasks; reproduction AC has a test task
+4. **`/spec-implement`** — Run `/spec-implement`; use `/oac-test-contract` as much as possible; apply the Operating rules. On the worktree branch, make the smallest change that turns the reproduction test green; run `eslint` + `vitest run` to verify the build. → writes implementation + AC-traceable tests (+ `tasks.md` status) under `$ROOT`; feeds `/spec-validate`. *Gate:* smallest change that turns the reproduction test green · **human verifies code before validate/qa**
+5. **`/spec-validate`** — Run `/spec-validate`; use `/oac-test-contract`, `/oac-architecture-design` (verify) as much as possible; apply the Operating rules. On the worktree branch, verify the reproduction test passes and run the arch gate if structure changed; run `eslint` + `vitest run` to confirm the build is clean. → writes clause→test coverage + architecture-verify result under `$ROOT`; feeds `/spec-qa`. *Gate:* reproduction passes + arch gate if structure changed
+6. **`/spec-qa`** — Run `/spec-qa`; use `/oac-qa-report`, `/oac-test-forensics` as much as possible; apply the Operating rules. On the worktree branch, run the QA pass when non-trivial or touching shared components; run `eslint` + `vitest run`; transition the tracker via `/_oac-jira-status-automation`. → writes `qa-report.md` under `$ROOT`; feeds `/spec-drift`. *Gate:* run when non-trivial / touches shared components · human sign-off
+7. **`/spec-drift`** — Run `/spec-drift`; use `/oac-test-forensics` as much as possible; apply the Operating rules. On the worktree branch, confirm no unspecced behavior was introduced. → writes drift findings under `$ROOT`; completes the spec. *Gate:* no unspecced behavior
 
 ## Operating rules
 
-1. **Seed from your instructions.** Record `bugfix` as the workflow in `.meta.yaml`; resume at
-   first non-`complete` phase if a spec already exists.
-2. **Run each stage through its bound skill — not from memory.** Invoke each `/spec-<stage>` command
-   by name; then, *before producing that stage's output*, invoke **every** skill listed in that
-   stage's Apply-skills column with the Skill tool (e.g. `/oac-acceptance-criteria`). If a skill is
-   not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it.
-   Produce the stage's artifacts *through* the skill's procedure — a stage written without loading
-   its bound skill(s) is **incomplete**: redo it. State in each stage's progress note which skill(s)
-   were invoked. Hand each stage's outputs to the next, confirming the artifacts exist before
-   advancing. Supply the stack-specific *how*: React architecture model,
-   verify commands (`eslint` + `vitest run`), Figma decomposer (`/oac-figma-decompose` when links
-   exist), and tracker (`/_oac-jira-status-automation`).
-3. **Enforce gates as hard stops.** If `/oac-architecture-design` verify or the clause→test gate
-   returns `FAIL (blocking)`, stop, surface the failing trigger + required action, resolve or
-   record a justification, then re-run.
-4. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before
-   write; declared stopping budget before any debug loop.
-5. **Update `.meta.yaml`** after each stage; never mark a phase `complete` while its gate is open.
-6. **Re-check inputs at each stage boundary.** If the next stage needs something I don't have
-   (Figma designs, external contract, credentials, product decision), I pause and ask before
-   building blind.
-7. **Adopt mid-flight amendments.** New instructions are authoritative: re-scope the spec, update
-   affected artifacts, revisit invalidated phases, confirm direction before continuing.
+Follow these on every stage you run, and **copy them verbatim into the prompt** of any subagent you delegate a stage to (a subagent does not inherit this agent):
+
+1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/oac-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
+2. **Work under the right directory.** Operate in this spec's dedicated worktree / feature branch — never the default branch or main checkout — and write every artifact, file, and test under the worktree root (`$ROOT`). Re-check at each stage boundary; if you're not in an isolated worktree/branch, stop and sort that out before writing anything.
+3. **Gates are hard stops.** On `FAIL (blocking)`, surface the trigger + the named unit/AC + the required action; resolve (extract / add test) or record a justification, then re-run.
+4. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
+5. **Keep `.meta.yaml` current;** never mark a phase `complete` while its gate is open.
+6. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Human-in-the-loop — when I pause
 
-- **Ambiguous reproduction** — if the bug description isn't enough to write a deterministic test, I ask first.
-- **Missing stage inputs** — if the next stage needs inputs I don't have, I ask before starting it.
-- **Human verification gate (after implement)** — mandatory. After `/spec-implement`, I stop so you can review/run the code and give feedback, tweaks, or report issues; I loop back to `/spec-implement` on your feedback and proceed to validate/qa only on your approval.
-- **QA disposition** — `spec-qa` surfaces findings; you disposition each (Approved / Changes requested / Blocked).
-- **Failed blocking gate** — unresolvable within budget → I stop and surface state.
-- **Irreversible actions** — before any commit, push, PR, or tracker transition, I confirm with you.
+Pause at **every gate marked human approval / sign-off in the Lifecycle prompts above**. Beyond those:
+
+- **Ambiguous instructions or missing stage inputs** — ask before proceeding rather than guessing.
+- **Failed blocking gate** — can't resolve within the iteration budget → stop and surface the trigger, named unit/AC, and options.
+- **Irreversible or outward actions** — confirm before any commit, push, PR, or tracker transition.
+- **Escalation** — if root-cause analysis reveals the fix requires new features or architectural change, stop and recommend switching to `oac-feature-workflow`.
 
 ## Stop conditions
 

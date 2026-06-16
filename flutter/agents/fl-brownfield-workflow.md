@@ -31,102 +31,56 @@ optionally a target spec name:
 Run this **in order, before `/spec-init` or any stage**, and report each result. If a step fails,
 STOP and surface it — never start a stage with the preflight unmet.
 
-1. **Work in isolation — never write to the default branch; root every path at the worktree.** Run
-   `git rev-parse --abbrev-ref HEAD` and `git rev-parse --show-toplevel`. If HEAD is the repo's
-   default branch (`main`/`master`) — or the checkout is not a dedicated git worktree for this spec —
-   STOP: create no `.specflow/` artifacts, code, or commits. Either the user relaunches in a worktree
-   (`claude --agent <this-workflow> --worktree <name>`, preferred — see README), or, with their
-   go-ahead, create a dedicated branch (`git switch -c spec/<spec-name>`). Record the worktree root
-   as `ROOT` (= `git rev-parse --show-toplevel`) and write **every** artifact, file, and test as an
-   **absolute path under `$ROOT`** (e.g. `$ROOT/.specflow/specs/<name>/…`) — never a bare relative
-   path, so outputs never depend on the tool's working directory. Every artifact and commit must
-   live on that worktree/branch — never on the default branch. **Re-check before each stage** that
-   I'm still off the default branch and writing under `$ROOT`.
-2. **Sync submodules.** If a `.gitmodules` file exists at the repo root, run
+1. **Sync submodules.** If a `.gitmodules` file exists at the repo root, run
    `git submodule update --init --recursive` and confirm it succeeds — before scaffolding or any
    stage — so vendored assets and specs are checked out. If it fails, STOP and surface the error.
-3. **Resolve commands/skills.** If a `/command` or skill I invoke is not available by name, find its
+2. **Resolve commands/skills.** If a `/command` or skill I invoke is not available by name, find its
    definition under `.claude/commands/` (commands) or `.claude/skills/` (skills) in the project root
    and follow it.
 
 ## Lifecycle (this workflow)
 
-| # | Stage `/command` | Apply skills | Outputs → next stage | Gate / approval |
-|---|---|---|---|---|
-| 1 | `/spec-init` | — | `.meta.yaml` (+ `design_links`) | — |
-| 2 | `/spec-preflight` (impact analysis — **mandatory**) | optional `/scan-resource` for a large existing subsystem | `preflight.md` (+ `references/design-units.md` when a design is decomposed) | impact verdict + shared-widget impact table · **human approval** |
-| 3 | `/spec-requirements` | `/fl-acceptance-criteria` | `requirements.md` (AC-/NFR-IDs) | every AC has a stable ID + observable phrasing · **human approval** |
-| 4 | `/spec-design` | `/fl-architecture-design` (author + verify) | `design.md` + `contracts/<unit>.md` | arch gate PASS or justification · **human approval before tasks** |
-| 5 | `/spec-tasks` | `/fl-test-contract`, `/fl-acceptance-criteria` | `tasks.md` | a test task per AC + edge-case tasks |
-| 6 | `/spec-implement` | `/fl-test-contract` | implementation + AC-traceable tests (+ `tasks.md` status) | (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; "completed" ⇒ AC-traceable Dart test passes · **human verifies code before validate/qa** |
-| 7 | `/spec-validate` | `/fl-test-contract`, `/fl-architecture-design` (verify) | clause→test coverage + architecture-verify result | clause→test coverage + arch gate; `flutter analyze` + `flutter test` both green |
-| 8 | `/spec-qa` | `/fl-test-forensics`, `/fl-test-contract` | `qa-report.md` | forensics + contract audits + `flutter test --coverage`; human sign-off |
-| 9 | `/spec-drift` | `/fl-test-forensics` | drift findings | shared-widget drift + no unspecced behavior |
+**Stages (run in order):** `/spec-init` → `/spec-preflight` → `/spec-requirements` → `/spec-design` → `/spec-tasks` → `/spec-implement` → `/spec-validate` → `/spec-qa` → `/spec-drift`. Observe or steer any time with `/spec-status` and `/spec-steer`.
 
-Observability and steering run any time: `/spec-status`, `/spec-steer`.
+Run each stage yourself or delegate it to a subagent. These prompts are **delegation-ready**. A subagent does **not** inherit this agent's Operating rules — so when you delegate, copy into its prompt: (a) the stage's command + skill(s), (b) the **Operating rules** below verbatim, and (c) the worktree/`$ROOT` context (stay on the worktree branch; write every artifact under `$ROOT`). When you run a stage yourself, you already follow these.
 
-Brownfield has **no clarify stage**; preflight is **not** optional — the impact scan is the whole
-point. If the change touches a UI surface, I ask for any related Figma links at init and record
-them as `design_links` in `.meta.yaml`; I document them in `references/` manually.
+1. **`/spec-init`** — Run `/spec-init`; apply the Operating rules. On the worktree branch, scaffold the spec and record `brownfield` in `.meta.yaml` (including `design_links` if the change touches a UI surface — ask for any related Figma links and record them). → writes `.meta.yaml` (+ `design_links`) under `$ROOT`; feeds `/spec-preflight`. *Gate:* —
 
-**Build/verify gate.** At validate and QA: `flutter analyze` (zero issues) then `flutter test`
-(all green; `flutter test --coverage` at QA). Both must pass before a phase is `complete`.
+2. **`/spec-preflight`** — Run `/spec-preflight`; apply the Operating rules. Preflight is **mandatory** for brownfield — the impact scan is the whole point; it is not optional. Spawn optional `/scan-resource` subagents for a large existing subsystem if needed. On the worktree branch, perform impact analysis and produce the shared-widget impact table; document any Figma links from `design_links` in `references/` manually. → writes `preflight.md` (+ `references/design-units.md` when a design is decomposed) under `$ROOT`; feeds `/spec-requirements`. *Gate:* impact verdict + shared-widget impact table · **human approval**
 
-**Architecture gate.** At design, `/fl-architecture-design` authors `design.md` + `contracts/` and
-verifies every introduced unit is either a widget testable via `pumpWidget` with injected fakes, or
-a holder/repository/service testable in pure `dart test` with constructor-injected fakes. At
-validate, `/fl-architecture-design` re-verifies the same criterion. A unit that cannot be tested
-this way is a blocking gate failure until extracted or justified.
+3. **`/spec-requirements`** — Run `/spec-requirements`; use `/fl-acceptance-criteria` as much as possible; apply the Operating rules. On the worktree branch, author AC- and NFR-IDs with stable IDs and observable phrasing. → writes `requirements.md` (AC-/NFR-IDs) under `$ROOT`; feeds `/spec-design`. *Gate:* every AC has a stable ID + observable phrasing · **human approval**
 
-**Riverpod.** When the project uses Riverpod (detected via `flutter_riverpod`/`riverpod_generator`
-in `pubspec.yaml`, `@riverpod` annotations, or `ref.watch`/`ref.read` in code), I load
-`/fl-riverpod` at design and implement for package-specific idioms.
+4. **`/spec-design`** — Run `/spec-design`; use `/fl-architecture-design` (author + verify) as much as possible; apply the Operating rules. On the worktree branch, author `design.md` + `contracts/` and verify every introduced unit is either a widget testable via `pumpWidget` with injected fakes, or a holder/repository/service testable in pure `dart test` with constructor-injected fakes; a unit that cannot be tested this way is a blocking gate failure until extracted or justified. When the project uses Riverpod (detected via `flutter_riverpod`/`riverpod_generator` in `pubspec.yaml`, `@riverpod` annotations, or `ref.watch`/`ref.read` in code), also use `/fl-riverpod` for package-specific idioms. → writes `design.md` + `contracts/<unit>.md` under `$ROOT`; feeds `/spec-tasks`. *Gate:* arch gate PASS or justification · **human approval before tasks**
 
-**Human verification gate (after implement) — mandatory.** After `/spec-implement` produces the
-code + tests, stop and hand the implementation to the user to review/run and give feedback, tweaks,
-or report issues. Loop back to `/spec-implement` on feedback; proceed to `/spec-validate` (then
-`/spec-qa`) only on the user's approval.
+5. **`/spec-tasks`** — Run `/spec-tasks`; use `/fl-test-contract`, `/fl-acceptance-criteria` as much as possible; apply the Operating rules. On the worktree branch, produce a test task per AC plus edge-case tasks. → writes `tasks.md` under `$ROOT`; feeds `/spec-implement`. *Gate:* a test task per AC + edge-case tasks
+
+6. **`/spec-implement`** — Run `/spec-implement`; use `/fl-test-contract` as much as possible; apply the Operating rules. On the worktree branch, implement the change through (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; every "completed" item has an AC-traceable Dart test that passes. When the project uses Riverpod, also use `/fl-riverpod` for package-specific idioms. → writes implementation + AC-traceable tests (+ `tasks.md` status) under `$ROOT`; feeds `/spec-validate`. *Gate:* (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; "completed" ⇒ AC-traceable Dart test passes · **human verifies code before validate/qa**
+
+7. **`/spec-validate`** — Run `/spec-validate`; use `/fl-test-contract`, `/fl-architecture-design` (verify) as much as possible; apply the Operating rules. On the worktree branch, verify clause→test coverage and re-verify that every introduced unit meets the arch gate criterion (widget testable via `pumpWidget` with injected fakes, or holder/repository/service testable in pure `dart test` with constructor-injected fakes); then run `flutter analyze` (zero issues) and `flutter test` (all green) — both must pass before this phase is `complete`. → writes clause→test coverage + architecture-verify result under `$ROOT`; feeds `/spec-qa`. *Gate:* clause→test coverage + arch gate; `flutter analyze` + `flutter test` both green
+
+8. **`/spec-qa`** — Run `/spec-qa`; use `/fl-test-forensics`, `/fl-test-contract` as much as possible; apply the Operating rules. On the worktree branch, run forensics and contract audits and `flutter test --coverage`. → writes `qa-report.md` under `$ROOT`; feeds `/spec-drift`. *Gate:* forensics + contract audits + `flutter test --coverage`; human sign-off
+
+9. **`/spec-drift`** — Run `/spec-drift`; use `/fl-test-forensics` as much as possible; apply the Operating rules. On the worktree branch, check for shared-widget drift and unspecced behavior. → writes drift findings under `$ROOT`; completes the spec. *Gate:* shared-widget drift + no unspecced behavior
 
 ## Operating rules
 
-1. **Seed from your instructions.** Record `brownfield` in `.meta.yaml`. Resume at first
-   non-`complete` phase if a spec already exists. If the change is UI-facing, ask for Figma links
-   and record them as `design_links`.
-2. **Run each stage through its bound skill — not from memory.** Invoke each `/spec-<stage>` command
-   by name; then, *before producing that stage's output*, invoke **every** skill listed in that
-   stage's Apply-skills column with the Skill tool (e.g. `/fl-acceptance-criteria`). If a skill is
-   not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it.
-   Produce the stage's artifacts *through* the skill's procedure — a stage written without loading
-   its bound skill(s) is **incomplete**: redo it. State in each stage's progress note which skill(s)
-   were invoked. Hand each stage's outputs to the next, confirming the artifacts exist before
-   advancing. Supply the Flutter stack-specific *how*: four-layer model (UI → Provider → Data →
-   Service), build/verify commands, `/fl-riverpod` when applicable. Design-source decomposer and
-   tracker steps are N/A — skip them. Read the bound skill's `SKILL.md` and its `references/`
-   before acting.
-3. **Enforce gates as hard stops.** If `/fl-architecture-design` or the clause→test gate reports
-   `FAIL (blocking)`, stop: surface the failing trigger, the named unit/AC, and the required action.
-   Resolve (extract / add test) or record a justification, then re-run the gate.
-4. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before
-   write; declared stopping budget before any debug loop.
-5. **Update `.meta.yaml`** after each stage; never mark a phase `complete` while its gate is open.
-6. **Re-check inputs at each stage boundary.** If I'm missing something (large-subsystem references,
-   an external contract, sample data, credentials, a product decision), I pause and ask rather than
-   guessing.
-7. **Adopt mid-flight amendments.** Treat interruptions as authoritative: re-scope the spec, update
-   affected artifacts, revisit the invalidated phase, confirm the new direction before continuing.
+Follow these on every stage you run, and **copy them verbatim into the prompt** of any subagent you delegate a stage to (a subagent does not inherit this agent):
+
+1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/fl-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
+2. **Work under the right directory.** Operate in this spec's dedicated worktree / feature branch — never the default branch or main checkout — and write every artifact, file, and test under the worktree root (`$ROOT`). Re-check at each stage boundary; if you're not in an isolated worktree/branch, stop and sort that out before writing anything.
+3. **Gates are hard stops.** On `FAIL (blocking)`, surface the trigger + the named unit/AC + the required action; resolve (extract / add test) or record a justification, then re-run.
+4. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
+5. **Keep `.meta.yaml` current;** never mark a phase `complete` while its gate is open.
+6. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Human-in-the-loop — when I pause
 
-- **Ambiguous instructions** — missing decision I can't safely default; I ask before writing requirements.
-- **Stage-boundary inputs** — missing subsystem references, external contract, sample data, credentials, or product decision; I ask before starting the next stage.
-- **Design inputs (UI changes)** — ask for Figma links at init; document in `references/` manually. If you have none, I proceed and note the absence.
-- **Impact-analysis review** — present impact analysis + shared-widget adoption table for approval before requirements (the brownfield safety gate).
-- **Architecture-design justification** — if the resolution is to defer rather than extract, I propose both and ask.
-- **Design approval (before tasks)** — mandatory. After `spec-design` produces `design.md` + `contracts/` and the arch gate is PASS (or justified), I stop and present for review. I don't start `/spec-tasks` until you approve.
-- **Human verification gate (after implement)** — mandatory. After `/spec-implement`, I stop so you can review/run the code and give feedback, tweaks, or report issues; I loop back to `/spec-implement` on your feedback and proceed to validate/qa only on your approval.
-- **QA disposition** — `spec-qa` surfaces findings; you disposition each (Approved / Changes requested / Blocked).
-- **Failed blocking gate** — can't resolve within the iteration budget → stop and surface trigger, named unit/AC, and options.
+Pause at **every gate marked human approval / sign-off in the Lifecycle prompts above**. Beyond those:
+
+- **Ambiguous instructions or missing stage inputs** — ask before proceeding rather than guessing.
+- **Failed blocking gate** — can't resolve within the iteration budget → stop and surface the trigger, named unit/AC, and options.
 - **Irreversible or outward actions** — confirm before any commit, push, or PR; I can run `/fl-pr-review` on the diff first.
+- **Legacy port inputs** — ask for legacy project path + folders before preflight; skip entirely for greenfield.
 
 ## Stop conditions
 
