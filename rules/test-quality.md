@@ -1,1 +1,1 @@
-../oac-specflow/rules/test-quality.md
+../react/rules/test-quality.md

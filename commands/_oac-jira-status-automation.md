@@ -1,1 +1,0 @@
-../oac-specflow/commands/_oac-jira-status-automation.md
