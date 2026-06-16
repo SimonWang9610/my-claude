@@ -18,8 +18,8 @@ echo "  repo:   $REPO"
 echo "  target: $CLAUDE_DIR"
 mkdir -p "$CLAUDE_DIR"
 
-# Refresh the inner layer first: expose the oac-specflow bundle through the repo dirs.
-[ -x "$REPO/link-oac-specflow.sh" ] && "$REPO/link-oac-specflow.sh"
+# Refresh the inner layer first: expose the specflow bundle through the repo dirs.
+[ -x "$REPO/link-specflow.sh" ] && "$REPO/link-specflow.sh"
 
 for d in "${DIRS[@]}"; do
   src="$REPO/$d"
@@ -43,14 +43,16 @@ for d in "${DIRS[@]}"; do
   echo "  link  $d  → $src"
 done
 
-# Sanity: confirm an oac symlink resolves through the wiring (catches core.symlinks=false on Windows,
-# or a clone where git didn't restore the in-repo symlinks).
-probe="$CLAUDE_DIR/commands/oac-spec-qa.md"
+# Sanity: confirm a bundle symlink resolves through the wiring (catches core.symlinks=false on Windows,
+# or a clone where git didn't restore the in-repo symlinks). Commands are not surfaced, so probe an agent.
+probe="$CLAUDE_DIR/agents/oac-feature-workflow.md"
 if [ -e "$probe" ]; then
-  echo "  check oac-spec-qa.md resolves ✓"
+  echo "  check oac-feature-workflow.md resolves ✓"
 else
   echo "  WARN  $probe does not resolve — if on Windows, enable symlinks:"
   echo "        git config core.symlinks true && git checkout -- ."
 fi
 
-echo "Done. Restart Claude Code (or reload) to pick up the global commands / skills / agents / rules."
+echo "Done. Restart Claude Code (or reload) to pick up the global skills / agents / rules."
+echo "Note: specflow commands are NOT installed globally — they live in specflow/commands/ and are"
+echo "      invoked by name (/spec-*), resolving to your project's own /spec-* commands."

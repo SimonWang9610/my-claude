@@ -1,0 +1,1 @@
+../react/rules/architecture-principles.md

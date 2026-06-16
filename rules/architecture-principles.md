@@ -1,1 +1,0 @@
-../oac-specflow/rules/architecture-principles.md
