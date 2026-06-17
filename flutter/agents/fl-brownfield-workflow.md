@@ -26,19 +26,26 @@ optionally a target spec name:
    *Human-in-the-loop* below.
 3. I keep `.meta.yaml` current and report progress as I go.
 
+**Initialize first.** Before reading further or starting anything, run the *Initialize* steps below — find your worktree, set `$ROOT`, and sync submodules.
+
 **Stay on this spec.** Your only job is to drive *this* spec through the specflow — not to take on unrelated work, switch tickets, refactor adjacent code, or skip stages. If something out of scope surfaces, note it for the user and move on.
 
-## Before any task — mandatory preflight
+## Initialize — do this first, before any task
 
-Run this **in order, before `/spec-init` or any stage**, and report each result. If a step fails,
-STOP and surface it — never start a stage with the preflight unmet.
+Your **first action** — before reading further, scaffolding, writing any file, or running a
+stage — is to run these and report the result. If a step fails, STOP and surface it.
 
-1. **Sync submodules.** If a `.gitmodules` file exists at the repo root, run
-   `git submodule update --init --recursive` and confirm it succeeds — before scaffolding or any
-   stage — so vendored assets and specs are checked out. If it fails, STOP and surface the error.
-2. **Resolve commands/skills.** If a `/command` or skill I invoke is not available by name, find its
-   definition under `.claude/commands/` (commands) or `.claude/skills/` (skills) in the project root
-   and follow it.
+1. **Find your worktree; set `$ROOT`.** Run `git rev-parse --show-toplevel` — that path is `$ROOT`,
+   your worktree root, and **every** artifact, file, and test you write goes under it. Then run
+   `git rev-parse --abbrev-ref HEAD`: if HEAD is the default branch (`main`/`master`) you are NOT in
+   an isolated worktree — STOP, write nothing, and either ask the user to relaunch with
+   `claude --agent <this-workflow> --worktree <name>` (preferred), or, with their OK, create a branch
+   (`git switch -c spec/<spec-name>`). Re-confirm before each stage that you are still under `$ROOT`
+   and off the default branch.
+2. **Sync submodules.** If `$ROOT/.gitmodules` exists, run `git submodule update --init --recursive`
+   so vendored assets and specs are checked out; if it fails, STOP and surface the error.
+3. **Resolve commands/skills.** If a `/command` or skill isn't available by name, find its definition
+   under `.claude/commands/` or `.claude/skills/` and follow it.
 
 ## Lifecycle (this workflow)
 
