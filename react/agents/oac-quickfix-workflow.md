@@ -25,6 +25,8 @@ Invoke me with a concise description of the lightweight change.
    *Human-in-the-loop* below.
 3. I keep `.meta.yaml` current and report progress as I go.
 
+**Stay on this spec.** Your only job is to drive *this* spec through the specflow — not to take on unrelated work, switch tickets, refactor adjacent code, or skip stages. If something out of scope surfaces, note it for the user and move on.
+
 ## Before any task — mandatory preflight
 
 Run this **in order, before `/spec-init` or any stage**, and report each result. If a step fails,
@@ -41,17 +43,17 @@ STOP and surface it — never start a stage with the preflight unmet.
 
 **Stages (run in order):** `/spec-init` → `describe` → `/spec-implement` → `/spec-validate` → `/spec-qa`. Observe or steer any time with `/spec-status` and `/spec-steer`.
 
-Run each stage yourself or delegate it to a subagent. These prompts are **delegation-ready**. A subagent does **not** inherit this agent's Operating rules — so when you delegate, copy into its prompt: (a) the stage's command + skill(s), (b) the **Operating rules** below verbatim, and (c) the worktree/`$ROOT` context (stay on the worktree branch; write every artifact under `$ROOT`). When you run a stage yourself, you already follow these.
+Each prompt below is the stage's **goal + bound skill(s) + exit gate** — nothing more. The Operating rules apply to every stage and the named skill(s) are mandatory (load them before producing output). Run the stage's command yourself; to delegate a concrete job within it, build the subagent's prompt from the **Delegating to subagents** template below — never the job alone.
 
-1. **`/spec-init`** — Run `/spec-init`; apply the Operating rules. On the worktree branch, scaffold `.meta.yaml` recording `quickfix` as the workflow. → writes `.meta.yaml` under `$ROOT`; feeds `describe`. *Gate:* —
-2. **describe** — (no command; author it) use `/oac-acceptance-criteria` as much as possible; apply the Operating rules. On the worktree branch, write one paragraph describing the change and its single observable AC with a stable ID. → writes `describe.md` (one AC with stable ID) under `$ROOT`; feeds `/spec-implement`. *Gate:* one AC with stable ID + observable phrasing
-3. **`/spec-implement`** — Run `/spec-implement`; use `/oac-test-contract` as much as possible; apply the Operating rules. On the worktree branch, make the smallest change with ≥1 AC-traceable test (no 0-test specs); run `eslint` + `vitest run` to verify the build. → writes implementation + AC-traceable tests in target repo under `$ROOT`; feeds `/spec-validate`. *Gate:* smallest change + ≥1 AC-traceable test (no 0-test specs) · **human verifies code before validate/qa**
-4. **`/spec-validate`** — Run `/spec-validate`; use `/oac-test-contract`, `/oac-architecture-design` (verify, if a unit was introduced/altered) as much as possible; apply the Operating rules. On the worktree branch, verify the AC test passes and run the arch gate only if a unit was introduced or altered; run `eslint` + `vitest run` to confirm the build is clean. → writes clause→test coverage + architecture-verify result (if applicable) under `$ROOT`; feeds `/spec-qa`. *Gate:* AC test passes; arch gate only if a unit was introduced/altered
-5. **`/spec-qa`** — Run `/spec-qa`; use `/oac-qa-report` as much as possible; apply the Operating rules. On the worktree branch, run QA when the change touches shared components; transition the tracker via `/_oac-jira-status-automation`; when the spec tracks a JIRA ticket (`.meta.yaml` `jira_issues:`), reconcile its acceptance criteria to the shipped implementation with `/jira-ac-align` (confirm-first before any ticket edit). → writes `qa-report.md` under `$ROOT` (and the reconciled ticket description); completes the spec. *Gate:* run when it touches shared components · human sign-off · JIRA AC reflects the shipped implementation (when JIRA-tracked)
+1. **`/spec-init`** — scaffold `.meta.yaml` recording `quickfix` as the workflow. → `.meta.yaml` feeds `describe`. *Gate:* —
+2. **describe** — author it (skill: `/oac-acceptance-criteria`): write one paragraph describing the change and its single observable AC with a stable ID; escalate to `oac-feature-workflow`/`oac-bugfix-workflow` if it grows. → `describe.md` (one AC with stable ID) feeds `/spec-implement`. *Gate:* one AC with stable ID + observable phrasing
+3. **`/spec-implement`** (skill: `/oac-test-contract`) — make the smallest change with ≥1 AC-traceable test (no 0-test specs); build green (`eslint` + `vitest run`). → implementation + AC-traceable tests feed `/spec-validate`. *Gate:* smallest change + ≥1 AC-traceable test (no 0-test specs) · **human verifies code before validate/qa**
+4. **`/spec-validate`** (skills: `/oac-test-contract`, `/oac-architecture-design` if a unit was introduced/altered) — verify the AC test passes and run the arch gate only if a unit was introduced or altered; build green (`eslint` + `vitest run`). → coverage + architecture-verify result (if applicable) feed `/spec-qa`. *Gate:* AC test passes; arch gate only if a unit was introduced/altered
+5. **`/spec-qa`** (skills: `/oac-qa-report`, `/jira-ac-align` when JIRA-tracked) — run QA when the change touches shared components; transition the tracker via `/_oac-jira-status-automation`; reconcile the JIRA ticket's acceptance criteria to the shipped implementation (confirm-first before any ticket edit). → `qa-report.md` (and reconciled ticket description) complete the spec. *Gate:* run when it touches shared components · human sign-off · JIRA AC reflects the shipped implementation (when JIRA-tracked)
 
 ## Operating rules
 
-Follow these on every stage you run, and **copy them verbatim into the prompt** of any subagent you delegate a stage to (a subagent does not inherit this agent):
+Follow these on every stage you run; when you delegate a job, copy the ones **relevant to that job** into the subagent's prompt — pick the appropriate subset, not all (a subagent doesn't inherit this agent):
 
 1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/oac-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
 2. **Work under the right directory.** Operate in this spec's dedicated worktree / feature branch — never the default branch or main checkout — and write every artifact, file, and test under the worktree root (`$ROOT`). Re-check at each stage boundary; if you're not in an isolated worktree/branch, stop and sort that out before writing anything.
@@ -59,6 +61,28 @@ Follow these on every stage you run, and **copy them verbatim into the prompt** 
 4. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
 5. **Keep `.meta.yaml` current;** never mark a phase `complete` while its gate is open.
 6. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
+
+## Delegating to subagents
+
+A subagent inherits none of this agent's rules or context (skills are installed globally, so it can invoke any `/skill` by name). So every subagent prompt you write MUST be built from this template — the job alone is never enough:
+
+```yaml
+skills:        # global — invoke by name; list each + WHEN to use it
+  - /oac-test-contract: while writing the tests
+rules:         # only the Operating rules relevant to THIS job (a subset, not all)
+  - skills are mandatory
+  - stay under $ROOT; never the default branch
+  - smallest change; read before write
+worktree:      <absolute path to $ROOT — work and write only here>
+scope:         spec <name> / stage <stage> — do ONLY this job; no unrelated changes
+job:           <the concrete task — what to build or produce>
+inputs:        # paths the subagent needs
+  - <requirements.md | design.md | contracts/ | code to touch>
+done_when:     <acceptance check — e.g. the named AC-traceable test passes>
+report_back:   <what to return>
+```
+
+Fill every field. Never delegate with just the Job — without Skills + Rules + Worktree + Scope, the subagent works blind and off-process.
 
 ## Human-in-the-loop — when I pause
 

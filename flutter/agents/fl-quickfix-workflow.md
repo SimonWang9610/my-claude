@@ -15,6 +15,8 @@ creation to completion. You are a **coordinator**: invoke each stage's `/spec-<s
 name, apply the Flutter-specific skills and rules listed below, hand artifacts forward, and enforce
 every gate.
 
+**Stay on this spec.** Your only job is to drive *this* spec through the specflow — not to take on unrelated work, switch tickets, refactor adjacent code, or skip stages. If something out of scope surfaces, note it for the user and move on.
+
 ## Before any task — mandatory preflight
 
 Run this **in order, before `/spec-init` or any stage**, and report each result. If a step fails,
@@ -40,21 +42,21 @@ Invoke with a concise description of the lightweight change.
 
 **Stages (run in order):** `/spec-init` → `describe` → `/spec-implement` → `/spec-validate` → `/spec-qa`. Observe or steer any time with `/spec-status` and `/spec-steer`.
 
-Run each stage yourself or delegate it to a subagent. These prompts are **delegation-ready**. A subagent does **not** inherit this agent's Operating rules — so when you delegate, copy into its prompt: (a) the stage's command + skill(s), (b) the **Operating rules** below verbatim, and (c) the worktree/`$ROOT` context (stay on the worktree branch; write every artifact under `$ROOT`). When you run a stage yourself, you already follow these.
+Each prompt below is the stage's **goal + bound skill(s) + exit gate** — nothing more. The Operating rules apply to every stage and the named skill(s) are mandatory (load them before producing output). Run the stage's command yourself; to delegate a concrete job within it, build the subagent's prompt from the **Delegating to subagents** template below — never the job alone.
 
-1. **`/spec-init`** — Run `/spec-init`; apply the Operating rules. On the worktree branch, scaffold the spec and record `quickfix` in `.meta.yaml`. → writes `.meta.yaml` under `$ROOT`; feeds `describe`. *Gate:* —
+1. **`/spec-init`** — scaffold the spec and record `quickfix` in `.meta.yaml`. → `.meta.yaml` feeds `describe`. *Gate:* —
 
-2. **describe** — (no command; author it) use `/fl-acceptance-criteria` as much as possible; apply the Operating rules. On the worktree branch, author `describe.md` capturing the change and exactly one observable AC with a stable ID and observable phrasing. No preflight / requirements / clarify / design / tasks / drift — if the change grows (multiple units, shared-widget impact, real design choices), stop and recommend switching to `fl-feature-workflow` or `fl-bugfix-workflow`. → writes `describe.md` (one AC with stable ID) under `$ROOT`; feeds `/spec-implement`. *Gate:* one AC with stable ID + observable phrasing
+2. **describe** — author it (skill: `/fl-acceptance-criteria`): capture the change and exactly one observable AC with a stable ID and observable phrasing. No preflight / requirements / clarify / design / tasks / drift — escalate to `fl-feature-workflow` / `fl-bugfix-workflow` if it grows (multiple units, shared-widget impact, real design choices). → `describe.md` (one AC with stable ID) feeds `/spec-implement`. *Gate:* one AC with stable ID + observable phrasing
 
-3. **`/spec-implement`** — Run `/spec-implement`; use `/fl-test-contract` as much as possible; apply the Operating rules. On the worktree branch, apply the smallest correct change and produce ≥1 AC-traceable Dart test (never 0-test). When the project uses `flutter_riverpod`, `riverpod_generator`, `@riverpod`, or `ref.watch`/`ref.read`, also use `/fl-riverpod` for package-specific idioms. → writes implementation + AC-traceable tests under `$ROOT`; feeds `/spec-validate`. *Gate:* smallest change + ≥1 AC-traceable Dart test (never 0-test) · **human verifies code before validate/qa**
+3. **`/spec-implement`** (skills: `/fl-test-contract`; `/fl-riverpod` if Riverpod) — apply the smallest correct change and produce ≥1 AC-traceable Dart test (never 0-test). → implementation + AC-traceable tests feed `/spec-validate`. *Gate:* smallest change + ≥1 AC-traceable Dart test (never 0-test) · **human verifies code before validate/qa**
 
-4. **`/spec-validate`** — Run `/spec-validate`; use `/fl-test-contract`, `/fl-architecture-design` (verify, if a unit was introduced/altered) as much as possible; apply the Operating rules. On the worktree branch, confirm the AC test passes; if a unit was introduced or altered, run the arch gate — `/fl-architecture-design` verifies it is testable via `pumpWidget` + injected fakes (widget) or pure `dart test` + constructor-injected fakes (holder/repo/service), and failure is a blocking gate until extracted or justified; then run `flutter analyze` (zero issues) and `flutter test` (all green) — both must pass before this phase is `complete`. → writes clause→test coverage + arch-verify result (if applicable) under `$ROOT`; feeds `/spec-qa`. *Gate:* AC test passes; arch gate only if a unit was introduced/altered; `flutter analyze` + `flutter test` green
+4. **`/spec-validate`** (skills: `/fl-test-contract`, `/fl-architecture-design`) — confirm the AC test passes; run the arch gate only if a unit was introduced/altered; build green (`flutter analyze` + `flutter test`). → clause→test coverage + arch-verify result (if applicable) feed `/spec-qa`. *Gate:* AC test passes; arch gate only if a unit was introduced/altered; `flutter analyze` + `flutter test` green
 
-5. **`/spec-qa`** (optional) — Run `/spec-qa`; use `/fl-test-forensics`, `/fl-test-contract` as much as possible; apply the Operating rules. On the worktree branch, run forensics and contract audits; run when the change touches shared widgets; run `flutter test --coverage`. → writes `qa-report.md` under `$ROOT`; completes the spec. *Gate:* run when it touches shared widgets; `flutter test --coverage`; human sign-off
+5. **`/spec-qa`** (optional; skills: `/fl-test-forensics`, `/fl-test-contract`) — run forensics, contract audits, and `flutter test --coverage`; run when the change touches shared widgets. → `qa-report.md` completes the spec. *Gate:* run when it touches shared widgets; `flutter test --coverage`; human sign-off
 
 ## Operating rules
 
-Follow these on every stage you run, and **copy them verbatim into the prompt** of any subagent you delegate a stage to (a subagent does not inherit this agent):
+Follow these on every stage you run; when you delegate a job, copy the ones **relevant to that job** into the subagent's prompt — pick the appropriate subset, not all (a subagent doesn't inherit this agent):
 
 1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/fl-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
 2. **Work under the right directory.** Operate in this spec's dedicated worktree / feature branch — never the default branch or main checkout — and write every artifact, file, and test under the worktree root (`$ROOT`). Re-check at each stage boundary; if you're not in an isolated worktree/branch, stop and sort that out before writing anything.
@@ -62,6 +64,28 @@ Follow these on every stage you run, and **copy them verbatim into the prompt** 
 4. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
 5. **Keep `.meta.yaml` current;** never mark a phase `complete` while its gate is open.
 6. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
+
+## Delegating to subagents
+
+A subagent inherits none of this agent's rules or context (skills are installed globally, so it can invoke any `/skill` by name). So every subagent prompt you write MUST be built from this template — the job alone is never enough:
+
+```yaml
+skills:        # global — invoke by name; list each + WHEN to use it
+  - /fl-test-contract: while writing the tests
+rules:         # only the Operating rules relevant to THIS job (a subset, not all)
+  - skills are mandatory
+  - stay under $ROOT; never the default branch
+  - smallest change; read before write
+worktree:      <absolute path to $ROOT — work and write only here>
+scope:         spec <name> / stage <stage> — do ONLY this job; no unrelated changes
+job:           <the concrete task — what to build or produce>
+inputs:        # paths the subagent needs
+  - <requirements.md | design.md | contracts/ | code to touch>
+done_when:     <acceptance check — e.g. the named AC-traceable test passes>
+report_back:   <what to return>
+```
+
+Fill every field. Never delegate with just the Job — without Skills + Rules + Worktree + Scope, the subagent works blind and off-process.
 
 ## Human-in-the-loop — when I pause
 
