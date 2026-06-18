@@ -39,10 +39,13 @@ Read `core/service-isolation.md`, `core/repository-ssot.md`, and `core/domain-mo
 ## Step 4 — Design each holder and widget
 
 Read `core/state-flow-and-async.md`, `core/state-boundary-and-lifecycle.md`, `core/dependency-injection.md`,
-`core/widget-composition.md`, `core/widget-build-discipline.md`, and `core/widget-theming.md`.
+and `core/widget-composition.md`.
 
 - **Holders** — expose state as a Dart 3 `sealed class` union (`loading | data | error`) consumed with exhaustive `switch` expressions (not `if (x is T)` chains); receive repos via constructor injection (or Riverpod `@riverpod` code-gen with `Notifier`/`AsyncNotifier` and a `build()` method); expose named commands. Call `ref.onDispose()` in `build()` to cancel subscriptions and controllers (Riverpod); for package-agnostic holders dispose every subscription/controller in `dispose()`.
-- **Widgets** — compose small named `const StatelessWidget` classes (not `Widget _buildX()` helpers); `build()` is a pure function (no IO, no sorting, no derivation); `const` everywhere possible; check `context.mounted` (or `ref.mounted` in Riverpod) before using `BuildContext` after `await`; colors/typography from `Theme.of(context)` tokens only.
+- **Widgets** — compose small named `const StatelessWidget` classes (not `Widget _buildX()` helpers); `build()` is a pure function (no IO, no sorting, no derivation); design for injection of fakes via constructor.
+
+For widget build idioms (const discipline, BuildContext async safety, theming tokens) and performance
+rules, load the **`fl-implementation`** skill at the implement stage.
 
 ---
 
@@ -66,10 +69,10 @@ adapt). Never modify an adopted shared widget. Record classification in `design.
 
 ---
 
-## Step 7 — Conditional packs (open only when the scenario applies)
+## Step 7 — Companion skills
 
-- `conditional/performance/` — concrete performance concern surfaced (advisory, non-blocking).
-- If the project uses Riverpod, the `fl-riverpod` skill carries the package idioms — load it alongside this skill. Package idioms apply behind the provider seam; four-layer structure and testability requirements are unchanged.
+- If the project uses Riverpod, the **`fl-riverpod`** skill carries the package idioms — load it alongside this skill. Package idioms apply behind the provider seam; four-layer structure and testability requirements are unchanged.
+- At the implement stage, load **`fl-implementation`** for widget build idioms, performance rules, and theming.
 
 ---
 
@@ -78,7 +81,7 @@ adapt). Never modify an adopted shared widget. Record classification in `design.
 Write `design.md` (layer map, state-ownership decisions, data-path description, widget/holder notes,
 Shared Widget Plan, blank `## Architecture Gate — Justifications` section). Write `contracts/<unit>.md`
 for every unit (kind/layer, public API, data shapes, AC-IDs traced to this unit, testability seam,
-direct dependencies). Then run the **Verify step (§5)** of this skill at phase exit — follow
+direct dependencies). Then run the **Verify step (§4)** of this skill at phase exit — follow
 `gate-procedure.md` to check the three blocking triggers and write PASS or record an extraction plan
 / justification.
 

@@ -46,9 +46,9 @@ Each prompt below is the stage's **goal + bound skill(s) + exit gate** — nothi
 
 4. **`/spec-design`** (skills: `/fl-architecture-design`; `/fl-riverpod` if Riverpod) — structure units to the Flutter rules, draft `contracts/`, pass the verifiable-unit gate. → `design.md` + `contracts/<unit>.md` feed `/spec-tasks`. *Gate:* arch gate PASS or justification · **human approval before tasks**
 
-5. **`/spec-tasks`** (skills: `/fl-test-contract`, `/fl-acceptance-criteria`) — produce a test task per AC plus edge-case tasks. → `tasks.md` feeds `/spec-implement`. *Gate:* a test task per AC + edge-case tasks
+5. **`/spec-tasks`** (skills: `/fl-task-design`, `/fl-acceptance-criteria`, `/fl-test-contract`) — produce a test task per AC plus edge-case tasks. → `tasks.md` feeds `/spec-implement`. *Gate:* a test task per AC + edge-case tasks
 
-6. **`/spec-implement`** (skills: `/fl-test-contract`; `/fl-riverpod` if Riverpod) — implement through (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; every "completed" item has an AC-traceable Dart test that passes. → implementation + AC-traceable tests (+ `tasks.md` status) feed `/spec-validate`. *Gate:* (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; "completed" ⇒ AC-traceable Dart test passes · **human verifies code before validate/qa**
+6. **`/spec-implement`** (skills: `/fl-implementation`, `/fl-test-contract`; `/fl-riverpod` if Riverpod) — implement through (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; every "completed" item has an AC-traceable Dart test that passes. → implementation + AC-traceable tests (+ `tasks.md` status) feed `/spec-validate`. *Gate:* (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; "completed" ⇒ AC-traceable Dart test passes · **human verifies code before validate/qa**
 
 7. **`/spec-validate`** (skills: `/fl-test-contract`, `/fl-architecture-design`) — verify clause→test coverage, re-verify arch gate, build green (`flutter analyze` + `flutter test`). → clause→test coverage + architecture-verify result feed `/spec-qa`. *Gate:* clause→test coverage + arch gate; `flutter analyze` + `flutter test` both green
 

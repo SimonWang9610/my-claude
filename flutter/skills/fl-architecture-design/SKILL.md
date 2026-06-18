@@ -22,8 +22,7 @@ description: >
   - [1. Load the rule index first](#1-load-the-rule-index-first)
   - [2. Follow the design procedure](#2-follow-the-design-procedure)
   - [3. Key decisions](#3-key-decisions)
-  - [4. Conditional packs](#4-conditional-packs----open-only-when-the-scenario-applies)
-  - [5. Verify — the verifiable-unit gate (P8)](#5-verify----the-verifiable-unit-gate-p8)
+  - [4. Verify — the verifiable-unit gate (P8)](#4-verify----the-verifiable-unit-gate-p8)
 - [References](#references)
 <!-- /TOC -->
 
@@ -55,8 +54,8 @@ the design cannot be tested in the implementation; catch it here.
 
 ### 1. Load the rule index first
 
-Open `references/how-to-use-bundled-rules.md` — it lists all 13 `core/` rules (always applied)
-and the three `conditional/` packs. Keep it at hand throughout.
+Open `references/how-to-use-bundled-rules.md` — it lists all 11 `core/` rules (always applied).
+Keep it at hand throughout.
 
 ### 2. Follow the design procedure
 
@@ -71,17 +70,14 @@ Open `references/design-procedure.md` and work through all 8 steps in order.
 - **Repository = SSOT; DTO→domain; cache/retry here** — `references/core/repository-ssot.md`
 - **Domain models immutable + value-equal** — `references/core/domain-models-immutable.md`
 - **Holders: sealed async + dispose with ref.onDispose()** — `references/core/state-flow-and-async.md`, `references/core/state-boundary-and-lifecycle.md`
-- **Widgets: compose, const, build is pure** — `references/core/widget-composition.md`, `references/core/widget-build-discipline.md`
-- **Colors/typography from Theme tokens** — `references/core/widget-theming.md`
+- **Widgets: compose small named classes** — `references/core/widget-composition.md`
 - **Inject collaborators via constructors** — `references/core/dependency-injection.md`
 - **Every unit independently verifiable (P8)** — `references/core/testability-seam.md`
 
-### 4. Conditional packs — open only when the scenario applies
+For Riverpod package idioms, load the separate **`fl-riverpod`** skill. For widget build idioms
+and performance, load the separate **`fl-implementation`** skill.
 
-- `references/conditional/performance/` — concrete performance hazard surfaced (advisory, non-blocking).
-- For Riverpod package idioms, load the separate **`fl-riverpod`** skill (`../fl-riverpod/SKILL.md`). Use an analogous skill for other state-management packages.
-
-### 5. Verify — the verifiable-unit gate (P8)
+### 4. Verify — the verifiable-unit gate (P8)
 
 At design exit (and again at validate), confirm the gate QUESTION and check the THREE BLOCKING
 TRIGGERS. Read `references/gate-procedure.md` for the full procedure and report formats (this
@@ -104,7 +100,7 @@ entire parent widget or holder; a hidden singleton (`Service.instance` looked up
 or a `BuildContext` passed into a service or repository.
 
 Write PASS, or record an extraction plan / justification per `references/gate-procedure.md`.
-If this skill was applied correctly throughout Steps 1–4, the gate should PASS with no
+If this skill was applied correctly throughout Steps 1–3, the gate should PASS with no
 justifications.
 
 ---
@@ -115,8 +111,7 @@ justifications.
 |----------|------|
 | Rule index (read first) | `references/how-to-use-bundled-rules.md` |
 | Step-by-step design procedure | `references/design-procedure.md` |
-| Core rules (13, universal) | `references/core/` |
-| Conditional packs | `references/conditional/` |
+| Core rules (11, universal) | `references/core/` |
 | Right/wrong principle sketches | `references/principle-examples.md` |
 | Per-principle violation signals | `references/principle-checks.md` |
 | Verification procedure + report formats | `references/gate-procedure.md` |

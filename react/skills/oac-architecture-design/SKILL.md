@@ -53,9 +53,8 @@ it here.
 
 ### 1. Load the rule index first
 
-Open `references/how-to-use-bundled-rules.md` — it lists all 23 `core/` rules (always
-applied) by priority category and the `conditional/performance/` pack. Keep it at hand
-throughout.
+Open `references/how-to-use-bundled-rules.md` — it lists all 22 `core/` rules (always
+applied) by priority category. Keep it at hand throughout.
 
 ### 2. Follow the design procedure
 
@@ -83,15 +82,10 @@ Open `references/design-procedure.md` and work through all 7 steps in order.
   `references/core/compose-extract-hooks.md`,
   `references/core/layer-service-isolation.md`
 
-### 4. Conditional packs — open only when the scenario applies
-
-- `references/conditional/performance/` — concrete performance hazard surfaced (advisory,
-  non-blocking).
-
-### 5. Verify — the verifiable-unit gate
+### 4. Verify — the verifiable-unit gate
 
 > **Token cost note:** this step reads only `references/gate-procedure.md` (lightweight).
-> Do NOT re-open the full corpus under `core/` — that is for authoring (steps 1–4).
+> Do NOT re-open the full corpus under `core/` — that is for authoring (steps 1–3).
 
 At design exit **and** at validate, confirm the gate question and the three blocking triggers:
 
@@ -108,7 +102,7 @@ At design exit **and** at validate, confirm the gate question and the three bloc
 
 For each trigger, write PASS or record an extraction plan / justification per
 `references/gate-procedure.md` (report formats: Review Report, PASS, FAIL, Justification).
-If this skill was applied correctly through steps 1–4, all triggers should be non-issues.
+If this skill was applied correctly through steps 1–3, all triggers should be non-issues.
 
 ---
 
@@ -118,8 +112,7 @@ If this skill was applied correctly through steps 1–4, all triggers should be 
 |----------|------|
 | Rule index (read first) | `references/how-to-use-bundled-rules.md` |
 | Step-by-step design procedure | `references/design-procedure.md` |
-| Core rules (23, universal) | `references/core/` |
-| Conditional packs | `references/conditional/` |
+| Core rules (22, universal) | `references/core/` |
 | Right/wrong principle sketches | `references/principle-examples.md` |
 | Per-principle violation signals | `references/principle-checks.md` |
 | Verification procedure + report formats | `references/gate-procedure.md` |

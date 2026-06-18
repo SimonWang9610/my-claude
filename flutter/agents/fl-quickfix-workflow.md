@@ -40,7 +40,7 @@ Each prompt below is the stage's **goal + bound skill(s) + exit gate** — nothi
 
 2. **describe** — author it (skill: `/fl-acceptance-criteria`): capture the change and exactly one observable AC with a stable ID and observable phrasing. No preflight / requirements / clarify / design / tasks / drift — escalate to `fl-feature-workflow` / `fl-bugfix-workflow` if it grows (multiple units, shared-widget impact, real design choices). → `describe.md` (one AC with stable ID) feeds `/spec-implement`. *Gate:* one AC with stable ID + observable phrasing
 
-3. **`/spec-implement`** (skills: `/fl-test-contract`; `/fl-riverpod` if Riverpod) — apply the smallest correct change and produce ≥1 AC-traceable Dart test (never 0-test). → implementation + AC-traceable tests feed `/spec-validate`. *Gate:* smallest change + ≥1 AC-traceable Dart test (never 0-test) · **human verifies code before validate/qa**
+3. **`/spec-implement`** (skills: `/fl-implementation`, `/fl-test-contract`; `/fl-riverpod` if Riverpod) — apply the smallest correct change and produce ≥1 AC-traceable Dart test (never 0-test). → implementation + AC-traceable tests feed `/spec-validate`. *Gate:* smallest change + ≥1 AC-traceable Dart test (never 0-test) · **human verifies code before validate/qa**
 
 4. **`/spec-validate`** (skills: `/fl-test-contract`, `/fl-architecture-design`) — confirm the AC test passes; run the arch gate only if a unit was introduced/altered; build green (`flutter analyze` + `flutter test`). → clause→test coverage + arch-verify result (if applicable) feed `/spec-qa`. *Gate:* AC test passes; arch gate only if a unit was introduced/altered; `flutter analyze` + `flutter test` green
 

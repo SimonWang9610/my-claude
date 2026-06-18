@@ -115,8 +115,6 @@ paths are relative to this `references/` directory. Never cite a rule from memor
   would solve (no rebuild isolation).
 
 **Crosswalk:** `core/widget-composition.md`,
-`core/widget-build-discipline.md`,
-`core/widget-theming.md`,
 `core/testability-seam.md`.
 
 ---
@@ -162,7 +160,7 @@ paths are relative to this `references/` directory. Never cite a rule from memor
 
 | Blocking trigger | Principles | Primary bundled rules |
 |------------------|------------|----------------------|
-| **1 — God-widget / God-holder / logic-in-build** | P4, P6, P8 | `core/widget-build-discipline.md`, `core/widget-composition.md`, `core/testability-seam.md`, `core/layering-and-structure.md` |
+| **1 — God-widget / God-holder / logic-in-build** | P4, P6, P8 | `core/widget-composition.md`, `core/testability-seam.md`, `core/layering-and-structure.md` |
 | **2 — Layer violation / dual-source-of-truth** | P1, P3 | `core/layering-and-structure.md`, `core/repository-ssot.md`, `core/state-placement.md`, `core/service-isolation.md` |
 | **3 — Testability seam missing** | P8 (underwritten by P1, P4, P6) | `core/testability-seam.md`, `core/dependency-injection.md` |
 

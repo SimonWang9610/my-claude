@@ -14,7 +14,7 @@ are relative to this `references/` directory.
 - [Step 4 — Zustand store shape](#step-4--zustand-store-shape)
 - [Step 5 — Component composition and hook extraction](#step-5--component-composition-and-hook-extraction)
 - [Step 6 — Per-unit testability seam](#step-6--per-unit-testability-seam-p5)
-- [Step 7 — Conditional packs and hand-off](#step-7--conditional-packs-and-hand-off)
+- [Step 7 — Hand-off](#step-7--hand-off)
 
 ---
 
@@ -100,11 +100,7 @@ in each `contracts/<unit>.md`.
 
 ---
 
-## Step 7 — Conditional packs and hand-off
-
-**Conditional** `conditional/performance/` — open only when a concrete performance
-hazard surfaces (high-frequency data paths, virtualized lists, bundle size). Advisory
-only, non-blocking.
+## Step 7 — Hand-off
 
 **Record and hand off** — Write `design.md` (layer map, state-ownership decisions,
 server-state path, Zustand shape, composition notes, blank

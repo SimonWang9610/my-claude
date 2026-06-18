@@ -39,7 +39,7 @@ Two sibling profile directories live alongside `specflow/`:
 ```
 react/
   agents/   oac-{feature,brownfield,bugfix,quickfix}-workflow.md  ← the binding layer
-  skills/   oac-acceptance-criteria  oac-architecture-design
+  skills/   oac-acceptance-criteria  oac-architecture-design  oac-task-design  oac-implementation
             oac-figma-decompose  oac-journey-tests  oac-qa-report
             oac-test-contract  oac-test-forensics
   rules/    architecture-principles.md  test-quality.md  (+ engineering-discipline/preferences symlinks)
@@ -47,7 +47,7 @@ react/
 
 flutter/
   agents/   fl-{feature,brownfield,bugfix,quickfix}-workflow.md   ← the binding layer
-  skills/   fl-acceptance-criteria  fl-architecture-design
+  skills/   fl-acceptance-criteria  fl-architecture-design  fl-task-design  fl-implementation
             fl-pr-review  fl-riverpod  fl-test-contract  fl-test-forensics
   rules/    architecture-principles.md  test-quality.md  (+ engineering-discipline/preferences symlinks)
 ```
@@ -62,9 +62,11 @@ anything outside the profile by name — stack specifics live exclusively in the
 
 Stack: **React 19 + Vite + TypeScript + Zustand + TanStack Query + MUI + Vitest**.
 
-Agents bind roles to `oac-*` skills. The `oac-architecture-design` skill owns the full rule corpus
-(23 architecture rules + 22 performance rules) and runs the verifiable-unit gate at phase exit
-(design-time authoring + verification in one skill). The per-project adaptation seam is
+Agents bind roles to `oac-*` skills, split by altitude: `oac-architecture-design` owns the
+architecture rules and runs the verifiable-unit gate (spec-design + spec-validate);
+`oac-task-design` turns design + contracts into `tasks.md` (spec-tasks); `oac-implementation`
+owns the performance/idiom rules for code inside a fixed contract (spec-implement). The
+per-project adaptation seam is
 `react/commands/_oac-jira-status-automation.md` (rewrite for your issue tracker, or delete).
 
 ### Flutter profile (`flutter/`)

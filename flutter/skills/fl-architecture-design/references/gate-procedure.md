@@ -54,7 +54,7 @@ Run the review at **gate altitude** (architecture, not line-by-line):
    blocking triggers map onto the highest-priority categories — see the crosswalk in
    `principle-checks.md`. Do not cite a rule from memory — confirm against the file's
    incorrect/correct examples. When a clear performance hazard is visible, also consult the
-   `conditional/performance/` pack (non-blocking).
+   **`fl-implementation`** skill (non-blocking; performance rules live there).
 
 4. **Confirm against the code.** For each candidate trigger, verify against the actual code (not
    assumption), note the file path, and assess honestly. A pattern that is technically "wrong" but
@@ -76,8 +76,7 @@ business logic, IO, multiple distinct UI sections), or a state holder (`Notifier
 Bloc/Cubit) mixing data-fetching, UI-state management, and lifecycle side-effects with no
 isolation seam.
 
-**Confirm against:** `core/widget-build-discipline.md`,
-`core/widget-composition.md`,
+**Confirm against:** `core/widget-composition.md`,
 `core/testability-seam.md`,
 `core/layering-and-structure.md`.
 
@@ -129,8 +128,7 @@ and repository method signatures.
 entire host?"
 
 > **Performance note:** this gate is architecture-first. If a clear performance hazard surfaces
-> while mapping structure, read the relevant rule in
-> `conditional/performance/` and note it
+> while mapping structure, consult the **`fl-implementation`** skill and note the finding
 > briefly as a **non-blocking** observation. Performance is not a blocking trigger here.
 
 ---

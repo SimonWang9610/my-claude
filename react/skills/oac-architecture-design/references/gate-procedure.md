@@ -49,11 +49,9 @@ Run the review at **gate altitude** (architecture, not line-by-line):
    looks like it might violate a rule, open the specific file in
    `core/<name>.md` — do not cite rules from memory.
    Priority: `state-` (CRITICAL) → `zustand-` (HIGH) → `query-` (HIGH) → `compose-` (MEDIUM-HIGH)
-   → `layer-` (MEDIUM) → `react19-` (LOW-MEDIUM). The three blocking triggers map onto the
+   → `layer-` (MEDIUM). The three blocking triggers map onto the
    highest-priority categories — see the crosswalk in
-   `principle-checks.md`. When a clear performance hazard
-   is visible on a high-frequency path, also consult
-   `conditional/performance/` (non-blocking).
+   `principle-checks.md`.
 
 4. **Confirm against the code.** For each candidate trigger, verify against the actual code (not
    assumption), note the file path, and assess honestly. A pattern that's technically "wrong" but
@@ -119,11 +117,6 @@ independently renderable with a static props fixture, or a hook independently in
 `renderHook` with controlled inputs.
 
 **The check:** "Could a test writer exercise each behavior without mocking the entire host?"
-
-> **Performance note:** this gate is architecture-first. If a clear performance hazard surfaces on
-> a high-frequency path while mapping structure, read the relevant rule in
-> `conditional/performance/` and note it briefly as a
-> **non-blocking** observation. Performance is not a blocking trigger here.
 
 ---
 

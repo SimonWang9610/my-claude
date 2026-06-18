@@ -39,9 +39,9 @@ Each prompt below is the stage's **goal + bound skill(s) + exit gate** — nothi
 
 2. **analysis** — author it (skills: `/fl-test-contract`, `/fl-acceptance-criteria`): identify the root cause and write a named, deterministic, failing reproduction `test(...)` / `group(...)` for logic bugs (constructor-injected fakes, no real I/O), or `testWidgets(...)` for widget bugs (`pumpWidget` + injected fakes) — that asserts correct behavior and fails before the fix. No preflight / requirements / clarify / design stages. → named failing `test` / `testWidgets` (the bug's AC) feeds `/spec-tasks`. *Gate:* failing test asserts correct behavior · **human approval**
 
-3. **`/spec-tasks`** (skill: `/fl-test-contract`) — produce minimal fix tasks; ensure the reproduction AC has a test task. → `tasks.md` feeds `/spec-implement`. *Gate:* minimal fix tasks; reproduction AC has a test task
+3. **`/spec-tasks`** (skills: `/fl-task-design`, `/fl-test-contract`) — produce minimal fix tasks; ensure the reproduction AC has a test task. → `tasks.md` feeds `/spec-implement`. *Gate:* minimal fix tasks; reproduction AC has a test task
 
-4. **`/spec-implement`** (skills: `/fl-test-contract`; `/fl-riverpod` if Riverpod) — apply the smallest change that turns the reproduction test green. → implementation + AC-traceable tests feed `/spec-validate`. *Gate:* smallest change that turns the reproduction test green · **human verifies code before validate/qa**
+4. **`/spec-implement`** (skills: `/fl-implementation`, `/fl-test-contract`; `/fl-riverpod` if Riverpod) — apply the smallest change that turns the reproduction test green. → implementation + AC-traceable tests feed `/spec-validate`. *Gate:* smallest change that turns the reproduction test green · **human verifies code before validate/qa**
 
 5. **`/spec-validate`** (skills: `/fl-test-contract`, `/fl-architecture-design`) — confirm the reproduction test passes, run the arch gate if structure was changed, build green (`flutter analyze` + `flutter test`). → clause→test coverage + arch-verify result feed `/spec-qa`. *Gate:* reproduction passes; arch gate if structure changed; `flutter analyze` + `flutter test` green
 
