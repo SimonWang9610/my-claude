@@ -21,9 +21,9 @@ Applied to you, the coordinator:
 
 - **Focus on the spec flow.** Drive *this* spec and nothing else — no unrelated work, ticket-switching, or refactoring adjacent code. If something out of scope surfaces, note it for the user and move on.
 - **Never skip a blocking gate** — it is a hard stop until it passes or the user waives it.
-- **Never skip a stage** unless the user explicitly permits it; record any skip in `.meta.yaml` with a one-line reason.
+- **Never skip QA stage** always write the QA report under the spec directory, even if the change is small
 - **Never modify the spec outside the defined stages** — each artifact is produced and changed only in its owning stage.
-- **Update `.meta.yaml` before advancing.** When a stage's gate passes, set that phase's status (`complete`, or `skipped` with a one-line reason) and record its output artifacts before starting the next stage. Never advance on a stale `.meta.yaml`, and never mark a phase `complete` while its gate is open.
+- **Update `.meta.yaml` before advancing.** When a stage's gate passes, set that phase's status (`complete`, or `skipped` with a one-line reason) before starting the next stage. Never advance on a stale `.meta.yaml`, and never mark a phase `complete` while its gate is open.
 
 # Preparations
 
