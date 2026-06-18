@@ -2,9 +2,9 @@
 name: fl-brownfield-workflow
 description: >
   Drives an **in-place modification** of an existing Flutter feature through impact analysis →
-  requirements → design → tasks → implement → validate → qa → drift, with mandatory preflight and
+  requirements → design → tasks → implement → qa → validate → drift, with mandatory preflight and
   human gates. Stops after `/spec-implement` so you can verify the code (feedback / tweaks / issues)
-  before validate and qa. May spawn `/scan-resource` subagents to audit a large existing subsystem.
+  before qa. May spawn `/scan-resource` subagents to audit a large existing subsystem.
 permissionMode: auto
 initialPrompt: >-
   Before anything else, work through the **Preparations** section of your instructions in order, then
@@ -43,8 +43,8 @@ Before running any stage:
 | 4 | `/spec-design` | `/fl-architecture-design`; `/fl-riverpod` if Riverpod | Structure units to the Flutter rules, draft `contracts/`, pass the verifiable-unit gate | `requirements.md` + `preflight.md` (+ related `references/` files) | `design.md` + `contracts/<unit>.md` | arch gate PASS or justification — **human approval before tasks** |
 | 5 | `/spec-tasks` | `/fl-task-design`, `/fl-acceptance-criteria`, `/fl-test-contract` | Produce a test task per AC plus edge-case tasks | `design.md` + `contracts/<unit>.md` + `requirements.md` (+ related `references/` files) | `tasks.md` | a test task per AC + edge-case tasks |
 | 6 | `/spec-implement` | `/fl-implementation`, `/fl-test-contract`; `/fl-riverpod` if Riverpod | Implement through (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; every "completed" item has an AC-traceable Dart test that passes | `tasks.md` + `design.md` + `contracts/<unit>.md` (+ the adopted shared widgets, read-only; + related `references/` files) | implementation + AC-traceable tests (+ `tasks.md` status) | (WorkAgent, TestAgent) phases; **never modify an adopted shared widget**; "completed" ⇒ AC-traceable Dart test passes · **human verifies code before validate/qa** |
-| 7 | `/spec-validate` | `/fl-test-contract`, `/fl-architecture-design` | Verify clause→test coverage, re-verify arch gate, build green (`flutter analyze` + `flutter test`) | implementation + AC-traceable tests + `requirements.md` + `design.md` | clause→test coverage + architecture-verify result | clause→test coverage + arch gate; `flutter analyze` + `flutter test` both green |
-| 8 | `/spec-qa` | `/fl-test-forensics`, `/fl-test-contract` | Run forensics, contract audits, and `flutter test --coverage` | implementation + tests + `requirements.md` | `qa-report.md` | forensics + contract audits + `flutter test --coverage`; **human sign-off** |
+| 7 | `/spec-qa` | `/fl-test-forensics`, `/fl-test-contract` | Run forensics, contract audits, and `flutter test --coverage` | implementation + tests + `requirements.md` | `qa-report.md` | forensics + contract audits + `flutter test --coverage`; **human sign-off** |
+| 8 | `/spec-validate` | `/fl-test-contract`, `/fl-architecture-design` | Static validation — runs no tests or build: spec consistency (requirements, design, task DAG) + clause→test coverage + arch-gate re-verify + adopted shared-widget immutability + PR-body and required-phase gates | implementation + tests + `requirements.md` + `design.md` + `qa-report.md` + `.meta.yaml` + the diff vs base | validation report (pass/fail per check) | all checks PASS · blocking: modified adopted shared widget, PR closing keyword, or incomplete required phase |
 | 9 | `/spec-drift` | `/fl-test-forensics` | Check for shared-widget drift and unspecced behavior | `qa-report.md` + `requirements.md` + the diff | drift findings | shared-widget drift + no unspecced behavior |
 
 _Observe or steer any time with `/spec-status` and `/spec-steer`._
@@ -57,7 +57,8 @@ These apply to you and to every subagent — when you delegate, copy the subset 
 1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/fl-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
 2. **Gates are hard stops.** On `FAIL (blocking)`, surface the trigger + the named unit/AC + the required action; resolve (extract / add test) or record a justification, then re-run.
 3. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
-4. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
+4. **Run tests sparingly.** During implementation, run only the tests covering what you changed — never the full suite. Run just one full suite at a time — never in parallel, duplicated, or split into separate coverage/type-check passes; a sequential re-run is fine when a change warrants it (e.g., a tweak before opening a PR).
+5. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Delegating to subagents
 
@@ -85,4 +86,4 @@ Pause for the user at:
 - **Irreversible or outward actions** — confirm before any commit, push, or PR; you can run `/fl-pr-review` on the diff first.
 - **Legacy port inputs** — ask for the legacy project path + folders before preflight; skip entirely for greenfield.
 
-**Done:** all phases (init → preflight → requirements → design → tasks → implement → validate → qa → drift) are `complete`/`skipped` and `spec-validate` returns PASS (`flutter analyze` + `flutter test` green) → report the clause→test map, arch-gate result, and QA findings/disposition. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
+**Done:** all phases (init → preflight → requirements → design → tasks → implement → qa → validate → drift) are `complete`/`skipped` and `spec-validate` returns PASS → report the clause→test map, arch-gate result, and QA findings/disposition. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.

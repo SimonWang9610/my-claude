@@ -2,8 +2,8 @@
 name: oac-bugfix-workflow
 description: >
   Drives a structured bugfix: root-cause analysis with a failing reproduction test first → tasks →
-  implement → validate → qa (optional) → drift. Stops after `/spec-implement` so you can verify the
-  code (feedback / tweaks / issues) before validate and qa.
+  implement → qa (optional) → validate → drift. Stops after `/spec-implement` so you can verify the
+  code (feedback / tweaks / issues) before qa.
 permissionMode: auto
 initialPrompt: >-
   Before anything else, work through the **Preparations** section of your instructions in order, then
@@ -39,9 +39,9 @@ Before running any stage:
 | 1 | `/spec-init` | — | Scaffold `.meta.yaml` recording `bugfix` as the workflow | Bug report / description (+ the affected file/component) | `.meta.yaml` | — |
 | 2 | `analysis` | `/oac-test-contract`, `/oac-acceptance-criteria` | Perform root-cause analysis and author a named FAILING reproduction test asserting the correct behavior (the bug's AC); escalate to `oac-feature-workflow` if the fix requires new features or architectural change | `.meta.yaml` + the bug report + the affected code | failing reproduction test (the bug's AC) | named failing test asserts correct behavior — **human approval** |
 | 3 | `/spec-tasks` | `/oac-task-design`, `/oac-test-contract` | Produce minimal fix tasks ensuring the reproduction AC has a test task | the failing reproduction test (the bug's AC) | `tasks.md` | minimal fix tasks; reproduction AC has a test task |
-| 4 | `/spec-implement` | `/oac-implementation`, `/oac-test-contract` | Make the smallest change that turns the reproduction test green; build green (`eslint` + `vitest run`) | `tasks.md` + the failing reproduction test + the affected code | implementation + AC-traceable tests (+ `tasks.md` status) | smallest change that turns the reproduction test green · **human verifies code before validate/qa** |
-| 5 | `/spec-validate` | `/oac-test-contract`, `/oac-architecture-design` | Verify the reproduction test passes and run the arch gate if structure changed; build green (`eslint` + `vitest run`) | implementation + the reproduction test (+ `design.md` if structure changed) | coverage + architecture-verify result | reproduction passes + arch gate if structure changed |
-| 6 | `/spec-qa` | `/oac-qa-report`, `/oac-test-forensics` | Run the QA pass when non-trivial or touching shared components; build green (`eslint` + `vitest run`); transition the tracker via `/_oac-jira-status-automation` | implementation + tests | `qa-report.md` | run when non-trivial / touches shared components · **human sign-off** |
+| 4 | `/spec-implement` | `/oac-implementation`, `/oac-test-contract` | Make the smallest change that turns the reproduction test green; run only the changed tests + lint changed files (not the full suite) | `tasks.md` + the failing reproduction test + the affected code | implementation + AC-traceable tests (+ `tasks.md` status) | smallest change that turns the reproduction test green · **human verifies code before validate/qa** |
+| 5 | `/spec-qa` | `/oac-qa-report`, `/oac-test-forensics` | Run the QA pass when non-trivial or touching shared components; run `eslint` + `vitest run` once — a single, non-parallel run (no duplicate runs, no extra coverage/type-check passes); transition the tracker via `/_oac-jira-status-automation` | implementation + tests | `qa-report.md` | run when non-trivial / touches shared components · **human sign-off** |
+| 6 | `/spec-validate` | `/oac-test-contract`, `/oac-architecture-design` | Static validation — runs no tests or build: reproduction test present + AC-traced + arch-gate re-verify (if structure changed) + adopted shared-component immutability + PR-body and required-phase gates | implementation + the reproduction test + `.meta.yaml` + the diff vs base (+ `qa-report.md` if qa ran; + `design.md` if structure changed) | validation report (pass/fail per check) | all checks PASS · blocking: modified adopted shared component, PR closing keyword, or incomplete required phase |
 | 7 | `/spec-drift` | `/oac-test-forensics`, `/jira-ac-align` when JIRA-tracked | Confirm no unspecced behavior was introduced; reconcile the JIRA ticket's acceptance criteria to the shipped implementation (confirm-first before any ticket edit) | the diff + tests (+ the JIRA ticket when JIRA-tracked) | drift findings (and reconciled ticket description) | no unspecced behavior + JIRA AC reflects the shipped implementation (when JIRA-tracked) |
 
 _Observe or steer any time with `/spec-status` and `/spec-steer`._
@@ -54,7 +54,8 @@ These apply to you and to every subagent — when you delegate, copy the subset 
 1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/oac-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
 2. **Gates are hard stops.** On `FAIL (blocking)`, surface the trigger + the named unit/AC + the required action; resolve (extract / add test) or record a justification, then re-run.
 3. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
-4. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
+4. **Run tests sparingly.** During implementation, run only the tests covering what you changed — never the full suite. Run just one full suite at a time — never in parallel, duplicated, or split into separate coverage/type-check passes; a sequential re-run is fine when a change warrants it (e.g., a tweak before opening a PR).
+5. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Delegating to subagents
 
@@ -82,4 +83,4 @@ Pause for the user at:
 - **Irreversible or outward actions** — confirm before any commit, push, PR, or tracker transition.
 - **Escalation** — if root-cause analysis reveals the fix requires new features or architectural change, stop and recommend switching to `oac-feature-workflow`.
 
-**Done:** all required phases (init → analysis → tasks → implement → validate → drift) are `complete`/`skipped` and `/spec-validate` returns PASS (qa may be `skipped` when trivial) → report the clause→test map, architecture-verify result, and QA findings/disposition if qa ran. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
+**Done:** all required phases (init → analysis → tasks → implement → qa → validate → drift) are `complete`/`skipped` and `/spec-validate` returns PASS (qa may be `skipped` when trivial) → report the clause→test map, architecture-verify result, and QA findings/disposition if qa ran. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.

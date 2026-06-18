@@ -8,24 +8,30 @@ live at the adaptation point, not here.
 
 ## Contents
 
-- [§0 — Build gate](#0--build-gate)
-- [§1 — Spec authenticity](#1--spec-authenticity)
-- [§2 — Scope creep](#2--scope-creep)
-- [§3 — Coverage + false-positive](#3--coverage--false-positive)
-- [§4 — Silent failure](#4--silent-failure)
-- [§5 — Consumer + regression](#5--consumer--regression)
+- [Audit catalogue](#audit-catalogue)
+  - [Contents](#contents)
+  - [§0 — Build gate](#0--build-gate)
+  - [§1 — Spec authenticity](#1--spec-authenticity)
+  - [§2 — Scope creep](#2--scope-creep)
+  - [§3 — Coverage + false-positive](#3--coverage--false-positive)
+  - [§4 — Silent failure](#4--silent-failure)
+  - [§5 — Consumer + regression](#5--consumer--regression)
 
 ---
 
 ## §0 — Build gate
 
-Audit nothing on a red branch.
+Audit nothing on a red branch — and run each heavy command at most once. This is the spec's single
+full-suite run.
 
 1. **Build** the branch with the project's build command. If it fails → STOP, report `❌ BUILD FAILED`
    with the error, write no further sections.
-2. **Run the existing suite** with the project's test command. If pre-existing tests fail → STOP,
-   report which tests regressed; the developer fixes regressions before QA proceeds.
+2. **Run the existing suite once** with the project's test command — a single, non-parallel run; do
+   not launch a second suite or a separate coverage / type-check pass. If pre-existing tests fail →
+   STOP, report which tests regressed; the developer fixes regressions before QA proceeds.
 3. Record the suite's pass/fail counts for the report's **Test Suite Results** section.
+
+Per-file forensic re-runs (§3) target one test file at a time — never the whole suite.
 
 ---
 

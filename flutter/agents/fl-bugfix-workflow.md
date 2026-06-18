@@ -2,8 +2,8 @@
 name: fl-bugfix-workflow
 description: >
   Drives a structured bugfix: root-cause analysis with a FAILING reproduction Dart test first →
-  tasks → implement → validate → qa (optional, non-trivial fixes) → drift. Stops after
-  `/spec-implement` so you can verify the code (feedback / tweaks / issues) before validate and qa.
+  tasks → implement → qa (optional, non-trivial fixes) → validate → drift. Stops after
+  `/spec-implement` so you can verify the code (feedback / tweaks / issues) before qa.
 permissionMode: auto
 initialPrompt: >-
   Before anything else, work through the **Preparations** section of your instructions in order, then
@@ -40,8 +40,8 @@ Before running any stage:
 | 2 | `analysis` | `/fl-test-contract`, `/fl-acceptance-criteria` | Identify the root cause and write a named, deterministic, FAILING reproduction `test(...)`/`group(...)` for logic bugs (constructor-injected fakes, no real I/O) or `testWidgets(...)` for widget bugs (`pumpWidget` + injected fakes) that asserts correct behavior and fails before the fix; no preflight/requirements/clarify/design | `.meta.yaml` + the bug report + the affected code | named failing `test` / `testWidgets` (the bug's AC) | failing test asserts correct behavior — **human approval** |
 | 3 | `/spec-tasks` | `/fl-task-design`, `/fl-test-contract` | Produce minimal fix tasks; ensure the reproduction AC has a test task | the failing reproduction test (the bug's AC) | `tasks.md` | minimal fix tasks; reproduction AC has a test task |
 | 4 | `/spec-implement` | `/fl-implementation`, `/fl-test-contract`; `/fl-riverpod` if Riverpod | Apply the smallest change that turns the reproduction test green | `tasks.md` + the failing reproduction test + the affected code | implementation + AC-traceable tests | smallest change that turns the reproduction test green · **human verifies code before validate/qa** |
-| 5 | `/spec-validate` | `/fl-test-contract`, `/fl-architecture-design` | Confirm the reproduction test passes, run the arch gate if structure was changed, build green (`flutter analyze` + `flutter test`) | implementation + the reproduction test (+ `design.md` if structure changed) | clause→test coverage + arch-verify result | reproduction passes; arch gate if structure changed; `flutter analyze` + `flutter test` green |
-| 6 | `/spec-qa` | `/fl-test-forensics`, `/fl-test-contract` | Run forensics, contract audits, and `flutter test --coverage`; run when non-trivial or when the fix touches shared widgets or repos | implementation + tests | `qa-report.md` | run when non-trivial / touches shared widgets or repos; `flutter test --coverage`; **human sign-off** |
+| 5 | `/spec-qa` | `/fl-test-forensics`, `/fl-test-contract` | Run forensics, contract audits, and `flutter test --coverage`; run when non-trivial or when the fix touches shared widgets or repos | implementation + tests | `qa-report.md` | run when non-trivial / touches shared widgets or repos; `flutter test --coverage`; **human sign-off** |
+| 6 | `/spec-validate` | `/fl-test-contract`, `/fl-architecture-design` | Static validation — runs no tests or build: reproduction test present + AC-traced + arch-gate re-verify (if structure changed) + adopted shared-widget immutability + PR-body and required-phase gates | implementation + the reproduction test + `.meta.yaml` + the diff vs base (+ `qa-report.md` if qa ran; + `design.md` if structure changed) | validation report (pass/fail per check) | all checks PASS · blocking: modified adopted shared widget, PR closing keyword, or incomplete required phase |
 | 7 | `/spec-drift` | `/fl-test-forensics` | Verify no unspecced behavior was introduced | the diff + tests | drift findings | no unspecced behavior |
 
 _Observe or steer any time with `/spec-status` and `/spec-steer`._
@@ -54,7 +54,8 @@ These apply to you and to every subagent — when you delegate, copy the subset 
 1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/fl-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
 2. **Gates are hard stops.** On `FAIL (blocking)`, surface the trigger + the named unit/AC + the required action; resolve (extract / add test) or record a justification, then re-run.
 3. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
-4. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
+4. **Run tests sparingly.** During implementation, run only the tests covering what you changed — never the full suite. Run just one full suite at a time — never in parallel, duplicated, or split into separate coverage/type-check passes; a sequential re-run is fine when a change warrants it (e.g., a tweak before opening a PR).
+5. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Delegating to subagents
 
@@ -82,4 +83,4 @@ Pause for the user at:
 - **Irreversible or outward actions** — confirm before any commit, push, or PR; you can run `/fl-pr-review` on the diff first.
 - **Escalation** — if the change exceeds this workflow (multiple units, real design choices, shared-widget impact), stop and recommend `fl-feature-workflow`.
 
-**Done:** init → analysis → tasks → implement → validate → drift all `complete`/`skipped`; `spec-validate` returns PASS (`flutter analyze` + `flutter test` green; qa may be `skipped` for trivial fixes) → report clause→test map, arch-gate result, QA findings if qa ran. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
+**Done:** init → analysis → tasks → implement → qa → validate → drift all `complete`/`skipped`; `spec-validate` returns PASS (qa may be `skipped` for trivial fixes) → report clause→test map, arch-gate result, QA findings if qa ran. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.

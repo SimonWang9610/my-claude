@@ -2,9 +2,9 @@
 name: fl-quickfix-workflow
 description: >
   Drives a quickfix — the smallest correct change, still with ≥1 AC-traceable Dart test: describe
-  (one AC) → implement → validate → qa (optional, shared widgets). No preflight/requirements/clarify/
+  (one AC) → implement → qa (optional, shared widgets) → validate. No preflight/requirements/clarify/
   design/tasks/drift. Stops after `/spec-implement` so you can verify the code (feedback / tweaks /
-  issues) before validate and qa. Stops and recommends switching workflow if the change grows beyond a quickfix.
+  issues) before qa. Stops and recommends switching workflow if the change grows beyond a quickfix.
 permissionMode: auto
 initialPrompt: >-
   Before anything else, work through the **Preparations** section of your instructions in order, then
@@ -40,8 +40,8 @@ Before running any stage:
 | 1 | `/spec-init` | — | Scaffold the spec; record `quickfix` in `.meta.yaml` | Concise description of the change | `.meta.yaml` | — |
 | 2 | `describe` | `/fl-acceptance-criteria` | Capture the change and exactly one observable AC with a stable ID + observable phrasing; no preflight/requirements/clarify/design/tasks/drift — escalate to `fl-feature-workflow` / `fl-bugfix-workflow` if it grows (multiple units, shared-widget impact, real design choices) | `.meta.yaml` + the change description | `describe.md` (one AC with stable ID) | one AC with stable ID + observable phrasing |
 | 3 | `/spec-implement` | `/fl-implementation`, `/fl-test-contract`; `/fl-riverpod` if Riverpod | Apply the smallest correct change and produce ≥1 AC-traceable Dart test (never 0-test) | `describe.md` (the one AC) | implementation + AC-traceable tests | smallest change + ≥1 AC-traceable Dart test (never 0-test) · **human verifies code before validate/qa** |
-| 4 | `/spec-validate` | `/fl-test-contract`, `/fl-architecture-design` | Confirm the AC test passes; run the arch gate only if a unit was introduced/altered; build green (`flutter analyze` + `flutter test`) | implementation + the AC test (+ `contracts/<unit>.md` if a unit was introduced/altered) | clause→test coverage + arch-verify result (if applicable) | AC test passes; arch gate only if a unit was introduced/altered; `flutter analyze` + `flutter test` green |
-| 5 | `/spec-qa` | `/fl-test-forensics`, `/fl-test-contract` | Run forensics, contract audits, and `flutter test --coverage`; run when the change touches shared widgets | implementation + tests | `qa-report.md` | run when it touches shared widgets; `flutter test --coverage`; **human sign-off** |
+| 4 | `/spec-qa` | `/fl-test-forensics`, `/fl-test-contract` | Run forensics, contract audits, and `flutter test --coverage`; run when the change touches shared widgets | implementation + tests | `qa-report.md` | run when it touches shared widgets; `flutter test --coverage`; **human sign-off** |
+| 5 | `/spec-validate` | `/fl-test-contract`, `/fl-architecture-design` | Static validation — runs no tests or build: AC test present + traced + arch-gate re-verify (only if a unit was introduced/altered) + adopted shared-widget immutability + PR-body and required-phase gates | implementation + the AC test + `.meta.yaml` + the diff vs base (+ `qa-report.md` if qa ran; + `contracts/<unit>.md` if a unit was introduced/altered) | validation report (pass/fail per check) | all checks PASS · blocking: modified adopted shared widget, PR closing keyword, or incomplete required phase |
 
 _Observe or steer any time with `/spec-status` and `/spec-steer`._
 _Run each command yourself; to delegate a concrete job within a stage, build the subagent prompt from **Delegating to subagents** below — never the job alone._
@@ -53,7 +53,8 @@ These apply to you and to every subagent — when you delegate, copy the subset 
 1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/fl-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
 2. **Gates are hard stops.** On `FAIL (blocking)`, surface the trigger + the named unit/AC + the required action; resolve (extract / add test) or record a justification, then re-run.
 3. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
-4. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
+4. **Run tests sparingly.** During implementation, run only the tests covering what you changed — never the full suite. Run just one full suite at a time — never in parallel, duplicated, or split into separate coverage/type-check passes; a sequential re-run is fine when a change warrants it (e.g., a tweak before opening a PR).
+5. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Delegating to subagents
 
@@ -81,4 +82,4 @@ Pause for the user at:
 - **Irreversible or outward actions** — confirm before any commit, push, or PR; you can run `/fl-pr-review` on the diff first.
 - **Escalation** — if the change exceeds this workflow (multiple units, real design choices, shared-widget impact), stop and recommend `fl-feature-workflow` or `fl-bugfix-workflow`.
 
-**Done:** init → describe → implement → validate all `complete`/`skipped`; `spec-validate` returns PASS (`flutter analyze` + `flutter test` green; qa may be `skipped` when touching no shared widgets) → report AC test result and arch-gate result if it ran. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
+**Done:** init → describe → implement → qa → validate all `complete`/`skipped`; `spec-validate` returns PASS (qa may be `skipped` when touching no shared widgets) → report AC test result and arch-gate result if it ran. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.

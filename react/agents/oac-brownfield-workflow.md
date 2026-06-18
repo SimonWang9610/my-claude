@@ -2,9 +2,9 @@
 name: oac-brownfield-workflow
 description: >
   Drives an **in-place modification** of an existing React feature through impact analysis →
-  requirements → design → tasks → implement → validate → qa → drift. Preflight (impact analysis) is
+  requirements → design → tasks → implement → qa → validate → drift. Preflight (impact analysis) is
   mandatory; pauses for human approval at gate points; stops after `/spec-implement` so you can
-  verify the code (feedback / tweaks / issues) before validate and qa.
+  verify the code (feedback / tweaks / issues) before qa.
 permissionMode: auto
 initialPrompt: >-
   Before anything else, work through the **Preparations** section of your instructions in order, then
@@ -42,9 +42,9 @@ Before running any stage:
 | 3 | `/spec-requirements` | `/oac-acceptance-criteria` | Derive ACs and NFRs with stable `AC-`/`NFR-` IDs and observable Given/When/Then | `preflight.md` (impact verdict + shared-component impact table) | `requirements.md` | every AC has stable ID + observable phrasing — **human approval** |
 | 4 | `/spec-design` | `/oac-architecture-design` | Author and verify the architecture design | `requirements.md` + `preflight.md` (+ related `references/` files) | `design.md` + `contracts/<unit>.md` | arch gate PASS or justification — **human approval before tasks** |
 | 5 | `/spec-tasks` | `/oac-task-design`, `/oac-acceptance-criteria`, `/oac-test-contract` | Produce a test task per AC plus edge-case tasks | `design.md` + `contracts/<unit>.md` + `requirements.md` (+ related `references/` files) | `tasks.md` | a test task per AC + edge-case tasks |
-| 6 | `/spec-implement` | `/oac-implementation`, `/oac-test-contract` | Implement through (WorkAgent, TestAgent) phases; **never modify an adopted shared component**; build green (`eslint` + `vitest run`); ensure AC-traceable tests pass | `tasks.md` + `design.md` + `contracts/<unit>.md` (+ the adopted shared components, read-only; + related `references/` files) | implementation + AC-traceable tests (+ `tasks.md` status) | (WorkAgent, TestAgent) phases; **never modify an adopted shared component** · **human verifies code before validate/qa** |
-| 7 | `/spec-validate` | `/oac-test-contract`, `/oac-architecture-design` | Confirm clause→test coverage and re-run the arch gate; build green (`eslint` + `vitest run`) | implementation + AC-traceable tests + `requirements.md` + `design.md` | coverage + arch-verify | clause→test coverage + arch gate |
-| 8 | `/spec-qa` | `/oac-qa-report`, `/oac-test-forensics`, `/oac-test-contract`, `/oac-journey-tests` opt | Run the full QA pass; build green (`eslint` + `vitest run`); transition the tracker via `/_oac-jira-status-automation` | implementation + tests + `requirements.md` | `qa-report.md` (+ `journey-plan.md`) | `qa-report.md` → **human sign-off** (required) |
+| 6 | `/spec-implement` | `/oac-implementation`, `/oac-test-contract` | Implement through (WorkAgent, TestAgent) phases; **never modify an adopted shared component**; run only the changed tests + lint changed files (not the full suite); ensure AC-traceable tests pass | `tasks.md` + `design.md` + `contracts/<unit>.md` (+ the adopted shared components, read-only; + related `references/` files) | implementation + AC-traceable tests (+ `tasks.md` status) | (WorkAgent, TestAgent) phases; **never modify an adopted shared component** · **human verifies code before validate/qa** |
+| 7 | `/spec-qa` | `/oac-qa-report`, `/oac-test-forensics`, `/oac-test-contract`, `/oac-journey-tests` opt | Run the full QA pass; run `eslint` + `vitest run` once — a single, non-parallel run (no duplicate runs, no extra coverage/type-check passes); transition the tracker via `/_oac-jira-status-automation` | implementation + tests + `requirements.md` | `qa-report.md` (+ `journey-plan.md`) | `qa-report.md` → **human sign-off** (required) |
+| 8 | `/spec-validate` | `/oac-test-contract`, `/oac-architecture-design` | Static validation — runs no tests or build: spec consistency (requirements, design, task DAG) + clause→test coverage + arch-gate re-verify + adopted shared-component immutability + PR-body and required-phase gates | implementation + tests + `requirements.md` + `design.md` + `qa-report.md` + `.meta.yaml` + the diff vs base | validation report (pass/fail per check) | all checks PASS · blocking: modified adopted shared component, PR closing keyword, or incomplete required phase |
 | 9 | `/spec-drift` | `/oac-test-forensics`, `/jira-ac-align` when JIRA-tracked | Detect shared-component drift and confirm no unspecced behavior was introduced; reconcile the JIRA ticket's acceptance criteria to the shipped implementation (confirm-first before any ticket edit) | `qa-report.md` + `requirements.md` + the diff (+ the JIRA ticket when JIRA-tracked) | drift findings (and reconciled ticket description) | shared-component drift + no unspecced behavior + JIRA AC reflects the shipped implementation (when JIRA-tracked) |
 
 _Observe or steer any time with `/spec-status` and `/spec-steer`._
@@ -57,7 +57,8 @@ These apply to you and to every subagent — when you delegate, copy the subset 
 1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/oac-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
 2. **Gates are hard stops.** On `FAIL (blocking)`, surface the trigger + the named unit/AC + the required action; resolve (extract / add test) or record a justification, then re-run.
 3. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
-4. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
+4. **Run tests sparingly.** During implementation, run only the tests covering what you changed — never the full suite. Run just one full suite at a time — never in parallel, duplicated, or split into separate coverage/type-check passes; a sequential re-run is fine when a change warrants it (e.g., a tweak before opening a PR).
+5. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Delegating to subagents
 
@@ -85,4 +86,4 @@ Pause for the user at:
 - **Irreversible or outward actions** — confirm before any commit, push, PR, or tracker transition.
 - **Legacy port inputs** — ask for the legacy path + folders before preflight.
 
-**Done:** all phases (init → preflight → requirements → design → tasks → implement → validate → qa → drift) are `complete`/`skipped` and `/spec-validate` returns PASS → report the clause→test map, arch-gate result, and QA findings/disposition. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
+**Done:** all phases (init → preflight → requirements → design → tasks → implement → qa → validate → drift) are `complete`/`skipped` and `/spec-validate` returns PASS → report the clause→test map, arch-gate result, and QA findings/disposition. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.

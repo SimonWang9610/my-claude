@@ -1,8 +1,8 @@
 ---
 name: oac-quickfix-workflow
 description: >
-  Drives a quickfix — describe → implement (minimal change + ≥1 AC-traceable test) → validate →
-  qa (optional). No requirements/design/tasks, but never a 0-test spec. Stops and recommends
+  Drives a quickfix — describe → implement (minimal change + ≥1 AC-traceable test) → qa (optional) →
+  validate. No requirements/design/tasks, but never a 0-test spec. Stops and recommends
   feature or bugfix workflow if the change grows beyond a quickfix.
 permissionMode: auto
 initialPrompt: >-
@@ -38,9 +38,9 @@ Before running any stage:
 |---|-----------------|--------|------|-------|--------|------|
 | 1 | `/spec-init` | — | Scaffold `.meta.yaml` recording `quickfix` as the workflow | Concise description of the change | `.meta.yaml` | — |
 | 2 | `describe` | `/oac-acceptance-criteria` | Write one paragraph describing the change and its single observable AC with a stable ID; escalate to `oac-feature-workflow`/`oac-bugfix-workflow` if it grows | `.meta.yaml` + the change description | `describe.md` (one AC with stable ID) | one AC with stable ID + observable phrasing |
-| 3 | `/spec-implement` | `/oac-implementation`, `/oac-test-contract` | Make the smallest change with ≥1 AC-traceable test (no 0-test specs); build green (`eslint` + `vitest run`) | `describe.md` (the one AC) | implementation + AC-traceable tests | smallest change + ≥1 AC-traceable test (no 0-test specs) · **human verifies code before validate/qa** |
-| 4 | `/spec-validate` | `/oac-test-contract`, `/oac-architecture-design` if a unit was introduced/altered | Verify the AC test passes and run the arch gate only if a unit was introduced or altered; build green (`eslint` + `vitest run`) | implementation + the AC test (+ `contracts/<unit>.md` if a unit was introduced/altered) | coverage + architecture-verify result (if applicable) | AC test passes; arch gate only if a unit was introduced/altered |
-| 5 | `/spec-qa` | `/oac-qa-report`, `/jira-ac-align` when JIRA-tracked | Run QA when the change touches shared components; transition the tracker via `/_oac-jira-status-automation`; reconcile the JIRA ticket's acceptance criteria to the shipped implementation (confirm-first before any ticket edit) | implementation + tests | `qa-report.md` (and reconciled ticket description) | run when it touches shared components · **human sign-off** · JIRA AC reflects the shipped implementation (when JIRA-tracked) |
+| 3 | `/spec-implement` | `/oac-implementation`, `/oac-test-contract` | Make the smallest change with ≥1 AC-traceable test (no 0-test specs); run only the changed tests + lint changed files (not the full suite) | `describe.md` (the one AC) | implementation + AC-traceable tests | smallest change + ≥1 AC-traceable test (no 0-test specs) · **human verifies code before validate/qa** |
+| 4 | `/spec-qa` | `/oac-qa-report`, `/jira-ac-align` when JIRA-tracked | Run QA when the change touches shared components; transition the tracker via `/_oac-jira-status-automation`; reconcile the JIRA ticket's acceptance criteria to the shipped implementation (confirm-first before any ticket edit) | implementation + tests | `qa-report.md` (and reconciled ticket description) | run when it touches shared components · **human sign-off** · JIRA AC reflects the shipped implementation (when JIRA-tracked) |
+| 5 | `/spec-validate` | `/oac-test-contract`, `/oac-architecture-design` if a unit was introduced/altered | Static validation — runs no tests or build: AC test present + traced + arch-gate re-verify (only if a unit was introduced/altered) + adopted shared-component immutability + PR-body and required-phase gates | implementation + the AC test + `.meta.yaml` + the diff vs base (+ `qa-report.md` if qa ran; + `contracts/<unit>.md` if a unit was introduced/altered) | validation report (pass/fail per check) | all checks PASS · blocking: modified adopted shared component, PR closing keyword, or incomplete required phase |
 
 _Observe or steer any time with `/spec-status` and `/spec-steer`._
 _Run each command yourself; to delegate a concrete job within a stage, build the subagent prompt from **Delegating to subagents** below — never the job alone._
@@ -52,7 +52,8 @@ These apply to you and to every subagent — when you delegate, copy the subset 
 1. **Skills are mandatory.** Invoke the stage's named skill(s) with the Skill tool (e.g. `/oac-acceptance-criteria`) before producing output; if a skill is not available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it. A stage produced without its skill is **incomplete** — redo it; note which you invoked.
 2. **Gates are hard stops.** On `FAIL (blocking)`, surface the trigger + the named unit/AC + the required action; resolve (extract / add test) or record a justification, then re-run.
 3. **Stay disciplined.** Smallest change that makes the AC test pass; surgical diffs; read before write; declared stopping budget before any debug loop.
-4. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
+4. **Run tests sparingly.** During implementation, run only the tests covering what you changed — never the full suite. Run just one full suite at a time — never in parallel, duplicated, or split into separate coverage/type-check passes; a sequential re-run is fine when a change warrants it (e.g., a tweak before opening a PR).
+5. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Delegating to subagents
 
@@ -80,4 +81,4 @@ Pause for the user at:
 - **Irreversible or outward actions** — confirm before any commit, push, PR, or tracker transition.
 - **Escalation** — if the change is larger than a quickfix (multiple units, real design choices, shared-component impact), stop and recommend `oac-feature-workflow` or `oac-bugfix-workflow`.
 
-**Done:** all required phases (init → describe → implement → validate) are `complete`/`skipped` and `/spec-validate` returns PASS (qa may be `skipped` when fix touches no shared components) → report the AC test result and architecture-verify result if it ran. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
+**Done:** all required phases (init → describe → implement → qa → validate) are `complete`/`skipped` and `/spec-validate` returns PASS (qa may be `skipped` when fix touches no shared components) → report the AC test result and architecture-verify result if it ran. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
