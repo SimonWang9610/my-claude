@@ -6,6 +6,9 @@
 #   <dest>/.claude/<type>  →  this repo's <type>/
 # The per-file relative symlinks inside those dirs are owned by install.sh (Layer 1).
 # (Rules are consumed via CLAUDE.md @-imports, not ~/.claude, so they are not linked here.)
+# Linking `agents` also installs a shell command per driver agent — a function named after the
+# agent that runs `claude --agent <name> --worktree` — into your shell rc (~/.zshrc or ~/.bashrc).
+# `setup.sh remove` deletes them.
 #
 #     ./setup.sh                          # interactive: choose global or a project, then types
 #     ./setup.sh link --global            # link into ~/.claude
@@ -16,11 +19,6 @@
 # Bare `setup.sh` (no link|remove) auto-detects whether the chosen target is already linked with
 # this repo's symlinks and offers to unlink them. Passing link or remove explicitly skips that
 # prompt — explicit intent wins.
-#
-# Linking agents also installs a SessionStart hook (matcher: "startup") in <dest>/.claude/settings.json
-# that runs `git submodule update --init --recursive` on session start. The hook is merged into the
-# existing settings.json (other keys/hooks are never clobbered; bails on invalid JSON). Removing
-# agents takes the hook out. Requires python3; skipped with a warning if not found.
 #
 # See install.sh to populate the aggregation dirs from stack source dirs (Layer 1).
 # See uninstall.sh to reverse Layer 1.
@@ -122,93 +120,51 @@ remove_type() {
   fi
 }
 
-# manage_hook <add|remove> <settings_path> — install/remove the submodule-sync SessionStart hook
-manage_hook() {
-  local mode="$1" sfile="$2" out
-  if ! command -v python3 >/dev/null 2>&1; then
-    echo "    (python3 not found — skipped submodule-sync hook; add it to $sfile manually)"
+# rc_file — the shell rc to manage, chosen from $SHELL (defaults to ~/.zshrc)
+rc_file() {
+  case "$(basename "${SHELL:-zsh}")" in
+    bash) echo "$HOME/.bashrc" ;;
+    *)    echo "$HOME/.zshrc" ;;
+  esac
+}
+
+ALIAS_BEGIN="# >>> my-claude workflow commands >>>"
+ALIAS_END="# <<< my-claude workflow commands <<<"
+
+# manage_aliases <add|remove> — write/remove one shell command per driver agent in the rc.
+#   Each command is a function named after the agent that launches it in an auto-named git
+#   worktree: `<agent>() { claude --agent <agent> "$@" --worktree; }`. The block is delimited by
+#   ALIAS_BEGIN/ALIAS_END markers so it is idempotent (regenerated on add) and cleanly removable.
+manage_aliases() {
+  local mode="$1" rc tmp f name
+  rc="$(rc_file)"
+  touch "$rc"
+  # Strip any existing managed block, then trim trailing blank lines, so re-runs are byte-idempotent.
+  tmp="$(mktemp)"
+  awk -v b="$ALIAS_BEGIN" -v e="$ALIAS_END" '
+    $0==b {skip=1}
+    skip==0 {print}
+    $0==e {skip=0}
+  ' "$rc" | awk '{ a[NR]=$0 } END { last=NR; while (last>0 && a[last] ~ /^[[:space:]]*$/) last--; for (i=1;i<=last;i++) print a[i] }' > "$tmp"
+  mv "$tmp" "$rc"
+  if [ "$mode" = "remove" ]; then
+    echo "    workflow commands removed from $rc"
     return
   fi
-  mkdir -p "$(dirname "$sfile")"
-  out="$(python3 - "$sfile" "$mode" <<'PY'
-import json, os, sys
-
-path, action = sys.argv[1], sys.argv[2]
-MARKER = "my-claude:submodule-sync"
-COMMAND = (
-    'git rev-parse --is-inside-work-tree >/dev/null 2>&1 '
-    '&& test -f "$(git rev-parse --show-toplevel 2>/dev/null)/.gitmodules" '
-    '&& git submodule update --init --recursive || true  # ' + MARKER
-)
-
-data = {}
-if os.path.exists(path) and os.path.getsize(path) > 0:
-    try:
-        with open(path) as f:
-            data = json.load(f)
-    except Exception:
-        print("INVALID_JSON"); sys.exit(3)
-if not isinstance(data, dict):
-    print("INVALID_JSON"); sys.exit(3)
-
-hooks = data.get("hooks")
-if hooks is not None and not isinstance(hooks, dict):
-    print("INVALID_HOOKS"); sys.exit(3)
-
-def has_marker(entry):
-    if not isinstance(entry, dict):
-        return False
-    for h in entry.get("hooks", []) or []:
-        if isinstance(h, dict) and MARKER in (h.get("command") or ""):
-            return True
-    return False
-
-def save():
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-
-if action == "add":
-    hooks = data.setdefault("hooks", {})
-    ss = hooks.get("SessionStart")
-    if ss is None:
-        ss = []
-        hooks["SessionStart"] = ss
-    if not isinstance(ss, list):
-        print("INVALID_SESSIONSTART"); sys.exit(3)
-    if any(has_marker(e) for e in ss):
-        print("EXISTS"); sys.exit(0)
-    ss.append({"matcher": "startup",
-               "hooks": [{"type": "command", "command": COMMAND}]})
-    save(); print("ADDED"); sys.exit(0)
-
-if action == "remove":
-    if not isinstance(hooks, dict):
-        print("ABSENT"); sys.exit(0)
-    ss = hooks.get("SessionStart")
-    if not isinstance(ss, list):
-        print("ABSENT"); sys.exit(0)
-    kept = [e for e in ss if not has_marker(e)]
-    if len(kept) == len(ss):
-        print("ABSENT"); sys.exit(0)
-    if kept:
-        hooks["SessionStart"] = kept
-    else:
-        del hooks["SessionStart"]
-    if not hooks:
-        del data["hooks"]
-    save(); print("REMOVED"); sys.exit(0)
-
-print("BAD_ACTION"); sys.exit(2)
-PY
-)" || { echo "    WARN  could not update submodule-sync hook in $sfile (left as-is): $out"; return; }
-  case "$out" in
-    ADDED)   echo "    submodule-sync hook added to $sfile" ;;
-    EXISTS)  echo "    submodule-sync hook already present in $sfile" ;;
-    REMOVED) echo "    submodule-sync hook removed from $sfile" ;;
-    ABSENT)  echo "    no submodule-sync hook to remove in $sfile" ;;
-    *)       echo "    WARN  unexpected hook-tool output for $sfile: $out" ;;
-  esac
+  # Rebuild the block from the agents currently in this repo.
+  {
+    echo ""
+    echo "$ALIAS_BEGIN"
+    echo "# Auto-generated by my-claude setup.sh — one command per workflow driver agent."
+    echo "# Each launches the agent in an auto-named git worktree. 'setup.sh remove' deletes this block."
+    for f in "$REPO"/agents/*.md; do
+      [ -e "$f" ] || continue
+      name="$(basename "$f" .md)"
+      printf '%s() { claude --agent %s "$@" --worktree; }\n' "$name" "$name"
+    done
+    echo "$ALIAS_END"
+  } >> "$rc"
+  echo "    workflow commands written to $rc — run 'source $rc' or open a new shell"
 }
 
 # count_linked <claude_dir> — count linked types (dir symlink into $REPO, or a legacy bundle dir)
@@ -328,11 +284,11 @@ sel() {
 did=0
 echo
 if [ "$action" = "link" ]; then
-  if sel 1 agents;   then echo "→ agents:   linking $CLAUDE/agents → $REPO/agents";       link_type agents;   manage_hook add    "$CLAUDE/settings.json"; did=1; else echo "· agents: not selected — skipped"; fi
+  if sel 1 agents;   then echo "→ agents:   linking $CLAUDE/agents → $REPO/agents";       link_type agents;   manage_aliases add;    did=1; else echo "· agents: not selected — skipped"; fi
   if sel 2 commands; then echo "→ commands: linking $CLAUDE/commands → $REPO/commands";   link_type commands; did=1; else echo "· commands: not selected — skipped"; fi
   if sel 3 skills;   then echo "→ skills:   linking $CLAUDE/skills → $REPO/skills";       link_type skills;   did=1; else echo "· skills: not selected — skipped"; fi
 else
-  if sel 1 agents;   then echo "→ agents:   unlinking $CLAUDE/agents";   remove_type agents;   manage_hook remove "$CLAUDE/settings.json"; did=1; else echo "· agents: not selected — skipped"; fi
+  if sel 1 agents;   then echo "→ agents:   unlinking $CLAUDE/agents";   remove_type agents;   manage_aliases remove; did=1; else echo "· agents: not selected — skipped"; fi
   if sel 2 commands; then echo "→ commands: unlinking $CLAUDE/commands"; remove_type commands; did=1; else echo "· commands: not selected — skipped"; fi
   if sel 3 skills;   then echo "→ skills:   unlinking $CLAUDE/skills";   remove_type skills;   did=1; else echo "· skills: not selected — skipped"; fi
 fi

@@ -110,47 +110,43 @@ back into this repo. Bare `./setup.sh` (no `link`/`remove`) auto-detects a targe
 linked with this repo and offers to unlink it instead; passing `link` or `remove` explicitly skips
 that prompt.
 
-**Linking `agents` also merges a `SessionStart` hook** into the target's `.claude/settings.json`.
-The hook has `matcher: "startup"` and runs `git submodule update --init --recursive` automatically
-on every session start, so worktree sessions get their submodules without manual steps. It is
-merged non-destructively — all other keys and hooks in `settings.json` are preserved; the script
-bails with a warning on invalid JSON rather than overwriting. Running `remove` for `agents` takes
-the hook back out, again leaving everything else intact. Requires `python3` on `$PATH`; skipped
-with a notice if not found.
-
-> **Submodule tip.** When this repo is vendored in your project, link `agents` with `setup.sh` and
-> the `SessionStart` hook will keep submodules up-to-date automatically on every session start. The
-> driver-agent preflight (`git submodule update --init --recursive`) remains as a fallback for
-> environments where the hook hasn't been installed.
+> **Submodule tip.** When this repo is vendored in your project, submodules are synced by the
+> driver agent's `initialPrompt`/Initialize step on session start — no separate hook installation
+> required.
 
 > **Windows symlink note.** Git restores the in-repo symlinks only when `core.symlinks=true` (default
 > on macOS/Linux). On Windows, enable Developer Mode or `git config core.symlinks true && git checkout -- .`.
 
 ### Step 3 — run a workflow driver agent in a worktree
 
-Once the agents are linked into a target's `.claude/agents/` (Step 2), launch Claude Code with a
-specific **workflow driver** agent as the main session and an isolated git worktree:
+Once the agents are linked into a target's `.claude/agents/` (Step 2), invoke a driver directly
+with Claude Code:
 
 ```sh
 claude --agent <workflow-agent-name> --worktree <worktree-name>
 ```
 
 The driver orchestrates the entire specflow lifecycle — `init → preflight → requirements → clarify →
-design → tasks → implement → validate → qa → drift` — inside a git worktree named `<worktree-name>`,
-so the work stays isolated from your main checkout.
+design → tasks → implement → validate → qa → drift` — inside the worktree.
 
 Available workflow-driver agents:
 
 - **Flutter:** `fl-feature-workflow`, `fl-bugfix-workflow`, `fl-quickfix-workflow`, `fl-brownfield-workflow`
 - **React:** `oac-feature-workflow`, `oac-bugfix-workflow`, `oac-quickfix-workflow`, `oac-brownfield-workflow`
 
-For example:
+> The agent must be linked into the target's `.claude/agents/` first (run `setup.sh`).
+
+When `setup.sh` links `agents`, it also writes a **permanent shell command per driver agent** into
+your shell rc (`~/.zshrc` or `~/.bashrc`). Each command is a function named exactly after the agent:
 
 ```sh
-claude --agent fl-feature-workflow --worktree feat-login
+oac-feature-workflow "add a logout button"
+fl-bugfix-workflow
 ```
 
-> The agent must be linked into the target's `.claude/agents/` first (run `setup.sh`).
+These are the **recommended** way to launch a driver — no need to remember `--agent` or `--worktree`
+flags. The commands are written as a removable managed block; run `source ~/.zshrc` (or open a new
+shell) to pick them up. `setup.sh remove` deletes the block.
 
 ## Editing
 
