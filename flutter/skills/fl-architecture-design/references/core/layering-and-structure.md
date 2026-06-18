@@ -6,7 +6,7 @@ tags: layers, dependency-direction, coupling, structure, feature-first, naming
 
 ## Respect the Four-Layer Boundary; Dependencies Point One Way
 
-The four layers — UI → Provider → Data → Service — form a strict one-way chain. Each layer calls only the one immediately below it. Skipping or reversing a layer collapses the testability seam and scatters business logic across transport code.
+The layers — UI (Widget + ViewModel/Notifier) → Domain (optional use-cases) → Data (Repository + Service) — form a strict one-way chain. Each layer calls only the one below it. Skipping or reversing a layer collapses the testability seam and scatters business logic across transport code.
 
 - **Enforce strict descent** — a widget calls a provider/notifier; a notifier calls a repository; a repository calls a service. No widget imports a repository or service.
 - **No sibling-layer awareness** — repositories do not inject other repositories; one notifier does not read another; when siblings share data, a composite owner at the layer above coordinates.
@@ -34,28 +34,36 @@ lib/
 
 ```dart
 // Correct direction: widget → notifier → repository → service
-// Widget
-class ProfileScreen extends StatelessWidget {
+
+// Notifier — code-gen with @riverpod; depends on repo, not service
+// AsyncNotifier<Profile> uses Riverpod's built-in AsyncValue as state.
+@riverpod
+class ProfileNotifier extends _$ProfileNotifier {
   @override
-  Widget build(BuildContext context) {
-    // reads from notifier only
-    final state = context.watch<ProfileNotifier>().state;
-    return Text(state.displayName);
+  Future<Profile> build(String id) =>
+      ref.watch(profileRepositoryProvider).getProfile(id); // ← repo, never service
+
+  Future<void> reload(String id) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(profileRepositoryProvider).getProfile(id),
+    );
   }
 }
 
-// Notifier (illustrative — your state-management package applies the same principle)
-class ProfileNotifier extends ChangeNotifier {
-  ProfileNotifier(this._repo);
-  final ProfileRepository _repo;          // ← depends on repo, not service
+// Widget — reads from notifier only via ref.watch
+class ProfileScreen extends ConsumerWidget {
+  const ProfileScreen({required this.id, super.key});
+  final String id;
 
-  ProfileState state = const ProfileState.loading();
-
-  Future<void> load(String id) async {
-    state = await _repo.getProfile(id)    // ← repo returns domain model
-        .then(ProfileState.data)
-        .catchError(ProfileState.error);
-    notifyListeners();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(profileNotifierProvider(id));
+    return switch (state) {
+      AsyncData(:final value) => Text(value.name), // Profile.name field
+      AsyncError(:final error) => Text('$error'),
+      _ => const CircularProgressIndicator(),
+    };
   }
 }
 

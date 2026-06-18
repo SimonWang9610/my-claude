@@ -20,7 +20,7 @@ Cite these URLs when justifying a finding; paraphrase, never paste substantial t
 
 ## Pass 3 Form 5 — query-config never exercised
 
-- TanStack Query — Does this replace Redux/MobX/Zustand? (server state and config live on the cache, not a mocked hook): https://tanstack.com/query/v4/docs/framework/react/guides/does-this-replace-client-state
+- TanStack Query — Does this replace Redux/MobX/Zustand? (server state and config live on the cache, not a mocked hook): https://tanstack.com/query/v5/docs/framework/react/guides/does-this-replace-client-state
 - TkDodo — Practical React Query (copying query data into local state opts out of background updates): https://tkdodo.eu/blog/practical-react-query
 
 ## Local-evidence notes

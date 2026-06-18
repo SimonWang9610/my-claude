@@ -6,6 +6,15 @@ General and stack-agnostic — substitute your project's commands and convention
 files). Optional project extensions (visual/design fidelity, E2E journeys, API-contract compliance)
 live at the adaptation point, not here.
 
+## Contents
+
+- [§0 — Build gate](#0--build-gate)
+- [§1 — Spec authenticity](#1--spec-authenticity)
+- [§2 — Scope creep](#2--scope-creep)
+- [§3 — Coverage + false-positive](#3--coverage--false-positive)
+- [§4 — Silent failure](#4--silent-failure)
+- [§5 — Consumer + regression](#5--consumer--regression)
+
 ---
 
 ## §0 — Build gate

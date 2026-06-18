@@ -27,10 +27,11 @@ class AlarmList extends _$AlarmList {
   Future<void> acknowledgeAll() async {
     state = const AsyncValue.loading();
     // AsyncValue.guard captures exceptions as AsyncError — no try/catch boilerplate
-    state = await AsyncValue.guard(
+    final result = await AsyncValue.guard(
       () => ref.read(alarmRepositoryProvider).acknowledgeAll(),
     );
     if (!ref.mounted) return; // ← guard after every await (3.0)
+    state = result;
   }
 }
 // → generator produces alarmListProvider
@@ -59,7 +60,8 @@ ref.watch(alarmListProvider).when(
 **`AsyncValue` accessors — 3.0:**
 - `.value` — returns `T?`, null while loading or on error (replaces deprecated `valueOrNull`).
 - `requireValue` — returns `T`, throws if not in data state.
-- `isFromCache` / `retrying` — new in 3.0; inspect whether data is stale or a retry is in progress.
+- `isFromCache` — new in 3.0; true when data was returned from cache while a refresh is in progress.
+- `isLoading` / `isRefreshing` / `isReloading` — distinguish first load, background refresh, and forced reload.
 
 **Auto-retry note:** a provider in `AsyncError` may automatically retry back to `AsyncLoading`
 (exponential backoff, on by default). Disable with `@Riverpod(retry: (count, error) => null)`.

@@ -1,10 +1,13 @@
 ---
 name: oac-acceptance-criteria
 description: >
-  Author and validate acceptance criteria for React/TypeScript features so every stated
-  intent maps to a runnable, named test. Assigns stable IDs (AC-<story>.<n>, NFR-<n>),
-  enforces observable Given/When/Then phrasing, rejects implementation-step criteria,
-  and defines how IDs flow into Vitest describe/it names so coverage is a grep query.
+  Authors and validates acceptance criteria for React 19 + TypeScript + TanStack Query v5
+  + Zustand features. Assigns stable IDs (AC-<story>.<n>, NFR-<n>), enforces observable
+  Given/When/Then phrasing, rejects implementation-step criteria (no "shall call X()",
+  "shall set isPending", "shall dispatch to store"), and defines how IDs flow into Vitest
+  describe/it names so coverage is a grep query. Trigger: use when writing or reviewing
+  acceptance criteria or NFRs for a spec, or when a criterion may be untestable,
+  ill-formed, or missing an ID before design begins.
 ---
 
 # oac-acceptance-criteria
@@ -40,7 +43,7 @@ here are the spine that test tasks, implementation, and validation all anchor to
 ### Hard checks — a criterion fails if any are true
 
 - No `AC-<story#>.<n>` or `NFR-<n>` ID, or the ID duplicates another.
-- Describes an internal call, state, or mechanism (`shall call X()`, `shall set isLoading`).
+- Describes an internal call, state, or mechanism (`shall call X()`, `shall set isPending`).
 - Then clause is only verifiable by spying on an internal function or reading internal state.
 
 ## References

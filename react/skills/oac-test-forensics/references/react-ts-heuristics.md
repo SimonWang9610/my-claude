@@ -1,10 +1,28 @@
 # React / TS detection heuristics
 
-Grep/read recipes and before→after examples for each detection pass. Targets React + Vitest + RTL +
-Zustand + TanStack Query. Grep commands narrow where to read — confirm every hit by reading the file.
+Grep/read recipes and before→after examples for each detection pass. Targets React 19 + Vitest + RTL +
+Zustand + TanStack Query v5. Grep commands narrow where to read — confirm every hit by reading the file.
 
 Examples use a neutral "list + detail" feature (`DeviceListPage`, `useDevices`, `DeviceRecord`); substitute
 your own surfaces.
+
+---
+
+## Contents
+
+1. [Behavior enumeration (Pass 1 input)](#behavior-enumeration-pass-1-input)
+2. [Pass 2 shapes — tests-pass-but-miss-behavior](#pass-2-shapes--tests-pass-but-miss-behavior)
+   - [Shape A — RTL render-without-assert](#shape-a--rtl-render-without-assert-no-triggering-action)
+   - [Shape B — Zustand/TanStack hook read without exercising the action](#shape-b--zustandtanstack-hook-read-without-exercising-the-action)
+   - [Shape C — useEffect / query lifecycle untested](#shape-c--useeffect--query-lifecycle-untested)
+   - [Shape D — waitFor / fake-timers masking timing](#shape-d--waitfor--fake-timers-masking-timing)
+3. [Pass 3 forms — false-positive](#pass-3-forms--false-positive)
+   - [Form 1 — Tautology / arrange-act-no-assert](#form-1--tautology--arrange-act-no-assert)
+   - [Form 2 — Mock-shape drift](#form-2--mock-shape-drift-fixture-shape--production-ts-type)
+   - [Form 3 — Un-awaited write hidden by mockResolvedValue](#form-3--un-awaited-write-hidden-by-mockresolvedvalue)
+   - [Form 4 — CSS-class presence instead of resolved value](#form-4--css-class-presence-instead-of-resolved-value)
+   - [Form 5 — Query-config never exercised](#form-5--query-config-never-exercised-no-real-queryclient)
+4. [Matcher misuse (false-positive amplifier across passes)](#matcher-misuse-false-positive-amplifier-across-passes)
 
 ---
 
@@ -44,7 +62,7 @@ a `no-spec-coverage` (improvised) finding.
 
 ```bash
 grep -nE 'it\(|test\(' <file>.test.tsx          # locate test blocks
-grep -nE 'fireEvent|userEvent|\.click\(|act\(' <file>.test.tsx  # check action present
+grep -nE 'userEvent\.setup|fireEvent|\.click\(|act\(' <file>.test.tsx  # check action present
 # flag blocks that have render+getBy but no event call
 ```
 
@@ -55,10 +73,11 @@ it('calls onSort with the column id', () => {
   expect(screen.getAllByRole('columnheader').length).toBeGreaterThan(0)
 })
 
-// FIXED — fire the action, assert the observable outcome
-it('AC-14.3: header click sorts by that column ascending', () => {
+// FIXED — fire the action with userEvent (pointer + keyboard fidelity), assert the observable outcome
+it('AC-14.3: header click sorts by that column ascending', async () => {
+  const user = userEvent.setup()
   render(<DataTable columns={cols} onSort={onSort} />)
-  fireEvent.click(screen.getByRole('columnheader', { name: /name/i }))
+  await user.click(screen.getByRole('columnheader', { name: /name/i }))
   expect(screen.getByRole('columnheader', { name: /name/i }))
     .toHaveAttribute('aria-sort', 'ascending')
   expect(onSort).toHaveBeenCalledWith('name', 'asc')
@@ -78,11 +97,14 @@ grep -nE 'invalidateQueries|setQueryData|getState\(\)|\.mockReturnValue' <file>.
 expect(setScopeFilter).toHaveBeenCalledWith('site-a')
 
 // FIXED — exercise through a real QueryClient and assert the invalidation
-const client = new QueryClient()
-const spy = vi.spyOn(client, 'invalidateQueries')
-renderWithClient(<ScopeFilterToggle />, client)
-fireEvent.click(screen.getByRole('switch', { name: /this site only/i }))
-expect(spy).toHaveBeenCalledWith({ predicate: expect.any(Function) })
+it('AC-7.2: toggling scope filter invalidates the query cache', async () => {
+  const user = userEvent.setup()
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const spy = vi.spyOn(client, 'invalidateQueries')
+  renderWithClient(<ScopeFilterToggle />, client)
+  await user.click(screen.getByRole('switch', { name: /this site only/i }))
+  expect(spy).toHaveBeenCalledWith({ predicate: expect.any(Function) })
+})
 ```
 
 When the criterion's truth lives in the TanStack cache but the test asserts a shadow Zustand copy (or vice
@@ -108,7 +130,7 @@ await waitFor(() => expect(panels).toHaveLength(4))
 vi.useFakeTimers()
 render(<Grid items={four} />)
 expect(screen.queryAllByTestId('frame')).toHaveLength(1)
-act(() => vi.advanceTimersByTime(500))
+await act(async () => { vi.advanceTimersByTime(500) })
 expect(screen.queryAllByTestId('frame')).toHaveLength(2) // NFR-3: 500ms stagger
 ```
 
@@ -206,15 +228,17 @@ it('NFR-3: does not refetch on focus', () => {
   expect(screen.getByText('Item')).toBeInTheDocument()  // proves nothing about config
 })
 
-// FIXED — real QueryClient; NFR would fail if config were removed
-const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-const fetchSpy = vi.fn().mockResolvedValue(mockList)
+// FIXED — real QueryClient per test; NFR would fail if config were removed
 it('NFR-3 AC-8.1: does not refetch on window focus (staleTime Infinity)', async () => {
+  const fetchSpy = vi.fn().mockResolvedValue(mockList)
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(<QueryClientProvider client={client}><ListPage fetch={fetchSpy} /></QueryClientProvider>)
-  await screen.findByText('Item')
+  await screen.findByText('Item')   // wait for initial load
   fetchSpy.mockClear()
-  fireEvent.focus(window)
-  await waitFor(() => expect(fetchSpy).not.toHaveBeenCalled())
+  fireEvent.focus(window) // window/document events have no userEvent equivalent — bare fireEvent is the accepted exception here
+  // wait one tick for any async refetch to start, then assert it did not
+  await Promise.resolve()
+  expect(fetchSpy).not.toHaveBeenCalled()
 })
 ```
 

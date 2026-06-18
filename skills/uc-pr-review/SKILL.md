@@ -1,9 +1,22 @@
 ---
 name: uc-pr-review
-description: Review open pull requests for a Flutter/Dart project and post an automated review (inline comments + APPROVE or REQUEST_CHANGES) to GitHub. Use this whenever the user asks to review a Flutter PR, check a PR for Riverpod/StateProvider issues, audit listenable disposal, vet Future/Async providers, check ref.watch/ref.read/ref.listen usage, or wants an automated GitHub review posted to a Flutter project's PR. Trigger on phrases like "review this PR", "check PR #N", "review the open PRs", "do a Flutter code review", even when the user only gives a PR URL or number.
+description: Reviews open Flutter/Dart pull requests against a Riverpod/lifecycle checklist and posts a single batched GitHub review (inline comments + APPROVE or REQUEST_CHANGES verdict). Checks for legacy Riverpod providers (StateNotifier, StateProvider, ChangeNotifierProvider), incorrect ref.watch/ref.read/ref.listen usage, undisposed listenables, unguarded async gaps, and oversized build methods. Trigger on "review this PR", "check PR #N", "review the open PRs", "do a Flutter code review", or any Flutter PR URL or number.
 ---
 
 # Flutter PR Review
+
+<!-- TOC -->
+- [Workflow](#workflow)
+- [Verdict legend](#verdict-legend-for-comments)
+- [Rule 1 — Listenable disposal](#1-all-listenables-must-be-disposed)
+- [Rule 2 — Legacy providers](#2-legacy-providers-must-not-be-introduced)
+- [Rule 3 — Provider declaration scope](#3-must-not-declare-any-provider-inside-a-method--function--state-class)
+- [Rule 4 — Async providers](#4-be-careful-with-future--async-providers)
+- [Rule 5 — ref usage](#5-correct-refwatch--refread--reflisten-usage)
+- [Rule 6 — Build method size](#6-avoid-oversized-build-methods)
+- [General best practices](#general-best-practices-to-also-check)
+- [Output format](#output--review-body-format)
+<!-- /TOC -->
 
 Reviews a Flutter/Dart PR against a fixed checklist (general best practices + the project-specific Riverpod/lifecycle rules below), then posts a single GitHub review with inline comments and an APPROVE / REQUEST_CHANGES verdict.
 
@@ -32,33 +45,37 @@ These are the rules this team cares about most. Check every one on every PR.
 Every `ChangeNotifier`, `ValueNotifier`, `TextEditingController`, `ScrollController`, `AnimationController`, `FocusNode`, `StreamSubscription`, `Timer`, and similar listenable/disposable created and _owned_ by a widget or class must be disposed.
 
 - In `State`: created in `initState`/as a field → disposed in `dispose`. Flag any owned listenable with no corresponding `dispose()` call.
-- In Riverpod providers: cleanup belongs in `ref.onDispose(...)`. Flag a controller/subscription created in a provider with no `ref.onDispose`.
+- In Riverpod providers: cleanup belongs in `ref.onDispose(...)` called inside `build()`, **not** a `dispose()` override. Flag a controller/subscription created in a provider with no `ref.onDispose`.
 - Do **not** flag listenables that are passed in (not owned) — the owner disposes them. Note ownership ambiguity as a `[question]` instead of blocking.
 
-### 2. `StateProvider` must be released explicitly via `Legacy.release`
+### 2. Legacy providers must not be introduced
 
-If a `StateProvider` is used, its lifecycle must be ended with an explicit `Legacy.release(...)` call when the consumer is torn down (typically in `dispose`/`ref.onDispose`). Flag any `StateProvider` whose release path is missing — a leaked `StateProvider` is `[blocking]`.
+`StateNotifier`, `StateNotifierProvider`, and `StateProvider` live in `package:riverpod/legacy.dart`; `ChangeNotifierProvider` and `ChangeNotifier`-backed providers live in `package:flutter_riverpod/legacy.dart`. All are legacy. Flag any PR that **adds** these patterns as `[blocking]` and recommend migrating to `@riverpod` code-gen with `Notifier` or `AsyncNotifier`.
 
-### 3. MUST NOT declare `StateProvider` inside a method / function / State class
+- If the PR is touching an existing legacy file and cannot feasibly migrate in scope, downgrade to `[nit]` with a note that it follows existing legacy patterns. Look for cues: the file already saturated with legacy providers, PR description says out-of-scope.
+- All new providers must use code-gen (`@riverpod` / `@Riverpod(keepAlive: true)`) with a `build()` method. `autoDispose` is the code-gen default — do **not** flag the absence of `.autoDispose`; only flag if a provider should be kept alive but is missing `@Riverpod(keepAlive: true)`.
 
-Top-level (file-scope) `final fooProvider = StateProvider(...)` is the only acceptable declaration site. A `StateProvider` declared inside a method, function body, or as a `State`/class member creates a new provider per build/instance and leaks.
+### 3. MUST NOT declare any provider inside a method / function / State class
 
-- This is `[blocking]` **unless** the PR is explicitly working on the legacy codebase that already relies heavily on dynamic `StateProvider`s and cannot be refactored within this PR. In that case downgrade to `[nit]` and note that it follows existing legacy patterns. Look for cues: the touched files are clearly legacy, the PR description says so, or the surrounding code is already saturated with dynamic `StateProvider`s.
+All providers (`@riverpod`-annotated functions/classes, or any remaining legacy `…Provider(…)`) must be declared at file (top-level) scope. A provider declared inside a method, function body, or as a class member creates a new provider per build/instance and leaks.
+
+- This is `[blocking]`.
 
 ### 4. Be careful with Future / Async providers
 
-- `FutureProvider` / `AsyncNotifierProvider` results must be handled with `.when` / `AsyncValue` pattern matching (loading + error + data), not just `.value` / `.requireValue` with no error or loading handling. Flag unhandled error/loading states.
-- Watch for unguarded `await` after which `ref`/`context` is used without re-checking `mounted` / provider liveness (use-after-dispose). Flag `if (!mounted) return;` omissions following awaits in widgets, and `ref` reads after await in autoDispose providers that may have been disposed.
-- Flag side effects (mutations, navigation) performed directly inside a Future provider's body rather than via `ref.listen`.
+- `AsyncNotifier` / `AsyncNotifierProvider` (and `FutureProvider`) results consumed in the UI must be handled with `.when` / exhaustive `AsyncValue` pattern matching (loading + error + data). Flag bare `.value` / `.requireValue` access with no loading/error branch.
+- After any `await` in a widget or provider, re-check liveness before touching `context` or `ref`. In widgets: `if (!mounted) return;`. In providers: `if (!ref.mounted) return;` (use `Ref.mounted`, not a custom flag). Flag omissions.
+- Flag side effects (mutations, navigation) performed directly inside an async provider's `build()` body rather than triggered via `ref.listen`.
 
 ### 5. Correct `ref.watch` / `ref.read` / `ref.listen` usage
 
-- `ref.watch` — reactive dependency; use it to read state the widget/provider should rebuild on.
-- `ref.read` — one-shot read of current state; for use in callbacks/event handlers, not for values the build output depends on.
-- `ref.listen` — side effects in response to change (navigation, snackbars, dialogs).
-- **Flag `ref.read` inside a `build` method** as `[blocking]` unless there's a comment documenting why `ref.read` is required there. A `ref.read` in build usually means a missed rebuild dependency.
+- `ref.watch` — reactive dependency; call only inside `build()` / provider `build()`. Causes rebuild on change.
+- `ref.read` — one-shot snapshot; for event handlers and callbacks only, never in `build()`.
+- `ref.listen` — side-effect trigger (navigation, snackbars); call inside `build()`, not inside callbacks.
+- **Flag `ref.read` inside a `build` method as `[blocking]`** — it silently skips rebuilds when state changes (stale-UI bug), not merely a style issue.
 - Flag `ref.watch` inside callbacks / `onPressed` / event handlers (should be `ref.read`).
 - Flag side effects driven off `ref.watch` instead of `ref.listen`.
+- Flag overly broad watches where `.select()` would narrow rebuilds to a single field: `ref.watch(fooProvider.select((s) => s.field))`.
 
 ### 6. Avoid oversized `build` methods
 

@@ -1,11 +1,14 @@
 ---
 name: fl-acceptance-criteria
 description: >
-  Author and validate acceptance criteria for Flutter/Dart features so every stated
-  intent maps to a runnable, named test. Assigns stable IDs (AC-<story>.<n>, NFR-<n>),
-  enforces observable Given/When/Then phrasing, rejects implementation-step criteria,
-  and defines how IDs flow into Flutter group/test/testWidgets names so coverage is a
-  grep query or a `flutter test --plain-name` filter.
+  Authors and validates acceptance criteria for Flutter/Dart 3 + Riverpod features.
+  Assigns stable IDs (AC-<story>.<n>, NFR-<n>), enforces observable Given/When/Then
+  phrasing, rejects implementation-step criteria (no "shall call notifyListeners()",
+  "shall set isLoading", "shall emit a LoadingState"), and defines how IDs flow into
+  Flutter group/test/testWidgets names so coverage is a grep query or a
+  `flutter test --plain-name` filter. Trigger: use when writing or reviewing acceptance
+  criteria or NFRs for a Flutter spec, or when a criterion may be untestable,
+  ill-formed, or missing an ID before design begins.
 ---
 
 # fl-acceptance-criteria
@@ -34,7 +37,7 @@ here are the spine that test tasks, implementation, and validation all anchor to
    - Not a mock-call assertion or render-it-back tautology (→ `references/examples.md`).
 6. For every NFR, assign a unique `NFR-<n>` ID using the same observable phrasing contract.
 7. For each AC/NFR, confirm its ID embeds in the Flutter `group(...)` description.
-   → read `references/traceability.md` §2 for naming convention and `--plain-name` filtering.
+   → read `references/traceability.md` §1 for naming convention and §2 for `--plain-name` filtering.
 8. Flag any criterion failing a hard check as a blocking authoring condition — fix the
    source artifact before proceeding.
 
@@ -50,7 +53,7 @@ here are the spine that test tasks, implementation, and validation all anchor to
 
 - [references/ac-format.md](references/ac-format.md) — ID scheme, EARS patterns, full
   phrasing contract (reject/require examples), authoring checklist.
-- [references/examples.md](references/examples.md) — Before/after for the four most
+- [references/examples.md](references/examples.md) — Before/after for the five most
   common AC anti-patterns with Flutter test-name skeletons.
 - [references/traceability.md](references/traceability.md) — How an AC ID flows into
   Flutter group/test/testWidgets names and `flutter test --plain-name`/`-N` filtering.

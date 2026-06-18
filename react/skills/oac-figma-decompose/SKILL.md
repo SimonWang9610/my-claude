@@ -1,6 +1,6 @@
 ---
 name: oac-figma-decompose
-description: Decomposes a Figma design into individual components using parallel agents, matches them against existing codebase components, and produces a compact planning document. Auto-triggers on Figma URLs, "decompose design", "break down the figma", "what components do I need for this screen", "plan from figma", "look at this figma" + URL, component mapping, or any mention of extracting component structure from Figma designs for planning or implementation purposes.
+description: Decomposes a Figma screen into a compact component map by discovering the layer tree via get_metadata, matching Figma elements against existing codebase components, and extracting only genuinely new components via parallel agents. Produces a ~150-token-per-component planning document (EXISTING / PARTIAL / NEW classification) instead of raw Figma JSON. Use when given a Figma URL, "decompose design", "break down the figma", "what components do I need for this screen", "plan from figma", "look at this figma" + URL, or any request to map a Figma design to React components for planning or implementation. Stack: React 19 + TypeScript + MUI + Zustand + TanStack Query v5.
 ---
 
 # oac-figma-decompose
@@ -12,6 +12,18 @@ Turns an expensive Figma design-context pull into a compact, planning-friendly c
 4. Producing a ~150 token-per-component summary instead of ~2000
 
 The output is a compact component map for planning and implementation — what *exists* vs. what's *new* — not pixel-perfect implementation detail.
+
+---
+
+## Contents
+
+- [Project configuration](#project-configuration-the-per-project-seam)
+- [Input](#input)
+- [Step 1 — Discover the Component Tree](#step-1--discover-the-component-tree)
+- [Step 2 — Match Against Existing Components](#step-2--match-against-existing-components)
+- [Step 3 — Parallel Extraction (NEW and PARTIAL only)](#step-3--parallel-extraction-new-and-partial-only)
+- [Step 4 — Assemble the Planning Document](#step-4--assemble-the-planning-document)
+- [Tips and Gotchas](#tips-and-gotchas)
 
 ---
 

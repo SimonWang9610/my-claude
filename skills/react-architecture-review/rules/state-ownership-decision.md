@@ -34,7 +34,7 @@ const useAppStore = create((set) => ({
 const [open, setOpen] = useState(false)
 
 // Server data: query
-const { data: cameras } = useQuery({ queryKey: cameraKeys.list(), queryFn: fetchCameras })
+const { data: cameras } = useQuery({ queryKey: cameraKeys.lists(), queryFn: fetchCameras })
 
 // Truly shared client state: store
 const useLayoutStore = create<LayoutState>()((set) => ({

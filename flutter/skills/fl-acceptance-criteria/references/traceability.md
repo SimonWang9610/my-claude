@@ -1,5 +1,13 @@
 # AC → test traceability — making coverage a runnable query
 
+<!-- TOC -->
+- [1. Naming convention](#1-naming-convention)
+- [2. `flutter test --plain-name` filtering](#2-flutter-test---plain-name-filtering)
+- [3. Optional: tags for machine-queryable filtering](#3-optional-tags-for-machine-queryable-filtering)
+- [4. Two-layer test coverage for async ACs](#4-two-layer-test-coverage-for-async-acs)
+- [5. Downstream gate](#5-downstream-gate)
+<!-- /TOC -->
+
 Stable AC IDs flow from `requirements.md` into Flutter test names so "is AC-X.Y covered?"
 is a grep or a `flutter test --plain-name` filter, not a manual audit. No BDD framework
 needed — the discipline is in the naming.
@@ -31,7 +39,7 @@ scan for `AC-14.3` across the test tree and find exactly the test(s) that claim 
 - The AC/NFR ID belongs in the `group(...)` description, not buried in the `testWidgets` name.
 - A single `group` may contain multiple `testWidgets` if they all assert different facets of
   the same criterion (e.g. positive path + negative path for AC-1.1).
-- A criterion that has both a holder/unit-test layer and a widget-test layer should carry the
+- A criterion that has both a notifier/unit-test layer and a widget-test layer should carry the
   AC ID in the `group` description of **both** test files.
 
 ## 2. `flutter test --plain-name` filtering
@@ -86,12 +94,12 @@ either approach alone.
 
 ## 4. Two-layer test coverage for async ACs
 
-An AC that describes async or stream behaviour (e.g. loading → data → error) should be
-covered at two layers, both carrying the AC ID:
+An AC that describes async behaviour (e.g. loading → data → error) should be covered at
+two layers, both carrying the AC ID:
 
 | Layer | Test type | File pattern | What it asserts |
 |---|---|---|---|
-| Holder/repository | `test(...)` unit test | `*_test.dart` under `test/unit/` | The publicly observable stream/value sequence |
+| Notifier/repository | `test(...)` unit test | `*_test.dart` under `test/unit/` | The publicly observable `AsyncValue` sequence via `ProviderContainer` |
 | Widget | `testWidgets(...)` | `*_test.dart` under `test/widget/` | The rendered outcome the user sees |
 
 Both `group` descriptions must carry the AC ID so a `flutter test --plain-name 'AC-7.1'`

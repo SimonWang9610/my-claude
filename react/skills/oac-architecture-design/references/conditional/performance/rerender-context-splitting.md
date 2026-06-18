@@ -20,7 +20,7 @@ const SessionContext = createContext<Session | null>(null)        // changes rar
 const PlaybackStateContext = createContext<PlaybackState | null>(null) // changes often
 const PlaybackActionsContext = createContext<PlaybackActions | null>(null) // never changes
 
-function PlaybackProvider({ children }) {
+function PlaybackProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initial)
   const actions = useMemo(() => bindActions(dispatch), [])         // stable forever
   return (

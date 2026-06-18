@@ -31,6 +31,9 @@ function Timeline() {
       player.onTimeUpdate((ms) => {
         cursorRef.current!.style.transform = `translateX(${msToPx(ms)}px)`
       }),
+    // player omitted: it must be a stable module-level ref or a useRef value that
+    // never changes identity after mount. If player can change, add it to deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
   return <div ref={cursorRef} className="cursor" />

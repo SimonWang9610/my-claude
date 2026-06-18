@@ -1,10 +1,12 @@
 ---
 name: oac-journey-tests
 description: >
-  Author end-to-end journey tests for a feature's user stories — but only after a human approves the
-  journey plan. Extracts user journeys from the requirements, gates on explicit approval, then writes
-  one E2E test per approved journey (grouped by user story) with happy- and error-path setup and a
-  traceability manifest. Stack-agnostic E2E discipline; the runner and harness are the project's.
+  Authors end-to-end journey tests for a feature's user stories using Vitest + React Testing Library.
+  Extracts journeys from requirements (US-* / AC-*), gates on explicit human approval of the plan,
+  then writes one test per approved journey (grouped by user story) with happy- and error-path
+  coverage and a traceability manifest. Use when a feature needs E2E coverage beyond per-unit tests
+  and an approval gate is required before any test code is written. Trigger: "write journey tests",
+  "E2E tests for this feature", "journey plan", or after per-unit tests are done.
 ---
 
 # oac-journey-tests
@@ -15,7 +17,7 @@ Per-unit and component tests are written when the unit is built. This skill adds
 
 ## When to use
 
-When a feature needs end-to-end coverage of its user flows (beyond the per-unit tests already written) and you want a human to approve which journeys are automated before any E2E code is written. Requires a project that runs an E2E runner (Playwright, Cypress, …) and a way to drive the running app.
+When a feature needs end-to-end coverage of its user flows (beyond the per-unit tests already written) and a human must approve which journeys are automated before any test code is written. Suitable for any project running Vitest + React Testing Library; also works with Playwright or Cypress — the discipline is runner-abstracted.
 
 ## Instructions
 

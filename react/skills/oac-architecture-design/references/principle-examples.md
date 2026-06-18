@@ -1,10 +1,22 @@
 # Principle examples — P1–P7 right/wrong sketches
 
 Right/wrong code sketches for the seven target-architecture principles enforced by this gate.
-General best practices for a React 19 + Vite + TypeScript + Zustand + TanStack Query + MUI +
+General best practices for a React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI +
 Vitest project; examples use a neutral "list + detail" feature (`useDevices`, `DeviceListPage`)
 so they transfer to any domain. For violation signals and trigger crosswalk, see
 [`principle-checks.md`](principle-checks.md).
+
+---
+
+## Contents
+
+- [P1 — Server state in TanStack Query](#p1--server-state-lives-in-tanstack-query-never-copied-into-zustand-or-localstorage)
+- [P2 — Render-only components + single-responsibility hooks](#p2--components-render-logic-in-named-single-responsibility-hooks-soft-ceiling)
+- [P3 — One owner per fact; derive, don't mirror](#p3--one-authoritative-owner-per-fact-derive-client-selection-never-mirror-with-effects)
+- [P4 — Writes via useMutation; errors via isError](#p4--writes-via-usemutation-errors-via-onerrorisError)
+- [P5 — Testability seam per unit](#p5--every-unit-must-be-renderableinvocable-in-isolation-testability-seam)
+- [P6 — Token-layer selection](#p6--token-layer-selection-rule-for-every-color-value)
+- [P7 — No module-scope mutable domain state](#p7--no-module-scope-mutable-domain-state-if-unavoidable-export-_resetfortest)
 
 | ID | Rule | Trigger | Problem class it prevents |
 |----|------|---------|---------------------------|
@@ -43,6 +55,7 @@ function DevicePanel() {
 const useDeviceStore = create((set) => ({ devices: [], setDevices: (d) => set({ devices: d }) }));
 function DevicePanel() {
   const { data } = useDevices();
+  const setDevices = useDeviceStore((s) => s.setDevices);
   useEffect(() => { setDevices(data ?? []); }, [data]); // stale copy; opts out of background refetch
 }
 ```
@@ -51,7 +64,7 @@ function DevicePanel() {
 `core/state-single-source-of-truth.md`,
 `core/state-ownership-decision.md`.
 
-**Sources:** https://tanstack.com/query/v4/docs/framework/react/guides/does-this-replace-client-state · https://tkdodo.eu/blog/practical-react-query
+**Sources:** https://tanstack.com/query/v5/docs/framework/react/guides/does-this-replace-client-state · https://tkdodo.eu/blog/practical-react-query
 
 ---
 
@@ -70,7 +83,7 @@ host, which assures nothing about the behavior inside. P2 is what makes P5 physi
 // RIGHT: component renders; each hook is independently testable
 function DeviceListPage() {
   const filters = useDeviceFilters();
-  const { devices, isLoading } = useFilteredDevices(filters);
+  const { devices, isPending } = useFilteredDevices(filters);
   const selection = useDeviceSelection(devices);
   return <DeviceListView filters={filters} devices={devices} selection={selection} />;
 }
@@ -123,12 +136,14 @@ useEffect(() => {
 
 ---
 
-## P4 — Writes via `useMutation`; errors via `onError`/`isError`
+## P4 — Writes via `useMutation`; errors via `mutation.isError`
 
-**Rule.** All writes (POST/PUT/PATCH/DELETE) use `useMutation`. Cache invalidation in `onSuccess`;
-cleanup in `onSettled`; user-visible error state from `mutation.isError`/`mutation.error`. Prefer
-`mutate` + `onError` for single writes; `mutateAsync` + `try/catch` only when chaining dependent
-writes. Never fire a write as an un-awaited call in a handler; never swallow with `console.error`.
+**Rule.** All writes (POST/PUT/PATCH/DELETE) use `useMutation`. Cache invalidation in the mutation's
+`onSuccess` callback; cleanup in `onSettled`; user-visible error state from `mutation.isError` /
+`mutation.error`. Prefer `mutate` + `onError` for single writes; `mutateAsync` + `try/catch` only
+when chaining dependent writes. Never fire a write as an un-awaited call in a handler; never swallow
+with `console.error`. Note: `onSuccess`/`onError`/`onSettled` are valid on `useMutation` — they
+are removed only from `useQuery` in TanStack Query v5.
 
 **Rationale.** An imperative write in a handler leaves no `isError` state for the UI, often
 forgets cache invalidation, and un-awaited failures are never exercised by `mockResolvedValue` tests.
@@ -146,7 +161,7 @@ const saveMutation = useMutation({
 // WRONG
 async function handleSave() {
   try { await api.updateDevice(formValues); }
-  catch (e) { console.error(e); } // no UI error, no cache invalidation
+  catch (e: unknown) { console.error(e); } // no UI error, no cache invalidation
 }
 ```
 
@@ -154,7 +169,7 @@ async function handleSave() {
 `core/query-no-effect-fetching.md`,
 `core/query-key-factory.md`.
 
-**Sources:** https://tanstack.com/query/v4/docs/framework/react/guides/mutations · https://blog.logrocket.com/deep-dive-mutations-tanstack-query/
+**Sources:** https://tanstack.com/query/v5/docs/framework/react/guides/mutations · https://tkdodo.eu/blog/mastering-mutations-in-react-query
 
 ---
 

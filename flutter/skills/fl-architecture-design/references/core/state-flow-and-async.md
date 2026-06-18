@@ -15,35 +15,35 @@ State flows down to widgets; user intent flows up as named commands to the state
 - **Never swallow errors** — a bare `catch (_) {}` leaves the widget frozen on a spinner; always route caught exceptions into the `error` variant with the real exception preserved.
 
 ```dart
-// Sealed async union — three legal states, compiler-enforced
-sealed class AsyncState<T> {
-  const AsyncState();
-}
-class AsyncLoading<T> extends AsyncState<T> { const AsyncLoading(); }
-class AsyncData<T>    extends AsyncState<T> { const AsyncData(this.value); final T value; }
-class AsyncError<T>   extends AsyncState<T> { const AsyncError(this.error); final Object error; }
+// Riverpod AsyncNotifier — AsyncValue<T> is the built-in sealed async union
+// (AsyncLoading | AsyncData | AsyncError); no custom sealed class needed.
+@riverpod
+class ProductNotifier extends _$ProductNotifier {
+  @override
+  Future<List<Product>> build() =>
+      ref.watch(productRepositoryProvider).getProducts(); // initial load
 
-// illustrative — your state-management package applies the same principle
-class ProductNotifier extends ChangeNotifier {
-  AsyncState<List<Product>> state = const AsyncLoading();
-
-  Future<void> load() async {
-    state = const AsyncLoading(); notifyListeners();
-    try {
-      state = AsyncData(await _repo.getProducts());
-    } catch (e) {
-      state = AsyncError(e);          // never swallowed
-    }
-    notifyListeners();
+  Future<void> reload() async {
+    state = const AsyncLoading();                       // state down
+    state = await AsyncValue.guard(                     // never swallowed
+      () => ref.read(productRepositoryProvider).getProducts(),
+    );
   }
 }
 
-// Widget — exhaustive switch, no default:
-switch (notifier.state) {
-  case AsyncLoading() => const CircularProgressIndicator(),
-  case AsyncData(:final value) => ProductList(items: value),
-  case AsyncError(:final error) => ErrorView(error: error),
-}
+// Widget build() — exhaustive switch expression on AsyncValue, no default:
+return switch (ref.watch(productNotifierProvider)) {
+  AsyncLoading() => const CircularProgressIndicator(),
+  AsyncData(:final value) => ProductList(items: value),
+  AsyncError(:final error) => ErrorView(error: error),
+};
+
+// When a custom sealed union is preferred (non-Riverpod holder or richer states):
+// Note: names must not collide with Riverpod's AsyncLoading/AsyncData/AsyncError exports.
+sealed class FetchState<T> { const FetchState(); }
+class FetchLoading<T> extends FetchState<T> { const FetchLoading(); }
+class FetchData<T>    extends FetchState<T> { const FetchData(this.value); final T value; }
+class FetchError<T>   extends FetchState<T> { const FetchError(this.error); final Object error; }
 ```
 
 Ref: https://docs.flutter.dev/app-architecture/recommendations

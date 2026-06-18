@@ -4,6 +4,16 @@ Full review procedure, report formats, trigger detail, and scope boundary. Read 
 
 ---
 
+## Contents
+
+- [Why this gate exists](#why-this-gate-exists)
+- [Procedure](#procedure)
+- [The three blocking triggers](#the-three-blocking-triggers)
+- [Review Report format](#review-report-format)
+- [Scope boundary](#scope-boundary)
+
+---
+
 ## Why this gate exists
 
 A God-component has no isolation seam, so the only way to "test" it is to mock the whole host —
@@ -16,7 +26,7 @@ unspecced logic with no testable seam. This gate inserts that question into the 
 - React docs — custom hook extraction: https://react.dev/learn/reusing-logic-with-custom-hooks
 - Feature-Sliced Design — hard feature boundaries: https://feature-sliced.design/
 - bulletproof-react — explicit feature public API: https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md
-- TanStack — server vs client state: https://tanstack.com/query/v4/docs/framework/react/guides/does-this-replace-client-state
+- TanStack — server vs client state: https://tanstack.com/query/v5/docs/framework/react/guides/does-this-replace-client-state
 - TkDodo — copying server data into state opts out of background updates: https://tkdodo.eu/blog/practical-react-query
 - TkDodo — derive at read time, not with effects: https://tkdodo.eu/blog/deriving-client-state-from-server-state
 

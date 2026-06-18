@@ -2,6 +2,17 @@
 
 Full review procedure, report formats, trigger detail, and scope boundary. Read when running the gate.
 
+<!-- TOC -->
+- [Why this gate exists](#why-this-gate-exists)
+- [Procedure](#procedure)
+- [The three blocking triggers](#the-three-blocking-triggers)
+  - [Trigger 1 — God-widget / God-holder / logic-in-build](#trigger-1--god-widget--god-holder--logic-in-build)
+  - [Trigger 2 — Layer violation / dual-source-of-truth](#trigger-2--layer-violation--dual-source-of-truth)
+  - [Trigger 3 — Testability seam missing](#trigger-3--testability-seam-missing)
+- [Review Report format](#review-report-format)
+- [Scope boundary](#scope-boundary)
+<!-- /TOC -->
+
 ---
 
 ## Why this gate exists
@@ -26,7 +37,7 @@ with no testable seam. This gate inserts that question into the lifecycle.
 
 Run the review at **gate altitude** (architecture, not line-by-line):
 
-1. **Scope.** Take the file list from `design.md` → Widget Impact / surfaces section, plus any
+1. **Scope.** Take the file list from `design.md` → layer map (Step 8 of `design-procedure.md`), plus any
    files modified or created during implementation. List them before reading.
 
 2. **Map the structure first.** Sketch actual data flow for the surfaces in scope across the four
@@ -61,8 +72,8 @@ extraction plan or a recorded justification.
 ### Trigger 1 — God-widget / God-holder / logic-in-build
 
 **Condition:** A widget whose `build()` method is very large and mixes concerns (data watching,
-business logic, IO, multiple distinct UI sections), or a state holder (Notifier/Bloc/Cubit/
-ChangeNotifier) mixing data-fetching, UI-state management, and lifecycle side-effects with no
+business logic, IO, multiple distinct UI sections), or a state holder (`Notifier`/`AsyncNotifier`/
+Bloc/Cubit) mixing data-fetching, UI-state management, and lifecycle side-effects with no
 isolation seam.
 
 **Confirm against:** `core/widget-build-discipline.md`,

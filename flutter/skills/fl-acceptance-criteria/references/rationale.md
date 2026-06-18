@@ -41,13 +41,14 @@ An AC is observable at this layer when its Then clause can be expressed as a fin
 assertion without reading any provider, notifier, or controller field directly.
 
 **Unit tests** (`test`): observable outcomes for pure Dart logic are the return value of
-a function, the sequence of values emitted by a stream or `ValueNotifier`, or the final
-state of a value exposed via a public getter. An AC about async data flow (loading →
-data → error) is observable at this layer when the state sequence is asserted on the
-*publicly exposed stream or value*, not on a private field or method spy.
+a function, the sequence of `AsyncValue` states exposed by a Riverpod `AsyncNotifier`
+(or `Notifier`), or the final state of a value exposed via a public getter. An AC about
+async data flow (loading → data → error) is observable at this layer when the
+`AsyncValue` sequence is asserted via `ProviderContainer` on the publicly exposed
+provider, not on a private field or method spy.
 
-A well-formed AC about async/stream behavior typically maps to both layers:
-- a unit test on the holder/repository asserting the state sequence
+A well-formed AC about async behavior typically maps to both layers:
+- a unit test on the notifier/repository asserting the `AsyncValue` state sequence
 - a widget test asserting the rendered outcome the user sees
 
 Both test groups carry the AC ID so `flutter test --plain-name 'AC-X.Y'` exercises

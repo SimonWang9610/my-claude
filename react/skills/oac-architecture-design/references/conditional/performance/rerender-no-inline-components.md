@@ -12,7 +12,7 @@ A component defined inside another's body is a *new type* on every render. React
 **Incorrect:**
 
 ```tsx
-function CameraPanel({ camera }) {
+function CameraPanel({ camera }: { camera: Camera }) {
   function StatusBadge() {                       // new type identity every render
     return <Chip label={camera.status} />
   }
@@ -26,7 +26,7 @@ function CameraPanel({ camera }) {
 function StatusBadge({ status }: { status: CameraStatus }) {
   return <Chip label={status} />
 }
-function CameraPanel({ camera }) {
+function CameraPanel({ camera }: { camera: Camera }) {
   return <div><StatusBadge status={camera.status} /><VideoSurface camera={camera} /></div>
 }
 ```

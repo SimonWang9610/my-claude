@@ -1,18 +1,31 @@
 ---
 name: fl-architecture-design
 description: >
-  Applies the Flutter specflow architecture rules — four-layer layering (UI → Provider → Data
-  → Service), the three-tier state-ownership decision (setState → InheritedWidget scope →
-  provider), SSOT repository, immutable + Equatable domain models, the testability seam (P8),
-  and package idioms — *while authoring* design.md and contracts/. At phase exit, also verifies
-  that each unit is independently verifiable (the verifiable-unit gate, P8): checks the three
-  blocking triggers and writes PASS or records an extraction plan / justification.
-  Carries the full rule corpus and gate procedure under references/.
-  Triggers on the spec-design stage, on "design this feature's architecture", or whenever you
-  are structuring widgets, state holders, repositories, services, or domain models for a feature.
+  Authors design.md and contracts/ for Flutter features by applying architecture rules P1–P8:
+  four-layer structure (UI → Provider → Data → Service), three-tier state-ownership
+  (setState → InheritedWidget → Riverpod provider), SSOT repository with DTO→domain mapping,
+  immutable domain models, and testability seams. At phase exit runs the verifiable-unit gate
+  (P8): checks the three blocking triggers and writes PASS or records an extraction plan.
+  Riverpod idioms use @riverpod code-gen with Notifier/AsyncNotifier; StateNotifier,
+  StateProvider, and ChangeNotifierProvider are legacy. Full rule corpus and gate procedure
+  are under references/.
+  Trigger: spec-design stage; "design this feature's architecture"; structuring widgets,
+  Notifier/AsyncNotifier holders, repositories, services, or domain models for any feature.
 ---
 
 # fl-architecture-design
+
+<!-- TOC -->
+- [Purpose](#purpose)
+- [When to use](#when-to-use)
+- [Instructions](#instructions)
+  - [1. Load the rule index first](#1-load-the-rule-index-first)
+  - [2. Follow the design procedure](#2-follow-the-design-procedure)
+  - [3. Key decisions](#3-key-decisions)
+  - [4. Conditional packs](#4-conditional-packs----open-only-when-the-scenario-applies)
+  - [5. Verify — the verifiable-unit gate (P8)](#5-verify----the-verifiable-unit-gate-p8)
+- [References](#references)
+<!-- /TOC -->
 
 **Design AGAINST the rules proactively, so the verify step rarely has to block.**
 
@@ -57,7 +70,7 @@ Open `references/design-procedure.md` and work through all 8 steps in order.
 - **Service returns raw DTOs only** — `references/core/service-isolation.md`
 - **Repository = SSOT; DTO→domain; cache/retry here** — `references/core/repository-ssot.md`
 - **Domain models immutable + value-equal** — `references/core/domain-models-immutable.md`
-- **Holders: sealed async + dispose every controller** — `references/core/state-flow-and-async.md`, `references/core/state-boundary-and-lifecycle.md`
+- **Holders: sealed async + dispose with ref.onDispose()** — `references/core/state-flow-and-async.md`, `references/core/state-boundary-and-lifecycle.md`
 - **Widgets: compose, const, build is pure** — `references/core/widget-composition.md`, `references/core/widget-build-discipline.md`
 - **Colors/typography from Theme tokens** — `references/core/widget-theming.md`
 - **Inject collaborators via constructors** — `references/core/dependency-injection.md`

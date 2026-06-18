@@ -12,9 +12,12 @@ Stores expose domain state and domain operations. They must not import component
 **Incorrect:**
 
 ```tsx
-const useCameraStore = create((set) => ({
-  videoElementRefs: new Map<string, HTMLVideoElement>(),  // DOM in store
-  showErrorSnackbar: false,                                // UI presentation state
+const useCameraStore = create<{
+  videoElementRefs: Map<string, HTMLVideoElement>   // DOM in store
+  showErrorSnackbar: boolean                        // UI presentation state
+}>()((set) => ({
+  videoElementRefs: new Map(),
+  showErrorSnackbar: false,
   ...
 }))
 ```

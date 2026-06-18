@@ -29,6 +29,8 @@ useEffect(() => {
   player.on('error', handleError)
   return () => player.off('error', handleError)
 }, [player, handleError])
+// handleError must be stable — either defined at module scope or wrapped in useCallback.
+// An unstable handleError re-subscribes on every render, defeating the cleanup.
 ```
 
 Remember effects re-run on dependency change, not just unmount — cleanup must be correct for both. StrictMode's double-invoke in dev is the cheap leak detector: if mounting twice breaks the component, a teardown is missing.

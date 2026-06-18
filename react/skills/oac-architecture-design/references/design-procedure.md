@@ -6,6 +6,18 @@ are relative to this `references/` directory.
 
 ---
 
+## Contents
+
+- [Step 1 — Assign units to feature folders and layers](#step-1--assign-units-to-feature-folders-and-layers)
+- [Step 2 — Choose the state-ownership tier per fact](#step-2--choose-the-state-ownership-tier-per-fact)
+- [Step 3 — Server state path: TanStack Query as SSOT](#step-3--server-state-path-tanstack-query-as-ssot)
+- [Step 4 — Zustand store shape](#step-4--zustand-store-shape)
+- [Step 5 — Component composition and hook extraction](#step-5--component-composition-and-hook-extraction)
+- [Step 6 — Per-unit testability seam](#step-6--per-unit-testability-seam-p5)
+- [Step 7 — Conditional packs and hand-off](#step-7--conditional-packs-and-hand-off)
+
+---
+
 ## Step 1 — Assign units to feature folders and layers
 
 Read `core/layer-feature-folders.md` and `core/layer-unidirectional-deps.md`. List

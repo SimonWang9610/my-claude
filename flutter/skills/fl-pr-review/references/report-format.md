@@ -4,6 +4,11 @@ Template for the PR review report. Write the sections in this order. Never omit 
 silently — if there is nothing to report, write an explicit "none detected" line so the
 reader knows the pass ran.
 
+## Contents
+
+- [Report template](#report-template)
+- [Optional GitHub posting](#optional-github-posting)
+
 ---
 
 ## Report template
@@ -35,7 +40,7 @@ with the key reason.>
 
 | ID | Severity | Rule (Pn / path) | File : line | Problem | Suggested fix |
 |----|----------|-------------------|-------------|---------|---------------|
-| F-02 | Major | P7 / `core/state-boundary-and-lifecycle.md` | `lib/.../device_notifier.dart:31` | StreamSubscription never cancelled — dispose() not implemented | Override dispose(), call _sub.cancel() |
+| F-02 | Major | P7 / `core/state-boundary-and-lifecycle.md` | `lib/.../device_notifier.dart:31` | StreamSubscription never cancelled — no cleanup registered | For a `@riverpod` notifier: call `ref.onDispose(() => _sub.cancel())` inside `build()`; for a plain controller: override `dispose()` and call `_sub.cancel()` |
 
 ### Minor
 

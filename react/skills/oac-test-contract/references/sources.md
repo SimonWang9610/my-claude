@@ -38,12 +38,14 @@ Cite as links when justifying a rule; paraphrase, never paste substantial text.
 
 ## Rule 5 — Real QueryClient for query-config NFRs
 
-- TanStack Query — Does this replace Redux/Zustand? (server state and cache config live on the client, not a mocked hook):
-  https://tanstack.com/query/v4/docs/framework/react/guides/does-this-replace-client-state
+- TanStack Query v5 — Does this replace Redux/Zustand? (server state and cache config live on the client, not a mocked hook):
+  https://tanstack.com/query/v5/docs/framework/react/guides/does-this-replace-client-state
 - TkDodo — Practical React Query (copying query data opts out of background updates):
   https://tkdodo.eu/blog/practical-react-query
 
 ## Rule 6 — One-shot greps become enduring CI guards
 
-- Vitest — general assertions (a checked-in Vitest glob assertion is the resident form of a one-shot grep):
+- Vitest — Writing Tests (a checked-in Vitest glob assertion is the resident form of a one-shot grep):
+  https://vitest.dev/guide/writing-tests
+- Vitest — Test Tags (filter and run CI guards by tag):
   https://vitest.dev/guide/test-tags

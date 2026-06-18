@@ -17,7 +17,8 @@ function CameraDetail({ id }: { id: string }) {
   const [loading, setLoading] = useState(true)
   useEffect(() => {
     setLoading(true)
-    api.getCamera(id).then((c) => { setCamera(c); setLoading(false) }) // races on id change
+    // races on id change; no caching, no dedup, no retry
+    api.getCamera(id).then((c) => { setCamera(c); setLoading(false) })
   }, [id])
 }
 ```
@@ -26,6 +27,10 @@ function CameraDetail({ id }: { id: string }) {
 
 ```tsx
 function CameraDetail({ id }: { id: string }) {
+  // isPending: true when there is no cached data yet (v5 preferred form).
+  // isLoading still exists in v5 (isPending && isFetching) but isPending is
+  // preferred for "no data yet" checks — it is true even while a background
+  // refetch runs over a cached result.
   const { data: camera, isPending } = useQuery({
     queryKey: cameraKeys.detail(id),
     queryFn: () => api.getCamera(id),

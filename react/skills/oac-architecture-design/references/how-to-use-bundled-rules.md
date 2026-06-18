@@ -4,6 +4,17 @@ Index of all bundled rule files by category. When a surface looks like it might 
 open that rule file by its relative path and read it — each file carries the rationale plus an
 incorrect/correct example pair. Do not cite a rule from memory; confirm against the examples.
 
+---
+
+## Contents
+
+- [Reading procedure](#reading-procedure)
+- [Architecture rules — core/](#architecture-rules--core-23-files)
+- [Performance rules — conditional/performance/](#performance-rules--conditionalperformance-22-files)
+- [Trigger → rule map](#trigger--rule-map)
+
+---
+
 ## Reading procedure
 
 1. Walk the categories in **priority order** (tables below). For each surface in scope, decide

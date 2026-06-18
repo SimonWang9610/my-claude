@@ -47,8 +47,10 @@ confirmed mutation or a mechanically-verifiable fact.
 - **Shared `ProviderContainer` or global `Map`/`List` singleton across `test(...)` blocks without
   `addTearDown`.** State from test N seeds test N+1; order-dependent pass/fail. *(medium; high once
   you confirm a test passes only because a prior test seeded state)*
-- **Async-state transitions incomplete.** A notifier with loading → data → error states where only the
-  happy path (`data`) is asserted; error and loading states have no criterion-mapped test. *(medium)*
+- **Async-state transitions incomplete.** An `AsyncNotifier` whose `build()` returns a `Future`
+  (Riverpod automatically sets `AsyncLoading` while pending, then `AsyncData` on success or
+  `AsyncError` on failure) where only the happy path (`AsyncData`) is asserted; `AsyncError` and
+  `AsyncLoading` states have no criterion-mapped test. *(medium)*
 - **In-test comment admitting a limitation** ("TODO: use real repo", "fake stream only"). Written
   admission the test does not test what it claims. *(high)*
 

@@ -9,7 +9,7 @@ tags: testability, isolation, fakes, seam, unit-test, widget-test, build-method,
 Every class — widget, notifier, repository, service — must be exercisable without real network, real databases, or sibling classes. Abstract interfaces at every layer boundary let fakes substitute at the constructor; constructor injection lets tests wire those fakes. Without this seam a fast, deterministic test suite is impossible.
 
 - **Widget tests via `pumpWidget` with injected fakes** — supply a fake notifier/holder; never hit real I/O from a widget test.
-- **Holder/repo/service tests as pure `dart test`** — no Flutter dependency; construct the class under test with a fake collaborator passed through the constructor.
+- **Holder/repo/service tests as pure `dart test`** — no Flutter dependency; use a `ProviderContainer` with `overrides` to wire fakes into Riverpod notifiers, or construct non-Riverpod classes directly with fake collaborators passed through the constructor.
 - **Keep `build()` free of I/O and business logic** — `build()` runs on every frame; derivation requiring I/O or significant CPU belongs in the state holder or `initState`, not the build method.
 - **Never pass `BuildContext` below the provider layer** — resolve context-dependent values (locale, theme) in the widget, then pass plain Dart values down; lower layers must not require a widget tree to be tested.
 - **No test-shaped production code** — production code that exists only to make a test convenient means the test was wrong or the design needs a real seam; don't reach for `@visibleForTesting` instead of a proper interface.
@@ -17,8 +17,7 @@ Every class — widget, notifier, repository, service — must be exercisable wi
 - **Never:** embed an HTTP call or JSON parse in `build()`; accept `BuildContext` in a service or repository; mock the class under test's own host instead of its dependencies.
 
 ```dart
-// Pure dart test — no Flutter import needed
-// illustrative — your state-management package applies the same principle
+// Pure Dart unit test — no Flutter import needed
 class FakeAuthRepository implements AuthRepository {
   bool shouldSucceed;
   FakeAuthRepository({this.shouldSucceed = true});
@@ -30,16 +29,27 @@ class FakeAuthRepository implements AuthRepository {
 
 void main() {
   test('login success stores user', () async {
-    final notifier = LoginNotifier(FakeAuthRepository());
-    await notifier.login('a@b.com', 'secret');
-    expect(notifier.state.user?.email, 'a@b.com');
+    final container = ProviderContainer(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(loginNotifierProvider.notifier).login('a@b.com', 'secret');
+    expect(
+      container.read(loginNotifierProvider).value?.email,
+      'a@b.com',
+    );
   });
 }
 
-// Widget test supplies the same fake through the constructor
+// Widget test — supply the same fake via ProviderScope overrides
 await tester.pumpWidget(
-  ChangeNotifierProvider(
-    create: (_) => LoginNotifier(FakeAuthRepository(shouldSucceed: false)),
+  ProviderScope(
+    overrides: [
+      authRepositoryProvider.overrideWithValue(FakeAuthRepository(shouldSucceed: false)),
+    ],
     child: const LoginScreen(),
   ),
 );

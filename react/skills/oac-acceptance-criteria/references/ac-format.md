@@ -33,7 +33,7 @@ text, an accessible role/state, a navigation, a visible toast, an enabled/disabl
 
 **Reject — implementation steps:**
 - `shall call updateThing()` — internal call.
-- `shall set isLoading to false` — internal state.
+- `shall set isPending to false` — internal state.
 - `shall invoke the API with payload X` — mechanism, not outcome.
 - `shall dispatch an action to the store` — internal plumbing.
 - `the onSort callback is called with the column id` — mock-call assertion; passes even if rows never reorder.

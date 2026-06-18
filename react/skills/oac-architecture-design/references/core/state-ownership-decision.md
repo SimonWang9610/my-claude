@@ -11,7 +11,7 @@ Every piece of state should live in the most local place that satisfies its read
 
 1. **Server-owned data** (fetched, mutated via API) → TanStack Query. Full stop.
 2. **Used by one component** → `useState`/`useReducer` in that component.
-3. **Used by a subtree** → lift to the common parent, pass down (or a narrow Context if prop-drilling exceeds ~2–3 levels), or use Context + `useContext` if the subtree is large or dynamic.
+3. **Used by a subtree** → lift to the common parent, pass down (or a narrow Context if prop-drilling exceeds ~2–3 levels), or use Context + `use(Ctx)` (React 19) if the subtree is large or dynamic.
 4. **Genuinely app-wide client state** (auth session, layout mode, active camera grid config) → Zustand store.
 5. **URL-representable** (selected tab, filters, detail id) → router search params, so it survives reload and is shareable.
 6. **Feature-specific but cross-cutting** (e.g. camera layout shared by camera grid and PTZ control) → Zustand store owned by the feature folder, not global.
@@ -20,10 +20,10 @@ Every piece of state should live in the most local place that satisfies its read
 
 ```tsx
 // Everything dumped into one global store "to be safe"
-const useAppStore = create((set) => ({
-  isSettingsDialogOpen: false,   // used by one component
-  hoveredCameraId: null,         // transient UI detail
-  cameras: [],                   // server data
+const useAppStore = create<AppState>()((set) => ({
+  isSettingsDialogOpen: false,   // used by one component — belongs in local state
+  hoveredCameraId: null,         // transient UI detail — belongs in local state
+  cameras: [],                   // server data — belongs in TanStack Query
 }))
 ```
 

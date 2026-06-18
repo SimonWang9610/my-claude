@@ -2,6 +2,19 @@
 
 Six core rules + four additional assertions that must pass before a test task is marked complete.
 
+## Contents
+
+- [§1 — Observable outcomes, not implementation](#1--observable-outcomes-not-implementation)
+- [§2 — Clause→test mapping](#2--clausetest-mapping)
+- [§3 — Production-shaped fixtures](#3--production-shaped-fixtures)
+- [§4 — No tautologies; prefer fakes over mocks](#4--no-tautologies-prefer-fakes-over-mocks)
+- [§5 — Real async/stream machinery for async ACs](#5--real-asyncstream-machinery-for-async-acs)
+- [§6 — One-shot greps become enduring CI guards](#6--one-shot-greps-become-enduring-ci-guards)
+- [§7 — Dual-assert for service tests](#7--dual-assert-for-service-tests)
+- [§8 — Three-assert for state-holder/cache command tests](#8--three-assert-for-state-holdercache-command-tests)
+- [§9 — Negative equality per field for model tests](#9--negative-equality-per-field-for-model-tests)
+- [§10 — Error path is a first-class test](#10--error-path-is-a-first-class-test)
+
 ---
 
 ## §1 — Observable outcomes, not implementation
@@ -26,9 +39,9 @@ Wrong → right: `test('calls sort', ...)` → `group('AC-14.3: header tap sorts
 
 ## §3 — Production-shaped fixtures
 
-Every fixture is constructed from the real domain model (or a `freezed` `.copyWith(...)`) — not a loose `Map<String,dynamic>` or ad-hoc literal. A shape mismatch must be a compile error.
+Every fixture is constructed from the real domain model — not a loose `Map<String,dynamic>` or ad-hoc literal. A shape mismatch must be a compile error. Use `const` constructors and `final` fields for models; use `.copyWith(...)` (from `freezed` or hand-rolled) for variants. For state unions, use Dart 3 `sealed` classes with exhaustive switch expressions — not `if (x is T)` chains.
 
-Wrong → right: `final d = {'id': '1', 'name': 'Front Door'}` → `final d = Device(id: '1', name: 'Front Door', status: DeviceStatus.online, ...)`.
+Wrong → right: `final d = {'id': '1', 'name': 'Front Door'}` → `final d = Device(id: '1', name: 'Front Door', status: DeviceStatus.online)`.
 
 **Check.** No bare `Map<String,dynamic>` fixture literals. Adding a required field to the prod type must break the fixture at compile time.
 
@@ -38,19 +51,44 @@ Wrong → right: `final d = {'id': '1', 'name': 'Front Door'}` → `final d = De
 
 Don't assert a mock returns what you stubbed it to return. Use an in-memory fake implementing the real interface so interacting methods are genuinely exercised. `mocktail` (no codegen) is the default; `verify` is used sparingly for side effects only.
 
+Mocktail requires `registerFallbackValue(FakeX())` in `setUpAll` for any `any()` matcher on custom types. For Riverpod, inject fakes via `ProviderContainer(overrides: [repoProvider.overrideWithValue(fakeRepo)])` — never mutate a global provider in tests.
+
 Wrong → right: `when(() => mock.getDevices()).thenAnswer(...); expect(await mock.getDevices(), ...)` → implement `FakeDeviceRepository` with real filter logic and assert the output.
 
-**Check.** Grep for `test(`/`testWidgets(` blocks with no `expect`. For every `Mock` class, confirm at least one assertion is not a restatement of the stub.
+**Check.** Grep for `test(`/`testWidgets(` blocks with no `expect`. For every `Mock` class, confirm at least one assertion is not a restatement of the stub. Confirm `registerFallbackValue` is called for every custom type passed to `any()`.
 
 ---
 
 ## §5 — Real async/stream machinery for async ACs
 
-ACs that depend on async behavior use a real `StreamController`/`ProviderContainer`/`Bloc` with `expectLater(..., emitsInOrder([...]))`. Drive time with `fakeAsync`/`elapse` — never real `Future.delayed`. Never call `pumpAndSettle()` while a live network call or infinite timer is pending (hangs to 30 s timeout); advance with `pump(Duration)` instead.
+ACs that depend on async behavior use a real `StreamController` or `ProviderContainer` with `expectLater(..., emitsInOrder([...]))`. Drive time with `fakeAsync`/`elapse` — never real `Future.delayed`. Never call `pumpAndSettle()` while a live network call or infinite timer is pending (hangs to 30 s timeout); advance with `pump(Duration)` instead.
 
-Wrong → right: `await Future.delayed(Duration(milliseconds: 100)); expect(cubit.state, ...)` → `expectLater(cubit.stream, emitsInOrder([isA<Loading>(), isA<Loaded>()]))`.
+For Riverpod: create a `ProviderContainer` (or use `ProviderScope` in widget tests) and read the notifier directly. Use `container.listen(provider, ...)` to capture state emissions. (`AsyncNotifierProvider` exposes no `.stream`, so `expectLater(container.read(provider.stream), ...)` is a compile error — always use the `listen` pattern.)
 
-**Check.** For every AC naming async behavior or timing: no `Future.delayed`; no `pumpAndSettle()` with a timer or polling loop; stream ordering asserted with `emitsInOrder`.
+Wrong → right:
+```dart
+// ✗ real delay, polls state directly
+await Future.delayed(Duration(milliseconds: 100));
+expect(container.read(deviceListProvider), isA<AsyncData<List<Device>>>());
+
+// ✓ fakeAsync + listen captures every emission in order.
+// Prime the container first so build()'s own loading→data cycle is
+// settled before we attach the listener; otherwise states will contain
+// the build() emissions (AsyncLoading, AsyncData) plus the load() ones.
+fakeAsync((async) {
+  final container = ProviderContainer(overrides: [...]);
+  // Prime: let build() run to completion before attaching the listener.
+  async.flushMicrotasks();
+  final states = <AsyncValue<List<Device>>>[];
+  container.listen(deviceListProvider, (_, next) => states.add(next));
+  container.read(deviceListProvider.notifier).load();
+  async.elapse(Duration(seconds: 1));
+  // states now contains only the emissions from load(), not from build().
+  expect(states, [isA<AsyncLoading<List<Device>>>(), isA<AsyncData<List<Device>>>()]);
+});
+```
+
+**Check.** For every AC naming async behavior or timing: no `Future.delayed`; no `pumpAndSettle()` with a timer or polling loop; stream ordering asserted with `emitsInOrder` or captured via `container.listen`.
 
 ---
 
@@ -76,7 +114,30 @@ Wrong → right: `expect(result, isNotNull)` alone → also `verify(() => client
 
 Assert resulting state + notify/emit count + the collaborator interaction. One missing leg hides a real failure mode.
 
-Wrong → right: `expect(cubit.state, isA<Loaded>())` alone → also check `verify(() => repo.fetch(...)).called(1)` and that the stream emitted exactly once.
+For Riverpod `Notifier`/`AsyncNotifier`: capture emissions via `container.listen`, then assert the final state, the emission sequence length, and the repository call.
+
+Wrong → right:
+```dart
+// ✗ only checks final state — misses double-emit and collaborator routing
+await container.read(deviceListProvider.notifier).refresh();
+expect(container.read(deviceListProvider).value, isNotEmpty);
+
+// ✓ all three legs.
+// Prime the container before attaching the listener so build()'s own
+// loading→data emissions are not counted; only refresh()'s 2 emissions
+// (AsyncLoading, AsyncData) are captured.
+fakeAsync((async) {
+  // Prime: let build() settle before listening.
+  async.flushMicrotasks();
+  final states = <AsyncValue<List<Device>>>[];
+  container.listen(deviceListProvider, (_, s) => states.add(s));
+  container.read(deviceListProvider.notifier).refresh();
+  async.flushMicrotasks();
+  expect(states.length, 2);                              // loading → data
+  expect(states.last, isA<AsyncData<List<Device>>>());   // final state
+  verify(() => mockRepo.fetchDevices()).called(1);        // collaborator
+});
+```
 
 ---
 

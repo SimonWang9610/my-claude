@@ -1,11 +1,20 @@
 ---
 name: react-architecture-review
-description: Review and improve React application architecture, state management, and component design. Use this skill whenever the user asks to review, audit, refactor, or restructure React/TypeScript code involving state management (Zustand, TanStack Query, Context, useState), component composition, store design, data flow, or project layering — even if they only say "review my React code", "is my state management OK", "clean up this component", or "how should I structure this feature". Targets a React 19 + Vite + Zustand + TanStack Query + MUI stack (client-side apps, no Next.js/RSC). Produces a findings report and a phased development plan.
+description: Reviews React codebases for architecture and state-management problems, then produces a prioritized findings report and a phased remediation plan. Targets React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI (client-side apps, no Next.js/RSC). Trigger when the user asks to review, audit, refactor, or restructure React/TypeScript code involving state management (Zustand, TanStack Query, Context, useState), component composition, store design, data flow, or project layering — including "review my React code", "is my state management OK", "clean up this component", or "how should I structure this feature".
 ---
 
 # React Architecture Review
 
-Reviews React codebases for architecture and state-management problems, then produces two deliverables: a **Review Report** (prioritized findings) and a **Development Plan** (phased remediation). Targets client-side React 19 apps built with Vite, Zustand for client state, TanStack Query for server state, and MUI — not Next.js/RSC.
+<!-- TOC -->
+- [Review Workflow](#review-workflow)
+- [Rule Categories by Priority](#rule-categories-by-priority)
+- [Quick Reference](#quick-reference)
+- [How to Use the Rules](#how-to-use-the-rules)
+- [Review Report Format](#review-report-format)
+- [Development Plan Format](#development-plan-format)
+<!-- /TOC -->
+
+Reviews React codebases for architecture and state-management problems, then produces two deliverables: a **Review Report** (prioritized findings) and a **Development Plan** (phased remediation). Targets client-side React 19 apps built with Vite, Zustand for client state, TanStack Query v5 for server state, and MUI — not Next.js/RSC.
 
 Performance issues (wasted re-renders, bundle size, frame-rate) belong to the sibling skill `react-performance-review`. If a review surfaces both kinds of issues, note the performance ones briefly and recommend running that skill; don't duplicate its analysis here.
 
@@ -71,7 +80,7 @@ Wrong state placement is the root cause of most architecture pain — fix these 
 
 ### 6. React 19 Idioms (LOW-MEDIUM)
 
-- `react19-modern-apis` - `ref` as a prop (no `forwardRef`), `use(Context)` over `useContext`, no `useMemo` ceremony where the React Compiler handles it
+- `react19-modern-apis` - `ref` as a prop (no `forwardRef`); plain typed functions (no `React.FC`/`FunctionComponent`); `use(Context)` over `useContext`; consider `useActionState`/`useOptimistic` where samples hand-roll them; no `useMemo` ceremony where the React Compiler handles it
 
 ## How to Use the Rules
 

@@ -16,11 +16,11 @@ Each domain entity has exactly one repository that owns and mutates its canonica
 ```dart
 // DTO — lives only inside the data layer
 class UserDto {
-  const UserDto({required this.id, required this.full_name});
+  const UserDto({required this.id, required this.fullName});
   final String id;
-  final String full_name;
+  final String fullName;
   factory UserDto.fromJson(Map<String, dynamic> j) =>
-      UserDto(id: j['id'] as String, full_name: j['full_name'] as String);
+      UserDto(id: j['id'] as String, fullName: j['full_name'] as String);
 }
 
 // Repository — maps DTO→domain, owns the cache, exposes the stream
@@ -38,7 +38,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<User> getUser(String id) async {
     if (_cache.containsKey(id)) return _cache[id]!;
     final dto = await _service.fetchUser(id);   // raw DTO returned from service
-    final user = User(id: dto.id, name: dto.full_name); // ← DTO→domain here only
+    final user = User(id: dto.id, name: dto.fullName); // ← DTO→domain here only
     _cache[id] = user;
     _controller.add(user);
     return user;

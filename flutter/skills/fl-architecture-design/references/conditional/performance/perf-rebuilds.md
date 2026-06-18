@@ -15,9 +15,11 @@ Flutter re-runs `build()` on every dirty widget. Every avoidable rebuild wastes 
 - **Extract widget classes, not helper methods** — a `Widget _buildFoo()` method inlines into the parent tree every build; a `StatelessWidget` subclass gets its own `Element` and can be `const`.
 - **Pass static subtrees via `child:` on `ListenableBuilder`/`AnimatedBuilder`** — the framework builds the `child` once and re-uses the element on every notification or tick.
 - **`RepaintBoundary` at animated hot-spots** — promotes the subtree to a separate GPU layer so static siblings are not re-rasterized.
-- **Narrow state selectors** — subscribe only to the slice rendered (e.g. `context.select`) so unrelated field mutations don't trigger a rebuild.
+- **Narrow state selectors** — subscribe only to the slice rendered (e.g. `ref.watch(myProvider.select((s) => s.field))`) so unrelated field mutations don't trigger a rebuild.
 
 ```dart
+import 'dart:math' show pi;
+
 // Pass a static subtree as child — built once, reused every tick.
 AnimatedBuilder(
   animation: _controller,
@@ -31,7 +33,7 @@ AnimatedBuilder(
 // Isolate a frequently-repainting hot-spot onto its own GPU layer.
 RepaintBoundary(
   child: AnimatedProgressBar(value: _progress),
-)
+);
 ```
 
 Ref: https://docs.flutter.dev/perf/best-practices

@@ -26,7 +26,7 @@ const useCameraStore = create((set) => ({
 ```tsx
 // Query owns the data; components subscribe directly
 function useCameras() {
-  return useQuery({ queryKey: cameraKeys.list(), queryFn: api.getCameras })
+  return useQuery({ queryKey: cameraKeys.lists(), queryFn: api.getCameras })
 }
 
 // Client store holds only client-owned facts ABOUT the data

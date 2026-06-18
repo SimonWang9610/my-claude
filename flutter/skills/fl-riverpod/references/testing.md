@@ -2,10 +2,22 @@
 title: "Riverpod: Test Override and Container Discipline"
 impact: HIGH
 impactDescription: overriding the unit under test instead of its deps proves nothing; bare reads on autoDispose providers cause immediate disposal
-tags: state, riverpod, testing, override, ProviderContainer, autoDispose
+tags: state, riverpod, testing, override, ProviderContainer, autoDispose, mocktail, fakeAsync
 ---
 
 ## Riverpod: Test Override and Container Discipline
+
+<!-- TOC -->
+1. [Override deps, not the unit](#1-override-deps-not-the-unit)
+2. [Notifier fakes — 3.0 form](#2-notifier-fakes--30-form)
+3. [Listen before reading an autoDispose provider](#3-listen-before-reading-an-autodispose-provider)
+4. [Widget tests — tester.container()](#4-widget-tests--testercontainer)
+5. [Invalidate upstream when verifying call counts](#5-invalidate-upstream-when-verifying-call-counts)
+6. [Mocktail rules](#6-mocktail-rules)
+7. [pump vs pumpAndSettle](#7-pump-vs-pumpandsettle)
+8. [fakeAsync for timers](#8-fakeasync-for-timers)
+9. [Stream assertions](#9-stream-assertions)
+<!-- /TOC -->
 
 Riverpod's test seam is `ProviderContainer.test(overrides: […])` for unit/notifier tests
 and `ProviderScope(overrides: […])` for widget tests. Providers under test are declared
@@ -92,3 +104,119 @@ its dependency instead.
 
 Ref: https://riverpod.dev/docs/how_to/testing  
 Ref: https://riverpod.dev/docs/migration/from_riverpod_2_0_0_to_3_0_0
+
+---
+
+### 6. Mocktail rules
+
+The project uses **Mocktail** (not mockito). Three rules prevent runtime failures:
+
+**6a. registerFallbackValue for custom types used with `any()`.**
+`any()` requires a registered fallback when the argument type is a custom class:
+
+```dart
+// setUpAll — run once before all tests in the group
+setUpAll(() {
+  registerFallbackValue(FakeAlarm());
+});
+
+// FakeAlarm is a minimal concrete stand-in — just needs a no-arg constructor
+class FakeAlarm extends Fake implements Alarm {}
+```
+
+Omitting `registerFallbackValue` causes a `StateError` at the first `any()` call on that
+type. Primitives (`int`, `String`, `bool`) and `null` do not need registration.
+
+**6b. `Mock` mixin, not extension.**
+Mocktail mocks use `extends Mock implements Foo` — no code generation required:
+
+```dart
+class MockAlarmRepository extends Mock implements AlarmRepository {}
+```
+
+**6c. `when(...).thenAnswer((_) async => value)` for async stubs.**
+Use `thenAnswer` (not `thenReturn`) for `Future`- and `Stream`-returning methods:
+
+```dart
+when(() => mockRepo.getAlarms()).thenAnswer((_) async => [Alarm.fixture()]);
+```
+
+---
+
+### 7. pump vs pumpAndSettle
+
+- `tester.pump()` — advances by one frame; use for discrete state transitions where no
+  animation is involved.
+- `tester.pumpAndSettle()` — repeatedly pumps until no more frames are scheduled; use
+  **only** when an animation (route transition, `AnimationController`) must fully settle.
+
+Prefer `pump()`. Reaching for `pumpAndSettle()` when there is no animation is a test-speed
+smell and can hide timing bugs.
+
+```dart
+// ✅ one frame is enough for a state change with no animation
+await tester.pump();
+expect(find.text('0 alarms'), findsOneWidget);
+
+// ✅ pumpAndSettle only when a transition animation must complete
+await tester.pumpAndSettle();
+expect(find.byType(DetailScreen), findsOneWidget);
+```
+
+---
+
+### 8. fakeAsync for timers
+
+Never use `Future.delayed` or `sleep` in tests. Use `fakeAsync` and call
+`async.elapse(duration)` on the `FakeAsync` instance the callback receives so timers fire
+synchronously without real wall-clock time:
+
+```dart
+import 'package:fake_async/fake_async.dart';
+
+test('retries after 500 ms backoff', () {
+  fakeAsync((async) {
+    // arrange: set up provider / service that uses a Timer
+
+    async.elapse(const Duration(milliseconds: 500));
+
+    // assert: timer has fired, state has updated
+    expect(container.read(alarmListProvider), isA<AsyncData<List<Alarm>>>());
+  });
+});
+```
+
+`fakeAsync` blocks the `Zone` clock; `async.flushTimers()` drains all pending timers at once.
+
+---
+
+### 9. Stream assertions
+
+An `AsyncNotifierProvider` exposes no `.stream`, so accumulate its `AsyncValue` transitions
+through `container.listen` (`fireImmediately` captures the initial state), drive the source
+stream, then assert the sequence:
+
+```dart
+test('emits loading then data', () async {
+  final controller = StreamController<List<Alarm>>();
+  when(() => mockRepo.alarmsStream()).thenAnswer((_) => controller.stream);
+
+  final states = <AsyncValue<List<Alarm>>>[];
+  container.listen(
+    alarmListProvider,
+    (_, next) => states.add(next),
+    fireImmediately: true,
+  );
+
+  controller.add([Alarm.fixture()]);
+  await container.read(alarmListProvider.future); // resolves once data arrives
+
+  expect(states.first, isA<AsyncLoading<List<Alarm>>>());
+  expect(states.last, isA<AsyncData<List<Alarm>>>());
+
+  await controller.close();
+});
+```
+
+Assert observable output (`state`, rendered widgets, emitted values) — never inspect
+internal notifier fields directly.

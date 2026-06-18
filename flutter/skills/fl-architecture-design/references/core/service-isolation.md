@@ -15,8 +15,9 @@ A service is the thinnest possible adaptor between the app and one external data
 - **Never:** hold a cache field in a service; apply retry logic in a service; return a domain model from a service; let a raw `SocketException` propagate to a repository or notifier.
 
 ```dart
-// Public seam — only this is visible outside the file
+// Public seam — redirecting factory; callers get the interface, impl stays private
 abstract interface class ProductService {
+  factory ProductService(HttpClient client) = _ProductServiceImpl;
   Future<List<ProductDto>> fetchProducts();
 }
 
@@ -34,12 +35,6 @@ class _ProductServiceImpl implements ProductService {
       throw NetworkException(cause: e);   // typed error; never raw exception
     }
   }
-}
-
-// Redirecting factory — callers get the interface, impl stays private
-abstract interface class ProductService {
-  factory ProductService(HttpClient client) = _ProductServiceImpl;
-  Future<List<ProductDto>> fetchProducts();
 }
 ```
 

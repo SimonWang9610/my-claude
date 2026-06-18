@@ -5,6 +5,16 @@ can exhibit all three simultaneously — so naming the class matters because eac
 
 ---
 
+## Contents
+
+- [Pass 1 — no-spec-coverage](#pass-1--no-spec-coverage)
+- [Pass 2 — tests-pass-but-miss-behavior](#pass-2--tests-pass-but-miss-behavior)
+- [Pass 3 — false-positive](#pass-3--false-positive)
+- [Reporting](#reporting)
+- [Confidence calibration](#confidence-calibration)
+
+---
+
 ## Pass 1 — `no-spec-coverage`
 
 **Definition.** The code exhibits a behavior with no governing criterion, OR a criterion exists with zero
@@ -16,8 +26,10 @@ mapped tests. The behavior is trivially reversible by a later edit with no faili
    - **widget** — each constructor parameter that changes rendered output; each `GestureDetector`/
      `InkWell`/`onTap`/`onPressed` handler; each conditional render branch (loading / empty / error /
      success / permission-gated); each `AnimatedWidget`/`AnimationController` transition.
-   - **provider/notifier/bloc** — each state type (loading, data, error); each public method/event that
-     mutates state; each side-effect path (repository call, navigation, stream subscription).
+   - **Notifier / AsyncNotifier** (Riverpod code-gen) — each `AsyncValue` variant (`AsyncLoading`,
+     `AsyncData`, `AsyncError`); each public method that mutates state; each side-effect path
+     (repository call, navigation, stream subscription). `StateNotifier`, `StateProvider`, and
+     `ChangeNotifierProvider` are legacy — flag their usage separately.
    - **service/repository** — each exported method's observable contract, including error/fallback branches
      and stream emissions.
 2. Map each behavior to a governing criterion. Find a criterion ID (`AC-<story>.<n>` / `NFR-<n>`) whose

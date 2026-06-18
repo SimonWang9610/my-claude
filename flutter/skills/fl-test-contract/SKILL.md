@@ -1,10 +1,16 @@
 ---
 name: fl-test-contract
 description: >
-  Six-rule authoring-time test-quality contract for Flutter/Dart tests. Blocks the
-  anti-patterns that retroactive review catches later: missing criterion-to-test
-  traceability, implementation-detail assertions, hand-written map fixtures, tautologies,
-  bypassed async machinery, and transient grep enforcement.
+  Authoring-time quality gate for Flutter/Dart tests using flutter_test, Mocktail, and
+  Riverpod (code-gen Notifier/AsyncNotifier). Enforces six rules before any test task is
+  marked complete: AC/NFR traceability in group labels, observable-outcome assertions over
+  implementation details, production-typed fixtures (no loose Map<String,dynamic>), no
+  tautologies (prefer in-memory fakes), real async machinery with fakeAsync and
+  StreamController (no Future.delayed, no pumpAndSettle on infinite timers), and
+  enduring CI guards for one-shot grep NFRs. Also applies four targeted assertion rules
+  for service, state-holder, model-equality, and error-path tests. Trigger on every new
+  or edited test file — whether writing from scratch, updating an existing suite, or
+  deciding whether a task may be closed.
 ---
 
 # fl-test-contract

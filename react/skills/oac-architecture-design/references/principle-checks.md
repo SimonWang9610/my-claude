@@ -4,7 +4,21 @@ Use when reviewing against a single principle: the signals are grep/read pattern
 violation; the crosswalk points at the bundled rule file with right/wrong examples. All crosswalk
 paths are relative to this `references/` directory. Never cite a rule from memory — read the file.
 
-General best practices for a React 19 + Vite + TypeScript + Zustand + TanStack Query + MUI + Vitest project.
+General best practices for a React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI + Vitest project.
+
+---
+
+## Contents
+
+- [P1 — Server state in TanStack Query](#p1--server-state-in-tanstack-query)
+- [P2 — Render-only components + single-responsibility hooks](#p2--render-only-components--single-responsibility-hooks--soft-ceiling)
+- [P3 — One owner per fact; derive, don't sync](#p3--one-owner-per-fact-derive-dont-sync)
+- [P4 — Writes via useMutation; mutation errors via onError/mutation.isError](#p4--writes-via-usemutation-mutation-errors-via-onerror-mutationiserror)
+- [P5 — Testability seam per AC](#p5--testability-seam-per-ac)
+- [P6 — Token-layer selection](#p6--token-layer-selection)
+- [P7 — No module-scope mutable domain state](#p7--no-module-scope-mutable-domain-state)
+- [Trigger → principle → bundled-rule map](#trigger--principle--bundled-rule-map)
+- [Quick decision: where does this fact live?](#quick-decision-where-does-this-fact-live)
 
 ---
 
@@ -51,14 +65,15 @@ General best practices for a React 19 + Vite + TypeScript + Zustand + TanStack Q
 
 ---
 
-## P4 — writes via useMutation; errors via onError/isError
+## P4 — writes via useMutation; mutation errors via onError/mutation.isError
 
 **Signals**
 - `api.*` / `axios.*` / client write methods called directly inside an event handler (no `useMutation` wrapper).
-- `catch (e) { console.error(e) }` with no UI error surface.
+- `catch (e) { console.error(e) }` with no UI error surface (should be `catch (e: unknown)`).
 - An un-awaited write — the production failure path is never exercised because tests `mockResolvedValue`.
 - No `invalidateQueries` after a successful write → stale list after mutation.
 - An error string pushed into Zustand instead of read from `mutation.error`.
+- `onSuccess`/`onError`/`onSettled` passed to `useQuery` — these callbacks are removed in TanStack Query v5; move side effects to `useMutation` callbacks or a `useEffect` on `data`/`error`.
 
 **Crosswalk:** `core/query-mutation-invalidation.md`,
 `core/query-key-factory.md`,
@@ -72,7 +87,7 @@ General best practices for a React 19 + Vite + TypeScript + Zustand + TanStack Q
 - An AC behavior whose only test mocks the parent's whole hook (`vi.mock('../hooks/useX')`) — the behavior under test is inside the mock.
 - A module-level `vi.mock` that bypasses the exact logic an AC names.
 - An AC with no component renderable via providers and no hook callable via `renderHook` that isolates it.
-- A declared-but-never-called mock assertion (callback AC with no `fireEvent` / `expect(mock).toHaveBeenCalled`).
+- A declared-but-never-called mock assertion (callback AC with no `await user.click(...)` / `expect(mock).toHaveBeenCalled`).
 
 **Crosswalk:** `core/compose-extract-hooks.md`,
 `core/compose-children-over-render-props.md`,

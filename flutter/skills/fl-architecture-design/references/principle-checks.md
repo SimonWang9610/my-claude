@@ -4,6 +4,19 @@ Use when reviewing against a single principle: the signals are grep/read pattern
 violation; the crosswalk points at the bundled rule file with right/wrong examples. All crosswalk
 paths are relative to this `references/` directory. Never cite a rule from memory — read the file.
 
+<!-- TOC -->
+- [P1 — Four-layer boundary](#p1--four-layer-boundary-dependencies-point-one-way-only)
+- [P2 — Service layer](#p2--service-layer-one-stateless-service-per-source-returns-raw-dtos-maps-transport-errors)
+- [P3 — Repository SSOT](#p3--repository-is-the-ssot-per-type-dtodomain-owns-cachingretry)
+- [P4 — Provider layer](#p4--provider-layer-holder-receives-repos-by-constructor-injection-package-agnostic-seam)
+- [P5 — State at the right level](#p5--state-at-the-right-level-ephemeral-local-shared-in-provider)
+- [P6 — Widgets compose and render](#p6--widgets-compose-and-render-build-is-pure-const-theme-tokens-mounted-check)
+- [P7 — Dispose; sealed async; never swallow errors](#p7--dispose-every-listener-async-as-sealed-type-never-swallow-errors)
+- [P8 — Every unit independently verifiable](#p8--every-unit-is-independently-verifiable-in-isolation-testability-seam)
+- [Trigger → principle → bundled-rule map](#trigger--principle--bundled-rule-map)
+- [Quick decision: where does this fact live?](#quick-decision-where-does-this-fact-live)
+<!-- /TOC -->
+
 ---
 
 ## P1 — Four-layer boundary; dependencies point one way only
@@ -13,6 +26,7 @@ paths are relative to this `references/` directory. Never cite a rule from memor
 - A repository class with an `import '…/notifiers/…'` or `import '…/providers/…'` import (reverse dependency).
 - A `FutureBuilder` or `StreamBuilder` inside a widget calling `_repo.fetchX()` directly.
 - A service class that imports a holder or widget.
+- A holder/notifier calling a `*Service` method directly (e.g. `_service.fetchX()`) instead of going through the repository — the holder should talk to repositories only; service calls belong inside the repository.
 
 **Crosswalk:** `core/layering-and-structure.md`.
 
@@ -50,12 +64,16 @@ paths are relative to this `references/` directory. Never cite a rule from memor
 **Signals**
 - A holder that contains both data-fetching logic and UI-state fields (God-notifier mixing concerns).
 - Two holders both owning the same entity (dual-owner at the provider layer).
-- A `useEffect`-style init block in a holder that mirrors repository data into a local field
-  instead of subscribing to the repository's stream.
+- An init-style block in a holder that mirrors repository data into a local field instead of
+  subscribing to the repository's stream (in Riverpod: doing this outside `build()` in a Notifier).
 - Widget code that directly reads a `ChangeNotifier` field without going through a `ListenableBuilder`
   or equivalent, coupling the widget to the package's API.
 - A holder with a method that performs a write AND updates local state directly (should invalidate
   via repository instead).
+- A Riverpod `Notifier` or `AsyncNotifier` that uses `ref.read` inside `build()` to avoid rebuilds
+  (stale-UI bug — use `ref.watch` in `build()` and `ref.read` only in event handlers).
+- A Riverpod provider annotated with `.autoDispose` when using `@riverpod` code-gen (autoDispose
+  is the default; opt out via `@Riverpod(keepAlive: true)` instead).
 
 **Crosswalk:** `core/state-placement.md`,
 `core/state-flow-and-async.md`,
@@ -91,7 +109,7 @@ paths are relative to this `references/` directory. Never cite a rule from memor
 - A hard-coded hex color (`Color(0xFF…)` or `Colors.green`) in a widget `build()` rather than
   `Theme.of(context).colorScheme.*`.
 - IO, a `Future.wait`, a sort/filter, or any `async` work inside `build()`.
-- A `BuildContext` captured before an `await` and used after without a `mounted` check.
+- A `BuildContext` captured before an `await` and used after without a `context.mounted` check (widget) or `ref.mounted` check (Riverpod event handler).
 - A `StatelessWidget` or `StatefulWidget` constructor without `const` where it could have one.
 - `Widget` helper methods on `State` classes that duplicate the pattern `const` widget extraction
   would solve (no rebuild isolation).
@@ -110,10 +128,12 @@ paths are relative to this `references/` directory. Never cite a rule from memor
 - An `AnimationController`, `TextEditingController`, or `ScrollController` declared but not
   disposed in `dispose()`.
 - Two independent bool fields (`isLoading`, `hasData`) whose combination allows impossible states
-  instead of a sealed `loading | data | error` type.
+  instead of a Dart 3 `sealed class` union with exhaustive `switch` expressions.
 - `catch (e) { /* nothing */ }` or `catch (_) { print(e); }` with no error state update.
 - A holder that calls `notifyListeners()` or emits state after the widget tree is unmounted
-  (no lifecycle guard).
+  (no lifecycle guard; in Riverpod use `ref.mounted` before mutating state in async paths).
+- A Riverpod `Notifier` that registers a subscription outside `build()` without a matching
+  `ref.onDispose()` call (leak; `ref.onDispose()` belongs inside `build()`, not in a `dispose()` override).
 
 **Crosswalk:** `core/state-boundary-and-lifecycle.md`,
 `core/state-flow-and-async.md`,

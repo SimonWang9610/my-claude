@@ -1,9 +1,22 @@
 ---
 name: react-performance-review
-description: Review and optimize React rendering performance — wasted re-renders, slow frames, high-frequency data handling (video playback, gestures, live streams), list rendering, and Vite bundle size. Use this skill whenever the user mentions React performance, lag, jank, dropped frames, slow UI, excessive re-renders, memoization questions (memo/useMemo/useCallback), large bundles, slow startup, or asks to review/profile/optimize React code for speed — even if they just say "my app feels slow" or "is this component rendering too much". Targets React 19 + Vite + Zustand + TanStack Query + MUI (client-side, no Next.js/RSC). Produces a findings report and a phased development plan.
+description: Reviews and optimizes React rendering performance — wasted re-renders, slow frames, high-frequency data handling (video playback, gestures, live streams), list rendering, and Vite bundle size. Trigger when the user mentions React performance, lag, jank, dropped frames, slow UI, excessive re-renders, memoization questions (memo/useMemo/useCallback), large bundles, slow startup, or asks to review/profile/optimize React code for speed — including vague reports like "my app feels slow" or "is this component rendering too much". Targets React 19 + Vite + Zustand + TanStack Query v5 + MUI (client-side, no Next.js/RSC). Produces a prioritized findings report and a phased development plan.
 ---
 
 # React Performance Review
+
+## Contents
+
+- [Review Workflow](#review-workflow)
+- [Rule Categories by Priority](#rule-categories-by-priority)
+- [Quick Reference](#quick-reference)
+  - [1. High-Frequency Data Paths](#1-high-frequency-data-paths-critical)
+  - [2. Re-render Elimination](#2-re-render-elimination-high)
+  - [3. Rendering & DOM Cost](#3-rendering--dom-cost-medium-high)
+  - [4. Data Layer Performance](#4-data-layer-performance-medium)
+  - [5. Bundle & Startup](#5-bundle--startup-medium)
+- [Review Report Format](#review-report-format)
+- [Development Plan Format](#development-plan-format)
 
 Reviews React code for rendering and runtime performance problems, then produces a **Review Report** (prioritized findings) and a **Development Plan** (phased remediation). Targets client-side React 19 apps on Vite, with Zustand, TanStack Query, and MUI. Especially attentive to high-frequency data paths (video playback positions, live streams, pointer gestures) where React's render loop is the wrong tool.
 

@@ -1,10 +1,14 @@
 ---
 name: oac-test-contract
 description: >
-  Six-rule authoring-time test-quality contract for React/TS tests. Blocks the
-  anti-patterns that retroactive review catches later: missing criterion-to-test
-  traceability, implementation-detail assertions, untyped fixtures, tautologies,
-  mocked query configs, and transient grep enforcement.
+  Authoring-time quality gate for React/TypeScript tests using Vitest and React
+  Testing Library. Enforces six rules before any test task is marked complete:
+  AC/NFR traceability in describe/it labels, outcome-over-implementation
+  assertions, production-typed fixtures with satisfies, no tautologies or
+  missing expects, real QueryClientProvider for TanStack Query v5 config NFRs,
+  and CI-resident guards for pattern-ban NFRs. Trigger on every new or edited
+  test file — whether writing from scratch, updating an existing suite, or
+  deciding whether a task may be closed.
 ---
 
 # oac-test-contract

@@ -12,8 +12,8 @@ Server data (anything fetched from an API and owned by a backend) belongs in Tan
 **Incorrect:**
 
 ```tsx
-const useCameraStore = create((set) => ({
-  cameras: [] as Camera[],
+const useCameraStore = create<{ cameras: Camera[]; loadCameras: () => Promise<void> }>()((set) => ({
+  cameras: [],
   loadCameras: async () => {
     const cameras = await api.getCameras()
     set({ cameras })           // stale after any mutation elsewhere

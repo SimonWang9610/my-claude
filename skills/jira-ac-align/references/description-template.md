@@ -47,7 +47,7 @@ Acceptance-criteria alignment — <date>
 
 - One bullet per non-Unchanged verdict.
 - Format: `AC-x.y — <Verdict>: <what changed> (<reason>)`.
-- Append `[flag: possible drift — verify intent]` inline for any delta that looks unintended.
+- Append `[flag: possible drift — verify intent]` inline for any Changed or Added delta that looks unintended.
 
 ### Worked example
 
@@ -57,5 +57,5 @@ Acceptance-criteria alignment — 2026-06-16
 - AC-1.2 — Changed: sort now defaults to descending on first click, not ascending (tweaked behavior)
 - AC-2.1 — Added: empty-state message when no results match the filter (added scope)
 - AC-1.3 — Dropped: bulk-select was descoped; no test coverage, removed from diff (descoped)
-- AC-3.1 — Spec-stale: ticket and code agree; requirements.md still has old phrasing (spec not updated) [offer to update requirements.md]
+- AC-3.1 — Spec-stale: ticket and code agree; requirements.md still has old phrasing (spec not updated)
 ```

@@ -1,11 +1,14 @@
 ---
 name: oac-qa-report
 description: >
-  Audit a handed-off feature branch and produce one sign-off-ready QA report: a build gate, a
-  spec-authenticity audit, a scope-creep check, a coverage + false-positive forensic sweep,
-  silent-failure detection, and consumer/regression verification. Classifies every finding by
-  severity (Critical / Major / Minor) with an F-id and requires explicit human disposition —
-  it surfaces evidence, it does not approve, block, or rewrite tests.
+  Audits a handed-off React/TypeScript feature branch and produces a single sign-off-ready
+  qa-report.md covering: build gate, spec-authenticity audit, scope-creep check, test-coverage
+  and false-positive forensic sweep (via oac-test-forensics), silent-failure detection, and
+  consumer/regression verification. Classifies every finding Critical/Major/Minor with an F-id;
+  surfaces evidence only — does not approve, block, or rewrite tests. Trigger when a developer
+  hands off a branch for QA review and a structured, human-dispositioned report is required
+  before merge. Keywords: QA report, audit, feature branch, sign-off, coverage forensics,
+  false positive, silent failure, scope creep, spec authenticity, consumer regression.
 ---
 
 # oac-qa-report

@@ -49,16 +49,16 @@ curl -s -X POST \
   "event": "REQUEST_CHANGES",
   "comments": [
     {
-      "path": "lib/foo/bar_page.dart",
+      "path": "lib/foo/bar_notifier.dart",
       "line": 42,
       "side": "RIGHT",
-      "body": "[blocking] `StateProvider` declared inside State class — creates a new provider per instance and leaks. Move to file scope, or if this is legacy code that can't be refactored here, note it. (rule 3)"
+      "body": "[blocking] `StateNotifierProvider` is a legacy API (riverpod/legacy.dart). Migrate to `@riverpod` code-gen with `Notifier` and a `build()` method. (rule 2)"
     },
     {
       "path": "lib/foo/baz.dart",
       "line": 88,
       "side": "RIGHT",
-      "body": "[blocking] `ref.read` in build with no documenting comment — likely a missed rebuild dependency; use `ref.watch` or document why read is required. (rule 5)"
+      "body": "[blocking] `ref.read` in `build()` silently skips rebuilds when state changes (stale-UI bug). Use `ref.watch`, or move the read into an event handler. (rule 5)"
     }
   ]
 }

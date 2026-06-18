@@ -1,14 +1,25 @@
 ---
 name: fl-riverpod
 description: >
-  Riverpod-specific guidance for the Flutter specflow: ref.watch/read/listen by call site,
-  provider declaration & lifetime (autoDispose/keepAlive), AsyncNotifier/AsyncValue,
-  .select for narrow rebuilds, and provider testing. Load when the project uses Riverpod,
-  detected via `flutter_riverpod`, `hooks_riverpod`, or `riverpod_generator` in
-  pubspec.yaml; `@riverpod` annotations; `ProviderScope`; or `ref.watch`/`ref.read` in code.
+  Provides Riverpod-specific idiom rules for Flutter projects using riverpod_generator ^3:
+  correct ref.watch/ref.read/ref.listen call-site discipline, @riverpod codegen for every
+  provider declaration, AsyncNotifier + AsyncValue sealed-state handling, .select() for
+  narrow rebuilds, and ProviderContainer override discipline in tests. Load whenever the
+  project contains flutter_riverpod, hooks_riverpod, or riverpod_generator in pubspec.yaml;
+  @riverpod annotations; ProviderScope; ref.watch or ref.read in source; or when reviewing,
+  generating, or testing any Riverpod provider, notifier, or state-management layer.
 ---
 
 # fl-riverpod
+
+<!-- TOC -->
+- [Relationship to the agnostic core](#relationship-to-the-agnostic-core)
+- [Default: code generation](#default-code-generation)
+  - [Riverpod 3.0](#riverpod-30)
+- [Instructions](#instructions)
+- [For another package](#for-another-package)
+- [References](#references)
+<!-- /TOC -->
 
 Riverpod-specific companion to the Flutter specflow core. Load this skill when the project
 uses Riverpod; skip it otherwise.
@@ -44,7 +55,7 @@ Future<List<Alarm>> alarmList(Ref ref) =>
 class AlarmList extends _$AlarmList {
   @override
   Future<List<Alarm>> build() =>
-      ref.read(alarmRepositoryProvider).getAlarms();
+      ref.watch(alarmRepositoryProvider).getAlarms();
 
   Future<void> add(Alarm a) async { /* ... */ }
 }

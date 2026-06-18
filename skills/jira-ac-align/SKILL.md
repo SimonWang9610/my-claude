@@ -1,12 +1,13 @@
 ---
 name: jira-ac-align
 description: >
-  Reconcile a completed (and tweaked) implementation against its JIRA ticket and update
-  the ticket's acceptance criteria to reflect what was actually built. Use after a ticket's
-  implementation is done but requirements were adjusted mid-development, leaving the JIRA
-  ticket stale. Triggers: "align the ticket with the implementation", "the JIRA ticket is
-  out of date", "update the ticket's acceptance criteria", "reconcile AC with what we built",
-  "the ticket description doesn't match the code anymore", "sync the ticket to reality".
+  Performs a three-way reconcile of a JIRA ticket's acceptance criteria against the spec
+  (requirements.md) and the shipped implementation (test assertions + branch diff), then
+  updates the ticket description with accurate AC and posts a single alignment-notes comment.
+  Trigger when a ticket's AC is stale after mid-development requirement changes: e.g.
+  "align the ticket with the implementation", "the JIRA ticket is out of date",
+  "update the ticket's acceptance criteria", "reconcile AC with what we built",
+  "the ticket description doesn't match the code", "sync the ticket to reality".
 ---
 
 # jira-ac-align
@@ -50,10 +51,9 @@ never write without approval.
    clean) and the proposed alignment-notes comment. Do **not** write to JIRA until the user
    approves.
 
-6. **Write — two writes, in order:**
-   1. Set the description via `editJiraIssue` (description field, reconciled AC only — no
-      alignment notes).
-   2. Post the alignment notes as a **single comment** via `addCommentToJiraIssue`.
+6. **Write — two calls, in order:**
+   - Call `editJiraIssue` to set the description field (reconciled AC only; no alignment notes).
+   - Call `addCommentToJiraIssue` to post the alignment-notes comment.
    Report both writes. If the three-way found spec drift, offer to also update
    `.specflow/specs/<name>/requirements.md` locally.
 
@@ -71,19 +71,18 @@ written after approval — plus a short reconciliation summary. Optionally a loc
 
 ## Rules
 
-- **Confirm-first** before any JIRA write. Two writes only: the description (reconciled AC)
-  via `editJiraIssue`, then ONE alignment-notes comment via `addCommentToJiraIssue`. Never
-  touch status, labels, or custom fields. Keep the description clean — the why-it-changed
-  audit lives in the comment, not the description.
-- **Preserve non-AC description content** — background, links, acceptance notes outside the
-  AC section. Never nuke the ticket.
-- **Don't blindly enshrine drift.** If a Changed or Added delta looks like unintended drift or
-  scope creep — not a deliberate tweak — flag it and ask whether to fix the code instead of
-  rewriting the AC.
-- **Keep AC IDs stable.** Append new IDs; never renumber. Renumbering breaks test traceability
-  (every `describe('AC-x.y …')` in the test tree becomes a dangling reference).
-- **Stack-agnostic.** Works with or without a specflow spec; works with any test runner
-  (grep for the AC-ID pattern in test file names/describe strings regardless of framework).
+- **Confirm-first.** Present both proposed outputs (description AC section and alignment-notes
+  comment) and wait for approval before any JIRA write. Exactly two writes: `editJiraIssue`
+  for the description, then `addCommentToJiraIssue` for the notes. Never touch status, labels,
+  or custom fields. The description stays clean — the audit trail belongs in the comment.
+- **Preserve non-AC content.** All non-AC content in the original description (background,
+  links, context) is carried over verbatim; only the Acceptance Criteria section is replaced.
+- **Do not blindly enshrine drift.** If a Changed or Added delta appears unintentional rather
+  than a deliberate tweak, flag it and ask whether to fix the code instead of updating the AC.
+- **Keep AC IDs stable.** Append new IDs at the end; never renumber existing ones. Renumbering
+  silently breaks every `describe('AC-x.y …')` test name that references the old ID.
+- **Stack-agnostic.** Works with or without a specflow spec; works with any test runner —
+  grep for the `AC-<story>.<n>` pattern in test file describe/it strings regardless of framework.
 
 ## References
 

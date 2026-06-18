@@ -32,7 +32,7 @@ Read `core/service-isolation.md`, `core/repository-ssot.md`, and `core/domain-mo
 
 - **Service** — stateless, returns raw DTOs or `Stream<RawPayload>` only, maps transport errors at boundary.
 - **Repository** — one per domain type = SSOT; converts `*Dto → domain model` via `dto.toDomain()`; owns caching/retry/throttle; no raw DTOs escape this layer.
-- **Domain models** — all fields `final`, pure Dart, value equality (`Equatable`/`@freezed`), typed business values (no raw wire strings or ISO timestamps as `String`).
+- **Domain models** — all fields `final`, `const` constructors, pure Dart, value equality (`Equatable`, `@freezed`, or manual `==`/`hashCode`); typed business values (no raw wire strings or ISO timestamps as `String`); use Dart 3 records for small immutable bundles and `copyWith` for updates.
 
 ---
 
@@ -41,8 +41,8 @@ Read `core/service-isolation.md`, `core/repository-ssot.md`, and `core/domain-mo
 Read `core/state-flow-and-async.md`, `core/state-boundary-and-lifecycle.md`, `core/dependency-injection.md`,
 `core/widget-composition.md`, `core/widget-build-discipline.md`, and `core/widget-theming.md`.
 
-- **Holders** — expose state as a sealed union (`loading | data | error`); receive repos via constructor injection; expose named commands. Dispose every subscription/controller; remove listeners before `dispose()`.
-- **Widgets** — compose small named `const StatelessWidget` classes (not `Widget _buildX()` helpers); `build()` is a pure function (no IO, no sorting, no derivation); `const` everywhere possible; `mounted` check before `BuildContext` after `await`; colors/typography from `Theme.of(context)` tokens only.
+- **Holders** — expose state as a Dart 3 `sealed class` union (`loading | data | error`) consumed with exhaustive `switch` expressions (not `if (x is T)` chains); receive repos via constructor injection (or Riverpod `@riverpod` code-gen with `Notifier`/`AsyncNotifier` and a `build()` method); expose named commands. Call `ref.onDispose()` in `build()` to cancel subscriptions and controllers (Riverpod); for package-agnostic holders dispose every subscription/controller in `dispose()`.
+- **Widgets** — compose small named `const StatelessWidget` classes (not `Widget _buildX()` helpers); `build()` is a pure function (no IO, no sorting, no derivation); `const` everywhere possible; check `context.mounted` (or `ref.mounted` in Riverpod) before using `BuildContext` after `await`; colors/typography from `Theme.of(context)` tokens only.
 
 ---
 

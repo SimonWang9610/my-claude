@@ -1,6 +1,14 @@
 # AC anti-patterns — before/after with Flutter test-name skeletons
 
-Four recurring anti-patterns, each shown as the ill-formed criterion, the corrected
+<!-- TOC -->
+- [1. The cache-invalidation no-op (spy-on-the-call AC)](#1-the-cache-invalidation-no-op-spy-on-the-call-ac)
+- [2. The mock-call assertion (callback fired, nothing happened)](#2-the-mock-call-assertion-callback-fired-nothing-happened)
+- [3. The render-it-back tautology](#3-the-render-it-back-tautology)
+- [4. The one-shot ban that decays](#4-the-one-shot-ban-that-decays)
+- [5. The stream-state tautology (Flutter-specific)](#5-the-stream-state-tautology-flutter-specific)
+<!-- /TOC -->
+
+Five recurring anti-patterns, each shown as the ill-formed criterion, the corrected
 observable form, and the test-name skeleton it produces.
 
 ---
@@ -68,8 +76,10 @@ group('AC-14.3: tapping a device row navigates to the device detail screen', () 
   testWidgets('shows device detail screen after row tap', (tester) async {
     // act: await tester.tap(find.text('<device name>'))
     // assert (observable): find.byType(DeviceDetailScreen) findsOneWidget
-    // optional secondary: verify mock router received the correct device id —
-    //   but the rendered screen is the primary signal
+    // WARNING: asserting that a mock router received the device id does NOT
+    //   substitute for the rendered-screen assertion above. The mock-call check
+    //   may pass even when navigation is broken; the primary signal is always
+    //   the rendered screen.
   });
 });
 ```
@@ -150,13 +160,13 @@ group('NFR-1: no hardcoded Color literals in feature source', () {
 ## 5. The stream-state tautology (Flutter-specific)
 
 An AC for async data loading is written as "shall emit LoadingState then DataState".
-A unit test on a fake holder asserts the fake emits what the fake was programmed to emit
-— it tests the test double, not the holder under test. The observable assertion is on
+A unit test on a fake notifier asserts the fake emits what the fake was programmed to emit
+— it tests the test double, not the notifier under test. The observable assertion is on
 the sequence of values a real consumer (the widget, or an integration test) observes.
 
 **Reject:**
 ```
-AC-7: The device holder shall emit LoadingState followed by DataState when fetch succeeds.
+AC-7: The devicesNotifier shall emit LoadingState followed by DataState when fetch succeeds.
 ```
 
 **Require:**
@@ -171,14 +181,20 @@ AC-7.2: Given the device list screen is opened, when the repository fetch fails,
 
 **Test-name skeleton — two-layer approach:**
 
-For the holder/repository unit test (pure state logic, fast):
+For the notifier/repository unit test (pure state logic, fast). With Riverpod code-gen,
+the provider under test is an `AsyncNotifier`; override its repository dependency via
+`ProviderContainer.overrideWithValue`:
 ```dart
-group('AC-7.1: device holder transitions loading→data on successful fetch', () {
-  test('emits loading then data states in order', () async {
-    // Use a real holder with a fake repository.
-    // Assert the state sequence: loading → DevicesLoaded(devices)
-    // This is valid because we are asserting the publicly observable stream/value,
-    // not reading a private field.
+group('AC-7.1: devicesNotifier transitions loading→data on successful fetch', () {
+  test('exposes data state after repository returns', () async {
+    final fakeRepo = FakeDeviceRepository();
+    final container = ProviderContainer(
+      overrides: [deviceRepositoryProvider.overrideWithValue(fakeRepo)],
+    );
+    addTearDown(container.dispose);
+    // Assert the publicly exposed AsyncValue sequence via container.listen / container.read.
+    // This is valid because we assert the publicly observable AsyncValue,
+    // not a private field.
   });
 });
 ```
@@ -193,9 +209,9 @@ group('AC-7.1: device list shows rows after fetch completes', () {
 });
 ```
 
-An AC about async/stream behavior should map to a unit test on the holder/repository
-(loading→data→error state sequence) AND, if the AC names a UI outcome, a widget test.
-Both test names must carry the AC ID so coverage grep finds both layers.
+An AC about async behavior should map to a unit test on the notifier/repository
+(loading→data→error `AsyncValue` sequence) AND, if the AC names a UI outcome, a widget
+test. Both test names must carry the AC ID so coverage grep finds both layers.
 
 ---
 

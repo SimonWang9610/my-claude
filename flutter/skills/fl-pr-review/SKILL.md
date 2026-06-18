@@ -1,14 +1,16 @@
 ---
 name: fl-pr-review
 description: >
-  Reviews a Flutter/Dart pull request (or local diff/branch) against the Flutter specflow
-  architecture rules (P1–P8 + verifiable-unit gate), state-management idioms, and test-quality
-  rules, then produces a severity-classified, rule-cited review report. GitHub posting is
-  opt-in and confirm-first.
+  Reviews a Flutter/Dart pull request or local diff against the Flutter specflow architecture
+  rules (P1–P8, verifiable-unit gate), Riverpod code-gen idioms (@riverpod, Notifier,
+  AsyncNotifier), Dart 3 patterns (sealed classes, records, exhaustive switch), and
+  flutter_test + Mocktail test-quality rules. Produces a severity-classified (Critical /
+  Major / Minor), rule-cited report. GitHub posting is opt-in and confirm-first; the human
+  makes the merge decision.
 
-  Trigger phrases: "review this Flutter PR", "review the diff/branch", "check this PR against
-  the rules", "run a PR review", "audit this branch against the flutter rules", "check the
-  diff for architecture violations", "review my Flutter changes".
+  Use when: "review this Flutter PR", "review the diff/branch", "check this PR against the
+  rules", "run a PR review", "audit this branch against the flutter rules", "check the diff
+  for architecture violations", "review my Flutter changes".
 ---
 
 # fl-pr-review
@@ -16,6 +18,15 @@ description: >
 Reviews a Flutter/Dart PR (or local diff) against the Flutter specflow architecture corpus
 (P1–P8, verifiable-unit gate, state-management idioms, test-quality) and produces a
 severity-classified, rule-cited report. The human makes the merge decision.
+
+## Contents
+
+- [When to use](#when-to-use)
+- [Inputs](#inputs)
+- [What is reviewed](#what-is-reviewed)
+- [Severity tiers](#severity-tiers-one-line-each)
+- [Instructions](#instructions)
+- [References](#references)
 
 ---
 

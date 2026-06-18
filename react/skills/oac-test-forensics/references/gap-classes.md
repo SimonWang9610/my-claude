@@ -5,6 +5,16 @@ exhibit all three simultaneously — so naming the class matters because each ma
 
 ---
 
+## Contents
+
+1. [Pass 1 — no-spec-coverage](#pass-1--no-spec-coverage)
+2. [Pass 2 — tests-pass-but-miss-behavior](#pass-2--tests-pass-but-miss-behavior)
+3. [Pass 3 — false-positive](#pass-3--false-positive)
+4. [Reporting](#reporting)
+5. [Confidence calibration](#confidence-calibration)
+
+---
+
 ## Pass 1 — `no-spec-coverage`
 
 **Definition.** The code exhibits a behavior with no governing criterion, OR a criterion exists with zero

@@ -1,13 +1,13 @@
 ---
 name: scan-resource
-description: Audit one or more legacy folders/resources and distill each into its own compact markdown reference, building a recallable knowledge base for a migration agent (typically migrating an old Flutter project to React). Saves one reference per folder plus an index, so the agent looks logic and abstractions up instead of re-scanning the source every time. Use whenever the user says things like "audit these folders to understand them to help build/migrate", or asks to "scan", "survey", "index", "map", or "extract references from" code, packages, or directories — especially across multiple folders. Trigger even without the word "audit" when the user is clearly asking you to study legacy resources now so later migration phases can rely on saved references rather than reading everything again.
+description: Audits one or more legacy folders/resources and distills each into a compact markdown reference, building a recallable knowledge base a migration agent can query instead of re-scanning source on every step. Produces one reference per folder plus an index. Trigger when asked to "scan", "audit", "survey", "index", "map", or "extract references from" code, packages, or directories — especially across multiple folders — or when legacy resources should be studied up-front so later migration phases can rely on saved references rather than re-reading source files.
 ---
 
 # Scan Resource
 
-Build a **recallable reference base** for a migration agent. Given a set of legacy folders/resources, produce **one markdown reference per folder** plus an **index**, so a downstream agent migrating the code (typically Flutter → React) can recall business logic and abstractions on demand instead of re-scanning the source.
+Build a **recallable reference base** for a migration agent. Given a set of legacy folders/resources, produce **one markdown reference per folder** plus an **index** so a downstream agent (e.g. migrating Flutter → React) can look up business logic and abstractions on demand instead of re-scanning the source.
 
-The references are the agent's memory of the legacy system. Optimize so that, later, the agent reads the index, picks the relevant reference, and acts — only re-opening source files when the reference flags a gap.
+The references are the agent's memory of the legacy system. The agent reads the index, picks the relevant reference, and acts — re-opening source files only when a reference flags a gap.
 
 ## Inputs
 
@@ -45,7 +45,7 @@ _Source: <root path(s)> · Scope: <instruction> · Updated: <date>_
 
 | Reference          | Source folder      | Covers                                           | For migration                          |
 | ------------------ | ------------------ | ------------------------------------------------ | -------------------------------------- |
-| `features-auth.md` | lib/features/auth/ | <1-line: business logic / abstractions captured> | <1-line: what it helps build in React> |
+| `features-auth.md` | lib/features/auth/ | <1-line: business logic / abstractions captured> | <1-line: what it helps build in the target stack> |
 ```
 
 ## Reference format (one per folder)
@@ -82,7 +82,7 @@ ALWAYS use this structure. Omit a section only if it has no in-scope content.
 
 ## Migration Notes
 
-<Optional. Flutter-specific coupling to unwind, anti-patterns, framework-bound vs. portable logic, and anything that will bite when rebuilding in the target stack. Skip if none.>
+<Optional. Source-stack-specific (framework-specific) coupling to unwind, anti-patterns, framework-bound vs. portable logic, and anything that will bite when rebuilding in the target stack. Skip if none.>
 
 ## Gaps
 
@@ -91,9 +91,9 @@ ALWAYS use this structure. Omit a section only if it has no in-scope content.
 
 ## Principles
 
-- **One reference per folder**, saved separately — never merge folders into a single file.
-- **Recall over re-scan** — the index + references are the agent's memory; re-reading source is the exception, signalled by the `Gaps` section.
-- **Capture portable substance** — favor business logic and abstractions that survive the framework change over framework-specific implementation detail.
+- **One reference per folder** — never merge folders into a single file; save each separately.
+- **Recall over re-scan** — re-reading source is the exception, signalled by the `Gaps` section.
+- **Capture portable substance** — favor business logic and abstractions that survive a framework change over framework-specific implementation detail.
 - **Instruction is the filter** — out-of-scope content stays out.
-- **Stable slugs** — re-audits overwrite the matching file; don't duplicate.
-- **Don't invent** — record only what's in the source; flag ambiguity in `Gaps` instead of guessing.
+- **Stable slugs** — re-audits overwrite the matching file; no duplicates.
+- **Don't invent** — record only what is in the source; flag ambiguity in `Gaps` instead of guessing.

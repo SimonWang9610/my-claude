@@ -42,8 +42,10 @@ it(
 # Does any test claim to cover AC-14.3?
 vitest run --tags-filter 'AC-14.3'
 
-# Run every test for story 14 before merging a change to that feature
-vitest run --tags-filter 'AC-14.*'
+# Run every test for story 14 before merging a change to that feature.
+# --tags-filter takes boolean expressions (& | !), not globs; list each ID explicitly.
+vitest run --tags-filter 'AC-14.1|AC-14.2|AC-14.3'
+# Alternatively, grep the describe names: grep -r 'AC-14\.' src --include='*.test.*'
 ```
 
 Requires Vitest 1.3+. Tags are optional — the ID-in-describe convention alone is enough.

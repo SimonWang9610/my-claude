@@ -15,21 +15,29 @@ State belongs in the most local scope that satisfies all its readers. Ephemeral 
 - **Mechanism choice lives elsewhere** — which holder to use (local `setState` → scoped `InheritedWidget` → provider) is a decision tree in `state-ownership-decision.md`; this rule covers discipline *inside* whichever holder wins.
 
 ```dart
-// illustrative — your state-management package applies the same principle
-class SessionNotifier extends ChangeNotifier {
-  User? _user;
-  List<String> _errors = [];
+// Riverpod Notifier with code-gen
+// State is an immutable value object; derived booleans are getters on it.
+class SessionState {
+  const SessionState({this.user, this.errors = const []});
+  final User? user;
+  final List<String> errors;
 
-  // WRONG — stored duplicate fields that must be kept in sync
-  // bool isLoggedIn = false;
-  // int errorCount = 0;
+  // CORRECT — derived getters; source of truth is user / errors
+  bool get isLoggedIn => user != null;
+  bool get hasErrors  => errors.isNotEmpty;
+  int  get errorCount => errors.length;
+}
 
-  // CORRECT — derived getters; source of truth is _user / _errors
-  bool get isLoggedIn => _user != null;
-  bool get hasErrors => _errors.isNotEmpty;
-  int  get errorCount => _errors.length;
+@Riverpod(keepAlive: true)
+class SessionNotifier extends _$SessionNotifier {
+  @override
+  SessionState build() => const SessionState();
 
-  void setUser(User? user) { _user = user; notifyListeners(); }
+  void setUser(User? user) =>
+      state = SessionState(user: user, errors: state.errors);
+
+  // WRONG — never store a field whose value duplicates another field:
+  // state = state.copyWith(isLoggedIn: user != null); // ← redundant, can diverge
 }
 ```
 

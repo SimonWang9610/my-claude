@@ -19,8 +19,8 @@ Common duplication smells:
 **Incorrect:**
 
 ```tsx
-const usePlayerStore = create(/* ... selectedCameraId ... */)
-const useSidebarStore = create(/* ... activeCameraId ... */)
+const usePlayerStore = create<PlayerState>()(/* ... selectedCameraId ... */)
+const useSidebarStore = create<SidebarState>()(/* ... activeCameraId (duplicate) ... */)
 // + a useEffect somewhere keeping them aligned
 ```
 

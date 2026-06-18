@@ -1,9 +1,14 @@
 ---
 name: fl-test-forensics
 description: >
-  Detects three gap classes in a Flutter/Dart test suite — behavior with no governing requirement,
-  tests that pass but miss the behavior, and false-positive tests — using a mutation-test mindset and
-  Flutter/Dart-specific heuristics (flutter_test, Mocktail, Riverpod/Provider, fakeAsync, streams).
+  Audits a Flutter/Dart test suite for three gap classes: (1) behaviors exhibited with no governing
+  acceptance criterion (no-spec-coverage), (2) green tests whose bodies assert a weaker proxy than
+  the named behavior (tests-pass-but-miss-behavior), and (3) tests that pass regardless of whether
+  production code works (false-positive). Uses a mutation-test mindset with Flutter-specific
+  heuristics for flutter_test, Mocktail, Riverpod code-gen (Notifier/AsyncNotifier), fakeAsync,
+  and streams. Trigger when auditing an existing Flutter test suite for false positives, tautologies,
+  over-mocked tests, verify-only tests, or uncovered AC clauses — especially after implementation
+  lands, when a green suite lacks confidence, or at drift review time.
 ---
 
 # fl-test-forensics

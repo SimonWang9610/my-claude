@@ -1,19 +1,30 @@
 ---
 name: oac-architecture-design
 description: >
-  Design-time skill: applies the React architecture rules — four concerns: state
-  ownership/placement, server-state via TanStack Query as SSOT, Zustand store
-  discipline, and component composition + the per-unit testability seam — *while
-  authoring* design.md and contracts/. Carries the full rule corpus under
-  references/. Also verifies its own output at phase exit: confirms each unit is
-  independently verifiable via the verifiable-unit gate (three blocking triggers).
-  Triggers on the spec-design stage and whenever you are structuring components,
-  hooks, stores, or write paths.
+  Applies React architecture rules while authoring design.md and contracts/ for a
+  React 19 + TypeScript + Zustand + TanStack Query v5 + MUI feature. Enforces four
+  concerns: state ownership and placement, server state as TanStack Query SSOT,
+  Zustand store discipline, and component composition with per-unit testability seams.
+  Runs the verifiable-unit gate at design exit (three blocking triggers: God-component,
+  server-state-in-Zustand, missing testability seam). Trigger: spec-design stage, or
+  any session that structures components, hooks, stores, query keys, or write paths
+  from scratch or extends an existing design.md.
 ---
 
 # oac-architecture-design
 
 **Design AGAINST the rules proactively, so the verify step rarely has to block.**
+
+---
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to use](#when-to-use)
+- [Instructions](#instructions)
+- [References](#references)
+
+---
 
 Author `design.md` and `contracts/<unit>.md` such that at design exit, each
 blocking trigger is already a non-issue: no God-components, no server data in

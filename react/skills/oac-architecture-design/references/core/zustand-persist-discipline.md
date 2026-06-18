@@ -12,9 +12,10 @@ tags: zustand, persist, migration
 **Incorrect:**
 
 ```tsx
-export const useLayoutStore = create()(
-  persist((set) => ({ gridSize: '2x2', focusedId: null, dragState: null, ... }), {
+export const useLayoutStore = create<LayoutState>()(
+  persist((set) => ({ gridSize: '2x2', focusedId: null, dragState: null, /* ... */ }), {
     name: 'layout',
+    // missing partialize, version, and migrate
   })
 )
 ```

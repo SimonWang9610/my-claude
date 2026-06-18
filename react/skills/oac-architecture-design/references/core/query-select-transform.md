@@ -14,7 +14,7 @@ When components need a derived shape of server data (filtered, sorted, indexed, 
 ```tsx
 function useOnlineCameras() {
   return useQuery({
-    queryKey: cameraKeys.list(),
+    queryKey: cameraKeys.lists(),
     queryFn: api.getCameras,
     select: (cameras) => cameras.filter((c) => c.status === 'online'),
   })
@@ -22,7 +22,7 @@ function useOnlineCameras() {
 
 function useCameraById(id: string) {
   return useQuery({
-    queryKey: cameraKeys.list(),
+    queryKey: cameraKeys.lists(),
     queryFn: api.getCameras,
     select: (cameras) => cameras.find((c) => c.id === id), // narrow subscription
   })

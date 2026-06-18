@@ -1,9 +1,13 @@
 ---
 name: oac-test-forensics
 description: >
-  Detects three gap classes in a React/TypeScript test suite — behavior with no governing requirement,
-  tests that pass but miss the behavior, and false-positive tests — using a mutation-test mindset and
-  React/TS-specific heuristics (RTL, Zustand, TanStack Query, Vitest).
+  Audits a React/TypeScript test suite for three gap classes: behaviors with no governing requirement
+  (no-spec-coverage), green tests that never exercise the named behavior (tests-pass-but-miss-behavior),
+  and false-positive tests that pass regardless of whether the code works. Uses a mutation-test mindset
+  and stack-specific heuristics for RTL, Zustand, TanStack Query v5, and Vitest. Trigger after
+  implementation lands, before a release, or whenever a green suite does not give confidence that a
+  real regression would be caught. Keywords: test audit, false positive, tautology, mock-shape drift,
+  proxy assertion, query-config NFR, mutation test, React Testing Library, TanStack Query, Zustand.
 ---
 
 # oac-test-forensics

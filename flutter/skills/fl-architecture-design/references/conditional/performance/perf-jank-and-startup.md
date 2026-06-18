@@ -23,7 +23,7 @@ void initState() {
   // Heavy work here would block the first build.
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     await _database.open();          // runs after first paint; show skeleton until ready
-    setState(() => _ready = true);
+    if (mounted) setState(() => _ready = true);
   });
 }
 ```

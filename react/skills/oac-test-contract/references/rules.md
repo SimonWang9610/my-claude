@@ -1,6 +1,15 @@
 # test-contract — rule detail with before→after examples
 
-Six rules; all must pass before a test task is marked complete. The running example uses a generic `DeviceListPage` backed by `useDevices` (TanStack Query) and `useDeviceFilters` (Zustand). External citations are links in `sources.md`.
+Six rules; all must pass before a test task is marked complete. The running example uses a generic `DeviceListPage` backed by `useDevices` (TanStack Query v5) and `useDeviceFilters` (Zustand). External citations are links in `sources.md`.
+
+## Contents
+
+- [§1 — Clause→test mapping](#1--clausetest-mapping)
+- [§2 — Outcome, not implementation](#2--outcome-not-implementation)
+- [§3 — Production-shaped fixtures](#3--production-shaped-fixtures)
+- [§4 — No tautologies, no arrange-act-no-assert](#4--no-tautologies-no-arrange-act-no-assert)
+- [§5 — Real QueryClient for query-config NFRs](#5--real-queryclient-for-query-config-nfrs)
+- [§6 — One-shot greps become enduring CI guards](#6--one-shot-greps-become-enduring-ci-guards)
 
 ---
 
@@ -30,17 +39,19 @@ describe('AC-14.3: table column header click sorts by that column', () => {
 
 ```tsx
 // BEFORE — asserts the mock was called; passes even if the UI never updates
-fireEvent.click(header)
+const user = userEvent.setup()
+await user.click(header)
 expect(onSort).toHaveBeenCalledWith('name', 'asc')
 
 // AFTER — primary assertion is the observable result
-fireEvent.click(header)
+const user = userEvent.setup()
+await user.click(header)
 expect(screen.getByRole('columnheader', { name: /name/i }))
   .toHaveAttribute('aria-sort', 'ascending')
 expect(onSort).toHaveBeenCalledWith('name', 'asc')  // secondary
 ```
 
-**Check.** No new test uses `toHaveBeenCalled()` alone for a behavior that renders something. Apply the mutation mindset: "If I invert this condition in production, does this test fail?" — if not, the assertion is a proxy or tautology.
+**Check.** No new test uses `toHaveBeenCalled()` alone for a behavior that renders something. Use `userEvent.setup()` + `await user.*()` for all user interactions (not bare `fireEvent`). Apply the mutation mindset: "If I invert this condition in production, does this test fail?" — if not, the assertion is a proxy or tautology.
 
 **Anti-pattern.** A sort test asserting only `onSort` was called, or a card test asserting `getByText(message)` where `message` is the exact prop passed in — can never fail.
 
@@ -84,14 +95,16 @@ export const handlers = [
 ```tsx
 // BEFORE — no expect(); green regardless of implementation
 it('submits the filter form', async () => {
+  const user = userEvent.setup()
   render(<DeviceFilterForm {...props} />)
-  fireEvent.click(screen.getByRole('button', { name: /apply/i }))
+  await user.click(screen.getByRole('button', { name: /apply/i }))
 })
 
 // AFTER — asserts the observable result of the submit action
 it('AC-7.2: shows filtered count after filters are applied', async () => {
+  const user = userEvent.setup()
   render(<DeviceFilterForm {...props} />)
-  fireEvent.click(screen.getByRole('button', { name: /apply/i }))
+  await user.click(screen.getByRole('button', { name: /apply/i }))
   expect(await screen.findByText(/3 devices match/i)).toBeInTheDocument()
 })
 ```
@@ -120,12 +133,13 @@ function renderWithQuery(ui: React.ReactElement, client: QueryClient) {
   return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>)
 }
 
-it('NFR-3: does not refetch on window focus (staleTime = Infinity)', async () => {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(mockDeviceList)))
+it('NFR-3: does not refetch on window focus (refetchOnWindowFocus: false)', async () => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } } })
   client.setQueryData(['devices'], mockDeviceList)
   renderWithQuery(<DeviceListPage />, client)
-  fireEvent.focus(window)
-  await waitFor(() => { expect(fetchSpy).toHaveBeenCalledTimes(0) })
+  act(() => window.dispatchEvent(new FocusEvent('focus')))
+  expect(fetchSpy).toHaveBeenCalledTimes(0)
 })
 ```
 

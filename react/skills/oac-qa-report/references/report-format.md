@@ -5,7 +5,16 @@ section only with an explicit "none detected" line, never silently. The optional
 sections (visual/design fidelity, E2E journeys, API-contract compliance) are included only if the
 project runs them.
 
-Status line: `✅ All green` / `⚠️ Findings detected` / `❌ Failures detected`.
+## Contents
+
+- [Status line](#status-line)
+- [Template](#template)
+
+## Status line
+
+`✅ All green` / `⚠️ Findings detected` / `❌ Failures detected`.
+
+## Template
 
 ```markdown
 # QA Report — <Feature Name>

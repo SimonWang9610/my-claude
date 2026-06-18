@@ -29,10 +29,11 @@ class AlarmList extends _$AlarmList {
 
   Future<void> add(Alarm a) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(
+    final result = await AsyncValue.guard(
       () => ref.read(alarmRepositoryProvider).add(a),
     );
     if (!ref.mounted) return; // guard after every await in 3.0
+    state = result;
   }
 }
 // → generator produces alarmListProvider (autoDispose by default)
@@ -90,6 +91,24 @@ Ref: https://riverpod.dev/docs/migration/from_riverpod_2_0_0_to_3_0_0
       ref.watch(alarmRepositoryProvider).getById(id);
   // consumed: ref.watch(alarmProvider('alarm-42'))
   ```
+
+- **ref.onDispose** — register cleanup inside `build()` (or a function provider body) to
+  run when the provider is disposed or rebuilt. Use it to cancel subscriptions, close
+  streams, or dispose controllers:
+  ```dart
+  @riverpod
+  class AlarmPoller extends _$AlarmPoller {
+    @override
+    Future<List<Alarm>> build() {
+      final timer = Timer.periodic(const Duration(seconds: 30), (_) => ref.invalidateSelf());
+      ref.onDispose(timer.cancel); // called on dispose or before the next build()
+      return ref.watch(alarmRepositoryProvider).getAlarms();
+    }
+  }
+  ```
+  `ref.onDispose` replaces the old `dispose()` override on `StateNotifier`. Never store
+  cleanup state as a notifier field and override `dispose()` — Riverpod's generator does
+  not expose that hook.
 
 - **invalidation cascade direction** — invalidating a downstream provider does nothing to
   upstream providers. To refresh A → B → C, invalidate A and the cascade carries through.
