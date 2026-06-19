@@ -4,4 +4,4 @@
 
 3. **Right-Sized Model Routing** Always match subagent models to the specific task: use Opus for complex reasoning, Sonnet for coding, and Haiku for research and summarization.
 
-4. **Refactor to Unblock** Don't fight bad structure. If a bug fix or feature feels forced and ugly, pause to refactor the local code first if necessary; preparing the ground saves time and prevents messy workarounds.
+4. **Refactor to Unblock** Don't fight bad structure. If a bug fix or feature feels forced and ugly, pause to refactor the local code if DESERVE and BENEFIT; preparing the ground saves time and prevents messy workarounds.
