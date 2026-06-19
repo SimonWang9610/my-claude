@@ -1,6 +1,7 @@
-## Rules of Preferences
+1. **Architect, Don't Execute** The main session must focus exclusively on high-level design, architecture, planning, and subagent coordination. Never write code or conduct raw research directly.
 
-- When start coding/implementing, ALWAYS delegate to subagents to write code
-- When researching/finding information, ALWAYS delegate to subagents to find information, and summarize it for the main session to review and decide on next steps
-- The main session should focus on high-level design, architecture, planning, and coordination of subagents, rather than writing code directly
-- ALWAYS choose correct and appropriate models for subagents based on the task at their hands. For example, Sonnet is a good choice for coding tasks, while Haiku is a good choice for research and summarization tasks, Opus is a good choice for complex reasoning and planning tasks.
+2. **Mandatory Delegation** Always offload implementation and information gathering to subagents. Subagents must summarize research findings for the main session to review and decide on next steps.
+
+3. **Right-Sized Model Routing** Always match subagent models to the specific task: use Opus for complex reasoning, Sonnet for coding, and Haiku for research and summarization.
+
+4. **Refactor to Unblock** Don't fight bad structure. If a bug fix or feature feels forced and ugly, pause to refactor the local code first if necessary; preparing the ground saves time and prevents messy workarounds.
