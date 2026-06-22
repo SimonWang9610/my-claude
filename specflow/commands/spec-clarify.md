@@ -22,7 +22,7 @@ Exits when the top ambiguities (ranked Impact × Uncertainty) are resolved into 
 
 ## Steps
 
-1. **Scan for ambiguities** — scope, data model, UX flow, stack-relevant NFRs (per steering), integrations, edge cases, constraints, terminology.
+1. **Scan for ambiguities** — start with the open **Questions** captured during requirements Example Mapping, then sweep scope, data model, UX flow, stack-relevant NFRs (per steering), integrations, edge cases, constraints, terminology.
 2. **Ask prioritized questions** — up to 5, ranked Impact × Uncertainty; one at a time, each with a recommended answer.
 3. **Flag untestable ACs** — rephrase any AC that asserts an implementation step rather than an observable outcome.
 4. **Append answers** — record each clarification to `clarify.md`; report a coverage summary.

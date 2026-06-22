@@ -57,6 +57,9 @@ NFR-1: Given [condition], when [trigger], then [measurable or verifiable system 
 
 When an NFR is a pattern ban, note it must become an enduring CI guard, not a one-time grep.
 
+For behaviour that varies only by data, express it as a single **Examples-table AC** rather than
+many near-duplicate criteria — see `references/discovery.md` §5.
+
 ## 4. Where the IDs go
 
 - **`requirements.md`** — every AC and NFR carries its ID inline.
