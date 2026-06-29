@@ -13,39 +13,11 @@ description: >
 
 # oac-architecture-design
 
-**Design AGAINST the rules proactively, so the verify step rarely has to block.**
-
----
-
-## Contents
-
-- [Purpose](#purpose)
-- [When to use](#when-to-use)
-- [Instructions](#instructions)
-- [References](#references)
-
----
-
-Author `design.md` and `contracts/<unit>.md` such that at design exit, each
-blocking trigger is already a non-issue: no God-components, no server data in
-Zustand, no unit lacking a testability seam.
-
----
-
-## Purpose
-
-Apply architecture principles P1–P7 as a *design-time authoring discipline* — not a
-retroactive reviewer. You are building structure on paper before any TypeScript is
-written. A seam missing from the design cannot be tested in the implementation; catch
-it here.
-
----
-
-## When to use
-
-- The `spec-design` command stage (primary trigger).
-- Structuring a feature's units from scratch: components, hooks, stores, query keys, services.
-- Revisiting or extending `design.md` to add new units or change ownership decisions.
+Author `design.md` and `contracts/<unit>.md` as a *design-time authoring discipline* —
+not a retroactive reviewer. Apply principles P1–P7 before any TypeScript is written
+so every blocking trigger is a non-issue at gate: no God-components, no server data in
+Zustand, no unit lacking a testability seam. A seam missing from the design cannot be
+tested in the implementation — catch it here.
 
 ---
 
@@ -84,8 +56,7 @@ Open `references/design-procedure.md` and work through all 7 steps in order.
 
 ### 4. Verify — the verifiable-unit gate
 
-> **Token cost note:** this step reads only `references/gate-procedure.md` (lightweight).
-> Do NOT re-open the full corpus under `core/` — that is for authoring (steps 1–3).
+> **Token cost note:** this step reads only `references/gate-procedure.md` (lightweight). Do NOT re-open the full corpus under `core/` — that is for authoring (steps 1–3).
 
 At design exit **and** at validate, confirm the gate question and the three blocking triggers:
 

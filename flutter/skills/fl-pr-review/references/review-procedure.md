@@ -194,7 +194,9 @@ For changed test files, apply both passes:
 
 Reference files for test forensics (use relative paths):
 - `../../fl-test-forensics/references/gap-classes.md`
-- `../../fl-test-forensics/references/flutter-dart-heuristics.md`
+- `../../fl-test-forensics/references/heuristics-behavior-enumeration.md`
+- `../../fl-test-forensics/references/heuristics-pass2-shapes.md`
+- `../../fl-test-forensics/references/heuristics-pass3-forms.md`
 - `../../fl-test-forensics/references/false-positive-signals.md`
 
 ### Pass 3h — Engineering discipline

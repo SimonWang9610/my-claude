@@ -13,13 +13,7 @@ description: >
 
 # oac-qa-report
 
-> Audit the branch a developer hands off, and produce one report a reviewer signs off on. QA surfaces evidence; the human dispositions.
-
-This is an **audit**, not a test-writing stage: it verifies that the tests already on the branch prove the behavior, that the specs honestly describe the work, that nothing crept out of scope, and that consumers still integrate. It never writes or rewrites tests, and it never approves or blocks — those are human calls.
-
-## When to use
-
-When a feature branch is handed off for verification and you must produce a single QA report a reviewer signs off on. The report confirms: the build and existing suite are green; the tests actually fail when the behavior breaks; the specs match the work; no change escaped the feature's scope; no failure is silently swallowed; and consumers still render.
+Audit only — never writes or rewrites tests, never approves or blocks (those are human calls).
 
 ## Instructions
 

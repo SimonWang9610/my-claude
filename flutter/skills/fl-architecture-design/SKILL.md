@@ -15,38 +15,11 @@ description: >
 
 # fl-architecture-design
 
-<!-- TOC -->
-- [Purpose](#purpose)
-- [When to use](#when-to-use)
-- [Instructions](#instructions)
-  - [1. Load the rule index first](#1-load-the-rule-index-first)
-  - [2. Follow the design procedure](#2-follow-the-design-procedure)
-  - [3. Key decisions](#3-key-decisions)
-  - [4. Verify — the verifiable-unit gate (P8)](#4-verify----the-verifiable-unit-gate-p8)
-- [References](#references)
-<!-- /TOC -->
-
 **Design AGAINST the rules proactively, so the verify step rarely has to block.**
 
-Author `design.md` and `contracts/<unit>.md` such that at phase exit, each blocking trigger
-is already a non-issue: no god-widgets, no layer violations, no unit lacking a testability seam.
-This skill both authors the design and runs the verifiable-unit gate (P8) at phase exit.
+Author `design.md` and `contracts/<unit>.md` such that at phase exit, each blocking trigger is already a non-issue: no god-widgets, no layer violations, no unit lacking a testability seam. This skill both authors the design and runs the verifiable-unit gate (P8) at phase exit.
 
----
-
-## Purpose
-
-Apply architecture principles P1–P8 as a *design-time authoring discipline* — not a retroactive
-reviewer. You are building structure on paper before any Dart is written. A seam missing from
-the design cannot be tested in the implementation; catch it here.
-
----
-
-## When to use
-
-- The `spec-design` command stage (primary trigger).
-- Structuring a feature's units from scratch: widgets, state holders, repositories, services, models.
-- Revisiting or extending `design.md` to add new units or change ownership decisions.
+A seam missing from the design cannot be tested in the implementation; catch it here.
 
 ---
 

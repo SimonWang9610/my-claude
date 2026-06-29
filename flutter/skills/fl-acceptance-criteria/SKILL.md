@@ -13,15 +13,7 @@ description: >
 
 # fl-acceptance-criteria
 
-Produce acceptance criteria that carry stable IDs, describe user-observable outcomes
-instead of implementation steps, and flow one-to-one into test names. The IDs minted
-here are the spine that test tasks, implementation, and validation all anchor to.
-
-## When to use
-
-- Writing acceptance criteria or NFRs for a new or existing Flutter spec.
-- Reviewing criteria that may be untestable, ill-formed, or missing IDs.
-- Checking that every story has ≥1 AC and every NFR carries an ID before design begins.
+Produce acceptance criteria that carry stable IDs, describe user-observable outcomes instead of implementation steps, and flow one-to-one into test names. The IDs minted here are the spine that test tasks, implementation, and validation all anchor to.
 
 ## Instructions
 

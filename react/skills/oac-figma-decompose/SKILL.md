@@ -1,29 +1,11 @@
 ---
 name: oac-figma-decompose
-description: Decomposes a Figma screen into a compact component map by discovering the layer tree via get_metadata, matching Figma elements against existing codebase components, and extracting only genuinely new components via parallel agents. Produces a ~150-token-per-component planning document (EXISTING / PARTIAL / NEW classification) instead of raw Figma JSON. Use when given a Figma URL, "decompose design", "break down the figma", "what components do I need for this screen", "plan from figma", "look at this figma" + URL, or any request to map a Figma design to React components for planning or implementation. Stack: React 19 + TypeScript + MUI + Zustand + TanStack Query v5.
+description: Decomposes a Figma screen into a compact component map by discovering the layer tree via get_metadata, matching Figma elements against existing codebase components, and extracting only genuinely new components via parallel agents. Produces a ~150-token-per-component planning document (EXISTING / PARTIAL / NEW classification) instead of raw Figma JSON. Use when given a Figma URL, "decompose design", "break down the figma", "what components do I need for this screen", "plan from figma", "look at this figma" + URL, or any request to map a Figma design to React components for planning or implementation. Stack React 19 + TypeScript + MUI + Zustand + TanStack Query v5.
 ---
 
 # oac-figma-decompose
 
-Turns an expensive Figma design-context pull into a compact, planning-friendly component map by:
-1. Discovering the component tree cheaply via `get_metadata`
-2. Matching Figma elements to existing codebase components (no extraction needed for matches)
-3. Extracting only genuinely new components via parallel agents
-4. Producing a ~150 token-per-component summary instead of ~2000
-
-The output is a compact component map for planning and implementation — what *exists* vs. what's *new* — not pixel-perfect implementation detail.
-
----
-
-## Contents
-
-- [Project configuration](#project-configuration-the-per-project-seam)
-- [Input](#input)
-- [Step 1 — Discover the Component Tree](#step-1--discover-the-component-tree)
-- [Step 2 — Match Against Existing Components](#step-2--match-against-existing-components)
-- [Step 3 — Parallel Extraction (NEW and PARTIAL only)](#step-3--parallel-extraction-new-and-partial-only)
-- [Step 4 — Assemble the Planning Document](#step-4--assemble-the-planning-document)
-- [Tips and Gotchas](#tips-and-gotchas)
+Output: compact component map (EXISTING / PARTIAL / NEW), ~150 tokens per component. Not pixel-perfect implementation detail.
 
 ---
 
@@ -32,13 +14,14 @@ The output is a compact component map for planning and implementation — what *
 This skill carries **no hardcoded project values**. Three seams are resolved per project before running:
 
 **Figma fileKey** — resolve in this order:
-  1. Parse from the Figma URL the user provided (preferred — always current)
-  2. Read the project's `.claude/figma-reference.md` if present — for a master fileKey and a named-screen → nodeId table
-  3. If neither, ask the user
 
-  Some projects keep a single master fileKey for their entire design file (e.g. `lAw9BelULsiHFvpPAlLeur` is an *example* from one project, not a default — never hardcode it).
+1. Parse from the Figma URL the user provided (preferred — always current)
+2. Read the project's `.claude/figma-reference.md` if present — for a master fileKey and a named-screen → nodeId table
+3. If neither, ask the user
 
-**Component inventory locations** — DISCOVER the project's component directories rather than assuming a fixed layout. Glob `src/components/**`, read any architecture/design-system notes, and look for large domain files that hold inline sub-components. As an *illustrative example*, one project organizes as `src/components/shared/`, `src/components/layout/`, `src/components/icons/FigmaIcons.tsx`, plus domain directories — your project may differ.
+Some projects keep a single master fileKey for their entire design file (e.g. `lAw9BelULsiHFvpPAlLeur` is an _example_ from one project, not a default — never hardcode it).
+
+**Component inventory locations** — DISCOVER the project's component directories rather than assuming a fixed layout. Glob `src/components/**`, read any architecture/design-system notes, and look for large domain files that hold inline sub-components. As an _illustrative example_, one project organizes as `src/components/shared/`, `src/components/layout/`, `src/components/icons/FigmaIcons.tsx`, plus domain directories — your project may differ.
 
 **Design-token map** — build or confirm the hex→token map from the project's own tokens source (e.g. `src/lib/design-tokens.ts`, the MUI theme, or CSS custom properties). The map lives at `references/token-map.md`; treat the values there as a per-project template to replace.
 
@@ -47,11 +30,10 @@ This skill carries **no hardcoded project values**. Three seams are resolved per
 ## Input
 
 Accept any of:
+
 - **Figma URL** → parse fileKey and nodeId per the URL rules in the MCP instructions
 - **Screen name** from the project's Figma reference file (see Project configuration) → look up the nodeId + fileKey
 - **Raw nodeId + fileKey** pair
-
-Resolve the project's fileKey using the order described in Project configuration above.
 
 ---
 
@@ -75,11 +57,13 @@ Figma files get reorganized — node IDs in the Figma reference file may be outd
 ### Identifying Components
 
 From the metadata tree, identify **meaningful UI components** — not every frame. Look for:
+
 - Named component instances (Figma "Instance" type)
 - Frames with semantic names (e.g., "PersonCard", "FilterBar", not "Frame 427")
 - Groups that represent a coherent UI element
 
 Skip:
+
 - Auto-layout wrapper frames (just structural)
 - Padding/spacing frames
 - Decorative backgrounds
@@ -120,14 +104,15 @@ Return as a flat list.
 
 Then match each Figma component against this inventory:
 
-| Match Type | Signal | Example |
-|-----------|--------|---------|
-| **Name match** | Figma name ≈ export name | Figma "StatusBadge" → `Badge` or `StatusBadge` |
-| **Pattern match** | Visual shape matches a known component | Pill shape with count → `Pill` component |
-| **Icon match** | `data-name` attribute → project icon component | `data-name="grid_view"` → `GridViewIcon` |
-| **Structural match** | Figma toggle/select/input → the project's form component | Switch control → a project toggle component |
+| Match Type           | Signal                                                   | Example                                        |
+| -------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| **Name match**       | Figma name ≈ export name                                 | Figma "StatusBadge" → `Badge` or `StatusBadge` |
+| **Pattern match**    | Visual shape matches a known component                   | Pill shape with count → `Pill` component       |
+| **Icon match**       | `data-name` attribute → project icon component           | `data-name="grid_view"` → `GridViewIcon`       |
+| **Structural match** | Figma toggle/select/input → the project's form component | Switch control → a project toggle component    |
 
 Classify each Figma component as:
+
 - **EXISTING** — confident match to codebase component
 - **PARTIAL** — similar component exists but needs customization or new props
 - **NEW** — nothing in the codebase matches this
@@ -197,27 +182,30 @@ Components: {N existing} / {N partial} / {N new}
 
 ## Component Map
 
-| Figma Element | Status | Codebase Component | Notes |
-|--------------|--------|-------------------|-------|
-| PersonCard | EXISTING | `SelectableCard` + `PersonAvatar` | — |
-| StatusPill | EXISTING | `Badge preset="status"` | pass value="Online" |
-| FilterWidget | PARTIAL | `PageFilterBar` | needs new date-range slot |
-| ActivityGraph | NEW | — | see spec below |
+| Figma Element | Status   | Codebase Component                | Notes                     |
+| ------------- | -------- | --------------------------------- | ------------------------- |
+| PersonCard    | EXISTING | `SelectableCard` + `PersonAvatar` | —                         |
+| StatusPill    | EXISTING | `Badge preset="status"`           | pass value="Online"       |
+| FilterWidget  | PARTIAL  | `PageFilterBar`                   | needs new date-range slot |
+| ActivityGraph | NEW      | —                                 | see spec below            |
 
 ## Existing — Use As-Is
 
 ### PersonCard → `SelectableCard`
+
 - import: `@/components/shared/SelectableCard`
 - props: `selectable`, wrap `PersonAvatar` + name stack as children
 - node: 221:19652 (for later visual verification)
 
 ### StatusPill → `Badge`
+
 - import: `@/components/shared/Badge`
 - props: `preset="status" value="Online"`
 
 ## Partial — Existing + Customization
 
 ### FilterWidget → `PageFilterBar`
+
 - import: `@/components/shared/PageFilterBar`
 - existing props cover: title, search, actions
 - MISSING: date range picker slot — needs new `dateRange` prop or composition
@@ -226,6 +214,7 @@ Components: {N existing} / {N partial} / {N new}
 ## New — Need Implementation
 
 ### ActivityGraph (NEW)
+
 - node: 667:89012 | 400×200
 - layout: column, gap=8, pad=16
 - bg: elevation2

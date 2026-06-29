@@ -13,12 +13,6 @@ description: >
 
 # oac-test-contract
 
-A forward test-quality contract: six rules a new or edited test file must satisfy before the task that produced it can be marked complete. It front-loads failure-mode classes that retroactive QA would catch later — it does not replace QA.
-
-## When to use
-
-Apply when authoring or auditing tests for acceptance criteria or NFRs — whether writing a new test file, editing an existing one, or reviewing whether a task may be marked done. Not coupled to any specific command or stage.
-
 ## Instructions
 
 Walk all six rules in order for every new or modified test file. All six must pass; any FAIL is blocking. For rule detail, rationale, and before→after examples, read `references/rules.md`.

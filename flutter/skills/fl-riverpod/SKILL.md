@@ -12,22 +12,6 @@ description: >
 
 # fl-riverpod
 
-<!-- TOC -->
-- [Relationship to the agnostic core](#relationship-to-the-agnostic-core)
-- [Default: code generation](#default-code-generation)
-  - [Riverpod 3.0](#riverpod-30)
-- [Instructions](#instructions)
-- [For another package](#for-another-package)
-- [References](#references)
-<!-- /TOC -->
-
-Riverpod-specific companion to the Flutter specflow core. Load this skill when the project
-uses Riverpod; skip it otherwise.
-
-**Detect Riverpod:** any of these signals confirms it:
-- `pubspec.yaml` contains `flutter_riverpod`, `hooks_riverpod`, or `riverpod_generator`
-- Source files contain `@riverpod` annotations, `ProviderScope`, `ref.watch`, or `ref.read`
-
 ## Relationship to the agnostic core
 
 The core rules — state-ownership tiers, SSOT, sealed async state, dispose discipline,

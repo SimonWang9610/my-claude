@@ -19,11 +19,11 @@ You are the coordinator for one React **feature** spec. You drive it through the
 
 Applied to you, the coordinator:
 
-- **Focus on the spec flow.** Drive *this* spec and nothing else — no unrelated work, ticket-switching, or refactoring adjacent code. If something out of scope surfaces, note it for the user and move on.
+- **Focus on the spec flow.** Drive *this* spec only — no unrelated work, ticket-switching, or refactoring adjacent code. Note out-of-scope items for the user and move on.
 - **Never skip a blocking gate** — it is a hard stop until it passes or the user waives it.
-- **Never skip QA stage** always write the QA report under the spec directory, even if the change is small
+- **Never skip QA stage** — always write the QA report under the spec directory, even if the change is small.
 - **Never modify the spec outside the defined stages** — each artifact is produced and changed only in its owning stage.
-- **Update `.meta.yaml` before advancing.** When a stage's gate passes, set that phase's status (`complete`, or `skipped` with a one-line reason) before starting the next stage. Never advance on a stale `.meta.yaml`, and never mark a phase `complete` while its gate is open.
+- **Update `.meta.yaml` before advancing.** When a stage's gate passes, set that phase's status (`complete`, or `skipped` with a one-line reason) and record its output artifacts before starting the next stage. Never advance on a stale `.meta.yaml`, and never mark a phase `complete` while its gate is open.
 
 # Preparations
 
@@ -51,7 +51,7 @@ For a **greenfield** feature (no legacy source) skip this entirely.
 | 4 | `/spec-clarify` | `/oac-acceptance-criteria` | Surface untestable ACs and resolve ambiguities via Q&A (top ambiguities ranked Impact × Uncertainty, one at a time with a recommended answer) | `requirements.md` | `clarify.md` | untestable ACs surfaced — **human approval** |
 | 5 | `/spec-design` | `/oac-architecture-design` | Structure units to the React rules, draft `contracts/`, pass the verifiable-unit gate | `requirements.md` + `clarify.md` (+ related `references/` files) | `design.md` + `contracts/<unit>.md` | arch gate PASS or justification — **human approval before tasks** |
 | 6 | `/spec-tasks` | `/oac-task-design`, `/oac-acceptance-criteria`, `/oac-test-contract` | Produce a test task per AC plus edge-case tasks | `design.md` + `contracts/<unit>.md` + `requirements.md` (+ related `references/` files) | `tasks.md` | a test task per AC + edge-case tasks |
-| 7 | `/spec-implement` | `/oac-implementation`, `/oac-test-contract` | Implement the feature through (WorkAgent, TestAgent) phases; run only the changed tests + lint changed files (not the full suite); ensure every AC-traceable test passes | `tasks.md` + `design.md` + `contracts/<unit>.md` (+ related `references/` files) | implementation + AC-traceable tests (+ `tasks.md` status) | AC-traceable test passes · **human verifies code before validate/qa** |
+| 7 | `/spec-implement` | `/oac-implementation`, `/oac-test-contract` | Implement the feature through (WorkAgent, TestAgent) phases; run only the changed tests + lint changed files (not the full suite); ensure every AC-traceable test passes | `tasks.md` + `design.md` + `contracts/<unit>.md` (+ related `references/` files) | implementation + AC-traceable tests (+ `tasks.md` status) | (WorkAgent, TestAgent) phases; AC-traceable test passes · **human verifies code before validate/qa** |
 | 8 | `/spec-qa` | `/oac-qa-report`, `/oac-test-forensics`, `/oac-test-contract`, `/oac-journey-tests` opt | Run the full QA pass; run `eslint` + `vitest run` once — a single, non-parallel run (no duplicate runs, no extra coverage/type-check passes); transition the tracker via `/_oac-jira-status-automation` | implementation + tests + `requirements.md` | `qa-report.md` (+ `journey-plan.md`) | `qa-report.md` → **human sign-off** |
 | 9 | `/spec-validate` | `/oac-test-contract`, `/oac-architecture-design` | Static validation — runs no tests or build: spec consistency (requirements, design, task DAG) + clause→test coverage + arch-gate re-verify + adopted shared-component immutability + PR-body and required-phase gates | implementation + tests + `requirements.md` + `design.md` + `qa-report.md` + `.meta.yaml` + the diff vs base | validation report (pass/fail per check) | all checks PASS · blocking: modified adopted shared component, PR closing keyword, or incomplete required phase |
 | 10 | `/spec-drift` | `/oac-test-forensics`, `/jira-ac-align` when JIRA-tracked | Detect shared-component drift and confirm no unspecced behavior was introduced; reconcile the JIRA ticket's acceptance criteria to the shipped implementation (confirm-first before any ticket edit) | `qa-report.md` + `requirements.md` + the diff (+ the JIRA ticket when JIRA-tracked) | drift findings (and reconciled ticket description) | shared-component drift + no unspecced behavior + JIRA AC reflects the shipped implementation (when JIRA-tracked) |
@@ -70,6 +70,8 @@ These apply to you and to every subagent — when you delegate, copy the subset 
 5. **New instructions are authoritative** — re-scope, update affected artifacts, re-run invalidated phases, confirm before continuing.
 
 ## Delegating to subagents
+
+**Smart Delegation** (global rule 2): delegate stage work and any parallel, heavy, or noisy exploration to subagents; handle incidental cache-cheap work inline (a single read, a 1–2 call lookup, a quick grep) — a fresh subagent is a cold cache start, so spawning one for tiny work costs more than it saves. Prefer a fork when the child needs context you already hold. Batch independent subagents in one turn and demand a compact structured return.
 
 A subagent inherits none of your rules or context (skills are installed globally, so it can invoke any `/skill` by name). The Skills and Rules you list steer the subagent and sharpen its output — they are guidance, not a cap: it stays free to invoke other skills and apply other rules the job calls for. Brief it with short, concrete sentences and build every subagent prompt from this template — the job alone is never enough:
 
@@ -94,6 +96,6 @@ Pause for the user at:
 - **A failed blocking gate** you can't resolve within the iteration budget — stop and surface the trigger, the named unit/AC, and the options.
 - **Irreversible or outward actions** — confirm before any commit, push, PR, or tracker transition.
 - **Clarify stage** — interactive Q&A: top ambiguities ranked Impact × Uncertainty, one at a time, each with a recommended answer.
-- **Legacy port inputs** — ask for the legacy path + folders before preflight.
+- **Legacy port inputs** — ask for the legacy path + folders before preflight; skip entirely for greenfield.
 
 **Done:** all phases (init → preflight → requirements → clarify → design → tasks → implement → qa → validate → drift) are `complete`/`skipped` and `/spec-validate` returns PASS → report the clause→test map, arch-gate result, and QA findings/disposition. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.

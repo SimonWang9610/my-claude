@@ -15,11 +15,7 @@ description: >
 
 # fl-test-contract
 
-A forward test-quality contract: six core rules (plus four targeted assertion rules) a new or edited test file must satisfy before the task that produced it can be marked complete. It front-loads failure-mode classes that retroactive QA would catch later — it does not replace QA.
-
-## When to use
-
-Apply when authoring or auditing tests for acceptance criteria or NFRs in a Flutter/Dart project — whether writing a new test file, editing an existing one, or reviewing whether a task may be marked done. Not coupled to any specific command or stage.
+Six core rules (plus four targeted assertion rules) a new or edited Flutter/Dart test file must satisfy before its task can be marked complete. Front-loads failure-mode classes retroactive QA would catch later — does not replace QA.
 
 ## Instructions
 
