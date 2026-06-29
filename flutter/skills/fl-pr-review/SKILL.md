@@ -1,75 +1,39 @@
 ---
 name: fl-pr-review
 description: >
-  Reviews a Flutter/Dart pull request or local diff against the Flutter specflow architecture
-  rules (P1–P8, verifiable-unit gate), Riverpod code-gen idioms (@riverpod, Notifier,
+  Reviews a Flutter/Dart PR or local diff against the Flutter specflow architecture rules
+  (P1–P8, verifiable-unit gate), Riverpod code-gen idioms (@riverpod, Notifier,
   AsyncNotifier), Dart 3 patterns (sealed classes, records, exhaustive switch), and
   flutter_test + Mocktail test-quality rules. Produces a severity-classified (Critical /
-  Major / Minor), rule-cited report. GitHub posting is opt-in and confirm-first; the human
-  makes the merge decision.
-
-  Use when: "review this Flutter PR", "review the diff/branch", "check this PR against the
-  rules", "run a PR review", "audit this branch against the flutter rules", "check the diff
-  for architecture violations", "review my Flutter changes".
+  Major / Minor), rule-cited report. GitHub posting opt-in, confirm-first; human makes the
+  merge decision. Use when: "review this Flutter PR", "review the diff/branch", "check this
+  PR against the rules", "audit this branch against the flutter rules", "check the diff for
+  architecture violations", "review my Flutter changes".
 ---
 
 # fl-pr-review
 
 Reviews a Flutter/Dart PR (or local diff) against the Flutter specflow architecture corpus
 (P1–P8, verifiable-unit gate, state-management idioms, test-quality) and produces a
-severity-classified, rule-cited report. The human makes the merge decision.
-
-## Contents
-
-- [When to use](#when-to-use)
-- [Inputs](#inputs)
-- [What is reviewed](#what-is-reviewed)
-- [Severity tiers](#severity-tiers-one-line-each)
-- [Instructions](#instructions)
-- [References](#references)
-
----
-
-## When to use
-
-- Before merging a Flutter feature branch: verify it doesn't violate layering, testability,
-  state-ownership, or test-quality rules.
-- As a spot-check on a local diff before opening a PR.
-- When a code-review comment mentions "architecture" or "testability" and you want a
-  structured second opinion against the bundled corpus.
-- After implementation lands and you want forensics on the test suite (false positives,
-  missing AC coverage).
-
-Not a substitute for running the actual test suite. This skill reads the diff and reasons
-against the bundled rules; it does not execute Flutter tests.
-
----
+severity-classified, rule-cited report. The human makes the merge decision. Does not execute
+Flutter tests.
 
 ## Inputs
 
 | Input | How to provide |
 |-------|----------------|
-| **GitHub PR number** | `gh pr diff <n>` is used to acquire the diff (default) |
+| **GitHub PR number** | `gh pr diff <n>` |
 | **Base ref** | `git diff <base>...HEAD` — e.g. `git diff main...HEAD` |
-| **Working-tree diff** | `git diff` or `git diff --staged` for uncommitted changes |
-| **Default** | Current branch vs merge-base with the default branch (`git diff $(git merge-base HEAD origin/HEAD)...HEAD`) |
-
-If no input is specified, the reviewer acquires the diff from the current branch vs its
-merge-base with the default remote branch.
-
----
+| **Working-tree diff** | `git diff` or `git diff --staged` |
+| **Default** | `git diff $(git merge-base HEAD origin/HEAD)...HEAD` |
 
 ## What is reviewed
 
 Every changed Dart file is classified by unit kind (widget / state holder / repository /
-service / domain model / DI-composition / test), then each unit kind is checked against the
-rules that apply to it — architecture first (blocking), then test-quality, then engineering
-discipline, then performance (advisory only).
-
-**Only changed code (diff hunks) is reviewed.** Surrounding context is read as needed to
-understand data flow and ownership; the rest of the repo is not audited.
-
----
+service / domain model / DI-composition / test), then checked against applicable rules —
+architecture first (blocking), then test-quality, then engineering discipline, then
+performance (advisory only). Only diff hunks are reviewed; surrounding context is read as
+needed for data flow and ownership.
 
 ## Severity tiers (one line each)
 

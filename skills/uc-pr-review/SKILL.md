@@ -5,19 +5,6 @@ description: Reviews open Flutter/Dart pull requests against a Riverpod/lifecycl
 
 # Flutter PR Review
 
-<!-- TOC -->
-- [Workflow](#workflow)
-- [Verdict legend](#verdict-legend-for-comments)
-- [Rule 1 — Listenable disposal](#1-all-listenables-must-be-disposed)
-- [Rule 2 — Legacy providers](#2-legacy-providers-must-not-be-introduced)
-- [Rule 3 — Provider declaration scope](#3-must-not-declare-any-provider-inside-a-method--function--state-class)
-- [Rule 4 — Async providers](#4-be-careful-with-future--async-providers)
-- [Rule 5 — ref usage](#5-correct-refwatch--refread--reflisten-usage)
-- [Rule 6 — Build method size](#6-avoid-oversized-build-methods)
-- [General best practices](#general-best-practices-to-also-check)
-- [Output format](#output--review-body-format)
-<!-- /TOC -->
-
 Reviews a Flutter/Dart PR against a fixed checklist (general best practices + the project-specific Riverpod/lifecycle rules below), then posts a single GitHub review with inline comments and an APPROVE / REQUEST_CHANGES verdict.
 
 ## Workflow

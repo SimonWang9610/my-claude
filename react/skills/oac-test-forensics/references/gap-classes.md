@@ -22,7 +22,7 @@ mapped tests. The behavior is trivially reversible by a later edit with no faili
 
 ### Procedure
 
-1. Build the behavior inventory for each owned surface (see `react-ts-heuristics.md` §"Behavior enumeration"):
+1. Build the behavior inventory for each owned surface (see `heuristics-behavior-enumeration.md`):
    - **component** — each prop that changes output; each exposed handler (`onX`); each conditional render
      branch (loading / empty / error / success / permission-gated).
    - **hook** — each returned value/callback; each side-effect path (`useEffect`, query, mutation, subscription).
@@ -58,7 +58,7 @@ For each criterion-mapped test:
 
 1. Read the test name as a behavioral claim (e.g. "calls onSort with the column id").
 2. Find the assertion that would prove that claim, and check that the test performs the triggering action
-   before asserting. See `react-ts-heuristics.md` §"Pass 2 shapes" for recurring React/TS shapes.
+   before asserting. See `heuristics-pass2-shapes.md` for recurring React/TS shapes.
 3. Classify the gap:
    - *no action performed* — renders and asserts presence; the criterion's behavior (click, submit, toggle) never fires.
    - *wrong assertion depth* — asserts a structural proxy or the wrong owner (Zustand store vs TanStack cache).
@@ -85,7 +85,7 @@ break it. Five recurring React/TS forms.
 
 For each criterion-mapped test, scan for on-sight signals (`false-positive-signals.md`), then apply the
 mutation mindset: invert/delete the production branch the test claims to cover; if the test still passes,
-it is a false positive. Grep/read recipes for each form are in `react-ts-heuristics.md` §"Pass 3 forms".
+it is a false positive. Grep/read recipes for each form are in `heuristics-pass3-forms.md`.
 
 - **Form 1 — Tautology / arrange-act-no-assert.** `expect()` asserts a value the test supplied, or no
   `expect()` at all.

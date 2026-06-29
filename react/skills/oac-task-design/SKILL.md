@@ -9,12 +9,6 @@ description: >
 
 # oac-task-design
 
-This skill operates at the **tasks altitude**: design.md and all contracts/ are approved; the
-task is to decompose them into an ordered, traceable task list that implementation can execute
-without revisiting architecture decisions.
-
----
-
 ## Procedure
 
 Work through every step in order. Do not create tasks.md until all steps are complete.

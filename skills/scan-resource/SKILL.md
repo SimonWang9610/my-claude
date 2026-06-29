@@ -1,13 +1,11 @@
 ---
 name: scan-resource
-description: Audits one or more legacy folders/resources and distills each into a compact markdown reference, building a recallable knowledge base a migration agent can query instead of re-scanning source on every step. Produces one reference per folder plus an index. Trigger when asked to "scan", "audit", "survey", "index", "map", or "extract references from" code, packages, or directories — especially across multiple folders — or when legacy resources should be studied up-front so later migration phases can rely on saved references rather than re-reading source files.
+description: Audits one or more legacy folders/resources and distills each into a compact markdown reference so a migration agent can query the knowledge base instead of re-scanning source on every step. Produces one reference per folder plus an index. Trigger when asked to "scan", "audit", "survey", "index", "map", or "extract references from" code, packages, or directories — especially across multiple folders — or when legacy resources should be studied up-front so later migration phases rely on saved references rather than re-reading source files.
 ---
 
 # Scan Resource
 
-Build a **recallable reference base** for a migration agent. Given a set of legacy folders/resources, produce **one markdown reference per folder** plus an **index** so a downstream agent (e.g. migrating Flutter → React) can look up business logic and abstractions on demand instead of re-scanning the source.
-
-The references are the agent's memory of the legacy system. The agent reads the index, picks the relevant reference, and acts — re-opening source files only when a reference flags a gap.
+Given a set of legacy folders/resources, produce **one markdown reference per folder** plus an **index** — a recallable knowledge base a downstream agent (e.g. migrating Flutter → React) can query on demand instead of re-scanning source. Re-open source files only when a reference flags a gap.
 
 ## Inputs
 
@@ -91,9 +89,8 @@ ALWAYS use this structure. Omit a section only if it has no in-scope content.
 
 ## Principles
 
-- **One reference per folder** — never merge folders into a single file; save each separately.
+- **One reference per folder** — never merge; save each separately with a stable slug so re-audits overwrite, not duplicate.
 - **Recall over re-scan** — re-reading source is the exception, signalled by the `Gaps` section.
-- **Capture portable substance** — favor business logic and abstractions that survive a framework change over framework-specific implementation detail.
+- **Portable substance first** — favor business logic and abstractions that survive a framework change over framework-specific detail.
 - **Instruction is the filter** — out-of-scope content stays out.
-- **Stable slugs** — re-audits overwrite the matching file; no duplicates.
-- **Don't invent** — record only what is in the source; flag ambiguity in `Gaps` instead of guessing.
+- **Don't invent** — record only what is in the source; flag ambiguity in `Gaps`.

@@ -5,15 +5,6 @@ description: Reviews React codebases for architecture and state-management probl
 
 # React Architecture Review
 
-<!-- TOC -->
-- [Review Workflow](#review-workflow)
-- [Rule Categories by Priority](#rule-categories-by-priority)
-- [Quick Reference](#quick-reference)
-- [How to Use the Rules](#how-to-use-the-rules)
-- [Review Report Format](#review-report-format)
-- [Development Plan Format](#development-plan-format)
-<!-- /TOC -->
-
 Reviews React codebases for architecture and state-management problems, then produces two deliverables: a **Review Report** (prioritized findings) and a **Development Plan** (phased remediation). Targets client-side React 19 apps built with Vite, Zustand for client state, TanStack Query v5 for server state, and MUI — not Next.js/RSC.
 
 Performance issues (wasted re-renders, bundle size, frame-rate) belong to the sibling skill `react-performance-review`. If a review surfaces both kinds of issues, note the performance ones briefly and recommend running that skill; don't duplicate its analysis here.
@@ -81,15 +72,6 @@ Wrong state placement is the root cause of most architecture pain — fix these 
 ### 6. React 19 Idioms (LOW-MEDIUM)
 
 - `react19-modern-apis` - `ref` as a prop (no `forwardRef`); plain typed functions (no `React.FC`/`FunctionComponent`); `use(Context)` over `useContext`; consider `useActionState`/`useOptimistic` where samples hand-roll them; no `useMemo` ceremony where the React Compiler handles it
-
-## How to Use the Rules
-
-Read individual rule files for the rationale and incorrect/correct examples:
-
-```
-rules/state-ownership-decision.md
-rules/zustand-actions-in-store.md
-```
 
 ## Review Report Format
 

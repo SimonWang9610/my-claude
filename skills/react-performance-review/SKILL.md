@@ -5,19 +5,6 @@ description: Reviews and optimizes React rendering performance — wasted re-ren
 
 # React Performance Review
 
-## Contents
-
-- [Review Workflow](#review-workflow)
-- [Rule Categories by Priority](#rule-categories-by-priority)
-- [Quick Reference](#quick-reference)
-  - [1. High-Frequency Data Paths](#1-high-frequency-data-paths-critical)
-  - [2. Re-render Elimination](#2-re-render-elimination-high)
-  - [3. Rendering & DOM Cost](#3-rendering--dom-cost-medium-high)
-  - [4. Data Layer Performance](#4-data-layer-performance-medium)
-  - [5. Bundle & Startup](#5-bundle--startup-medium)
-- [Review Report Format](#review-report-format)
-- [Development Plan Format](#development-plan-format)
-
 Reviews React code for rendering and runtime performance problems, then produces a **Review Report** (prioritized findings) and a **Development Plan** (phased remediation). Targets client-side React 19 apps on Vite, with Zustand, TanStack Query, and MUI. Especially attentive to high-frequency data paths (video playback positions, live streams, pointer gestures) where React's render loop is the wrong tool.
 
 Architecture problems (state ownership, store design, layering) belong to the sibling skill `react-architecture-review`. Performance findings often have architectural root causes — when so, name the root cause briefly and recommend that skill rather than redesigning the architecture here.
@@ -81,15 +68,6 @@ Anything updating faster than ~10×/second must not flow through React's render 
 - `bundle-route-lazy` - `React.lazy` + `Suspense` for routes and heavy, rarely-opened panels
 - `bundle-barrel-imports` - No wildcard/barrel imports that defeat tree-shaking; import from specific paths
 - `bundle-analyze-chunks` - Measure with `rollup-plugin-visualizer`; split vendor chunks deliberately (`manualChunks`)
-
-## How to Use the Rules
-
-Read individual rule files for the rationale and incorrect/correct examples:
-
-```
-rules/hf-out-of-react-loop.md
-rules/rerender-zustand-selectors.md
-```
 
 ## Review Report Format
 

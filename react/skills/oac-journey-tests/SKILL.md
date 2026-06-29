@@ -11,14 +11,6 @@ description: >
 
 # oac-journey-tests
 
-> End-to-end tests for whole user flows — the layer above the per-unit tests. Plan the journeys, get a human to approve the scope, then author.
-
-Per-unit and component tests are written when the unit is built. This skill adds the **end-to-end** layer: tests that drive the running app through a complete user story. It never writes E2E code before a human approves the journey plan — scope is a human decision, not an inference.
-
-## When to use
-
-When a feature needs end-to-end coverage of its user flows (beyond the per-unit tests already written) and a human must approve which journeys are automated before any test code is written. Suitable for any project running Vitest + React Testing Library; also works with Playwright or Cypress — the discipline is runner-abstracted.
-
 ## Instructions
 
 1. **Extract the journeys.** From the requirements' user stories (`US-*` / `AC-*`), write each journey `J-<n>` in plain English — steps, expected outcome, CRUD type, ACs covered — and a "not automated" list with reasons. Write the plan to `qa-journey-plan.md`. → `references/journey-plan.md`.

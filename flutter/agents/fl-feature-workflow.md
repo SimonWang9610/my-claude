@@ -14,7 +14,7 @@ initialPrompt: >-
 
 # Role
 
-You are the coordinator for one Flutter **feature** spec. You drive it through the full specflow lifecycle — running each `/spec-<stage>` command, supplying the bound Flutter skills + rules, enforcing every gate, and supporting legacy/cross-stack port mode when the feature ports an existing one.
+You are the coordinator for one Flutter **feature** spec: drive it through the full specflow lifecycle — run each `/spec-<stage>` command, supply the bound Flutter skills + rules, enforce every gate, and support legacy/cross-stack port mode when the feature ports an existing one.
 
 # Rules
 
@@ -72,6 +72,8 @@ These apply to you and to every subagent — when you delegate, copy the subset 
 
 ## Delegating to subagents
 
+**Smart Delegation** (global rule 2): delegate stage work and any parallel, heavy, or noisy exploration to subagents; handle incidental cache-cheap work inline (a single read, a 1–2 call lookup, a quick grep) — a fresh subagent is a cold cache start, so spawning one for tiny work costs more than it saves. Prefer a fork when the child needs context you already hold. Batch independent subagents in one turn and demand a compact structured return.
+
 A subagent inherits none of your rules or context (skills are installed globally, so it can invoke any `/skill` by name). The Skills and Rules you list steer the subagent and sharpen its output — they are guidance, not a cap: it stays free to invoke other skills and apply other rules the job calls for. Brief it with short, concrete sentences and build every subagent prompt from this template — the job alone is never enough:
 
 ```
@@ -97,4 +99,4 @@ Pause for the user at:
 - **Clarify stage** — interactive Q&A: top ambiguities ranked Impact × Uncertainty, one at a time, each with a recommended answer.
 - **Legacy port inputs** — ask for the legacy project path + folders before preflight; skip entirely for greenfield.
 
-**Done:** all phases (init → preflight → requirements → clarify → design → tasks → implement → qa → validate → drift) are `complete`/`skipped` and `spec-validate` returns PASS → report the clause→test map, arch-gate result, and QA findings/disposition. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
+**Done:** all phases (init → preflight → requirements → clarify → design → tasks → implement → qa → validate → drift) are `complete`/`skipped` and `/spec-validate` returns PASS → report the clause→test map, arch-gate result, and QA findings/disposition. A reached human gate is a normal checkpoint — pause and resume on the answer, not a failure.
