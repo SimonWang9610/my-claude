@@ -38,7 +38,7 @@ phase_status:                # one entry per phase in workflow.yaml, all pending
   tasks: pending
   implement: pending
   validate: pending
-  qa: pending
+  spec-qa: pending
   drift: pending
 design_links: []             # present only for UI work (captured at Step 2)
 checksums: {}                # reserved for the project's tooling
