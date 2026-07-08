@@ -102,7 +102,7 @@ After linking, `link.sh` offers (or `--aliases` / `--no-aliases` to skip the pro
 a driver directly:
 
 ```sh
-oac-feature-workflow "add a logout button"     # = claude --agent oac-feature-workflow --worktree <auto-name> "..."
+oac-feature-workflow "add a logout button"     # = claude --agent oac-feature-workflow "..." --worktree
 fl-bugfix-workflow
 ```
 

@@ -179,7 +179,7 @@ if [ -n "${agents_linked# }" ]; then
       echo "$BEGIN"
       echo "# managed by my-claude/link.sh — run unlink.sh (all) or delete this block to remove"
       for name in $agents_linked; do
-        printf '%s() { claude --agent %s --worktree "%s-$(date +%%m%%d-%%H%%M%%S)" "$@"; }\n' "$name" "$name" "$name"
+        printf '%s() { claude --agent %s "$@" --worktree; }\n' "$name" "$name"
       done
       echo "$END"
     } >> "$tmp"
