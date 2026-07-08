@@ -2,7 +2,7 @@
 
 Discovery runs *before* acceptance criteria are locked. It is an authoring technique, not a
 tool — no Gherkin, no `.feature` files, no runner. Its output feeds the existing
-`AC-<story>.<n>` pipeline: examples become ACs, open questions go to `/spec-clarify`, and the
+`AC-<story>.<n>` pipeline: examples become ACs, open questions are returned to the caller, and the
 glossary keeps requirements, design, and tests speaking one vocabulary.
 
 ## 1. Example Mapping — run it per story
@@ -27,7 +27,7 @@ concrete example for a rule, that gap is a **Question**, not an example — writ
   - *Example (counter):* add "Door A" when one exists → inline error "Name already in use"; no device added.
 - **Rule:** the add form opens empty.
   - *Example:* click "Add Device" → the drawer opens with all fields blank.
-- **Question:** is name uniqueness case-sensitive? → route to `/spec-clarify`.
+- **Question:** is name uniqueness case-sensitive? → flag as an open question.
 
 ## 2. Examples → acceptance criteria
 
@@ -36,9 +36,9 @@ Each example becomes one `AC-<story>.<n>` in the observable Given/When/Then form
 all of them — happy, edge, and counter — before numbering. This is how edge and negative
 coverage is captured at authoring time instead of being deferred to task-breakdown.
 
-## 3. Open questions → /spec-clarify
+## 3. Open questions → ranked clarifications
 
-Do not guess past a Question. Carry every unresolved Question into `/spec-clarify` as a ranked
+Do not guess past a Question. Return every unresolved Question to the caller as a ranked
 question; only once answered does its example (and AC) get written.
 
 ## 4. Ubiquitous language — a small glossary

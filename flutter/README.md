@@ -1,6 +1,6 @@
-# flutter — specflow Flutter profile
+# flutter — sflow Flutter profile
 
-This is the **Flutter profile** of the unified specflow bundle. See [../specflow/README.md](../specflow/README.md) for the full process documentation.
+This is the **Flutter profile** of the unified sflow bundle. See [../sflow/README.md](../sflow/README.md) for the full process documentation.
 
 **Stack:** Flutter/Dart. State-management-package agnostic — core rules cover four-layer architecture,
 SSOT, sealed async, and disposal. Package-specific idioms (Riverpod, Bloc, Provider…) live in a
@@ -8,10 +8,14 @@ dedicated package skill loaded by the driver agent.
 
 This profile provides:
 
-- `agents/` — the binding layer: `fl-{feature,brownfield,bugfix,quickfix}-workflow.md`. Each driver
-  loads the skills below, applies the rules, and binds the 12 generic `/spec-*` stage commands to
-  concrete `fl-*` skills. The feature driver also loads the `fl-riverpod` skill when Riverpod is
-  detected in `pubspec.yaml`.
+- `agents/` — the orchestrators: `fl-{feature,brownfield,bugfix,quickfix}-workflow.md`. Each driver
+  starts via `/sf-workflow-startup flutter <variant>` (which binds through `/pick-flutter-workflow`),
+  drives the phases, enforces the gates, and delegates phase work to subagents.
+- The profile's **binding skill** lives at the repo root: [`../skills/pick-flutter-workflow`](../skills/pick-flutter-workflow/SKILL.md)
+  — it converts a workflow template's capability roles into concrete `fl-*` skills (appending
+  `/fl-riverpod` when Riverpod is in `pubspec.yaml`, resolving design-link / legacy-port
+  conditionals, marking unbound roles) plus the Flutter stage notes, reading the templates from
+  the sibling `../sflow/workflows/`.
 - `skills/` — `fl-acceptance-criteria`, `fl-architecture-design` (owns the rule corpus + runs the
   verifiable-unit gate at phase exit — design-time authoring and verification in one skill),
   `fl-pr-review`, `fl-riverpod`, `fl-test-contract`, `fl-test-forensics`.
@@ -20,4 +24,5 @@ This profile provides:
   `engineering-discipline.md` and `preferences.md`.
 
 The Flutter profile has no `commands/` subdir. The generic process commands live in
-[../specflow/commands/](../specflow/commands/) and are invoked as `/spec-*`.
+[../sflow/commands/](../sflow/commands/) and are invoked as `/sf-*`; the workflow phase
+machines live in [../sflow/workflows/](../sflow/workflows/).

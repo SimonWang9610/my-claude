@@ -3,7 +3,7 @@ name: fl-implementation
 description: >
   Applies Flutter performance and widget-build idioms while implementing the code inside a unit
   (the contract/architecture is already fixed) — rebuilds, build cost, jank and startup, images,
-  lists, animations, build-method discipline, and theming. Use at the spec-implement stage or
+  lists, animations, build-method discipline, and theming. Use
   whenever writing or optimizing widget/render code behind a fixed contract.
 ---
 

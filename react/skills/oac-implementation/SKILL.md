@@ -4,8 +4,8 @@ description: >
   Applies React 19 + TypeScript performance and idiom rules while implementing the code inside
   a unit — the contract and architecture are already fixed. Covers wasted re-renders and memo
   boundaries, render cost, bundle splitting, high-frequency data handling, TanStack Query
-  subscription and cache tuning, and modern React 19 APIs. Use at the spec-implement stage,
-  or whenever writing or optimizing code behind a fixed contract.
+  subscription and cache tuning, and modern React 19 APIs. Use whenever writing
+  or optimizing code behind a fixed contract.
 ---
 
 # oac-implementation

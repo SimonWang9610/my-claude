@@ -1,7 +1,7 @@
 ---
 description: Surface and resolve untestable or ambiguous acceptance criteria via ranked questions.
 ---
-# spec:clarify
+# sf:clarify
 
 Resolve ambiguity through structured Q&A; flag untestable acceptance criteria.
 
@@ -12,7 +12,7 @@ Resolve ambiguity through structured Q&A; flag untestable acceptance criteria.
 ## Spec Artifacts
 
 Write `clarify.md` under `.specflow/specs/<name>/`.
-- **Required:** `requirements.md` — run `/spec-requirements` if missing.
+- **Required:** `requirements.md` — run `/sf-requirements` if missing.
 - **Optional:** `preflight.md`; prior-phase `references/`.
 - **Additional:** steering `.specflow/steering/*`.
 

@@ -1,7 +1,7 @@
 ---
 description: Author user stories and acceptance criteria — discovered via Example Mapping — with stable IDs and observable Given/When/Then phrasing.
 ---
-# spec:requirements
+# sf:requirements
 
 Author requirements in EARS notation; every acceptance criterion gets a stable ID and observable Given/When/Then phrasing.
 
@@ -12,7 +12,7 @@ Author requirements in EARS notation; every acceptance criterion gets a stable I
 ## Spec Artifacts
 
 Write `requirements.md` under `.specflow/specs/<name>/`.
-- **Required:** `.meta.yaml` — run `/spec-init` if missing.
+- **Required:** `.meta.yaml` — run `/sf-init` if missing.
 - **Optional:** `preflight.md` (reuse + shared-unit context); prior-phase `references/`; the design unit map (`references/design-units.md`) if preflight produced one.
 - **Additional:** steering `.specflow/steering/*`.
 
@@ -24,6 +24,6 @@ Exits only when every story has ≥1 AC; every AC/NFR carries a unique stable ID
 
 1. **Write user stories** — each with its acceptance criteria — when `references/design-units.md` is present, ground UI stories and their ACs in the actual screen units it lists.
 2. **Define functional requirements** — EARS notation (Ubiquitous / Event / State / Optional / Unwanted).
-3. **Run Example Mapping discovery** — per story, enumerate business **rules** → concrete observable **examples** (happy / edge / counter) → open **questions**; capture domain terms in a `Glossary` section. Derive ACs from the examples; carry open questions into `/spec-clarify`. → the acceptance-criteria skill's `references/discovery.md`.
+3. **Run Example Mapping discovery** — per story, enumerate business **rules** → concrete observable **examples** (happy / edge / counter) → open **questions**; capture domain terms in a `Glossary` section. Derive ACs from the examples; carry open questions into `/sf-clarify`..
 4. **List NFRs** — as `NFR-<n>`; include stack-relevant NFRs (per steering).
 5. **Apply the AC contract** — every AC/NFR gets a stable ID and observable Given/When/Then phrasing; for data-varying behaviour use an Examples-table AC; reject implementation-step phrasing.

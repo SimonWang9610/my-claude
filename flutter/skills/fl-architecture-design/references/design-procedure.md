@@ -1,6 +1,6 @@
 # Design procedure
 
-Step-by-step checklist for authoring `design.md` and `contracts/` against the Flutter specflow
+Step-by-step checklist for authoring `design.md` and `contracts/` against the Flutter
 architecture rules. Work through every step in order. All paths are relative to this `references/` directory.
 
 ---

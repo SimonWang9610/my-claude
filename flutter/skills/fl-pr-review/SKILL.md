@@ -1,7 +1,7 @@
 ---
 name: fl-pr-review
 description: >
-  Reviews a Flutter/Dart PR or local diff against the Flutter specflow architecture rules
+  Reviews a Flutter/Dart PR or local diff against the Flutter architecture rules
   (P1–P8, verifiable-unit gate), Riverpod code-gen idioms (@riverpod, Notifier,
   AsyncNotifier), Dart 3 patterns (sealed classes, records, exhaustive switch), and
   flutter_test + Mocktail test-quality rules. Produces a severity-classified (Critical /
@@ -13,7 +13,7 @@ description: >
 
 # fl-pr-review
 
-Reviews a Flutter/Dart PR (or local diff) against the Flutter specflow architecture corpus
+Reviews a Flutter/Dart PR (or local diff) against the Flutter architecture corpus
 (P1–P8, verifiable-unit gate, state-management idioms, test-quality) and produces a
 severity-classified, rule-cited report. The human makes the merge decision. Does not execute
 Flutter tests.

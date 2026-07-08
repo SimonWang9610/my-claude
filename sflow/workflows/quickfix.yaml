@@ -1,0 +1,41 @@
+# Canonical phase machine for the quickfix workflow (smallest correct change, never
+# a 0-test spec). Same schema as feature.yaml; see the header comment there.
+# The describe phase has no /sf-* command — the driver agent runs it directly.
+name: quickfix
+description: Lightweight change — one AC, smallest correct change, >=1 AC-traceable test
+escalate: >
+  If the change grows beyond a quickfix (multiple units, real design choices,
+  shared-unit impact), stop and recommend the feature or bugfix workflow.
+phases:
+  - id: describe           # driver-led; no /sf-* command
+    roles: [acceptance-criteria]
+    inputs: [.meta.yaml]
+    outputs: [describe.md]
+    gate: auto
+    required: true
+    exit: exactly one AC with a stable ID + observable Given/When/Then phrasing
+
+  - id: implement
+    command: /sf-implement
+    roles: [implementation, test-contract]
+    inputs: [describe.md]
+    gate: human
+    required: true
+    exit: smallest correct change + >=1 AC-traceable test (never 0-test); human verifies the code before validate/qa
+
+  - id: validate
+    command: /sf-validate
+    roles: [test-contract, "architecture-design?"]
+    inputs: [describe.md]
+    gate: auto
+    required: true
+    exit: AC test present + traced; all checks PASS
+  - id: qa
+    command: /sf-qa
+    roles: [qa-report, test-forensics, "tracker-align?"]
+    inputs: [describe.md]
+    outputs: [qa-report.md]
+    gate: human
+    required: false        # run when the change touches shared units; else skip with reason
+    exit: enters only after validate PASS; build + suite green; findings dispositioned by the reviewer (sign-off)
+

@@ -1,7 +1,7 @@
 ---
 description: Decompose the design into ordered tasks with a test task per acceptance criterion plus edge cases.
 ---
-# spec:tasks
+# sf:tasks
 
 Decompose the design into trackable tasks; mandate a test task per AC plus edge-case tasks.
 
@@ -12,7 +12,7 @@ Decompose the design into trackable tasks; mandate a test task per AC plus edge-
 ## Spec Artifacts
 
 Write `tasks.md` under `.specflow/specs/<name>/`.
-- **Required:** `requirements.md`, `design.md`, `contracts/` — run `/spec-requirements` and `/spec-design` if missing.
+- **Required:** the upstream artifacts the workflow declares — `requirements.md` + `design.md` + `contracts/` on feature/brownfield (run `/sf-requirements` / `/sf-design` if missing), or `analysis.md` on bugfix.
 - **Optional:** prior-phase `references/`.
 - **Additional:** steering `.specflow/steering/*`.
 

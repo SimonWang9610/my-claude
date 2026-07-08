@@ -18,7 +18,7 @@ never write without approval.
 
 ## Workflow
 
-1. **Resolve the ticket.** Key from: explicit arg → else `.specflow/specs/<name>/.meta.yaml`
+1. **Resolve the ticket.** Key from: explicit arg → else the caller-supplied spec dir (`<spec-dir>/.meta.yaml`)
    `jira_issues:` → else infer from the branch name (e.g. `ACMT-86` in `feat/ACMT-86-...`).
    Fetch via `getJiraIssue` (resolve `cloudId` at runtime via `getAccessibleAtlassianResources`).
    Confirm the issue type is **Story or Bug** — reject Epics, Sub-tasks, Tasks. If no key is
@@ -26,7 +26,7 @@ never write without approval.
 
 2. **Gather the three AC sources** (→ `references/reconciliation.md` for the matrix format):
    - **Ticket AC** — parse the acceptance criteria out of the current ticket description.
-   - **Spec AC** — `.specflow/specs/<name>/requirements.md` AC-/NFR- IDs and their
+   - **Spec AC** — `<spec-dir>/requirements.md` AC-/NFR- IDs and their
      Given/When/Then text, if the file exists.
    - **Implementation AC (ground truth)** — grep test files for `describe('AC-…')` /
      `it('AC-…')` (or equivalent per stack) to find what each test asserts as observable
@@ -55,12 +55,12 @@ never write without approval.
    - Call `editJiraIssue` to set the description field (reconciled AC only; no alignment notes).
    - Call `addCommentToJiraIssue` to post the alignment-notes comment.
    Report both writes. If the three-way found spec drift, offer to also update
-   `.specflow/specs/<name>/requirements.md` locally.
+   `<spec-dir>/requirements.md` locally.
 
 ## Inputs
 
 - **Ticket key** (optional) — e.g. `ACMT-86`; if omitted, resolved from `.meta.yaml` or branch.
-- **Spec name / path** (optional) — `.specflow/specs/<name>/`; skipped gracefully if absent.
+- **Spec name / path** (optional) — `<spec-dir>/`; skipped gracefully if absent.
 - **Diff base branch** (optional) — defaults to merge-base with the repo default branch.
 
 ## Output
@@ -81,7 +81,7 @@ written after approval — plus a short reconciliation summary. Optionally a loc
   than a deliberate tweak, flag it and ask whether to fix the code instead of updating the AC.
 - **Keep AC IDs stable.** Append new IDs at the end; never renumber existing ones. Renumbering
   silently breaks every `describe('AC-x.y …')` test name that references the old ID.
-- **Stack-agnostic.** Works with or without a specflow spec; works with any test runner —
+- **Stack-agnostic.** Works with or without a spec dir; works with any test runner —
   grep for the `AC-<story>.<n>` pattern in test file describe/it strings regardless of framework.
 
 ## References

@@ -1,7 +1,7 @@
 ---
 description: Audit the implemented branch and produce a sign-off-ready QA report, optionally authoring journey tests.
 ---
-# spec:qa
+# sf:qa
 
 Audit the implemented branch against its spec and produce a sign-off-ready report (optionally authoring end-to-end journey tests).
 
@@ -9,12 +9,12 @@ Audit the implemented branch against its spec and produce a sign-off-ready repor
 
 **Purpose.** After implementation, verify the branch is mergeable: the tests actually prove the behavior, the specs honestly describe the work, nothing crept out of scope, no failure is silently swallowed, and consumers still integrate. QA **audits** and surfaces evidence for a human to disposition; it does not approve or block. The one thing it may *author* is end-to-end journey tests — optional, and only behind a human-approved plan; the per-unit tests are written at implement, not here.
 
-**Precondition — enter QA only after the human test gate passes (a human has manually tested the validated build and signed off).**
+**Precondition — enter QA only after the post-implement human code check passed AND `/sf-validate` returned PASS (validate is the cheap machine pre-gate; QA is the final human gate).**
 
 ## Spec Artifacts
 
 Read the spec's artifacts under `.specflow/specs/<name>/` and write `qa-report.md` there (plus `journey-plan.md` if the optional journey stage runs); audit the implementation + tests in the target repo, where any authored end-to-end tests are also written.
-- **Required:** `.meta.yaml`, `requirements.md`, `design.md`, `tasks.md` — STOP and report if any is missing.
+- **Required:** `.meta.yaml` plus the spec artifacts the workflow declares (`requirements.md` + `design.md` + `tasks.md` on feature/brownfield; `analysis.md`/`describe.md` + `tasks.md` if present on the lighter workflows) — STOP and report if one the workflow declares is missing.
 - **Optional:** a prior `qa-report.md` (re-run comparison); an open PR (prior-review context); prior-phase `references/`.
 - **Additional:** steering `.specflow/steering/*` (the project's build/test/end-to-end commands and conventions); the target repo (code + tests under audit).
 

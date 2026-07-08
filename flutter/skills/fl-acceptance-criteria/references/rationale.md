@@ -23,7 +23,7 @@ phrasing contract.
 Criteria are only as good as the examples behind them. Before numbering ACs, run **Example
 Mapping** (→ `references/discovery.md`): per story, surface the business rules, make each
 concrete with happy / edge / counter examples, and capture open questions. Examples become ACs;
-questions go to `/spec-clarify`; a small glossary holds one vocabulary across phases. This finds
+questions are surfaced to the caller; a small glossary holds one vocabulary across phases. This finds
 edge and negative cases at authoring time instead of deferring them downstream.
 
 ## The two-layer model: EARS + AC IDs

@@ -9,7 +9,7 @@ description: >
   Riverpod idioms use @riverpod code-gen with Notifier/AsyncNotifier; StateNotifier,
   StateProvider, and ChangeNotifierProvider are legacy. Full rule corpus and gate procedure
   are under references/.
-  Trigger: spec-design stage; "design this feature's architecture"; structuring widgets,
+  Trigger: "design this feature's architecture"; structuring widgets,
   Notifier/AsyncNotifier holders, repositories, services, or domain models for any feature.
 ---
 

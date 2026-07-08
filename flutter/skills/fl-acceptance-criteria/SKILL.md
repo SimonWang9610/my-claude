@@ -23,7 +23,7 @@ Produce acceptance criteria that carry stable IDs, describe user-observable outc
 3. **Run Example Mapping discovery** before writing ACs (→ `references/discovery.md`). Per user
    story, enumerate the business **rules**, then concrete observable **examples** for each
    (happy, edge, counter), and capture open **questions**. Record domain terms in a `Glossary`
-   section of `requirements.md`; route open questions to `/spec-clarify` rather than guessing.
+   section of `requirements.md`; surface open questions back to the caller rather than guessing.
 4. If the criteria already exist and you are only reviewing, skip to step 6 (hard checks).
 5. Derive ACs from the discovery examples — each example becomes ≥1 AC with ID `AC-<story#>.<n>`
    in Given/When/Then form; for behaviour that varies only by data, use an Examples-table AC.

@@ -1,7 +1,7 @@
 ---
 description: Scan for reusable surfaces and shared-unit impact before requirements (decomposing a design source if present).
 ---
-# spec:preflight
+# sf:preflight
 
 Scan the target repo for reusable surfaces and shared-unit adoption before requirements are written.
 
@@ -12,7 +12,7 @@ Scan the target repo for reusable surfaces and shared-unit adoption before requi
 ## Spec Artifacts
 
 Write `preflight.md` under `.specflow/specs/<name>/`.
-- **Required:** `.meta.yaml` — run `/spec-init` if missing.
+- **Required:** `.meta.yaml` — run `/sf-init` if missing.
 - **Optional:** prior-phase `references/`.
 - **Additional:** steering `.specflow/steering/*`; the target repo (read for existing code — no code is written there).
 - **When a design is involved:** also writes `references/design-units.md` — the unit map (EXISTING / PARTIAL / NEW) produced by decomposing the design source.

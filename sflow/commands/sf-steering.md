@@ -1,7 +1,7 @@
 ---
 description: Create or update the project's steering documents (product, structure, tech, conventions).
 ---
-# spec:steer
+# sf:steering
 
 Generate/update the project steering files from the actual codebase.
 
