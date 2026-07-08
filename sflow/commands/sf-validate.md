@@ -12,7 +12,7 @@ The blocking gate: the existing checks PLUS clause→test coverage and the archi
 ## Spec Artifacts
 
 Read the spec's artifacts under `.specflow/specs/<name>/`; report the result to the caller (and record the architecture-gate result into `design.md` when the workflow has one).
-- **Required:** the spec's `workflow.yaml` snapshot + `.meta.yaml` (required-phase check); the spec artifacts the workflow declares (`requirements.md`, `design.md`, `tasks.md` — or `analysis.md`/`describe.md` on the lighter workflows; checks over artifacts the workflow omits are SKIP).
+- **Required:** the spec's `workflow.yaml` snapshot + `.meta.yaml` (required-phase check); the spec artifacts the workflow declares (`requirements.md`, `design.md`, `contracts/`, `tasks.md` — or `analysis.md`/`describe.md` on the lighter workflows; checks over artifacts the workflow omits are SKIP).
 - **Optional:** an open PR (Check 6); prior-phase `references/`.
 - **Additional:** steering `.specflow/steering/*`; the target repo (codebase under audit).
 

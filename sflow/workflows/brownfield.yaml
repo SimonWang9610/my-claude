@@ -53,7 +53,7 @@ phases:
   - id: validate
     command: /sf-validate
     roles: [test-contract, architecture-design]
-    inputs: [requirements.md, design.md, tasks.md]
+    inputs: [requirements.md, design.md, contracts/, tasks.md]
     gate: auto
     required: true
     exit: all checks PASS — clause→test coverage, architecture gate, shared-unit immutability blocking
@@ -70,7 +70,7 @@ phases:
   - id: drift
     command: /sf-drift
     roles: [test-forensics, "tracker-align?"]
-    inputs: [design.md, tasks.md, qa-report.md]
+    inputs: [design.md, contracts/, tasks.md, qa-report.md]
     gate: auto
     required: true
     exit: no shared-unit drift; every exhibited behavior maps to a governing AC
