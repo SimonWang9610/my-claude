@@ -8,14 +8,14 @@
 > a Jira project keyed `ACMT` with a specific status workflow; **rewrite it for your tracker**
 > — Jira with a different project key/workflow, Linear, GitHub Issues, or no tracker at all.
 > If your project has no tracker integration, delete this file and the Step 0/Step 1 sections
-> of `spec-implement` become no-ops. Treat the status names, project key, issue types, and
+> of `sf-implement` become no-ops. Treat the status names, project key, issue types, and
 > automation rules below as a worked example to replace, not as fixed framework behavior.
 
-Shared status-transition playbook for the specflow commands that move work through an issue tracker (here: the Jira `ACMT` workflow). **Not a runnable slash command** (prefix `_`); `spec-implement` (and, read-only, `spec-qa`) reference this file.
+Shared status-transition playbook for the sflow commands that move work through an issue tracker (here: the Jira `ACMT` workflow). **Not a runnable slash command** (prefix `_`); `sf-implement` (and, read-only, `sf-qa`) reference this file.
 
-> **Why this file is bundled here.** It keeps the React specflow profile self-contained —
-> `spec-implement` Step 0/Step 1 can link and transition tracker issues without depending on
-> a file that lives only in the project repo. The `spec-*` command names are referenced
+> **Why this file is bundled here.** It keeps the React sflow profile self-contained —
+> `sf-implement` Step 0/Step 1 can link and transition tracker issues without depending on
+> a file that lives only in the project repo. The `sf-*` command names are referenced
 > directly; the workflow semantics (issue types, status map, monotonic guard, primitives) are an
 > illustration to adapt. Re-sync this copy whenever the project's tracker workflow changes.
 
@@ -42,7 +42,7 @@ Only the seven statuses below are touched by automation. **Hands-off statuses** 
 | Logical name | ACMT status name (case-sensitive) | Category | Driven by |
 |---|---|---|---|
 | `todo` | `To Do` | To Do | Jira default (initial) |
-| `dev` | `Dev In Progress` | In Progress | `/spec-implement` (this bundle) |
+| `dev` | `Dev In Progress` | In Progress | `/sf-implement` (this bundle) |
 | `pr` | `Pull Request (PR)` | In Progress | **Jira automation rule** (admin-configured) |
 | `staging` | `In Staging / Ready for QA` | In Progress | **Jira automation rule** (admin-configured) |
 | `qa` | `QA In Progress` | In Progress | manual — human only; no automation ever transitions to this status |
@@ -68,7 +68,7 @@ todo (0)
 
 ## The primitive: `transitionIssue(issueKey, target)`
 
-Used by every oac-spec command that touches Jira status. Pseudocode:
+Used by every oac sf-command that touches Jira status. Pseudocode:
 
 ```
 transitionIssue(issueKey, target):
@@ -96,7 +96,7 @@ transitionIssue(issueKey, target):
 
 ## How issues get associated with a spec
 
-`/spec-implement` is responsible for capturing the issue key(s). On first run for a spec, if `.meta.yaml` does not yet contain a `jira_issues:` field, `/spec-implement`:
+`/sf-implement` is responsible for capturing the issue key(s). On first run for a spec, if `.meta.yaml` does not yet contain a `jira_issues:` field, `/sf-implement`:
 
 1. Scans the spec docs (`requirements.md`, `clarify.md`, `design.md`, `tasks.md`) for `ACMT-\d+` references and surfaces them as **suggestions — never auto-accept**.
 2. Asks the user which issue (or issues, in the 1:many case) this spec maps to. At least one key required; abort if user provides none.
@@ -110,7 +110,7 @@ transitionIssue(issueKey, target):
 
 Subsequent runs read `jira_issues:` from `.meta.yaml` and skip the prompt.
 
-`/spec-qa` reads the same field and aborts with an actionable message if it's missing — but it never calls `transitionIssue` (QA transitions are human-only).
+`/sf-qa` reads the same field and aborts with an actionable message if it's missing — but it never calls `transitionIssue` (QA transitions are human-only).
 
 > Back-compat: if a spec still has the legacy `jira_stories:` key, commands should read it as a synonym for `jira_issues:` (no rewrite required, but new specs use `jira_issues:`).
 
@@ -118,11 +118,11 @@ Subsequent runs read `jira_issues:` from `.meta.yaml` and skip the prompt.
 
 | Trigger | Implementation | Target |
 |---|---|---|
-| `/spec-implement` starts on a spec | Command (this bundle) calls `transitionIssue(<key>, dev)` for each issue listed in `.meta.yaml` | `dev` |
+| `/sf-implement` starts on a spec | Command (this bundle) calls `transitionIssue(<key>, dev)` for each issue listed in `.meta.yaml` | `dev` |
 | Dev opens a PR referencing an ACMT issue key (Story or Bug) | **Jira automation rule** (admin-configured) | `pr` |
 | PR merged to default branch | **Jira automation rule** (admin-configured) | `staging` |
-| QA engineer begins QA | Manual — human sets `QA In Progress` in Jira; `/spec-qa` reads issue status as context but never calls `transitionIssue` | `qa` |
-| QA passes | Manual — human disposition step at end of `/spec-qa` | `release-ready` |
+| QA engineer begins QA | Manual — human sets `QA In Progress` in Jira; `/sf-qa` reads issue status as context but never calls `transitionIssue` | `qa` |
+| QA passes | Manual — human disposition step at end of `/sf-qa` | `release-ready` |
 | Released | Manual (future: release-tag hook) | `done` |
 | De-scoped | Manual, or via PR-footer declaration | `wont-do` |
 
@@ -156,7 +156,7 @@ The **force** flag temporarily relaxes the monotonic guard for that one transiti
 | Trigger | Why |
 |---|---|
 | `Product Review`, `Blocked`, `Ready for Pre-Prod`, `Pre-Prod`, `Pre-Prod Testing` | Product / release management. Automation never touches. |
-| `In Staging / Ready for QA` → `QA In Progress` | Human-only. The QA engineer sets this manually; `/spec-qa` reads status as context but never transitions. |
-| QA pass → `Release Ready` | Human call; `/spec-qa` writes the report, the human acts on it. |
+| `In Staging / Ready for QA` → `QA In Progress` | Human-only. The QA engineer sets this manually; `/sf-qa` reads status as context but never transitions. |
+| QA pass → `Release Ready` | Human call; `/sf-qa` writes the report, the human acts on it. |
 | Release tag cut → `Released-Done` | No release-tag hook today. |
-| Story creation | Product owns Story creation; specflow never creates Stories. |
+| Story creation | Product owns Story creation; sflow never creates Stories. |

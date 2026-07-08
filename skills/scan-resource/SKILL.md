@@ -11,7 +11,7 @@ Given a set of legacy folders/resources, produce **one markdown reference per fo
 
 1. **Resources** — one or more folders (and possibly files/URLs). Each folder becomes its own reference.
 2. **Instruction** — the purpose/scope (e.g. "to help migrate them to React"). Authoritative; if it names a functionality, scope each scan to that.
-3. **Output directory** — where references are saved. If missing, default to `.specflow/specs/<name>/references`
+3. **Output directory** — where references are saved. If missing, ask the caller to supply one
 
 ## Output layout
 

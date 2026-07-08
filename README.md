@@ -4,15 +4,19 @@ A reusable [Claude Code](https://claude.com/claude-code) bundle that drives a st
 spec-driven workflow — `init → preflight → requirements → clarify → design → tasks → implement →
 validate → qa → drift` — for **React/TypeScript** and **Flutter/Dart** projects.
 
-It ships three kinds of asset:
+It ships four kinds of asset:
 
-- **Commands** — one generic, stack-neutral `/spec-*` stage set (process, goals, inputs, and gates
+- **Workflows** — one YAML per workflow variant (`feature`, `brownfield`, `bugfix`, `quickfix`):
+  the canonical phase machine (phase order, command, roles, gates, required flags). `/sf-init`
+  snapshots the chosen YAML into the spec dir; commands and drivers read that snapshot.
+- **Commands** — one generic, stack-neutral `/sf-*` stage set (process, goals, inputs, and gates
   only; they name no skill, rule, or stack).
 - **Skills** — the stack-specific know-how the stages use (`oac-*` for React, `fl-*` for Flutter),
   plus standalone review skills.
-- **Agents** — per-stack workflow **drivers** (`oac-*-workflow`, `fl-*-workflow`). The driver is the
-  binding layer: it runs each `/spec-*` stage, supplies the right skills, applies the rules, and
-  enforces the human gates.
+- **Agents** — per-stack workflow **drivers** (`oac-*-workflow`, `fl-*-workflow`). The driver is a
+  pure orchestrator: it starts via `/sf-workflow-startup <tech> <variant>` (worktree → seed →
+  bind → init), drives the resulting phases, enforces the human gates, and delegates phase work
+  to subagents.
 
 You typically **vendor this repo into your project** (e.g. a git submodule) and link it into the
 project's `.claude/`; or link it into your **global `~/.claude`**. Either way the links are relative
@@ -22,35 +26,39 @@ to this repo, so they keep resolving wherever the repo lives.
 
 ```
 my-claude/
-├── specflow/
-│   ├── commands/     the generic /spec-* stage commands (real files; the canonical command set)
+├── sflow/
+│   ├── workflows/    the canonical phase machines — feature/brownfield/bugfix/quickfix.yaml
+│   │                 (never linked into .claude — the pickers and /sf-init resolve them internally)
+│   ├── commands/     the generic /sf-* stage commands (real files; the canonical command set)
 │   └── README.md     the full workflow: stages, the agent-as-binding-layer model, picking a driver
-├── react/            React profile — agents/ (drivers), skills/ (oac-*), rules/
+├── react/            React profile — agents/ (drivers), skills/ (oac-*), rules/, commands/ (tracker playbook)
 ├── flutter/          Flutter profile — agents/ (drivers), skills/ (fl-*), rules/
-├── skills/           aggregated view: every profile skill + standalone skills (relative symlinks + real files)
-├── agents/           aggregated view: every profile driver agent (relative symlinks)
-├── rules/            canonical rules + profile rule symlinks (see below)
-├── commands/         aggregated view: specflow commands (relative symlinks)
-├── install.sh        LAYER 1 — symlink stack source dirs into aggregation dirs (within this repo)
-├── uninstall.sh      LAYER 1 teardown — remove stack symlinks from aggregation dirs
-└── setup.sh          LAYER 2 — link/remove aggregation dirs into ~/.claude or a project's .claude
+├── skills/           aggregation view: profile skills (committed symlinks) + shared real skills —
+│                 sf-workflow-startup, pick-react-workflow, pick-flutter-workflow, standalone reviews
+├── agents/           aggregation view: every profile driver agent (committed symlinks)
+├── rules/            canonical shared rules (real) + stack-prefixed profile rule symlinks
+├── commands/         aggregation view: the /sf-* commands + the react tracker playbook (committed symlinks)
+├── internal-link.sh    populate the root aggregation dirs from the stack sources (repair/refresh)
+├── internal-unlink.sh  remove a stack's entries from the root aggregation dirs
+├── link.sh             link a per-stack selection of the root dirs into ~/.claude or a project's .claude
+└── unlink.sh           remove exactly those symlinks
 ```
 
-### Two-layer model
+### One layer, two scripts
 
-**Layer 1 — `install.sh` / `uninstall.sh`** operates entirely within this repo: it symlinks
-`<stack>/<type>/*` into the aggregation dir `<type>/`. For example, `specflow/commands/*` is
-symlinked into `commands/`, and `flutter/agents/*` into `agents/`. The aggregation dirs are what
-Layer 2 consumes.
+The root `agents/ commands/ rules/ skills/` dirs are **committed aggregation views**:
+per-asset relative symlinks into the stack sources (`flutter/`, `react/`, `sflow/`) plus a few
+real shared files (`rules/engineering-discipline.md`, `rules/preferences.md`, and the standalone
+skills under `skills/`). Editing a stack source is instantly visible through its aggregation
+entry. Two script pairs, two directions:
 
-**Layer 2 — `setup.sh`** links the aggregated `agents/`, `commands/`, and `skills/` dirs into an
-external `.claude/` (global `~/.claude` or a project's `.claude/`). Rules are not linked here —
-they are consumed via `CLAUDE.md` `@`-imports instead.
-
-`skills/`, `agents/`, `commands/`, and `rules/` are **aggregated views**. Some entries are relative
-symlinks to stack sources (managed by `install.sh`); others are real files that must never be
-removed (e.g. `rules/engineering-discipline.md`, `rules/preferences.md`, and the standalone skills
-under `skills/`).
+- **`internal-link.sh` / `internal-unlink.sh`** — INSIDE the repo: (re)populate or prune the
+  aggregation dirs from the stack sources (`./internal-link.sh all` also repairs them after any
+  damage). Rules get a `<stack>-` prefix because both profiles share basenames.
+- **`link.sh` / `unlink.sh`** — OUTSIDE the repo: link the aggregation entries into an external
+  `.claude/`. A legacy whole-dir symlink at the destination is auto-migrated to per-file links
+  (`unlink.sh` treats it as the thing to remove) — neither script ever reaches through it into
+  the repo.
 
 ### Rules
 
@@ -63,99 +71,80 @@ rules/react-architecture-principles.md   → ../react/rules/architecture-princip
 rules/react-test-quality.md              → ../react/rules/test-quality.md
 ```
 
-Rule links are **stack-prefixed** (`<stack>-<basename>`) because the same filenames appear under both
-`flutter/rules/` and `react/rules/`; the prefix keeps them distinct and `install.sh` idempotent.
+Rule links are **stack-prefixed** (`<stack>-<basename>`) because the same filenames appear under
+both `flutter/rules/` and `react/rules/`; the prefix keeps them distinct.
 
-Rules apply ambiently via their `paths:` frontmatter — the driver agents don't list them.
+Rules apply ambiently via their `paths:` frontmatter — the driver agents don't list them. `link.sh` links them into `.claude/rules/` like every other type.
 
 ## Install / link
 
-Three scripts, all **relative-symlink** based.
-
-### Step 1 — populate the aggregation dirs (once, or when you add/remove a stack asset)
-
 ```sh
-./install.sh                    # interactive: pick which stacks to aggregate
-./install.sh all                # aggregate every stack
-./install.sh flutter            # all types under flutter
-./install.sh specflow commands  # just specflow commands
-./install.sh react agents       # just react agents
+./link.sh --global all                  # everything into ~/.claude
+./link.sh --project ../myapp react      # React profile into a project (sflow auto-added —
+                                        #   the drivers need the /sf-* commands)
+./link.sh                               # interactive: choose destination + stacks
 
-./uninstall.sh specflow commands  # remove specflow command symlinks from commands/
-./uninstall.sh all                # remove all stack symlinks from all aggregation dirs
+./unlink.sh --project ../myapp react    # remove the React entries (shared assets stay)
+./unlink.sh --global all                # remove everything this repo linked
 ```
 
-`install.sh` scoped by stack+type. Already-linked entries are skipped. Real files (e.g.
-`rules/engineering-discipline.md`, standalone skills) are never touched — only symlinks that
-resolve back into the named stack are ever created or removed.
+For each selected stack, `link.sh` creates relative per-asset symlinks
+`<dest>/.claude/<type>/<name>` → this repo's `<type>/<name>` for the four types
+(`agents commands rules skills`); the workflow templates are deliberately not linked — the
+pickers and `/sf-init` resolve them through their own installed symlinks back into the bundle. Shared root assets (the cross-stack rules and the
+standalone skills) are linked with any selection and removed only by `unlink.sh all` — a
+single-stack unlink leaves them for the remaining stack. Existing correct links are skipped; a
+foreign real file at a destination path is never clobbered; `unlink.sh` removes only symlinks
+that resolve back into this repo and prunes emptied type dirs. Re-running either script is safe.
 
-### Step 2 — link into ~/.claude or a project (Layer 2)
+After linking, `link.sh` offers (or `--aliases` / `--no-aliases` to skip the prompt) to write a
+**shell function per linked driver agent** into your rc file as a managed block, so you can launch
+a driver directly:
 
 ```sh
-./setup.sh                          # interactive: choose global or project, then types
-./setup.sh link --global            # link agents/commands/skills into ~/.claude
-./setup.sh link --project ../myapp  # link into ../myapp/.claude
-./setup.sh remove --global          # remove this repo's symlinks from ~/.claude
-./setup.sh remove --project ../app  # remove from ../app/.claude
+oac-feature-workflow "add a logout button"     # = claude --agent oac-feature-workflow --worktree <auto-name> "..."
+fl-bugfix-workflow
 ```
 
-`setup.sh` multi-selects which of `agents`, `commands`, `skills` to link. For each selected type it
-creates **one directory symlink**: `<dest>/.claude/<type>` → this repo's `<type>/`. The per-file
-relative symlinks inside those dirs are owned by `install.sh`. Rules are **not** linked — they are
-loaded via `CLAUDE.md` `@`-imports. Re-running is safe: if the destination already has a legacy
-per-file bundle (the old per-file layout), `setup.sh` auto-migrates it to the single dir symlink. A
-directory that contains your own files is never clobbered — the script warns and leaves it intact
-(move it, then re-run). `remove` only removes a dir symlink (or legacy per-file dir) that resolves
-back into this repo. Bare `./setup.sh` (no `link`/`remove`) auto-detects a target that's already
-linked with this repo and offers to unlink it instead; passing `link` or `remove` explicitly skips
-that prompt.
+`unlink.sh all` offers to remove the block.
 
 > **Submodule tip.** When this repo is vendored in your project, submodules are synced by the
-> driver agent's `initialPrompt`/Initialize step on session start — no separate hook installation
+> driver agent's startup (worktree check) on session start — no separate hook installation
 > required.
 
 > **Windows symlink note.** Git restores the in-repo symlinks only when `core.symlinks=true` (default
 > on macOS/Linux). On Windows, enable Developer Mode or `git config core.symlinks true && git checkout -- .`.
 
-### Step 3 — run a workflow driver agent in a worktree
+## Run a workflow driver agent in a worktree
 
-Once the agents are linked into a target's `.claude/agents/` (Step 2), invoke a driver directly
+Once the agents are linked into a target's `.claude/agents/`, invoke a driver directly
 with Claude Code:
 
 ```sh
 claude --agent <workflow-agent-name> --worktree <worktree-name>
 ```
 
-The driver orchestrates the entire specflow lifecycle — `init → preflight → requirements → clarify →
-design → tasks → implement → validate → qa → drift` — inside the worktree.
+The driver orchestrates the entire sflow lifecycle — `init → preflight → requirements → clarify →
+design → tasks → implement → validate → qa → drift` — inside the worktree, following the phase
+machine in the spec's `workflow.yaml` snapshot.
 
 Available workflow-driver agents:
 
 - **Flutter:** `fl-feature-workflow`, `fl-bugfix-workflow`, `fl-quickfix-workflow`, `fl-brownfield-workflow`
 - **React:** `oac-feature-workflow`, `oac-bugfix-workflow`, `oac-quickfix-workflow`, `oac-brownfield-workflow`
 
-> The agent must be linked into the target's `.claude/agents/` first (run `setup.sh`).
-
-When `setup.sh` links `agents`, it also writes a **permanent shell command per driver agent** into
-your shell rc (`~/.zshrc` or `~/.bashrc`). Each command is a function named exactly after the agent:
-
-```sh
-oac-feature-workflow "add a logout button"
-fl-bugfix-workflow
-```
-
-These are the **recommended** way to launch a driver — no need to remember `--agent` or `--worktree`
-flags. The commands are written as a removable managed block; run `source ~/.zshrc` (or open a new
-shell) to pick them up. `setup.sh remove` deletes the block.
+> The agent must be linked into the target's `.claude/agents/` first (run `link.sh`).
 
 ## Editing
 
-Edit profile content under `specflow/`, `react/`, or `flutter/` directly — the aggregated `skills/`,
-`agents/`, `rules/` symlinks resolve straight to it. If you add or remove a skill/agent in a profile,
-re-run `./link-specflow.sh` to refresh the aggregated views.
+Edit stack content under `sflow/`, `react/`, or `flutter/` directly — the aggregation symlinks
+resolve straight to it. When you add, remove, or rename an asset, re-run `./internal-link.sh
+<stack>` (and `./internal-unlink.sh` for removals) to refresh the aggregation dirs, commit the
+symlink change, then re-run `./link.sh` on each destination.
 
 ## The workflow
 
-See **[specflow/README.md](specflow/README.md)** for the full lifecycle, the agent-as-binding-layer
-model, the human verification gate after `/spec-implement`, and how to pick the right driver agent
-(`oac-{feature,brownfield,bugfix,quickfix}-workflow` for React, `fl-*` for Flutter).
+See **[sflow/README.md](sflow/README.md)** for the full lifecycle, the workflow YAML schema,
+the agent-as-binding-layer model, the human verification gate after `/sf-implement`, and how to pick
+the right driver agent (`oac-{feature,brownfield,bugfix,quickfix}-workflow` for React, `fl-*` for
+Flutter).

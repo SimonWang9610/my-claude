@@ -1,7 +1,7 @@
 # Design procedure
 
 Step-by-step checklist for authoring `design.md` and `contracts/` against the
-React specflow architecture rules. Work through every step in order. All paths
+React architecture rules. Work through every step in order. All paths
 are relative to this `references/` directory.
 
 ---

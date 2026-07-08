@@ -3,7 +3,7 @@ name: fl-task-design
 description: >
   Turns an approved design.md and contracts/ into tasks.md for a Flutter feature — one buildable
   task per unit in dependency order, a test task per acceptance criterion plus edge cases, with
-  AC-ID traceability. Use at the spec-tasks stage, after design is approved and before
+  AC-ID traceability. Use after the design and contracts are approved and before
   implementation begins.
 ---
 

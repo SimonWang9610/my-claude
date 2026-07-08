@@ -1,0 +1,89 @@
+# Canonical phase machine for the feature workflow.
+# Consumers: /sf-init (snapshots this file into the spec dir as workflow.yaml and
+# scaffolds the .meta.yaml phase ledger from it); /sf-status and /sf-validate
+# (required-phase checks); the driver agents (phase order, gates, role→skill binding).
+# `init` is NOT a phase here — /sf-init scaffolds the spec from this file, then the
+# Drive loop drives the phases below (the first is the spec's `current_phase`).
+# `roles` are capability roles — the driver agent binds each to a concrete skill;
+# a trailing `?` marks a role that applies only when its trigger is present.
+name: feature
+description: Full feature lifecycle — greenfield, or a legacy/cross-stack port
+phases:
+  - id: preflight
+    command: /sf-preflight
+    roles: ["design-decompose?", "resource-scan?"]
+    inputs: [.meta.yaml]
+    outputs: [preflight.md, "references/design-units.md?"]
+    gate: human
+    required: true
+    exit: reuse verdict + shared-unit impact table (ADOPTED/UNADOPTED + action)
+
+  - id: requirements
+    command: /sf-requirements
+    roles: [acceptance-criteria]
+    inputs: [preflight.md]
+    outputs: [requirements.md]
+    gate: human
+    required: true
+    exit: every AC/NFR has a stable ID + observable Given/When/Then phrasing
+
+  - id: clarify
+    command: /sf-clarify
+    roles: [acceptance-criteria]
+    inputs: [requirements.md]
+    outputs: [clarify.md]
+    gate: human
+    required: true
+    exit: top ambiguities resolved; every untestable AC rephrased or recorded
+
+  - id: design
+    command: /sf-design
+    roles: [architecture-design]
+    inputs: [requirements.md, clarify.md]
+    outputs: [design.md, contracts/]
+    gate: human
+    required: true
+    exit: every AC covered by >=1 contract; architecture gate PASS or justified
+
+  - id: tasks
+    command: /sf-tasks
+    roles: [task-design, acceptance-criteria, test-contract]
+    inputs: [requirements.md, design.md, contracts/]
+    outputs: [tasks.md]
+    gate: auto
+    required: true
+    exit: valid DAG; >=1 test task per AC plus edge-case tasks
+
+  - id: implement
+    command: /sf-implement
+    roles: [implementation, test-contract, "tracker-sync?"]
+    inputs: [tasks.md, design.md, contracts/]
+    outputs: [phases.md]   # code + AC-traceable tests land in the target repo
+    gate: human
+    required: true
+    exit: every (WorkAgent, TestAgent) pair Completed; human verifies the code before validate/qa
+
+  - id: validate
+    command: /sf-validate
+    roles: [test-contract, architecture-design]
+    inputs: [requirements.md, design.md, tasks.md]
+    gate: auto
+    required: true
+    exit: all checks PASS — clause→test coverage and architecture gate are blocking
+
+  - id: qa
+    command: /sf-qa
+    roles: [qa-report, test-forensics, test-contract, "journey-tests?"]
+    inputs: [requirements.md, design.md, tasks.md]
+    outputs: [qa-report.md]
+    gate: human
+    required: true
+    exit: enters only after validate PASS; build + suite green; findings dispositioned by the reviewer (sign-off)
+
+  - id: drift
+    command: /sf-drift
+    roles: [test-forensics, "tracker-align?"]
+    inputs: [design.md, tasks.md, qa-report.md]
+    gate: auto
+    required: true
+    exit: no shared-unit drift; every exhibited behavior maps to a governing AC

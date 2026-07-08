@@ -1,7 +1,7 @@
 ---
 description: Produce the technical design and per-unit contracts, then pass the architecture gate.
 ---
-# spec:design
+# sf:design
 
 Produce the technical design plus the contract artifacts (interfaces, data models, APIs), then run the architecture gate before the phase closes.
 
@@ -12,7 +12,7 @@ Produce the technical design plus the contract artifacts (interfaces, data model
 ## Spec Artifacts
 
 Read inputs and write outputs (`design.md`, `contracts/`) under `.specflow/specs/<name>/`.
-- **Required:** `requirements.md` — run `/spec-requirements` if missing.
+- **Required:** `requirements.md` — run `/sf-requirements` if missing.
 - **Optional:** `clarify.md`; `preflight.md`; `references/design-units.md` (the design unit map).
 - **Additional:** steering `.specflow/steering/*`; prior-phase `references/`; the target repo (read to design against existing code — no code is written there).
 

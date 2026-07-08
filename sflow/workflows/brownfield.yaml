@@ -1,0 +1,76 @@
+# Canonical phase machine for the brownfield workflow (in-place modification of an
+# existing feature). Same schema as feature.yaml; see the header comment there.
+# Differences from feature: preflight is a mandatory impact analysis, there is no
+# clarify phase, and adopted shared units are immutable throughout.
+name: brownfield
+description: In-place modification of an existing feature, gated by impact analysis
+phases:
+  - id: preflight
+    command: /sf-preflight
+    roles: ["design-decompose?", "resource-scan?"]
+    inputs: [.meta.yaml]
+    outputs: [preflight.md, "references/design-units.md?"]
+    gate: human
+    required: true
+    exit: impact verdict + shared-unit impact table; never modify an adopted unit without approval
+
+  - id: requirements
+    command: /sf-requirements
+    roles: [acceptance-criteria]
+    inputs: [preflight.md]
+    outputs: [requirements.md]
+    gate: human
+    required: true
+    exit: every AC/NFR has a stable ID + observable Given/When/Then phrasing
+
+  - id: design
+    command: /sf-design
+    roles: [architecture-design]
+    inputs: [requirements.md, preflight.md]
+    outputs: [design.md, contracts/]
+    gate: human
+    required: true
+    exit: every AC covered by >=1 contract; architecture gate PASS or justified
+
+  - id: tasks
+    command: /sf-tasks
+    roles: [task-design, acceptance-criteria, test-contract]
+    inputs: [requirements.md, design.md, contracts/]
+    outputs: [tasks.md]
+    gate: auto
+    required: true
+    exit: valid DAG; >=1 test task per AC plus edge-case tasks
+
+  - id: implement
+    command: /sf-implement
+    roles: [implementation, test-contract, "tracker-sync?"]
+    inputs: [tasks.md, design.md, contracts/]
+    outputs: [phases.md]   # code + AC-traceable tests land in the target repo
+    gate: human
+    required: true
+    exit: every (WorkAgent, TestAgent) pair Completed; no adopted shared unit modified; human verifies the code before validate/qa
+
+  - id: validate
+    command: /sf-validate
+    roles: [test-contract, architecture-design]
+    inputs: [requirements.md, design.md, tasks.md]
+    gate: auto
+    required: true
+    exit: all checks PASS — clause→test coverage, architecture gate, shared-unit immutability blocking
+
+  - id: qa
+    command: /sf-qa
+    roles: [qa-report, test-forensics, test-contract, "journey-tests?"]
+    inputs: [requirements.md, design.md, tasks.md]
+    outputs: [qa-report.md]
+    gate: human
+    required: true
+    exit: enters only after validate PASS; build + suite green; findings dispositioned by the reviewer (sign-off)
+
+  - id: drift
+    command: /sf-drift
+    roles: [test-forensics, "tracker-align?"]
+    inputs: [design.md, tasks.md, qa-report.md]
+    gate: auto
+    required: true
+    exit: no shared-unit drift; every exhibited behavior maps to a governing AC

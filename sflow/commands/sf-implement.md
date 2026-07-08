@@ -1,7 +1,7 @@
 ---
 description: Implement each unit to its contract and write the AC-traceable tests until green.
 ---
-# spec:implement
+# sf:implement
 
 Plan the work into `(WorkAgent, TestAgent)` phases and execute them; "completed" means an AC-traceable outcome test passes.
 
@@ -14,7 +14,7 @@ This command merges the original `/implement` with the `(WorkAgent, TestAgent)` 
 ## Spec Artifacts
 
 Write planning artifacts (`phases.md`, and `tasks.md` status updates) under `.specflow/specs/<name>/`. The implementation **code** is written to the target repo, **not** here.
-- **Required:** `requirements.md`, `design.md`, `contracts/`, `tasks.md` — run the matching commands if missing.
+- **Required:** the workflow's planning artifacts — `tasks.md` + `design.md` + `contracts/` (feature/brownfield), `tasks.md` + `analysis.md` (bugfix), or `describe.md` alone (quickfix: the one AC is the task).
 - **Optional:** `.meta.yaml` issue-tracker field (Steps 0–1; project-specific); prior-phase `references/`.
 - **Additional:** steering `.specflow/steering/*`; the target repo (where code is written).
 
@@ -24,9 +24,8 @@ Exits only when every `(WorkAgent, TestAgent)` group is **Completed** — the Wo
 
 ## Steps
 
-0. **Optional — if the project defines a tracker integration, run it** (first run) — scan the spec docs for issue keys, confirm with the user, validate, append to `.meta.yaml`; skip if no tracker.
-1. **Optional — if the project defines a tracker integration, run it** — transition each linked issue forward.
-2. **Plan the phases** — group tasks into ordered phases of one-to-one `(WorkAgent, TestAgent)` pairs; persist to `phases.md` (resumable). WorkAgent owns its surfaces + contracts + AC-IDs + handoff criteria; TestAgent's pass criteria are the test contract.
+1. **Tracker sync (optional)** — only when the bound workflow lists a tracker-sync skill/playbook: on first run, scan the spec docs for issue keys, confirm with the user, validate, and append to `.meta.yaml`; then transition each linked issue forward. Skip entirely when there is no tracker.
+2. **Plan the phases** — group tasks into ordered phases of one-to-one `(WorkAgent, TestAgent)` pairs; persist to `phases.md` (resumable; a single-pair spec, e.g. a quickfix, may run as one pair without `phases.md`). WorkAgent owns its surfaces + contracts + AC-IDs + handoff criteria; TestAgent's pass criteria are the test contract.
 3. **Execute each phase** (coordination loop) — per pair:
    - WorkAgent builds its surfaces to their contracts (write paths included), then hands off on its criteria.
    - TestAgent writes the AC-named outcome test against the contract's seam and runs it green.

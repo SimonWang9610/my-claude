@@ -6,7 +6,7 @@ description: >
   concerns: state ownership and placement, server state as TanStack Query SSOT,
   Zustand store discipline, and component composition with per-unit testability seams.
   Runs the verifiable-unit gate at design exit (three blocking triggers: God-component,
-  server-state-in-Zustand, missing testability seam). Trigger: spec-design stage, or
+  server-state-in-Zustand, missing testability seam). Trigger:
   any session that structures components, hooks, stores, query keys, or write paths
   from scratch or extends an existing design.md.
 ---

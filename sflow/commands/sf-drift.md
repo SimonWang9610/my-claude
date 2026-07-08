@@ -1,7 +1,7 @@
 ---
 description: Detect shared-unit drift and unspecced behavior after merge.
 ---
-# spec:drift
+# sf:drift
 
 Detect code↔spec drift and behavioral drift (code the spec no longer covers).
 
@@ -12,7 +12,7 @@ Detect code↔spec drift and behavioral drift (code the spec no longer covers).
 ## Spec Artifacts
 
 Read the spec's artifacts under `.specflow/specs/<name>/`; compare against the target repo and report a drift report to the caller.
-- **Required:** `design.md`, `tasks.md` — run `/spec-design` and `/spec-tasks` if missing.
+- **Required:** the spec artifacts the workflow declares — `design.md` + `tasks.md` on feature/brownfield, `analysis.md` + `tasks.md` on bugfix.
 - **Optional:** prior-phase `references/`.
 - **Additional:** steering `.specflow/steering/*`; the target repo (code under comparison).
 
