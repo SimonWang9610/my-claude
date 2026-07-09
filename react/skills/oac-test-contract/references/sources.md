@@ -8,8 +8,6 @@ Cite as links when justifying a rule; paraphrase, never paste substantial text.
   https://cucumber.io/blog/bdd/better-requirements-by-harnessing-the-power-of-exa/
 - Semaphore CI — BDD and Acceptance Testing (Given/When/Then maps ACs to test descriptions):
   https://semaphore.io/blog/bdd-acceptance-testing
-- Vitest — Test Tags (label tests with an ID, filter with `--tag`):
-  https://vitest.dev/guide/test-tags
 
 ## Rule 2 — Outcome, not implementation
 
@@ -20,7 +18,7 @@ Cite as links when justifying a rule; paraphrase, never paste substantial text.
 - Kent C. Dodds — Introducing react-testing-library (design intent: accessing internals is deliberately hard):
   https://kentcdodds.com/blog/introducing-the-react-testing-library
 
-## Rule 3 — Production-shaped fixtures
+## Rule 3 — Production-typed fixtures
 
 - MSW — Introduction (network-level interception; single source of truth for mocks):
   https://mswjs.io/docs/
@@ -28,8 +26,6 @@ Cite as links when justifying a rule; paraphrase, never paste substantial text.
   https://mswjs.io/docs/best-practices/typescript/
 - Artem Zakharchenko — Type-safe API mocking with MSW and TypeScript (`satisfies`-typed fixtures):
   https://dev.to/kettanaito/type-safe-api-mocking-with-mock-service-worker-and-typescript-21bf
-- isqua.ru — Scalable mocking architecture with MSW and TypeScript (per-endpoint ownership):
-  https://isqua.ru/blog/2025/05/17/scalable-mocking-architecture/
 
 ## Rule 4 — No tautologies / no arrange-act-no-assert
 
@@ -47,5 +43,3 @@ Cite as links when justifying a rule; paraphrase, never paste substantial text.
 
 - Vitest — Writing Tests (a checked-in Vitest glob assertion is the resident form of a one-shot grep):
   https://vitest.dev/guide/writing-tests
-- Vitest — Test Tags (filter and run CI guards by tag):
-  https://vitest.dev/guide/test-tags

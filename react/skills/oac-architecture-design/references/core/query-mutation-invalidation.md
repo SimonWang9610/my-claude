@@ -20,18 +20,6 @@ Record in `design.md` / the mutation's contract, per mutation:
 |----------|------------------------|-----------------------------------|
 | `renameCamera` | `cameraKeys.lists()` | `cameraKeys.detail(id)` |
 
-**The graph, expressed:**
-
-```tsx
-const rename = useMutation({
-  mutationFn: api.renameCamera,
-  onSuccess: (updated) => {
-    queryClient.setQueryData(cameraKeys.detail(updated.id), updated)
-    queryClient.invalidateQueries({ queryKey: cameraKeys.lists() })
-  },
-})
-```
-
 Design decides *what* is invalidated; implementation wires *how*. The exact
 `onSuccess`/`onError`/`onSettled` callback placement, optimistic application, and rollback are
 coding concerns — see the `oac-implementation` skill (`query-mutation-wiring`).

@@ -2,7 +2,7 @@
 
 For each unit, walk the four classes below and emit one edge-case test task for every class that
 applies — unless an AC task already asserts that exact outcome (then skip; don't duplicate).
-Assert the **user-visible** result, not that a mock was called.
+Assert the **user-visible** result.
 
 ## Which classes apply per unit kind
 | Unit kind            | error | empty | loading | boundary |
@@ -37,5 +37,3 @@ Assert the **user-visible** result, not that a mock was called.
 
 ## Anti-patterns (do not emit these as edge tasks)
 - Asserting `expect(mockFetch).toHaveBeenCalled()` instead of what the user sees.
-- An edge task with no `Traces to:` contract unit — that is an orphan.
-- Re-covering an outcome an AC test already asserts.

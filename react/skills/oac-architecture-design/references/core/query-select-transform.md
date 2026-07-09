@@ -37,4 +37,4 @@ function useCameraById(id: string) {
 Record in each affected contract: the query key it reads and the exact selected return type,
 so the transformation has exactly one home. The re-render narrowing this buys at runtime —
 `select` + tracked properties so a component re-renders only when *its* slice changes — is the
-implementation-side facet, in the `oac-implementation` skill (`query-narrow-subscriptions`).
+performance facet, in the `oac-implementation-review` skill (`query-narrow-subscriptions`).

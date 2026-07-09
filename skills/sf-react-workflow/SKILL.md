@@ -4,9 +4,8 @@ description: >
   React-only generator for the spec's workflow.yaml, from the project-hosted specflow workflow
   template (feature | brownfield | bugfix | quickfix): maps each template phase to its /sf-*
   command, binds React `oac-*` skills DIRECTLY to phases (references/phase-map.md), resolves
-  conditional bindings against the actual spec/project (design links, legacy port, Jira tracker,
-  E2E coverage), verifies against the spec's .meta.yaml, and WRITES workflow.yaml into the spec
-  dir.
+  conditional bindings against the actual spec/project (design links, legacy port, E2E coverage),
+  verifies against the spec's .meta.yaml, and WRITES workflow.yaml into the spec dir.
   Usage: /sf-react-workflow <variant> [spec-dir]. Run AFTER /sf-init (which owns the spec dir
   and .meta.yaml) and before the driver's Drive Loop.
 argument-hint: "<variant> [spec-dir]"
@@ -60,11 +59,9 @@ bindings and its `exitWhen` line. Command mapping to the `/sf-*` set:
 | implement          | `/sf-implement`                        |
 | spec-qa            | `/sf-qa`                               |
 | analysis, describe | _(none — driver-led; omit `command:`)_ |
-| taskstoissues      | _(none — tracker rule below)_          |
 
-**taskstoissues** — when the project tracks issues in Jira, emit it driver-led (no `command:`)
-with the `_oac-jira-status-automation` playbook. Otherwise emit it with `skills: []` and
-`exitWhen: no tracker — record skipped (reason: no tracker) in .meta.yaml and move on`.
+`taskstoissues` is dropped from the React flow — if a vendored template still declares it, emit
+`skills: []`, `gate: auto`, `exitWhen: taskstoissues unused — record skipped in .meta.yaml`.
 
 **The flow's validate command is `/sf-validate`** — it gates `spec-qa`'s `exitWhen` and is
 never a phase. `/sf-drift` is an optional post-merge follow-up, also never a phase.
@@ -73,7 +70,7 @@ never a phase. `/sf-drift` is an optional post-merge follow-up, also never a pha
 
 Each `?`-marked skill in the phase map is conditional. Check its trigger against the actual
 spec/project and **decide now** where possible — keep or drop per the decision table in
-`references/phase-map.md` (design links, legacy/port scan, E2E coverage, Jira tracker). A
+`references/phase-map.md` (design links, legacy/port scan, E2E coverage). A
 trigger that can't be decided yet stays in the output with its condition attached.
 
 ### Step 4 — Emit the generated schema

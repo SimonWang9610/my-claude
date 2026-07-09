@@ -15,16 +15,13 @@ coverage a runnable query, not a manual audit.
 ## Scope boundary
 
 This skill sharpens EARS notation, user stories, and NFR sections — it does not replace
-them. EARS functional requirements stay; each story's ACs gain IDs and the Given/When/Then
-phrasing contract.
+them (EARS mechanics: `references/ac-format.md` §1).
 
 ## Discovery before criteria
 
-Criteria are only as good as the examples behind them. Before numbering ACs, run **Example
-Mapping** (→ `references/discovery.md`): per story, surface the business rules, make each
-concrete with happy / edge / counter examples, and capture open questions. Examples become ACs;
-questions are surfaced to the caller; a small glossary holds one vocabulary across all downstream artifacts. This finds
-edge and negative cases at authoring time instead of deferring them downstream.
+Criteria are only as good as the examples behind them. Example Mapping (→
+`references/discovery.md`) finds edge and negative cases at authoring time instead of
+deferring them downstream.
 
 ## The two-layer model: EARS + AC IDs
 
@@ -40,17 +37,5 @@ carries an ID.
 
 ## Downstream chain
 
-```
-requirements.md  →  AC-14.3       (this skill — authoring)
-       │
-       ▼
-tasks.md         →  test task: cover AC-14.3     (task breakdown)
-       │
-       ▼
-*.test.tsx       →  describe('AC-14.3: ...')     (test-contract: clause→test mapping)
-       │
-       ▼
-coverage gate    →  count(AC IDs in reqs) == count(AC IDs in green tests)
-```
-
-Success: **unmapped-AC count → 0** when the coverage gate is run.
+AC IDs flow from `requirements.md` through task-breakdown into test names and the coverage
+gate — full chain and success signal in `references/traceability.md` §3.

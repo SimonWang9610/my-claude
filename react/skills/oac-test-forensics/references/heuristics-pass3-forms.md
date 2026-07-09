@@ -1,8 +1,7 @@
 # Pass 3 forms — false-positive
 
-Grep/read recipes and before→after examples for Pass 3. Targets React 19 + Vitest + RTL + Zustand +
-TanStack Query v5. Greps narrow where to read — confirm every hit by reading the file. Examples use a
-neutral "list + detail" feature (`DeviceListPage`, `useDevices`, `DeviceRecord`).
+Grep/read recipes and before→after examples for Pass 3. Examples use a neutral "list + detail" feature
+(`DeviceListPage`, `useDevices`, `DeviceRecord`).
 
 ## Form 1 — Tautology / arrange-act-no-assert
 

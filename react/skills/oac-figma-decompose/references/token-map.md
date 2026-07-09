@@ -17,62 +17,40 @@ This file is the project's design-token map. Extraction agents map Figma hex col
 
 ## Example — reference project (replace with yours)
 
-The content below is from one reference project. It is a concrete worked example of the structure; it is **not** a default. Replace every value with your project's tokens.
+Concrete worked example of the structure, from one reference project — **not** a default. Replace every value with your project's tokens; keep the categories.
 
 ### Semantic Tokens (mode-aware — use these in output)
 
 | Token | Light Hex | Dark Hex | Role |
 |-------|-----------|----------|------|
 | `elevation0` | #f0f0f0 | #000000 | Page background |
-| `elevation1` | #fcfcfc | #141314 | Card/panel background |
 | `elevation2` | #ffffff | #262526 | Elevated surface, inputs |
-| `body` | #2b0030 | #f9f9f9 | Headings, person names |
 | `text` | #151015 | #f9f9f9 | General UI text, labels, icon fills |
-| `textSecondary` | — | #e4e1e4 | Subdued labels |
 | `accent` | #5d3883 | #5d3883 | Borders, button bg, structural |
-| `accentContents` | #8057c2 | #8057c2 | Interactive text (toggles, links) |
-| `green` | #459a60 | #5bcc7f | Success, online |
-| `red` | #b5060e | #e54848 | Error, offline, danger |
-| `badgeRed` | — | #e54848 | Badge danger |
-| `badgeYellow` | — | #ede159 | Badge warning |
-| `whitePerma` | #ffffff | #ffffff | Always white (logo, overlays) |
-| `blackPerma` | #000000 | #000000 | Always black |
+| `green` / `red` | #459a60 / #b5060e | #5bcc7f / #e54848 | Success/online, error/offline |
+| `whitePerma` / `blackPerma` | #ffffff / #000000 | same | Always white/black (logo, overlays) |
 
 ### Primary / Secondary
 
 | Token Path | Hex | Use |
 |-----------|-----|-----|
 | `primary.main` | #330033 | Dark purple — sidebar bg, headers |
-| `primary.light` | #5C2D5E | Lighter purple accent |
-| `primary.dark` | #2b0030 | Darkest purple — same as `body` light |
 | `secondary.main` | #5d3883 | Plum — same as `accent` |
-| `secondary.light` | #7e5ca6 | Lighter plum |
 
 ### Status Colors
 
 | Name | Hex | Mapped From |
 |------|-----|-------------|
 | online / active | #459a60 | `accent.green` |
-| offline / suspended | #b5060e | `accent.red` |
 | warning / pending | #ed6c02 | `accent.orange` |
-| error | #dc1919 | `accent.redBright` |
-| inactive / low | #94939b | `neutral.400` |
 | critical | #B404FF | `priority.alarm` |
-| medium | #ed6c02 | `accent.orange` |
 
 ### Neutrals
 
 | Shade | Hex | Common Use |
 |-------|-----|-----------|
-| 50 | #fcfcfc | elevation1 (light) |
 | 100 | #f0f0f0 | elevation0 (light), sidebar bg |
-| 200 | #edeef0 | Hover states, sidebar hover |
-| 300 | #d5d6d8 | Borders, dividers |
 | 400 | #94939b | Inactive/disabled text |
-| 500 | #6b6a72 | Secondary text |
-| 600 | #4a4950 | — |
-| 700 | #333139 | — |
-| 800 | #1e1c24 | — |
 | 900 | #151015 | `text` (light mode) |
 
 ### Space Token Gotcha
@@ -81,13 +59,9 @@ This project's Figma `--space-N` tokens do NOT equal N pixels:
 
 | Token | Resolved Value |
 |-------|---------------|
-| `--space-4` | 3px |
 | `--space-8` | 6px |
-| `--space-12` | 9px |
 | `--space-16` | 12px |
-| `--space-24` | 18px |
 | `--space-32` | 24px |
-| `--space-48` | 30px |
 
 Always use the resolved pixel value in output, not the token name.
 

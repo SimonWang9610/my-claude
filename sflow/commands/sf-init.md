@@ -27,7 +27,6 @@ Exits when `.meta.yaml` exists with a `phase_status` map listing every phase rea
 # feature workflow; the real list ALWAYS comes from the variant's template (Step 3).
 name: <feature-name>
 workflow: feature
-jira_issues: []              # tracker keys; the tracker-sync step fills it — omit if no tracker
 created_at: <ISO 8601 timestamp>
 updated_at: <ISO 8601 timestamp>
 current_phase: preflight     # the first phase in the template
@@ -54,5 +53,5 @@ generated `workflow.yaml` (one source of truth — never copy them here). Phase 
 1. **Capture design links (if UI)** — If the feature/fix involves UI (a new or changed screen, unit, or visual surface), ask the user for any related design source links and record them. If it's not UI-related, or the user has none, skip — the field stays absent.
 2. **Scaffold the spec dir** — create `.specflow/specs/<feature-name>/`; this command is the sole writer of it.
 3. **Read the phase list** — locate the variant's project-hosted specflow template: `specflow/src/workflows/<variant>.yaml` (the vendored specflow repo), else `.specflow/workflows/<variant>.yaml` (project override); neither found → STOP and report that the project must vendor specflow, or ask the user for the template path. Extract each phase `id` from its `phases`, in order; never hardcode them (`init` is not among them — this command is the scaffold step).
-4. **Write `.meta.yaml`** — per the shape above: `name`, `workflow` (the chosen variant), `jira_issues` (when a tracker is used), `created_at`/`updated_at`, `current_phase` (the first phase), `phase_status` (every phase `pending`), `design_links` (when captured above), `checksums: {}`.
+4. **Write `.meta.yaml`** — per the shape above: `name`, `workflow` (the chosen variant), `created_at`/`updated_at`, `current_phase` (the first phase), `phase_status` (every phase `pending`), `design_links` (when captured above), `checksums: {}`.
 5. **Report** — what was created + the next step: `/sf-react-workflow <variant>` writes the spec's `workflow.yaml`.

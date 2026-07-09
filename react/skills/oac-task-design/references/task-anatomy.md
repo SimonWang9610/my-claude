@@ -33,8 +33,6 @@ Every task is one checklist item with a fixed set of fields. Keep fields on thei
 ```
 
 ## Rules the shape enforces
-- **No orphan** — every task has a `Traces to:` (AC/NFR-ID or a contract file). No trace ⇒ delete or assign.
-- **Observable exit** — an Exit check is a command result or a green test, never "looks done".
 - **One unit per impl task, one AC per test task** — keeps the count formula exact.
 
 ## Worked `tasks.md`
@@ -92,6 +90,13 @@ NFR: `NFR-1` (list query `staleTime` = 30 s).
       Traces to: contracts/DeviceList.md · Exit check: green in CI
 - [ ] Edge: DeviceList — loading · Assert: skeleton/progressbar shown, no flash of empty
       Traces to: contracts/DeviceList.md · Exit check: green in CI
+
+## Parallel plan  (units in a wave build concurrently — one Work/Test pair each)
+- Wave 1: apiClient · useDeviceFilters   (no new dependencies)
+- Wave 2: useDeviceQuery                 (after apiClient)
+- Wave 3: DeviceList                     (after useDeviceQuery, useDeviceFilters)
+- Wave 4: DeviceListPage                 (after DeviceList)
 ```
 
 Count check: 5 units + (3 ACs + 1 NFR) + 3 edge cases = **12 tasks**. Matches the list above.
+Waves group the 5 impl units by dependency depth (here 2 units build in parallel in Wave 1).

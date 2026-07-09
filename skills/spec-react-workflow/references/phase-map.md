@@ -5,8 +5,7 @@ The project-hosted specflow template declares the phase order, `approval`, `requ
 This map binds each phase directly to its React `oac-*` skills and supplies the `exitWhen`
 line. It is the union of all variants' phase ids — a variant uses only the phases its template
 declares. A trailing `?` marks a conditional the generator resolves against the actual
-spec/project (see the SKILL's decision table); `/scan-resource` is a shared skill, not `oac-*`,
-and the tracker binding is a playbook (follow the file), not a skill.
+spec/project (see the SKILL's decision table); `/scan-resource` is a shared skill, not `oac-*`.
 
 Stack: React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI + Vitest.
 
@@ -18,10 +17,9 @@ Stack: React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI + Vitest
 | requirements | `/oac-acceptance-criteria` | every AC/NFR has a stable ID + observable Given/When/Then phrasing |
 | clarify | `/oac-acceptance-criteria` | top ambiguities resolved; every untestable AC rephrased or recorded |
 | design | `/oac-architecture-design`, `/oac-journey-plan`? | every AC covered by >=1 contract; architecture gate PASS or justified |
-| tasks | `/oac-task-design`, `/oac-test-contract` | valid dependency order; >=1 test task per AC plus edge-case tasks |
-| taskstoissues | the `_oac-jira-status-automation` playbook? | issues created and linked per the project command (followed verbatim); human-approved |
-| implement | `/oac-implementation`, `/oac-test-contract`, the `_oac-jira-status-automation` playbook? | every task completed with a passing AC-traceable test; human verifies the code before spec-qa |
-| spec-qa | `/oac-qa-report`, `/oac-test-forensics`, `/oac-journey-tests`? | enters only after the flow's validate command PASSES (static checks, reported in chat — never a ledger phase); findings dispositioned by the reviewer (sign-off); suite green via a single eslint + vitest run — no duplicate runs, no extra coverage/type-check passes |
+| tasks | `/oac-task-design`, `/oac-test-contract` | valid dependency order + a parallel-wave plan (independent units grouped into concurrency waves); >=1 test task per AC plus edge-case tasks |
+| implement | `/oac-implementation`, `/oac-test-contract`, `/oac-implementation-review` | every task completed with a passing AC-traceable test, authored red-before-green by a separate test agent; branch passes `/oac-implementation-review` (no unresolved Critical/Major findings); human verifies the code before spec-qa |
+| spec-qa | `/oac-qa-report`, `/oac-test-forensics`, `/oac-journey-tests`? | enters only after the flow's validate command PASSES (static checks, reported in chat — never a ledger phase); findings dispositioned by the reviewer (sign-off); suite green via a single eslint + vitest run |
 
 ## Conditionals the generator resolves (`?`)
 
@@ -30,7 +28,6 @@ Stack: React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI + Vitest
 | `/oac-figma-decompose`? (preflight) | the caller reports design links, or the spec's `.meta.yaml` records them | no design links |
 | `/scan-resource`? (preflight, analysis) | legacy/cross-stack port, or a large existing subsystem to audit | greenfield, small scope |
 | `/oac-journey-plan`? (design) / `/oac-journey-tests`? (spec-qa) | E2E coverage is wanted — plan at design (blocking human approval), authoring at spec-qa from the approved plan | project has no E2E layer |
-| the `_oac-jira-status-automation` playbook? (taskstoissues, implement) | the project tracks issues in Jira (playbook present) | no tracker |
 
 A conditional that can't be decided yet stays in the output with its condition attached.
 

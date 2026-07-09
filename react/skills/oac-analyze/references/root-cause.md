@@ -28,8 +28,3 @@ are usually different files.
 - **Root = the query's `select` mapper (file + line)**, not `<OrderTotal>`. The AC and repro test
   target the wrong-empty cart value, so a fix at the component (defaulting the label) would be a
   symptom patch and the repro test would still fail.
-
-## Record
-
-In `analysis.md`: the symptom (observable), the root unit path + line, and one sentence on why
-that unit — not the symptom site — is the cause.

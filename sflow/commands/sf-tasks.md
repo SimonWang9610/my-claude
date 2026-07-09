@@ -18,12 +18,12 @@ Write `tasks.md` under `.specflow/specs/<name>/`.
 
 ## Gate / exit
 
-Exits only when every `AC-<story#>.<n>` / testable `NFR-<n>` has ≥1 test task naming the ID and stating its observable outcome; every new behavior has its edge-case test tasks; a zero-test spec carries a `TASK-TD`; and the task graph is a valid DAG.
+Exits only when every `AC-<story#>.<n>` / testable `NFR-<n>` has ≥1 test task naming the ID and stating its observable outcome; every new behavior has its edge-case test tasks; a zero-test spec carries a `TASK-TD`; and the task graph is a valid DAG grouped into parallel waves.
 
 ## Steps
 
 1. **Decompose from contracts** — each `contracts/<unit>.md` yields ≥1 implementation task plus its paired test task; each task carries `id`, `title`, `description`, `dependencies`, `files`, `contract-refs`, `complexity` (S/M/L), `status`, `ac-refs`, `skill-refs`.
-2. **Order the graph** — dependencies, complexity, file impact, parallel order; must be a valid DAG.
+2. **Order the graph + wave it** — dependencies, complexity, file impact; must be a valid DAG. Group independent units into parallel **waves** (Wave 1 = no-dependency units; Wave *n* = units whose dependencies completed in earlier waves) so `/sf-implement` runs each wave concurrently.
 3. **One test task per AC** — name the ID, state the observable outcome; test tasks are first-class.
 4. **Edge-case mandate** — async failure, empty/invalid input, boundary conditions, remount/reload; mark `skipped` with a reason if N/A, never omit silently.
 5. **Test-debt guard** — if zero test tasks were produced, emit `TASK-TD` with a one-sentence justification.

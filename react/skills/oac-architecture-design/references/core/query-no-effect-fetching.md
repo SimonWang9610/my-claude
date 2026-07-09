@@ -7,30 +7,24 @@ tags: query, useEffect, fetching
 
 ## Fetch with useQuery, Never useEffect
 
-`useEffect` + `fetch` + `setState` hand-rolls what TanStack Query already provides — and gets it wrong: no caching, no dedup, race conditions on fast param changes, no retry, loading/error flags managed manually, and the fetched data lands in component state where nothing else can reuse it.
+**Boundary:** server reads belong to the Query layer, not the component. `useEffect` + `fetch` + `setState` lands fetched data in local component state where no other consumer can reach it — the architectural defect (server data has no single owner). It also hand-rolls what Query provides: caching, dedup, retry, and race-safety on fast param changes. Server data is owned by the cache; a component subscribes to it, never sources it.
 
 **Incorrect:**
 
 ```tsx
 function CameraDetail({ id }: { id: string }) {
   const [camera, setCamera] = useState<Camera | null>(null)
-  const [loading, setLoading] = useState(true)
   useEffect(() => {
-    setLoading(true)
-    // races on id change; no caching, no dedup, no retry
-    api.getCamera(id).then((c) => { setCamera(c); setLoading(false) })
+    // races on id change; no caching, no dedup, no retry; data trapped in local state
+    api.getCamera(id).then(setCamera)
   }, [id])
 }
 ```
 
-**Correct:**
+**Correct** — the read goes through `useQuery`, so the cache owns the data:
 
 ```tsx
 function CameraDetail({ id }: { id: string }) {
-  // isPending: true when there is no cached data yet (v5 preferred form).
-  // isLoading still exists in v5 (isPending && isFetching) but isPending is
-  // preferred for "no data yet" checks — it is true even while a background
-  // refetch runs over a cached result.
   const { data: camera, isPending } = useQuery({
     queryKey: cameraKeys.detail(id),
     queryFn: () => api.getCamera(id),
@@ -38,4 +32,6 @@ function CameraDetail({ id }: { id: string }) {
 }
 ```
 
-Acceptable non-Query effects: subscribing to push channels (WebSocket/IPC) — though those should feed `queryClient.setQueryData` or a service module, and imperative one-shot calls inside event handlers may use `queryClient.fetchQuery`/mutations instead of raw fetch.
+Loading-state mechanics (`isPending` vs `isLoading` in v5, background-refetch flags) are coding detail — see `oac-implementation` (`data-states`).
+
+Acceptable non-Query effects: subscribing to push channels (WebSocket/IPC) — though those should feed `queryClient.setQueryData` or a service module; imperative one-shot calls inside event handlers may use `queryClient.fetchQuery`/mutations instead of raw fetch.

@@ -5,16 +5,6 @@ formats. Read when running the gate. Paths are relative to this `references/` di
 
 ---
 
-## Contents
-
-- [Why this gate exists](#why-this-gate-exists)
-- [Procedure](#procedure)
-- [The three blocking triggers](#the-three-blocking-triggers)
-- [Output formats](#output-formats)
-- [Scope boundary](#scope-boundary)
-
----
-
 ## Why this gate exists
 
 A God-component has no isolation seam, so the only way to "test" it is to mock the whole

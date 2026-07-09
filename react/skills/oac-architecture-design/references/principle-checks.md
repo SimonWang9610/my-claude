@@ -8,20 +8,6 @@ rule from memory — read the file.
 
 ---
 
-## Contents
-
-- [P1 — Server state in TanStack Query](#p1--server-state-in-tanstack-query)
-- [P2 — Render-only components + single-responsibility hooks](#p2--render-only-components--single-responsibility-hooks--soft-ceiling)
-- [P3 — One owner per fact; derive, don't sync](#p3--one-owner-per-fact-derive-dont-sync)
-- [P4 — Writes via useMutation; mutation errors via onError/mutation.isError](#p4--writes-via-usemutation-mutation-errors-via-onerror-mutationiserror)
-- [P5 — Testability seam per AC](#p5--testability-seam-per-ac)
-- [P6 — Token-layer selection](#p6--token-layer-selection)
-- [P7 — No module-scope mutable domain state](#p7--no-module-scope-mutable-domain-state)
-- [Trigger → principle → bundled-rule map](#trigger--principle--bundled-rule-map)
-- [Quick decision: where does this fact live?](#quick-decision-where-does-this-fact-live)
-
----
-
 ## P1 — server state in TanStack Query
 
 **Signals**
@@ -132,7 +118,8 @@ design-token documentation and enforce with a CI guard (ESLint/Vitest rule banni
 
 P4 (write paths), P6 (token layering), and P7 (module-scope state) are not blocking triggers in
 themselves, but a violation surfaced during the gate is recorded as a finding and resolved before
-the design is handed off.
+the design is handed off. The `layer-*` rules (cited under P2/P5 above) are the always-on **P8**
+in `rules/architecture-principles.md` — a per-file import-direction rule, not a gate lens.
 
 ---
 

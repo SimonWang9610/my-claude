@@ -60,6 +60,6 @@ reach for it when the contract promises immediate feedback (a toggle, a rename) 
   contract (an effect dependency, a value passed to a non-reactive subscriber). Remove leftover
   "for performance" wrapping.
 - **Not enabled:** memoization is manual — apply the boundary rules in the performance corpus
-  (`rerender-memo-boundaries`, `rerender-functional-updates`, `render-hoist-static-jsx`).
+  (`rerender-memo-boundaries`, `rerender-functional-updates`, `render-hoist-static-jsx` — in `oac-implementation-review`).
 
 Report which case applies before making any memoization change, since it inverts the advice.

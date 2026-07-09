@@ -37,13 +37,13 @@ my-claude/
 ├── sflow/
 │   ├── commands/     the generic /sf-* stage commands (real files; the canonical command set)
 │   └── README.md     the full workflow: stages, the agent-as-binding-layer model, picking a driver
-├── react/            React profile — skills/ (oac-*), rules/, commands/ (tracker playbook)
+├── react/            React profile — skills/ (oac-*), rules/
 ├── flutter/          Flutter profile — skills/ (fl-*), rules/
 ├── skills/           aggregation view: profile skills (committed symlinks) + shared real skills —
 │                 sf-react-workflow, spec-react-workflow, standalone reviews
 ├── agents/           the two unified driver agents (real files) — sflow-driver, specflow-driver
 ├── rules/            canonical shared rules (real) + stack-prefixed profile rule symlinks
-├── commands/         aggregation view: the /sf-* commands + the react tracker playbook (committed symlinks)
+├── commands/         aggregation view: the /sf-* commands (committed symlinks)
 ├── internal-link.sh    populate the root aggregation dirs from the stack sources (repair/refresh)
 ├── internal-unlink.sh  remove a stack's entries from the root aggregation dirs
 ├── link.sh             link a per-stack selection of the root dirs into ~/.claude or a project's .claude

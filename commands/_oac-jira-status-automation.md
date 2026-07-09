@@ -1,1 +1,0 @@
-../react/commands/_oac-jira-status-automation.md

@@ -11,11 +11,9 @@ description: >
 
 # oac-acceptance-criteria
 
-Author a feature's requirements document: user stories, EARS functional requirements,
+Author a feature's requirements document: user stories, EARS functional requirements, ID'd
 acceptance criteria (`AC-<story>.<n>`), and NFRs (`NFR-<n>`) — every criterion phrased as an
-observable outcome, its ID embedded at the front of a Vitest `describe` name. These IDs are
-the spine every later artifact (task list, tests, coverage check) anchors to, so they must be
-unique, stable, and greppable.
+observable outcome, its ID embedded at the front of a Vitest `describe` name.
 
 - **Given:** a feature scope, plus any figma component map the caller hands you.
 - **Produce:** `requirements.md` with a Glossary, EARS FRs, ID'd user stories, ACs, NFRs, and an
@@ -29,15 +27,15 @@ unique, stable, and greppable.
    past a question; surface it to the caller. → `references/discovery.md`.
 2. **Glossary** — record each domain term once in a `Glossary` section; then use those exact
    words verbatim in every AC, NFR, and test name. → `references/discovery.md` §4.
-3. **EARS functional requirements** — write the system-level outcomes in EARS; they stay
-   alongside the per-story ACs, they don't replace them. → `references/ac-format.md` §1.
+3. **EARS functional requirements** — write the system-level outcomes in EARS.
+   → `references/ac-format.md` §1.
 4. **ACs from examples** — turn each discovery example into ≥1 `AC-<story>.<n>` in observable
    Given/When/Then form. For behaviour that varies only by data, write one Examples-table AC
    instead of many near-duplicates. → `references/ac-format.md` §3, `references/discovery.md` §5.
    Anti-patterns to avoid (spy-on-call, mock-call, render-it-back tautology, one-shot ban),
    each with a corrected form → `references/examples.md`.
-5. **NFRs** — assign each a unique `NFR-<n>` under the same observable phrasing contract; a
-   pattern-ban NFR must name itself an enduring CI guard, not a one-shot grep. → `references/ac-format.md` §3.
+5. **NFRs** — assign each a unique `NFR-<n>` under the same observable phrasing contract.
+   → `references/ac-format.md` §3.
 6. **Assign + verify IDs** — unique, stable, append-only (never renumber). Confirm each ID sits
    at the front of a Vitest `describe` name so `grep -r "AC-2.1" src/` finds the test.
    → `references/traceability.md`.

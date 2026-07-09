@@ -100,8 +100,8 @@ phases:
     exitWhen: <exit-condition>
 ```
 
-`command` is absent on driver-led phases (`analysis`, `describe`, and tracker-driven
-`taskstoissues`). `gate` maps from the template's `approval` (`human` → `human`, `auto`/`skip`
+`command` is absent on driver-led phases (`analysis`, `describe`); `taskstoissues`, if a template
+still declares it, is skip-guarded (the React flow has no tracker). `gate` maps from the template's `approval` (`human` → `human`, `auto`/`skip`
 → `auto`; `implement` is always `human` — the bundle's post-implement code check). `exitWhen`
 is one line from the phase map (React exitWhen additions folded in). There are no other
 fields — former per-phase stage notes are folded into `exitWhen`; global disciplines (changed
@@ -121,7 +121,7 @@ them distinct from any project-local `/spec-*` set). Mapping from template phase
 | clarify | `/sf-clarify` | surface untestable or ambiguous ACs |
 | design | `/sf-design` | `design.md` + `contracts/`; architecture gate PASS or justified |
 | tasks | `/sf-tasks` | one test task per AC + edge-case tasks |
-| taskstoissues | *(none)* | driver-led with the tracker-sync binding; no tracker → `skipped` (reason: no tracker) |
+| taskstoissues | *(none)* | skip-guarded — the React flow has no tracker → `skipped` |
 | implement | `/sf-implement` | WorkAgent/TestAgent pairs; "completed" ⇒ AC-traceable test green |
 | spec-qa | `/sf-qa` | QA audit → `qa-report.md` → human sign-off |
 | analysis, describe | *(none)* | driver-led (bugfix/brownfield analysis, quickfix describe) |
@@ -145,11 +145,11 @@ Two sibling profile directories live alongside `sflow/`:
 
 ```
 react/
-  skills/   oac-acceptance-criteria  oac-architecture-design  oac-task-design  oac-implementation
-            oac-figma-decompose  oac-journey-tests  oac-qa-report
-            oac-test-contract  oac-test-forensics
+  skills/   oac-acceptance-criteria  oac-analyze  oac-architecture-design  oac-figma-decompose
+            oac-journey-plan  oac-journey-tests  oac-task-design
+            oac-implementation  oac-implementation-review
+            oac-qa-report  oac-test-contract  oac-test-forensics
   rules/    architecture-principles.md  test-quality.md
-  commands/ _oac-jira-status-automation.md  ← per-project adaptation point (tracker-sync role)
 
 flutter/
   skills/   fl-acceptance-criteria  fl-architecture-design  fl-task-design  fl-implementation
@@ -164,13 +164,10 @@ pure orchestrators — they run Setup, drive the phases, enforce gates, run the 
 explicit context. No command or domain skill references anything outside its profile by name.
 
 - **React** (`react/`): React 19 + Vite + TypeScript + Zustand + TanStack Query + MUI + Vitest.
-  The per-project adaptation seam is `react/commands/_oac-jira-status-automation.md` — the
-  conditional Jira tracker binding on `taskstoissues`/`implement` (rewrite for your issue
-  tracker, or delete).
 - **Flutter** (`flutter/`): Flutter/Dart, state-management-package agnostic. The `fl-*` skills
   exist, but there is no Flutter generator yet — a parallel `*-flutter-workflow` (not shipped)
   would bind them to phases the way the React generators bind `oac-*`, appending `fl-riverpod`
-  when `pubspec.yaml` lists Riverpod, with no tracker playbook.
+  when `pubspec.yaml` lists Riverpod.
 
 ## How to drive a spec
 

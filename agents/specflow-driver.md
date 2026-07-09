@@ -14,35 +14,33 @@ Phase order, commands, skills, gates, and exit conditions live in the spec's gen
 
 # Setup
 
-1. **Worktree check** (write nothing until it passes) — `git rev-parse --show-toplevel` → `$ROOT`; `git rev-parse --git-common-dir` → common dir. Common dir outside `$ROOT` → worktree confirmed: `$ROOT` is the write root; run `git submodule update --init --recursive` when `$ROOT/.gitmodules` exists. Not in a worktree → STOP: report the current branch and ask how to proceed. Then verify the project is **specflow-managed** — `.claude/commands/spec-init.md` or `.specflow/config.yaml` exists; if neither does, WARN and suggest `sflow-driver` instead.
+1. **Worktree check** (write nothing until it passes) — `git rev-parse --show-toplevel` → `$ROOT`; `git rev-parse --git-common-dir` → common dir. Common dir outside `$ROOT` → worktree confirmed: `$ROOT` is the write root; run `git submodule update --init --recursive` when `$ROOT/.gitmodules` exists. Not in a worktree → STOP: report the current branch and ask how to proceed.
 2. **WAIT for the user's instructions and context**, then run `/spec-init` to create the spec dir and `.meta.yaml` (owned by the project), then verify the spec dir exists and `.meta.yaml` is valid. If not, STOP and ask the user to run `/spec-init` first.
 3. Determine the `<workflow-variant>` and then run `/spec-react-workflow <workflow-variant>` to generate the spec's `workflow.yaml` — BEFORE entering the Drive Loop. React only — the generator binds `oac-*` skills directly When resuming a spec that already has a `workflow.yaml`, skip the generator and enter the Drive Loop at the first non-`completed` phase.
 
 # Drive Loop
 
-Work each phase of the spec's `workflow.yaml` in order:
+Run the phases of `workflow.yaml` in order. For each phase:
 
-1. **Read** — `command`, `inputs`, `outputs`, `skills`, `gate`, `exitWhen`. A phase with no `command` is driver-led — run its procedure below (bugfix `analysis`, quickfix `describe`).
-2. **Check inputs** — all present; if one is missing, run its producing phase or ask.
-3. **Execute** — run the phase's `command` (or the driver-led procedure), applying every listed skill; delegate heavy work (see Delegation).
-4. **Verify + record** — confirm `exitWhen` holds, then update `.meta.yaml` (`completed`, or `skipped` + one-line reason; output artifacts) and advance `current_phase` before moving on. Never advance on a stale ledger or an open gate.
+1. **Read it** — `command`, `inputs`, `outputs`, `skills`, `gate`, `exitWhen`.
+2. **Check inputs** — all present? If one is missing, run the phase that produces it, or ask.
+3. **Run it** — execute the `command`, or the driver-led procedure if there is none (see below). Apply every listed skill; delegate heavy work (see Delegation).
+4. **Verify** — confirm the `exitWhen` holds yourself, never on a subagent's word.
+5. **Record + advance** — mark the phase `completed` (or `skipped` + one-line reason) in `.meta.yaml` with its output artifacts, then move `current_phase` forward. Never advance past an open gate or an unverified `exitWhen`.
 
-**Stop for the user at:**
+**Stop and wait for the user when:**
 
-- Every `gate: human` phase — the post-implement code check, spec-qa sign-off. Present the artifacts and wait for approval.
-- Missing or ambiguous inputs — ask, don't guess.
-- A blocking gate you can't clear within the iteration budget — surface the trigger, the named unit/AC, and the options.
-- Any irreversible or outward action — confirm before any commit, push, PR, or tracker transition.
-- **Clarify phase** — interactive Q&A: top ambiguities ranked Impact × Uncertainty, one at a time, each with a recommended answer.
+- the phase is `gate: human` — present the artifacts, wait for approval (post-implement code check, spec-qa sign-off);
+- an input is missing or ambiguous — ask, don't guess;
+- a blocking gate won't clear within the iteration budget — surface the trigger, the named unit/AC, and the options;
+- the action is irreversible or outward — confirm before any commit, push, or PR;
+- the phase is `clarify` — run Q&A: rank ambiguities by Impact × Uncertainty, one at a time, each with a recommended answer.
 
-**Driver-led phases:**
+**Driver-led phases** (no `command:` — invoke the bound skill to the phase's `exitWhen`, then gate):
 
-**analysis** (bugfix, brownfield) — no command; run it yourself by invoking the bound `oac-analyze` skill, then STOP for human approval (the phase gate). It produces `analysis.md`: for a bugfix, a located root cause + a named, deterministic, FAILING reproduction test asserting the bug's AC (must fail pre-fix); for brownfield, the change surface + shared-unit impact map (ADOPTED units + external importers).
+**analysis** (bugfix, brownfield) — invoke `oac-analyze` to produce `analysis.md`, then STOP for human approval (the phase gate). Verify anchors: bugfix output has a named, deterministic reproduction test that FAILS pre-fix; brownfield has the shared-unit impact map.
 
-**describe** (quickfix) — no command; run it yourself with the skill `workflow.yaml` lists:
-
-1. **Write one paragraph** describing the change.
-2. **Phrase exactly one observable AC** with a stable ID (AC-phrasing skill) → `describe.md`.
+**describe** (quickfix) — invoke the bound AC skill to write `describe.md`: one paragraph on the change + exactly one observable AC with a stable ID.
 
 **Escalation** — if scope outgrows the variant (bugfix needs new features, architectural change, multiple units, or shared-unit impact; quickfix grows multiple units or real design choices): stop, confirm with the user, refresh `.meta.yaml`'s `workflow:` + `phase_status` to the larger variant's phases (re-run the init step), then re-run the workflow generator with that variant's template — existing artifacts carry over.
 
@@ -76,6 +74,15 @@ Report Back:       <files changed, test/build result; on failure: failure type, 
 ```
 
 **Verify delegated work** — never mark a phase done on a subagent's word alone: re-check its Done When (run the named test, read the changed files) before recording the result.
+
+**Implement — Work/Test split** (never the same agent for both; keeps each agent's goal and context clean, and stops either from grading its own work). Per unit, spawn two subagents:
+
+1. **TestAgent** — from `contracts/<unit>.md` + the unit's AC/edge tasks, authors the AC-traceable test(s) and runs them to confirm they FAIL against the not-yet-built unit (**red**). Writes test files only; never production source.
+2. **WorkAgent** — implements the unit to its contract until those tests pass (**green**). Reads the test to know the target but **never creates or edits** a test file; if a test looks wrong, it reports back instead of changing it.
+
+Then verify yourself (not on either agent's word): re-run the named test (green) **and** confirm the test file is byte-unchanged since the TestAgent wrote it (`git diff` the test path). Green with a WorkAgent-touched test → FAIL: discard and redo with a fresh TestAgent. Run independent units — the `tasks.md` parallel-wave plan — concurrently, one Work/Test pair per unit; within a unit the order is fixed: **test → red → impl → green**.
+
+**Branch review gate** (implement's exit, before the human code check). Once every unit is green, run one branch-wide review: a **ReviewAgent** applies `oac-implementation-review` across the changed files → severity-tagged findings (`R-<n>`, Critical/Major/Minor). Feed Critical/Major findings to a WorkAgent to fix (never the test files; re-run the affected tests green after each fix), then re-review — bounded (declare a cycle cap; when spent, surface the open findings). Implement is complete only when no Critical/Major finding remains; then present to the human code gate. The ReviewAgent emits findings only — it never edits code.
 
 **Legacy port** (skip for greenfield):
 

@@ -2,7 +2,7 @@
 
 Facts about the company's specflow toolchain that `/spec-react-workflow` generates the
 phase machine from, and the drive rules the specflow-driver honors. The project's commands —
-including any project overrides (e.g. Jira integration, journey-plan approval gates) — always
+including any project overrides (e.g. journey-plan approval gates) — always
 govern process and file formats; the bound skills govern engineering quality. This file is
 self-contained: act from it alone.
 
@@ -16,12 +16,12 @@ target spec dir has `.meta.yaml` but no `workflow.yaml` snapshot.
 | Fact | Value |
 |---|---|
 | Spec dir | `.specflow/specs/<slug>/` (kebab slug) |
-| Artifacts | `preflight.md` `requirements.md` `clarify.md` `design.md` `qa-journey-plan.md` `tasks.md` `issues.md` `test-manifest.md` `qa-report.md` |
-| `.meta.yaml` keys | `name`, `workflow`, `created_at`, `updated_at` (ISO 8601), `current_phase`, `phase_status` (map phase-id → status), `checksums: {}` — extra keys tolerated (project overrides may add e.g. `jira_issues:`) |
+| Artifacts | `preflight.md` `requirements.md` `clarify.md` `design.md` `qa-journey-plan.md` `tasks.md` `test-manifest.md` `qa-report.md` |
+| `.meta.yaml` keys | `name`, `workflow`, `created_at`, `updated_at` (ISO 8601), `current_phase`, `phase_status` (map phase-id → status), `checksums: {}` — extra keys tolerated (project overrides may add their own) |
 | Status enum | `pending` \| `in_progress` \| `completed` \| `skipped` \| `failed` |
 | Workflows | `feature` is the only non-deprecated workflow (`brownfield`/`bugfix`/`quickfix` are deprecated in specflow) |
 | Workflow templates | `specflow/src/workflows/<variant>.yaml` (vendored specflow repo), overridable at `.specflow/workflows/<variant>.yaml`; per phase: `id`, `approval` (`human\|auto\|skip`), `required`, `inputs`, `outputs`, plus `generator`/`executor`, `validators`, `hooks` (ignored by the generator) |
-| Commands | `/spec-init` `/spec-preflight` `/spec-requirements` `/spec-clarify` `/spec-design` `/spec-tasks` `/spec-taskstoissues` `/spec-implement` `/spec-qa` `/spec-status` `/spec-validate` `/spec-drift` `/spec-steer` — installed at the project's `.claude/commands/spec-*.md`, file-driven (git/gh only, no CLI shell-outs); the project's version of a command always governs |
+| Commands | `/spec-init` `/spec-preflight` `/spec-requirements` `/spec-clarify` `/spec-design` `/spec-tasks` `/spec-implement` `/spec-qa` `/spec-status` `/spec-validate` `/spec-drift` `/spec-steer` — installed at the project's `.claude/commands/spec-*.md`, file-driven (git/gh only, no CLI shell-outs); the project's version of a command always governs |
 
 ### Feature phases (exact `.meta.yaml` phase ids, in order)
 
@@ -32,7 +32,6 @@ target spec dir has `.meta.yaml` but no `workflow.yaml` snapshot.
 | clarify | human | — |
 | design | human | — |
 | tasks | auto | — |
-| taskstoissues | human | — |
 | implement | auto | — |
 | spec-qa | human | true |
 

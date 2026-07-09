@@ -18,9 +18,8 @@ Scope is the plan — write no test for a journey it doesn't list.
 
 ## Instructions
 
-1. **Read the approved plan.** One test will exist per listed `J-<n>`; the "NOT automated"
-   section is out of scope. Any journey that proves unautomatable during authoring goes back to
-   the human — never silently dropped.
+1. **Read the approved plan.** Any journey that proves unautomatable during authoring goes back
+   to the human — never silently dropped.
 2. **Set up the harness + page object.** Find or create a way to drive the app to the feature;
    build a page object with stable locators for the elements the approved journeys touch.
    → `references/authoring.md`.

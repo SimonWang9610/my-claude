@@ -10,10 +10,10 @@ description: >
 
 # oac-test-contract
 
-Prevention half of a test-quality pair. These six rules make a test worth having *while it is
-being written* — each closes a way a green test can lie. The detection half, auditing an
-existing suite for the damage these rules prevent, is the `oac-test-forensics` skill; its
-signal catalogue maps every finding back to the rule that fixes it.
+These six rules make a test worth having *while it is being written* — each closes a way a
+green test can lie. The detection half, auditing an existing suite for the damage these rules
+prevent, is `oac-test-forensics`; its signal catalogue maps every finding back to the rule that
+fixes it.
 
 ## Inputs (caller-supplied)
 

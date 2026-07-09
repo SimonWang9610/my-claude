@@ -28,20 +28,15 @@ console-only error handling on a non-critical path.
 ## What blocks a pass
 
 Nothing is a *defect* until a human confirms it — QA records evidence, the reviewer dispositions. The
-reviewer selects exactly one outcome:
-
-- **Approved** — every finding accepted or dismissed; no blockers remain.
-- **Changes requested** — confirmed defects (named in the findings table) must be fixed and QA re-run.
-- **Blocked** — a fundamental issue prevents meaningful review (build broken, spec missing).
+reviewer selects exactly one of the three outcomes defined in the report's Disposition block
+(`report-format.md`): Approved, Changes requested, Blocked.
 
 ## What QA does and does not do
 
-QA **does**: run the audits, write `qa-report.md`, present findings, and (on accept) offer to file a
-follow-up tracker issue *only* after the reviewer approves.
+QA **does**: run the audits, write `qa-report.md`, and present findings for the reviewer to disposition.
 
 QA **does not**: approve or block the branch; confirm or log defects; rewrite tests or production code
-without explicit sign-off; transition tracker status (QA status is set by the human — see the
-project's tracker playbook); merge or close anything.
+without explicit sign-off; merge or close anything.
 
 ## Human sign-off
 

@@ -4,15 +4,6 @@ Six rules; all must pass before a test task is marked complete. Running example:
 `DeviceListPage` backed by `useDevices` (TanStack Query v5) and `useDeviceFilters` (Zustand).
 External citations are links in `sources.md`.
 
-## Contents
-
-- [§1 — Clause→test mapping](#1--clausetest-mapping)
-- [§2 — Outcome, not implementation](#2--outcome-not-implementation)
-- [§3 — Production-typed fixtures](#3--production-typed-fixtures)
-- [§4 — No tautology, no arrange-act-no-assert](#4--no-tautology-no-arrange-act-no-assert)
-- [§5 — Real QueryClient for query-config NFRs](#5--real-queryclient-for-query-config-nfrs)
-- [§6 — One-shot greps become enduring CI guards](#6--one-shot-greps-become-enduring-ci-guards)
-
 ---
 
 ## §1 — Clause→test mapping
@@ -32,11 +23,7 @@ describe('AC-14.3: clicking a column header sorts the table by that column', () 
 ```
 
 **Check.** For each AC/NFR ID the task covers, `grep -r "<ID>" src/` returns at least one
-`describe`/`it` label, and that test runs green independently. (If the project tags tests,
-`vitest run --tag <ID>` can filter the same way — but the grep is the coverage contract.)
-
-**Anti-pattern.** A test named "calls onSort" carries no AC identity — coverage cannot be
-queried, and "all green" proves nothing about which ACs are exercised.
+`describe`/`it` label, and that test runs green independently.
 
 ---
 
@@ -44,8 +31,7 @@ queried, and "all green" proves nothing about which ACs are exercised.
 
 **Statement.** Assert rendered text, accessible role/state, navigation, or returned value.
 `toHaveBeenCalled` alone is acceptable only for a side effect with no DOM representation, and
-even then a user-visible assertion must accompany it. Drive interaction with
-`userEvent.setup()` + `await user.*` — never bare `fireEvent`.
+even then a user-visible assertion must accompany it.
 
 ```tsx
 // BEFORE — asserts the mock was called; passes even if the UI never updates
@@ -131,9 +117,6 @@ it('AC-7.2: shows filtered count after filters are applied', async () => {
 
 **Check.** Grep the file for `it(`/`test(` blocks with no `expect` — any match is a FAIL. For
 each remaining assertion, confirm the asserted value is not simply the input echoed back.
-
-**Anti-pattern.** A test that renders and submits a form with zero `expect()` — green no matter
-what the handler does.
 
 ---
 

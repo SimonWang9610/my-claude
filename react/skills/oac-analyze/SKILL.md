@@ -34,8 +34,8 @@ proves nothing.
 3. **Author the failing repro test** — a NAMED, DETERMINISTIC Vitest + RTL test whose `describe`
    label carries the AC-ID (so `grep -r "AC-3.2" src/` finds it). It obeys the `oac-test-contract`
    rules. Skeleton → `references/repro-test.md`.
-4. **RUN it — it must FAIL, for the stated reason, before any fix exists.** A pass here means the
-   test doesn't capture the defect; rewrite it. Record the exact failure line.
+4. **RUN it — it must FAIL, for the stated reason, before any fix exists.**
+   → `references/repro-test.md` (gate).
 5. **Record** root cause (unit + line), the AC, and the repro test's file path in `analysis.md`.
    → `references/output-format.md` §1.
 
@@ -46,9 +46,8 @@ touches before touching it.
 
 1. **Change surface** — list the existing units/components/hooks/stores/query-keys the change
    edits, each with its path.
-2. **Blast radius** — for each touched unit, reverse-import search its external importers
-   (`grep -rl "from '.*<unit>'" src/`); those consumers are what a change can break.
-   → `references/impact.md` §1.
+2. **Blast radius** — for each touched unit, reverse-import search its external importers;
+   those consumers are what a change can break. → `references/impact.md` §1.
 3. **Read-only guard** — flag every adopted/shared component among them. An adopted shared unit
    is read-only: it must be COPIED, never modified in place, without the caller's explicit
    approval. → `references/impact.md` §2.
