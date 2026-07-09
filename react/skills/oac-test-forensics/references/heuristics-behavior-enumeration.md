@@ -1,14 +1,11 @@
-# Behavior enumeration (Pass 1 input)
+# Behavior enumeration — Pass 1 input
 
-Grep/read recipes for Pass 1. Targets React 19 + Vitest + RTL + Zustand + TanStack Query v5. Grep commands narrow where to read — confirm every hit by reading the file.
+Grep/read recipes that build the behavior inventory each surface must have a criterion for. Targets
+React 19 + Vitest + RTL + Zustand + TanStack Query v5. Greps narrow where to read — confirm every hit
+by reading the file. Examples use a neutral "list + detail" feature (`DeviceListPage`, `useDevices`,
+`DeviceRecord`); substitute your own surfaces.
 
-Examples use a neutral "list + detail" feature (`DeviceListPage`, `useDevices`, `DeviceRecord`); substitute your own surfaces.
-
----
-
-## Behavior enumeration (Pass 1 input)
-
-**Component** — open the file and enumerate:
+**Component** — render branches and exposed handlers:
 
 ```bash
 # render branches: ternaries, && guards, early returns
@@ -31,5 +28,5 @@ grep -nE 'export (async )?function|export const \w+ = (async )?\(' <file>.ts
 grep -nE 'catch|throw|assertOk|return (null|undefined|\{)' <file>.ts
 ```
 
-A behavior that appears here with no criterion ID (`AC-<story>.<n>` / `NFR-<n>`) in `requirements.md` is
-a `no-spec-coverage` (improvised) finding.
+A behavior that appears here with no criterion ID (`AC-<story>.<n>` / `NFR-<n>`) in the requirements
+document is a `no-spec-coverage` (improvised) finding.

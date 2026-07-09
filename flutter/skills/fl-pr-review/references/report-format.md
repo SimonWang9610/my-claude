@@ -68,48 +68,12 @@ widget composition (3e), DI (3f), test quality (3g), engineering discipline (3h)
 
 ## Optional GitHub posting
 
-> CONFIRM BEFORE RUNNING any `gh` command below. Posting to GitHub is an outward action.
+> CONFIRM BEFORE RUNNING any posting command. Posting to GitHub is an outward action.
 > The human must explicitly request it and confirm the verdict. Never auto-approve.
 
-### a) Get the PR's head commit SHA
+Full procedure — PR resolution, REST fallback, inline-comment line mapping, and the single
+batched review (summary body + verdict event + inline comments in one review object) — lives
+in `github-posting.md`.
 
-```bash
-gh pr view <n> --json headRefOid -q .headRefOid
-# outputs: <SHA>
-```
-
-### b) Post inline comments at file:line
-
-Repeat this for each finding that has a concrete file:line:
-
-```bash
-gh api repos/{owner}/{repo}/pulls/<n>/comments \
-  --method POST \
-  --field body="**[F-01 Critical — P3 / core/repository-ssot.md]**
-
-Notifier field duplicates the repository's Stream<Device> — two owners for the same fact (P3 SSOT break).
-
-Fix: subscribe to DeviceRepository.devices stream; remove the duplicate field." \
-  --field commit_id="<SHA>" \
-  --field path="lib/features/devices/providers/device_notifier.dart" \
-  --field line=42 \
-  --field side="RIGHT"
-```
-
-### c) Post a summary review verdict
-
-Choose exactly one command based on the verdict. Never use --approve autonomously.
-
-```bash
-# Critical findings present — request changes
-gh pr review <n> --request-changes --body "Flutter PR Review: REQUEST CHANGES. <paste summary>"
-
-# Only Major findings — comment, leave merge to human
-gh pr review <n> --comment --body "Flutter PR Review: CHANGES RECOMMENDED. <paste summary>"
-
-# Only Minor / no findings — comment only, human approves
-gh pr review <n> --comment --body "Flutter PR Review: LOOKS GOOD (minor nits). <paste summary>"
-```
-
-**Never use `gh pr review --approve` from this skill.** The human approves the PR
-themselves after reviewing the findings.
+**Never use `gh pr review --approve` or `event: "APPROVE"` from this skill.** The human
+approves the PR themselves after reviewing the findings.

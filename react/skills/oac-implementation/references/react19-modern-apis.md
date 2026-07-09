@@ -1,40 +1,65 @@
 ---
-title: Use React 19 Idioms
-impact: LOW-MEDIUM
-impactDescription: legacy ceremony adds noise and will be deprecated
-tags: react19, forwardRef, use, context, compiler
+title: Reach for React 19 Idioms
+impact: MEDIUM
+impactDescription: the modern APIs cut hand-rolled ceremony that drifts and hides bugs
+tags: react19, ref-as-prop, use, actions, useActionState, useOptimistic, compiler
 ---
 
-## Use React 19 Idioms
+## Reach for React 19 Idioms
 
-On React 19, flag these legacy patterns in reviewed code:
+On React 19 write the modern form directly; the legacy shape below is ceremony that adds noise
+and, for hand-rolled pending state, a class of bugs.
 
-**`forwardRef` → ref as a prop:**
+**`ref` is an ordinary prop — no `forwardRef`:**
 
 ```tsx
-// Legacy
-const Tile = forwardRef<HTMLDivElement, TileProps>((props, ref) => <div ref={ref} {...props} />)
-// React 19
-function Tile({ ref, ...props }: TileProps & { ref?: React.Ref<HTMLDivElement> }) {
-  return <div ref={ref} {...props} />
+// Legacy                                             // React 19
+const Tile = forwardRef<HTMLDivElement, TileProps>(   function Tile(
+  (props, ref) => <div ref={ref} {...props} />)         { ref, ...props }: TileProps & { ref?: Ref<HTMLDivElement> }
+                                                       ) { return <div ref={ref} {...props} /> }
+```
+
+**`use(Context)` over `useContext(Context)`**, and `<Ctx value={…}>` over `<Ctx.Provider value={…}>`.
+`use` may be called conditionally (after an early return, inside a branch), which `useContext`
+could not. `use(promise)` also unwraps a promise with Suspense — but for server data prefer a
+TanStack Query hook over hand-thrown promises.
+
+**Actions for form submit and mutations — not hand-rolled `isPending`/`error`.** If a component
+wires its own `useState(false)` pending flag and `useState<string|null>` error around an async
+call, replace it with `useActionState` (submit + pending + returned state) or wrap the optimistic
+UI in `useOptimistic`.
+
+```tsx
+// Hand-rolled — the pattern to replace
+const [isPending, setIsPending] = useState(false)
+const [error, setError] = useState<string | null>(null)
+async function onSubmit(e: FormEvent) {
+  setIsPending(true)
+  try { await api.save(data) } catch (err) { setError(String(err)) } finally { setIsPending(false) }
 }
+
+// React 19 — useActionState drives pending + result; wire it to <form action={submit}>
+const [state, submit, isPending] = useActionState(
+  async (_prev: ActionState, form: FormData): Promise<ActionState> => {
+    try { await api.save(Object.fromEntries(form)); return { ok: true, error: null } }
+    catch (e: unknown) { return { ok: false, error: String(e) } }
+  },
+  { ok: false, error: null },
+)
 ```
 
-**`React.FC` / `FunctionComponent` → plain typed function:** These wrappers add nothing in React 18+ and obscure the prop type. Always use a plain function with an explicit parameter type:
+`useOptimistic` shows the intended result instantly and reconciles when the mutation settles —
+reach for it when the contract promises immediate feedback (a toggle, a rename) on a write.
 
-```tsx
-// Incorrect
-const CameraTile: React.FC<CameraTileProps> = ({ camera }) => { ... }
-// Correct
-function CameraTile({ camera }: CameraTileProps) { ... }
-```
+**Compiler-aware memoization — decide this once per project, up front.** Check
+`vite.config`/`babel` for `babel-plugin-react-compiler`:
 
-**`useRef` must be typed:** always pass the element type so the ref is correctly narrowed — `useRef<HTMLDivElement>(null)`, not `useRef(null)`.
+- **Enabled:** the compiler inserts memoization for you. Do *not* hand-write `useMemo`/
+  `useCallback`/`memo` for referential stability — it is redundant. Keep only `useMemo` that
+  guards a genuinely expensive computation, and memoization whose stable identity is a semantic
+  contract (an effect dependency, a value passed to a non-reactive subscriber). Remove leftover
+  "for performance" wrapping.
+- **Not enabled:** memoization is manual — apply the boundary rules in the performance corpus
+  (`rerender-memo-boundaries`, `rerender-functional-updates`, `render-hoist-static-jsx`).
 
-**`useContext(Ctx)` → `use(Ctx)`**, and `<Ctx.Provider value=...>` → `<Ctx value=...>`. `use` may also be called conditionally, which `useContext` could not.
-
-**`useActionState` / `useOptimistic`:** if a component hand-rolls its own pending/optimistic state for form submissions or mutations, prefer `useActionState` (form actions with pending tracking) or `useOptimistic` (instant UI feedback before a mutation settles). Flag hand-rolled `const [isPending, setIsPending] = useState(false)` around a mutation call as a candidate for one of these hooks.
-
-**Manual memoization ceremony:** if the project has the React Compiler enabled, blanket `useMemo`/`useCallback`/`memo` wrapping is noise — recommend removing ceremony that exists only "for performance" (keep `useMemo` that guards genuinely expensive computation, and any memoization whose referential stability is a semantic contract, e.g., effect deps). If the Compiler is *not* enabled, do not flag memoization — defer judgment to `react-performance-review`.
-
-Check `vite.config`/`babel` for `babel-plugin-react-compiler` before making compiler-dependent recommendations; report which case applies.
+Report which case applies before making any memoization change, since it inverts the advice.

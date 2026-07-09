@@ -142,7 +142,7 @@ NFR-1: Given the app is viewed with system dark-mode active, when any surface in
 **Test/guard skeleton:**
 ```ts
 describe('NFR-1: no hardcoded hex literals in component source', () => {
-  // resident source-scan guard — see the test-contract skill for implementation
+  // resident source-scan guard — the `oac-test-contract` skill implements it
 })
 ```
 

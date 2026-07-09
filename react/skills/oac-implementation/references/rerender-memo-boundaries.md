@@ -7,7 +7,7 @@ tags: rerender, memo, useCallback, useMemo, props
 
 ## Place memo at Expensive Boundaries — and Keep Props Stable
 
-(Skip if the React Compiler is enabled — it handles this; flag leftover ceremony instead.)
+(Skip if the React Compiler is enabled — it inserts this for you; remove leftover ceremony instead. See `react19-modern-apis`.)
 
 `memo` pays off at boundaries where a cheap parent re-renders often but an expensive subtree's props rarely change — e.g., a grid container tracking selection above camera tiles. It is wasted on leaf components rendering three DOM nodes, and *defeated* whenever any prop is a fresh reference each render.
 
@@ -42,4 +42,4 @@ function Grid() {
 // Tile calls onSelect(camera.id) — pass the id at call site instead of binding per-item.
 ```
 
-When reviewing, verify memo actually holds: every prop must be primitive, hoisted, from-store-stable, or `useCallback`/`useMemo`-stabilized. A `memo` with one unstable prop is dead weight — report it as such.
+Verify the memo actually holds: every prop must be primitive, hoisted, from-store-stable, or `useCallback`/`useMemo`-stabilized. A `memo` with one unstable prop is dead weight — don't add it, or fix the prop.

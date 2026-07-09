@@ -10,8 +10,8 @@ or `—`), suggested severity, one-line description, expected, actual, file:line
 
 **Critical** — a stated requirement is not met; a false-positive test mapped to an `AC-*` (the AC has
 no real verification, confirmed by the mutation test); a spec internal contradiction (requirements vs
-tasks); a phantom baseline (retroactive spec fiction); `.meta.yaml` claims deliverables that don't
-exist, or a phase-status contradiction; governance files modified in a feature PR; a new import of a
+tasks); a phantom baseline (retroactive spec fiction); the spec's tracking metadata claims
+deliverables that don't exist, or contradicts itself; governance files modified in a feature PR; a new import of a
 deprecated module; a stub returning fake success behind an AC.
 
 **Major** — a new shared unit with no colocated test; weak types on a shared API; an error-swallowing
@@ -22,7 +22,7 @@ misuse that makes an assertion a no-op; a file-modification task whose sub-items
 
 **Minor** — doc drift only (implementation is correct); existing tests don't cover a new branch
 (green-but-hollow, no AC impact); deprecated code modified rather than removed; a loose count
-assertion (`>= N`) that passes on stale data; steering placeholders; unrelated route changes;
+assertion (`>= N`) that passes on stale data; doc-placeholder reverts; unrelated route changes;
 console-only error handling on a non-critical path.
 
 ## What blocks a pass

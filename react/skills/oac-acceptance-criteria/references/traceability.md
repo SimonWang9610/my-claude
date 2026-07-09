@@ -53,9 +53,9 @@ Use tags when the team wants `--tags-filter` queries in CI; be consistent within
 
 ## 3. Downstream gate
 
-The task-breakdown phase generates one test task per AC ID. The test-contract rule
+Task breakdown generates one test task per AC ID. The `oac-test-contract` skill's rule
 requires every `describe`/`it` in a new or modified test file to name the AC or NFR ID it
-covers. The validation phase then counts AC IDs in `requirements.md` against AC IDs in
+covers. A coverage gate then counts AC IDs in `requirements.md` against AC IDs in
 passing test names — any AC with no mapped passing test is a blocking FAIL.
 
 ```
@@ -68,7 +68,7 @@ tasks.md         →  "test task: cover AC-14.3"
 table.test.tsx   →  describe('AC-14.3: ...')
       │
       ▼
-validate gate    →  count(AC IDs in reqs) == count(AC IDs covered by green tests)
+coverage gate    →  count(AC IDs in reqs) == count(AC IDs covered by green tests)
 ```
 
-Success signal: **unmapped-AC count → 0 at the validation phase.**
+Success signal: **unmapped-AC count → 0 when the coverage gate is run.**

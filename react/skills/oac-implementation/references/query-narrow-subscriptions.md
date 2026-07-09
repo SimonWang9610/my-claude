@@ -7,6 +7,10 @@ tags: query, select, notifyOnChangeProps, rerender
 
 ## Narrow Query Subscriptions with select and notifyOnChangeProps
 
+The *derived shape itself* is a design decision — it belongs to the query hook's contract (see
+the `oac-architecture-design` skill — `query-select-transform`). Here the concern is the
+runtime facet: narrowing which changes re-render the consumer.
+
 A `useQuery` consumer re-renders when any tracked part of the result changes. Two narrowing tools:
 
 **`select`** — subscribe to a derived slice; the component re-renders only when the *selected output* changes (structural sharing makes unchanged selections referentially stable):

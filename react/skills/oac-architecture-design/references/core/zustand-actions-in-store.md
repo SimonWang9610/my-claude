@@ -56,4 +56,6 @@ const gridSize  = useLayoutStore((s) => s.gridSize)
 const focusedId = useLayoutStore((s) => s.focusedId)
 ```
 
+Alternatively, wrap the store in a named hook that exposes atomic selectors so callers never need to remember `useShallow`.
+
 Review flags: `useStore.setState` called from components; multiple components implementing the same transition slightly differently; actions named after UI events (`onButtonClick`) instead of domain intent (`focusCamera`); multi-field object selectors without `useShallow`.

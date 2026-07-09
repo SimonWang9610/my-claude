@@ -62,15 +62,15 @@ many near-duplicate criteria — see `references/discovery.md` §5.
 - **`requirements.md`** — every AC and NFR carries its ID inline.
 - **Task-breakdown** — generates one test task per AC/NFR ID. Missing or malformed IDs block task generation.
 - **Test files** — the ID appears in the Vitest `describe`/`it` name (see `traceability.md`).
-- **Validation** — any AC or NFR with no mapped passing test is a blocking FAIL.
+- **Coverage gate** — any AC or NFR with no mapped passing test is a blocking FAIL.
 
 ## 5. Authoring checklist
 
-Before the requirements phase exits, every criterion must:
+Before the requirements document is finalized, every criterion must:
 - [ ] Carry a unique, stable `AC-<story#>.<n>` or `NFR-<n>` ID.
 - [ ] Use Given/When/Then structure.
 - [ ] Have an observable Then clause assertable without internal access.
 - [ ] Not be an implementation step (no internal call/state/mechanism phrasing).
 - [ ] Every story has ≥1 AC; every NFR has an ID.
 
-Any failing criterion is a blocking authoring condition — fix in `requirements.md` before exiting.
+Any failing criterion is a blocking authoring condition — fix in `requirements.md` before handing the document off.

@@ -38,4 +38,4 @@ const useSelectionStore = create<SelectionState>()((set) => ({
 
 The legitimate combination is *references*: stores may hold ids/selection/ordering that point into Query data, never the entities themselves. If derived shapes are needed, use Query's `select` option (see `query-select-transform`).
 
-Flutter-migration note: this maps to the Riverpod discipline of `AsyncNotifierProvider` owning remote data while plain notifiers own UI state — the same separation, with Query playing the async-provider role.
+**Implementation lens:** with this placement fixed, the coding discipline is to read server data by calling the query hook at the point of use — never copy it into a store or `useState` first. See the `oac-implementation` skill (`data-states`).

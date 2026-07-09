@@ -45,4 +45,4 @@ const { data } = useQuery(cameraDetailOptions(id))
 await queryClient.prefetchQuery(cameraDetailOptions(id))
 ```
 
-`queryOptions()` is the v5-idiomatic way to package a query definition. Use the key factory inside it; the factory still centralizes key shapes.
+`queryOptions()` is the v5-idiomatic way to package a query definition. Use the key factory inside it; the factory still centralizes key shapes. Prefer it for new domain hooks; the plain key-factory pattern remains valid for invalidation-only call sites.

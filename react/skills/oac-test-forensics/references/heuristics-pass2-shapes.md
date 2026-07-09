@@ -1,19 +1,15 @@
 # Pass 2 shapes — tests-pass-but-miss-behavior
 
-Grep/read recipes and before→after examples for Pass 2. Targets React 19 + Vitest + RTL + Zustand + TanStack Query v5. Grep commands narrow where to read — confirm every hit by reading the file.
+Grep/read recipes and before→after examples for Pass 2. Targets React 19 + Vitest + RTL + Zustand +
+TanStack Query v5. Greps narrow where to read — confirm every hit by reading the file. Examples use a
+neutral "list + detail" feature (`DeviceListPage`, `useDevices`, `DeviceRecord`).
 
-Examples use a neutral "list + detail" feature (`DeviceListPage`, `useDevices`, `DeviceRecord`); substitute your own surfaces.
-
----
-
-## Pass 2 shapes — `tests-pass-but-miss-behavior`
-
-### Shape A — RTL render-without-assert (no triggering action)
+## Shape A — RTL render-without-assert (no triggering action)
 
 ```bash
-grep -nE 'it\(|test\(' <file>.test.tsx          # locate test blocks
-grep -nE 'userEvent\.setup|fireEvent|\.click\(|act\(' <file>.test.tsx  # check action present
-# flag blocks that have render+getBy but no event call
+grep -nE 'it\(|test\(' <file>.test.tsx                                # locate test blocks
+grep -nE 'userEvent\.setup|fireEvent|\.click\(|act\(' <file>.test.tsx # is an action present?
+# flag blocks that render + getBy but fire no event
 ```
 
 ```tsx
@@ -34,9 +30,11 @@ it('AC-14.3: header click sorts by that column ascending', async () => {
 })
 ```
 
-### Shape B — Zustand/TanStack hook read without exercising the action
+## Shape B — Zustand/TanStack read without exercising the action (wrong owner)
 
-The test asserts a setter was called but not the side-effect the criterion names (e.g. cache invalidation).
+The test asserts a setter was called but not the side-effect the criterion names (e.g. cache
+invalidation). When the criterion's truth lives in the TanStack cache but the test asserts a shadow
+Zustand copy (or vice versa), that is a **wrong-owner** finding — assert the authoritative owner.
 
 ```bash
 grep -nE 'invalidateQueries|setQueryData|getState\(\)|\.mockReturnValue' <file>.test.tsx
@@ -57,23 +55,21 @@ it('AC-7.2: toggling scope filter invalidates the query cache', async () => {
 })
 ```
 
-When the criterion's truth lives in the TanStack cache but the test asserts a shadow Zustand copy (or vice
-versa), that is a **wrong-owner** finding — assert the authoritative owner.
-
-### Shape C — `useEffect` / query lifecycle untested
+## Shape C — `useEffect` / query lifecycle untested
 
 ```bash
 grep -nE 'useEffect|refetchInterval|refetchOnWindowFocus|subscribe' <source>
 grep -nE 'advanceTimersByTime|runAllTimers|fireEvent.focus|unmount\(\)' <file>.test.tsx
-# if no hit in tests → lifecycle likely untested; confirm with mutation
+# no hit in tests → lifecycle likely untested; confirm with a mutation
 ```
 
-### Shape D — `waitFor` / fake-timers masking timing
+## Shape D — `waitFor` / fake-timers masking timing
 
-`waitFor` with a generous timeout hides a timing requirement (debounce, stagger, delayed retry).
+`waitFor` with a generous timeout hides a timing requirement (debounce, stagger, delayed retry) — it
+passes at any timing.
 
 ```tsx
-// MASKING — waitFor swallows a 500ms stagger criterion; passes at any timing
+// MASKING — waitFor swallows a 500ms stagger criterion
 await waitFor(() => expect(panels).toHaveLength(4))
 
 // FIXED — assert the timing deliberately with fake timers

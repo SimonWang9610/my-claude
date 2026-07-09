@@ -1,104 +1,84 @@
 ---
 name: oac-task-design
 description: >
-  Turns an approved design.md and contracts/ into tasks.md for a React feature — one buildable
-  task per unit in dependency order, a test task per acceptance criterion plus edge cases, with
-  AC-ID traceability. Use after the design and contracts are approved and before
-  implementation begins.
+  Turns an approved design.md + contracts/ into an ordered tasks.md: one buildable task per
+  contract unit in leaf-first dependency order, one test task per AC (AC-<story>.<n>) and testable
+  NFR, plus edge-case tasks (error/empty/loading/boundary) — every task carrying a Traces-to ref
+  and a verifiable Exit check, no orphans. Use once the design and contracts are ready and the work
+  needs breaking into a dependency-ordered build/test plan.
 ---
 
 # oac-task-design
 
+**Given** (paths the caller supplies): `design.md`, `contracts/` (one file per unit), and the
+acceptance criteria (`AC-<story>.<n>`) + NFRs the design traces to.
+**Produce:** `tasks.md` at the location the caller names — an ordered, fully traceable task list.
+
+Complete every step below *before* writing `tasks.md`. Open a reference when you reach it.
+
 ## Procedure
 
-Work through every step in order. Do not create tasks.md until all steps are complete.
+### 1. One implementation task per contract unit
+For each file in `contracts/`, emit exactly one implementation task. Record: the unit kind
+(component / hook / store / service / API module), the contract file it implements, and its
+dependencies. Never merge two units into one task; never split one unit across two.
+→ `references/task-anatomy.md` for the exact field shape.
 
----
+### 2. Order leaf-first by dependency
+A unit that depends on no other *new* unit comes first; a consumer follows all its dependencies.
+Services and shared utilities → hooks/stores → leaf components → container components/pages.
+Tag each task `depends on: [task names]` or `no new dependencies`. A consumer task is not startable
+until every dependency task is done.
 
-### Step 1 — One task per contract unit
+```
+apiClient (service) ─▶ useDeviceQuery (hook) ─┐
+useDeviceFilters (store) ─────────────────────┴─▶ DeviceList ─▶ DeviceListPage
+order: apiClient · useDeviceFilters → useDeviceQuery → DeviceList → DeviceListPage
+```
 
-For each file in `contracts/`, create one implementation task. The task must state:
-- The unit kind (component / hook / store / service / API module).
-- The contract file it implements (e.g. `contracts/useDeviceFilters.md`).
-- Its exit check: the unit compiles, passes its own type constraints, and the contract's
-  public API is satisfied.
+### 3. One test task per AC + testable NFR
+For every `AC-<story>.<n>` and every testable `NFR-<n>` the contracts trace to, emit one test task.
+**Copy this convention verbatim into each test task** so the implementer wires traceability:
 
----
-
-### Step 2 — Order by dependency (leaf-first)
-
-Sort implementation tasks so that units with no dependencies on other new units come first.
-Shared utilities and service modules before their consumers. A consumer task may not be started
-until all its dependency tasks are complete.
-
-Record a short dependency note on each task: `depends on: [task names]` or `no new dependencies`.
-
----
-
-### Step 3 — Test task per AC and testable NFR
-
-For every `AC-<story>.<n>` and every testable `NFR-<n>` in the contracts/, add one test task.
-
-**AC-ID → Vitest test-name convention (copy this into every test task description):**
-
-> A test task maps to a Vitest `describe` / `it` pair following the pattern:
-> ```
+> Test maps to a Vitest `describe`/`it` pair:
+> ```ts
 > describe('AC-<story>.<n>: <behavior summary>', () => {
->   it('<observable outcome>', () => { ... });
+>   it('<observable outcome>', () => { /* render + assert user-visible result */ });
 > });
 > ```
-> The describe label is the AC-ID and its behavior summary verbatim from the contract.
-> Coverage is a grep query: `grep -r "AC-2.1" src/` must return the test file and the
-> production unit. A test task is done when that grep returns both.
+> The `describe` label is the AC-ID + its behavior summary verbatim from the contract. Coverage is a
+> grep: `grep -r "AC-2.1" src/` must return both the test and the production unit. Assert observable
+> outcome (rendered text, accessible role/state, navigation) — never `toHaveBeenCalled` alone.
 
-Each test task states:
-- The AC-ID or NFR-ID it covers.
-- The unit under test (component rendered via `render()` or hook via `renderHook`).
-- The describe/it names to use (derived from the AC wording).
-- Its exit check: the named describe/it exists, is not skipped, and passes in CI.
+Each test task records: the AC/NFR-ID, the unit under test (`render()` a component or `renderHook`),
+and the `describe`/`it` strings derived from the AC wording.
 
----
+### 4. Edge-case tasks
+For each unit, enumerate the observable edge cases no AC task already covers — error, empty, loading,
+boundary — and emit one test task each with its user-visible assertion.
+→ `references/edge-cases.md` for the per-unit-kind checklist + stack-specific triggers and assertions.
 
-### Step 4 — Edge-case tasks
+### 5. Traceability + Exit check on every task
+Every task — implementation and test — carries both:
+- **Traces to:** an AC/NFR-ID *or* a contract file. A task with neither is an **orphan** — assign it
+  or delete it; never ship one.
+- **Exit check:** a condition mechanically verifiable as true when done.
+  - Impl: "compiles with no TS errors; contract public API + exposed states satisfied."
+  - Test: "`describe('AC-2.1: …'){ it('…') }` present, not `.skip`, green in CI; `grep -r 'AC-2.1' src/` returns test + source."
 
-For each contract unit, enumerate the observable edge cases not already covered by an AC task:
-
-- **Error state** — API failure / mutation error surface visible to the user.
-- **Empty state** — zero-item list / null data rendered correctly.
-- **Loading state** — pending indicators shown; no flash of wrong content.
-- **Boundary** — prop/input at its documented limit behaves correctly.
-
-Add one test task per edge case. Each edge case task traces to its contract unit and states
-the observable assertion (what the user sees, not which mock was called).
-
----
-
-### Step 5 — Exit checks and AC traceability on every task
-
-Every task in tasks.md — implementation and test — must include:
-
-1. **Traces to:** either an AC-ID (e.g. `AC-2.1`) or a contract file (e.g. `contracts/useDeviceFilters.md`).
-2. **Exit check:** a concrete, verifiable condition that is true when the task is done. Examples:
-   - Implementation: "Unit renders without TypeScript errors; contract public API satisfied."
-   - Test: "`describe('AC-2.1: ...') { it('...') }` passes in CI; grep returns both test and source."
-3. **No orphan tasks:** every task is traceable. A task with no AC-ID and no contract reference
-   is not allowed — either assign it or delete it.
-
----
-
-### Step 6 — Assemble tasks.md
-
-Write `tasks.md` with sections:
+### 6. Assemble + count-check
+Write `tasks.md` with three sections — **Implementation** (leaf-first) · **Test (per AC/NFR)** ·
+**Edge-case**. Then verify the count:
 
 ```
-## Implementation tasks
-[ordered list, leaf-first, each with: unit, contract ref, depends-on, exit check, traces-to]
-
-## Test tasks
-[one per AC-ID + NFR-ID, each with: AC/NFR-ID, unit under test, describe/it names, exit check]
-
-## Edge-case tasks
-[one per edge case, each with: unit, edge case label, observable assertion, exit check]
+total tasks = (contract units) + (ACs + testable NFRs) + (Σ edge cases per unit)
 ```
 
-Total task count is: (number of contract units) + (number of ACs + testable NFRs) + (edge cases per unit × units).
+If the count is off, a unit, AC, or edge case was dropped or duplicated — reconcile before finishing.
+→ `references/task-anatomy.md` for a full worked `tasks.md`.
+
+## References
+- [`task-anatomy.md`](references/task-anatomy.md) — exact fields per task type + a complete worked
+  `tasks.md`. Open in step 1 and step 6.
+- [`edge-cases.md`](references/edge-cases.md) — which of error/empty/loading/boundary apply to each
+  unit kind, the TanStack Query / Zustand / MUI trigger, and the RTL assertion to write. Open in step 4.

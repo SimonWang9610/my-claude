@@ -23,8 +23,8 @@ a real gap. All three architecture-gate blocking triggers map here.
 | God-widget: `build()` ≫ 80 lines mixing multiple concerns, data-watching, and IO | P6, P8 | `core/widget-composition.md`, `core/testability-seam.md` |
 | Swallowed error — `catch (_) {}` or `catch (e) { /* no error state */ }` on an async operation | P7 | `core/state-flow-and-async.md` |
 | No error branch in async state (only `loading` + `data`, no `error`) | P7 | `core/state-flow-and-async.md` |
-| A test that is green but a mutation of the deciding production branch still passes (false positive mapped to an AC) | — | `../../fl-test-forensics/references/false-positive-signals.md` |
-| An AC-mapped test with no `expect` or `expectLater` (verify-only or empty body) | Test-contract R1 | `../../fl-test-contract/references/rules.md §1` |
+| A test that is green but a mutation of the deciding production branch still passes (false positive mapped to an AC) | — | `forensics/false-positive-signals.md` |
+| An AC-mapped test with no `expect` or `expectLater` (verify-only or empty body) | Test-contract R1 | `test-contract/rules.md §1` |
 
 **The three gate-blocking triggers are all Critical.** If any fires, the report verdict is
 "Request changes" and the branch cannot merge until resolved or a justification is recorded.
@@ -46,16 +46,17 @@ it with a recorded justification.
 | `InheritedWidget` threading callbacks upward instead of carrying data downward | P5 | `core/state-ownership-decision.md` |
 | Missing cleanup for a `StreamSubscription`, `AnimationController`, `TextEditingController`, `ScrollController`, or `ChangeNotifier`: override `dispose()` for plain controllers; use `ref.onDispose()` inside `build()` for Riverpod `@riverpod` notifiers; check `ref.mounted` before acting after `await` | P7 | `core/state-boundary-and-lifecycle.md` |
 | Async state is not sealed — `isLoading == true && data != null` is representable; or non-exhaustive `if (x is T)` chain where a Dart 3 sealed class + exhaustive switch expression should be used | P7 | `core/state-flow-and-async.md` |
-| An AC in the PR description or spec has no corresponding test | Test-contract R2 | `../../fl-test-contract/references/rules.md §2` |
-| Test fixture built from a `Map<String,dynamic>` or ad-hoc literal instead of the real domain type | Test-contract R3 | `../../fl-test-contract/references/rules.md §3` |
-| Mocked-config tautology: test asserts that a stub returns what it was stubbed to return | Test-contract R4 | `../../fl-test-contract/references/rules.md §4` |
+| An AC in the PR description or spec has no corresponding test | Test-contract R2 | `test-contract/rules.md §2` |
+| Test fixture built from a `Map<String,dynamic>` or ad-hoc literal instead of the real domain type | Test-contract R3 | `test-contract/rules.md §3` |
+| Mocked-config tautology: test asserts that a stub returns what it was stubbed to return | Test-contract R4 | `test-contract/rules.md §4` |
 | Scope creep: significant code changed outside the named AC's scope (unrequested refactor, speculative feature) | — | `engineering-discipline` |
 | Service constructs a domain model (DTO→domain mapping should live in the repository) | P2, P3 | `core/service-isolation.md` |
 | Two notifiers/state holders own the same entity type | P3, P5 | `core/state-placement.md` |
-| Legacy Riverpod API in new code: `StateNotifier`, `StateNotifierProvider`, `StateProvider`, or `ChangeNotifierProvider` (now in `flutter_riverpod/legacy.dart`); replace with `@riverpod` code-gen `Notifier` / `AsyncNotifier` | — | `../../fl-riverpod/SKILL.md` |
-| `ref.read` called inside a provider's `build()` method — skips reactivity and causes stale UI; use `ref.watch` in `build()`, `ref.read` only in event handlers | — | `../../fl-riverpod/SKILL.md` |
-| `pumpAndSettle()` used while a live timer or network call is pending (test hangs); prefer `pump()` for a single frame; use `fakeAsync` + `elapse()` for timers | Test-contract R5 | `../../fl-test-contract/references/rules.md §5` |
-| Mocktail `any()` used on a custom type without `registerFallbackValue(FakeX())` in `setUpAll` | Test-contract R4 | `../../fl-test-contract/references/rules.md §4` |
+| Legacy Riverpod API in new code: `StateNotifier`, `StateNotifierProvider`, `StateProvider`, or `ChangeNotifierProvider` (now in `flutter_riverpod/legacy.dart`); replace with `@riverpod` code-gen `Notifier` / `AsyncNotifier` | — | the `fl-riverpod` skill |
+| `ref.read` called inside a provider's `build()` method — skips reactivity and causes stale UI; use `ref.watch` in `build()`, `ref.read` only in event handlers | — | the `fl-riverpod` skill |
+| Provider declared inside a method, function body, or `State` class instead of top-level — creates a new provider per build/instance and leaks | — | the `fl-riverpod` skill |
+| `pumpAndSettle()` used while a live timer or network call is pending (test hangs); prefer `pump()` for a single frame; use `fakeAsync` + `elapse()` for timers | Test-contract R5 | `test-contract/rules.md §5` |
+| Mocktail `any()` used on a custom type without `registerFallbackValue(FakeX())` in `setUpAll` | Test-contract R4 | `test-contract/rules.md §4` |
 
 ---
 
@@ -77,7 +78,7 @@ concerns, or nits that do not affect correctness or testability. Report them; do
 | Naming or folder convention deviation (file in wrong layer folder) | P1 | `core/layering-and-structure.md` |
 | Pre-existing dead code adjacent to (but not created by) the diff — mention, do not delete | — | `engineering-discipline` |
 | Non-surgical reformatting of unchanged lines (whitespace, unrelated renames) | — | `engineering-discipline` |
-| One-shot grep ban not promoted to a CI guard (low risk path) | Test-contract R6 | `../../fl-test-contract/references/rules.md §6` |
+| One-shot grep ban not promoted to a CI guard (low risk path) | Test-contract R6 | `test-contract/rules.md §6` |
 
 ---
 

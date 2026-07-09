@@ -29,4 +29,4 @@ const SettingsDialog = lazy(() => import('@/features/settings/SettingsDialog'))
 )}
 ```
 
-Judgment calls reviewers should make: the *primary* screen (the camera grid in a monitoring app) should stay eager — lazy-loading the thing users open the app for adds a flash for nothing. Heavy libraries used by one feature (chart libs, PDF/export, editors) are the highest-value splits. For predictable navigation, prefetch on hover/intent: call the same `import()` in `onMouseEnter` — Vite dedupes, so the later `lazy` resolves instantly.
+Judgment calls when splitting: the *primary* screen (the camera grid in a monitoring app) should stay eager — lazy-loading the thing users open the app for adds a flash for nothing. Heavy libraries used by one feature (chart libs, PDF/export, editors) are the highest-value splits. For predictable navigation, prefetch on hover/intent: call the same `import()` in `onMouseEnter` — Vite dedupes, so the later `lazy` resolves instantly.

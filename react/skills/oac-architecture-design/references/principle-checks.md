@@ -1,10 +1,10 @@
-# Principle checks — P1–P7 violation signals and bundled-rule crosswalk
+# Principle checks — P1–P7 gate-lens violation signals and bundled-rule crosswalk
 
-Use when reviewing against a single principle: the signals are grep/read patterns that reveal a
-violation; the crosswalk points at the bundled rule file with right/wrong examples. All crosswalk
-paths are relative to this `references/` directory. Never cite a rule from memory — read the file.
-
-General best practices for a React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI + Vitest project.
+Use when reviewing against a single **gate lens** (P1–P7): the signals are grep/read patterns that
+reveal a violation; the crosswalk points at the `core/` rule file with right/wrong examples. Each
+lens is a named cluster of the 22 `core/` rules — the rules are the vocabulary, the lenses are how
+the gate reads them. All crosswalk paths are relative to this `references/` directory. Never cite a
+rule from memory — read the file.
 
 ---
 
@@ -132,7 +132,7 @@ design-token documentation and enforce with a CI guard (ESLint/Vitest rule banni
 
 P4 (write paths), P6 (token layering), and P7 (module-scope state) are not blocking triggers in
 themselves, but a violation surfaced during the gate is recorded as a finding and resolved before
-phase exit.
+the design is handed off.
 
 ---
 

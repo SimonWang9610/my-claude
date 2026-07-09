@@ -17,4 +17,4 @@ tags: rendering, conditional, jsx
 {offlineCount > 0 ? <OfflineBanner count={offlineCount} /> : null}
 ```
 
-`&&` is fine when the left side is a real boolean (`isOpen && <Dialog/>`). Flag only number/possibly-NaN/string left operands. Low severity — quick Phase-1 fixes.
+`&&` is fine when the left side is a real boolean (`isOpen && <Dialog/>`). Watch only number/possibly-NaN/string left operands. Low severity — a quick, low-risk fix.

@@ -1,240 +1,96 @@
 ---
 name: oac-figma-decompose
-description: Decomposes a Figma screen into a compact component map by discovering the layer tree via get_metadata, matching Figma elements against existing codebase components, and extracting only genuinely new components via parallel agents. Produces a ~150-token-per-component planning document (EXISTING / PARTIAL / NEW classification) instead of raw Figma JSON. Use when given a Figma URL, "decompose design", "break down the figma", "what components do I need for this screen", "plan from figma", "look at this figma" + URL, or any request to map a Figma design to React components for planning or implementation. Stack React 19 + TypeScript + MUI + Zustand + TanStack Query v5.
+description: >
+  Decomposes a Figma screen into a compact component map for planning: discovers the layer tree,
+  matches every element against the existing codebase, and classifies each EXISTING / PARTIAL /
+  NEW at ~150 tokens each (a planning doc, not raw Figma JSON) — fanning out parallel agents to
+  spec only the genuinely new components. Use on any Figma URL, or "what components do I need for
+  this screen" / "break down the figma" / "plan from figma".
 ---
 
 # oac-figma-decompose
 
-Output: compact component map (EXISTING / PARTIAL / NEW), ~150 tokens per component. Not pixel-perfect implementation detail.
+Turn a design source (Figma screen) + the codebase into one compact **component map**: every element
+tagged EXISTING / PARTIAL / NEW vs what's already built, ~150 tokens/component. A planning doc — never
+raw Figma JSON, never pixel-perfect code. **Reuse discovery first; extract only what's new.**
 
----
+## Seams — resolve per project, nothing is hardcoded
 
-## Project configuration (the per-project seam)
+| Seam | Resolve from |
+|------|--------------|
+| **Figma fileKey + nodeId** | parse the Figma URL the caller gave (preferred, always current); else a project `.claude/figma-reference.md` screen→node table; else ask the caller |
+| **Component inventory dirs** | discover — glob `src/components/**`, read design-system notes, find large domain files that hold inline sub-components. Never assume a fixed layout |
+| **Hex→token map** | build from the project's own tokens source (`src/lib/design-tokens.ts`, the MUI theme, CSS custom properties) into `references/token-map.md` before extraction runs |
 
-This skill carries **no hardcoded project values**. Three seams are resolved per project before running:
+## Procedure
 
-**Figma fileKey** — resolve in this order:
+1. **Discover the tree** — `get_metadata` on the target node returns the layer hierarchy cheaply.
+   Full-page nodes (1440×900+) return empty from `get_design_context`, so always start with metadata.
+   Stale-node recovery + which layers to keep vs skip → `references/figma-extraction.md`.
+2. **Inventory + classify** — scan the codebase for reusable **and** inline components, match each
+   Figma element, tag it EXISTING / PARTIAL / NEW (rubric below). Scan-agent prompt + inline
+   sub-component hunting → `references/matching.md`.
+3. **Extract NEW + PARTIAL only** — never `get_design_context` an EXISTING component. Fan out one
+   parallel agent per NEW/PARTIAL node in a single message; each returns a <200-token spec, not JSON.
+   Agent prompt + spec format → `references/figma-extraction.md`. If Step 1 found no valid Figma data,
+   skip this step — the codebase-only map from Step 2 is a valid output.
+4. **Assemble** — one compact doc (shape below). EXISTING = 2-3 lines each; only NEW gets a full spec.
+   Return it to the caller, who decides where to persist it; if invoked with no destination, output inline.
 
-1. Parse from the Figma URL the user provided (preferred — always current)
-2. Read the project's `.claude/figma-reference.md` if present — for a master fileKey and a named-screen → nodeId table
-3. If neither, ask the user
+## Classification rubric
 
-Some projects keep a single master fileKey for their entire design file (e.g. `lAw9BelULsiHFvpPAlLeur` is an _example_ from one project, not a default — never hardcode it).
+| Tag | Means | Output |
+|-----|-------|--------|
+| **EXISTING** | confident match to a codebase component | cite import + props; **skip extraction** |
+| **PARTIAL** | close component exists, needs a new prop / variant / slot | cite it + name the exact gap; extract only the gap |
+| **NEW** | nothing in the codebase matches | extract a full ~150-token spec |
 
-**Component inventory locations** — DISCOVER the project's component directories rather than assuming a fixed layout. Glob `src/components/**`, read any architecture/design-system notes, and look for large domain files that hold inline sub-components. As an _illustrative example_, one project organizes as `src/components/shared/`, `src/components/layout/`, `src/components/icons/FigmaIcons.tsx`, plus domain directories — your project may differ.
+Match signals (any one is enough for EXISTING):
 
-**Design-token map** — build or confirm the hex→token map from the project's own tokens source (e.g. `src/lib/design-tokens.ts`, the MUI theme, or CSS custom properties). The map lives at `references/token-map.md`; treat the values there as a per-project template to replace.
+| Signal | Trigger | Example |
+|--------|---------|---------|
+| Name | Figma name ≈ an export name | Figma "StatusBadge" → `Badge` / `StatusBadge` |
+| Pattern | visual shape matches a known component | pill + count → `Pill` |
+| Icon | Figma `data-name` → project icon component | `data-name="grid_view"` → `GridViewIcon` |
+| Structural | Figma control maps to a form primitive | switch → the project's toggle component |
 
----
-
-## Input
-
-Accept any of:
-
-- **Figma URL** → parse fileKey and nodeId per the URL rules in the MCP instructions
-- **Screen name** from the project's Figma reference file (see Project configuration) → look up the nodeId + fileKey
-- **Raw nodeId + fileKey** pair
-
----
-
-## Step 1 — Discover the Component Tree
-
-Call `get_metadata` on the target node. This returns the layer hierarchy cheaply.
-
-**Important**: Full-page nodes (1440×900+) return empty from `get_design_context`. Always start with `get_metadata` to find the meaningful child node IDs.
-
-### Stale Node Recovery
-
-Figma files get reorganized — node IDs in the Figma reference file may be outdated. If `get_metadata` returns "invalid node ID":
-
-1. **Try `get_metadata` on the page root** (`0:1`) to get the full page tree
-2. **Search for the screen name** as a text node or frame name in the metadata (e.g., grep for the screen name)
-3. **Walk up from the text node** to find the parent page frame
-4. **Check the project's design-reference or planning files** for newer node IDs — they sometimes reference updated nodes
-
-**Budget: max 5 Figma API calls on stale-node recovery.** If you can't find the node after 5 calls, fall back to codebase-only analysis (Step 2 still works — you just skip Step 3 extraction). A codebase-only decomposition with proper component matching is still far more useful than no output at all.
-
-### Identifying Components
-
-From the metadata tree, identify **meaningful UI components** — not every frame. Look for:
-
-- Named component instances (Figma "Instance" type)
-- Frames with semantic names (e.g., "PersonCard", "FilterBar", not "Frame 427")
-- Groups that represent a coherent UI element
-
-Skip:
-
-- Auto-layout wrapper frames (just structural)
-- Padding/spacing frames
-- Decorative backgrounds
-- Deeply nested children of already-identified components (the extraction agent handles those)
-
-Build a flat list: `{ name, nodeId, type, parentContext }` for each identified component.
-
----
-
-## Step 2 — Match Against Existing Components
-
-Before calling `get_design_context` on anything, scan what already exists. Spawn a single agent to do a quick inventory:
-
-```
-Scan the codebase for ALL reusable components — shared AND domain-specific.
-
-First, DISCOVER the project's component directories:
-- Glob src/components/** to find subdirectories
-- Read any architecture/design-system notes in .claude/ or the project root
-- Look for a project-level index or barrel file that re-exports components
-
-Then scan what you find. As an example, one project organizes as:
-- src/components/shared/ (all .tsx files — read exports and brief description)
-- src/components/layout/ (AppShell, HeaderBar, Sidebar, e.g.)
-- src/components/icons/FigmaIcons.tsx (list all exported icon names, e.g.)
-- Domain directories (notifications, people, hardware, dashboard, etc.)
-
-IMPORTANT: Also scan domain-specific files for INLINE sub-components.
-Large files like a modal or page component often contain 10-15 inline
-sub-components (CredentialCard, PinDisplay, StatCard, etc.) that are not
-exported but ARE already implemented. Read the top ~100 lines of large domain
-files to find these — they count as EXISTING.
-
-For each component, note: file path, exported name, what it renders in one line.
-For inline sub-components: file path, function name, "inline in {ParentComponent}".
-Return as a flat list.
-```
-
-Then match each Figma component against this inventory:
-
-| Match Type           | Signal                                                   | Example                                        |
-| -------------------- | -------------------------------------------------------- | ---------------------------------------------- |
-| **Name match**       | Figma name ≈ export name                                 | Figma "StatusBadge" → `Badge` or `StatusBadge` |
-| **Pattern match**    | Visual shape matches a known component                   | Pill shape with count → `Pill` component       |
-| **Icon match**       | `data-name` attribute → project icon component           | `data-name="grid_view"` → `GridViewIcon`       |
-| **Structural match** | Figma toggle/select/input → the project's form component | Switch control → a project toggle component    |
-
-Classify each Figma component as:
-
-- **EXISTING** — confident match to codebase component
-- **PARTIAL** — similar component exists but needs customization or new props
-- **NEW** — nothing in the codebase matches this
-
----
-
-## Step 3 — Parallel Extraction (NEW and PARTIAL only)
-
-**Do NOT call `get_design_context` on EXISTING components.** The whole point of matching is to skip extraction for components that already exist in the codebase. Only extract components classified as NEW or PARTIAL.
-
-For each NEW or PARTIAL component, spawn a parallel agent. Each agent:
-
-1. Calls `get_design_context` with the component's fileKey and nodeId
-2. Maps all colors to design tokens (read `references/token-map.md` for the project's filled-in map)
-3. Distills the response into compact format (see output format below)
-4. Returns **only** the compact summary — not raw Figma JSON, not code snippets, not asset URLs
-
-If Step 1 failed (stale node, no valid Figma data), skip this step entirely. The codebase-only component map from Step 2 is the output.
-
-**Agent prompt template** (adapt per component):
-
-```
-Extract component "{name}" from Figma for planning. Keep output under 200 tokens.
-
-1. Call get_design_context(fileKey="{fileKey}", nodeId="{nodeId}")
-2. From the response, extract ONLY:
-   - Dimensions (width × height)
-   - Layout direction, gap, padding, alignment
-   - Colors — map to design token names (see token map below)
-   - Typography: font-weight, size, line-height, letter-spacing
-   - Border: radius, color, width
-   - Visual states if variants exist (hover, active, disabled)
-   - Child component names (just names, not details)
-   - Any design annotations
-
-3. Output in this exact format:
-
-## {Name} (NEW)
-- node: {nodeId} | {w}×{h}
-- layout: {dir}, gap={gap}, pad={padding}
-- bg: {token}
-- text: {font}/{weight}/{size}/{lh}, color={token}
-- border: {radius} {color} {width}
-- states: {if any}
-- children: {names}
-- notes: {non-obvious details}
-
-Token map: read `references/token-map.md` (the project's filled-in map).
-```
-
-Fan out all agents in a single message — don't wait between them.
-
----
-
-## Step 4 — Assemble the Planning Document
-
-**Output budget: aim for under 200 lines.** EXISTING components should be 2-3 lines each (import + key props + node ID). Only NEW components get full specs. If you're over 200 lines, the EXISTING entries are too verbose — trim them.
-
-Combine everything into a compact document:
+## Output shape
 
 ```markdown
-# Figma Decompose: {Screen/Feature Name}
-
-Source: {Figma URL or screen reference}
-Date: {YYYY-MM-DD}
-Components: {N existing} / {N partial} / {N new}
+# Figma Decompose: {Screen}
+Source: {URL or screen ref} · {YYYY-MM-DD} · {N} existing / {N} partial / {N} new
 
 ## Component Map
+| Figma Element | Status   | Codebase Component            | Notes                     |
+|---------------|----------|-------------------------------|---------------------------|
+| PersonCard    | EXISTING | `SelectableCard`+`PersonAvatar`| —                        |
+| StatusPill    | EXISTING | `Badge preset="status"`       | value="Online"            |
+| FilterWidget  | PARTIAL  | `PageFilterBar`               | needs a date-range slot   |
+| ActivityGraph | NEW      | —                             | spec below                |
 
-| Figma Element | Status   | Codebase Component                | Notes                     |
-| ------------- | -------- | --------------------------------- | ------------------------- |
-| PersonCard    | EXISTING | `SelectableCard` + `PersonAvatar` | —                         |
-| StatusPill    | EXISTING | `Badge preset="status"`           | pass value="Online"       |
-| FilterWidget  | PARTIAL  | `PageFilterBar`                   | needs new date-range slot |
-| ActivityGraph | NEW      | —                                 | see spec below            |
-
-## Existing — Use As-Is
-
+## Existing — use as-is
 ### PersonCard → `SelectableCard`
+- import `@/components/shared/SelectableCard`; wrap `PersonAvatar` + name stack as children
+- node 221:19652 (for later visual verify)
 
-- import: `@/components/shared/SelectableCard`
-- props: `selectable`, wrap `PersonAvatar` + name stack as children
-- node: 221:19652 (for later visual verification)
-
-### StatusPill → `Badge`
-
-- import: `@/components/shared/Badge`
-- props: `preset="status" value="Online"`
-
-## Partial — Existing + Customization
-
+## Partial — existing + gap
 ### FilterWidget → `PageFilterBar`
+- import `@/components/shared/PageFilterBar`; covers title/search/actions
+- MISSING: date-range slot — new `dateRange` prop or composition · node 445:12345
 
-- import: `@/components/shared/PageFilterBar`
-- existing props cover: title, search, actions
-- MISSING: date range picker slot — needs new `dateRange` prop or composition
-- node: 445:12345
-
-## New — Need Implementation
-
+## New — needs implementation
 ### ActivityGraph (NEW)
-
-- node: 667:89012 | 400×200
-- layout: column, gap=8, pad=16
-- bg: elevation2
-- text: Basis/400/12/16, color=text
-- border: 6px radius, no stroke
-- children: ChartHeader, BarGroup, Legend
-- notes: animated bars, tooltip on hover
+- node 667:89012 | 400×200 · layout column, gap=8, pad=16 · bg=elevation2
+- text Basis/400/12/16 color=text · border 6px radius, no stroke
+- children ChartHeader, BarGroup, Legend · notes animated bars, tooltip on hover
 ```
 
-### Where to Save
+Budget the whole doc under ~200 lines. Over budget = the EXISTING entries are too verbose; trim them.
 
-This skill **returns** the planning document to its caller; the caller decides where to persist it (e.g. a planning or spec folder). If invoked directly with no caller destination, output it in the conversation.
+## Gotchas
 
----
-
-## Tips and Gotchas
-
-- **Space-token and font-weight conventions vary by project** — one project's `--space-N` tokens don't equal N pixels; another's "Black" font weight is 900, not 700; icon naming conventions (e.g. snake_case → PascalCase + suffix) differ per design system. These project-specific quirks are captured in `references/token-map.md` — fill that file in per project before extraction agents run.
-- **Figma layers stack**: Check child frames for background overrides before assuming the parent's color applies.
-- **Don't over-decompose**: A card with a name, subtitle, and avatar is ONE component (probably `SelectableCard`), not three. Match at the semantic level.
-- **Partial matches are valuable**: "Use `Badge` but add a new `size='xs'` variant" is more useful for planning than extracting the full design from scratch.
-- **Inline sub-components count as EXISTING**: Large domain files (modals, pages) contain 10+ inline sub-components that aren't exported but ARE implemented. Don't classify these as NEW.
-- **Codebase-only fallback is fine**: If Figma nodes are stale, a component map built purely from codebase analysis is still valuable for planning — you just won't have pixel specs for NEW components.
+- **Layers stack** — check a child frame for a background override before assuming the parent's color.
+- **Don't over-decompose, and inline sub-components are EXISTING** — the two most common mis-tags;
+  `references/matching.md` owns the why/how.
+- **Per-project quirks live in `references/token-map.md`** — space tokens whose pixel value ≠ their
+  number, font weights ("Black" = 900 vs 700), snake_case→PascalCase icon naming. Fill it in first.

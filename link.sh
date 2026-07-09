@@ -3,8 +3,9 @@
 # link.sh — link this bundle's assets into a project's .claude/ or the global ~/.claude/.
 #
 # The root dirs (agents/ commands/ rules/ skills/) are committed aggregation views:
-# per-asset relative symlinks into the stack sources (flutter/ react/ sflow/) plus a few real
-# shared files (e.g. rules/engineering-discipline.md, skills/scan-resource). This script links
+# per-asset relative symlinks into the stack sources (flutter/ react/ sflow/) plus real shared
+# files (the agents/ driver agents, rules/engineering-discipline.md, the *-workflow-generator
+# skills and other standalone skills). This script links
 # a per-stack selection of those entries into the destination .claude/.
 #
 #     ./link.sh --global all                 # link everything into ~/.claude
@@ -14,10 +15,10 @@
 #     ./link.sh                              # interactive
 #     ./link.sh --global all --aliases       # also write shell functions for the driver agents
 #
-# Shared root assets (real files: cross-stack rules and standalone skills, incl.
-# sf-workflow-startup) are linked with any selection. The workflow templates
-# (sflow/workflows/*.yaml) are NOT linked — the pick-<tech>-workflow / sf-init assets resolve
-# them through their own installed symlinks back into this repo. Symlinks are RELATIVE; existing
+# Shared root assets (real files: driver agents, cross-stack rules, standalone skills) are
+# linked with any selection. This repo ships no workflow templates — the *-workflow-generator
+# skills resolve the PROJECT's vendored specflow templates (specflow/src/workflows/, with
+# .specflow/workflows/ as override). Symlinks are RELATIVE; existing
 # correct links are skipped; a foreign real file at a destination path is never clobbered (warned
 # and left as-is). After linking, offers to write a shell function per linked driver agent
 # (managed rc block). Re-running is safe. See unlink.sh.
@@ -102,7 +103,7 @@ if [ -z "${SEL# }" ]; then
 fi
 
 case " $SEL " in *" all "*) SEL=" $STACKS " ;; esac
-# a profile without sflow can't run: its drivers invoke the /sf-* commands
+# a profile without sflow can't run: the drivers invoke the /sf-* commands
 case " $SEL " in
   *" flutter "*|*" react "*) case " $SEL " in *" sflow "*) ;; *) SEL="$SEL sflow"; echo "note: sflow added — the profile drivers need it" ;; esac ;;
 esac
@@ -157,7 +158,8 @@ rc_file() {
 
 agents_linked=""
 if [ -d "$DEST/agents" ]; then
-  for a in "$DEST/agents"/*-workflow.md; do
+  # unified drivers are *-driver.md; keep *-workflow.md so stale per-stack installs still round-trip
+  for a in "$DEST/agents"/*-driver.md "$DEST/agents"/*-workflow.md; do
     [ -e "$a" ] || continue
     agents_linked="$agents_linked $(basename "$a" .md)"
   done

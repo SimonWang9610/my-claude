@@ -35,8 +35,8 @@ project runs them.
 |-------|--------|
 | Commit order (spec before implementation) | |
 | Baseline accuracy | |
-| Workflow type matches the work | |
-| Phase/task honesty | |
+| Declared change type matches the work | |
+| Task/status honesty | |
 | Requirement ↔ task consistency | |
 | Spec ↔ code value drift | |
 <"Verified — lifecycle followed, no contradictions." if all pass.>

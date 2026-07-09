@@ -28,4 +28,4 @@ function SnapshotButton() {
 }
 ```
 
-Same idea for React state: prefer the functional-update form (`set(c => c + 1)`) over depending on the current value, and for values needed by effects but not renders, mirror into a ref. The review question per subscription: "does the *rendered output* use this value?" If no, demote to `getState()`/refs.
+Same idea for React state: prefer the functional-update form (`set(c => c + 1)`) over depending on the current value, and for values needed by effects but not renders, mirror into a ref. The question to ask per subscription: "does the *rendered output* use this value?" If no, demote to `getState()`/refs.
