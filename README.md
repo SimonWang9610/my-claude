@@ -1,160 +1,105 @@
 # my-claude — a spec-driven-development bundle for Claude Code
 
 A reusable [Claude Code](https://claude.com/claude-code) bundle that drives a structured,
-spec-driven workflow — `init → preflight → requirements → clarify → design → tasks → implement →
-validate → qa → drift` — for **React/TypeScript** and **Flutter/Dart** projects.
+spec-driven workflow — `preflight → requirements → clarify → design → tasks → implement → qa` —
+for **React/TypeScript** and **Flutter/Dart** projects.
 
-The moving parts:
+## Moving parts
 
-- **Workflows** — the phase machines come from the project's vendored specflow templates
-  (`specflow/src/workflows/<variant>.yaml`, overridable via `.specflow/workflows/`), not from
-  this bundle. `/sf-react-workflow` translates the chosen template into the spec's bound
-  `workflow.yaml`, binding React `oac-*` skills directly to each phase — phases carry
-  `id / command / inputs / outputs / skills / gate / exitWhen`, workflow and phase ids match
-  `.meta.yaml`, no other fields; commands and the driver read that file. The generators are
-  React-specific; a Flutter/other stack would ship a parallel `*-<tech>-workflow` generator.
-  (Specflow projects use only their `/spec-*` commands: `/spec-init` scaffolds,
-  `/spec-react-workflow` generates the snapshot.)
-- **Commands** — one generic, stack-neutral `/sf-*` stage set (process, goals, inputs, and gates
-  only; they name no skill, rule, or stack).
-- **Skills** — the stack-specific know-how the stages use (`oac-*` for React, `fl-*` for Flutter),
-  plus standalone review skills.
-- **Agents** — two unified, stack-neutral workflow **drivers**: `sflow-driver` for this bundle's
-  `/sf-*` flow, `specflow-driver` for company specflow projects (`/spec-*` commands). The driver
-  is a pure orchestrator: its initialPrompt runs the embedded Setup section — worktree check,
-  spec init via `/sf-init` (or the project's `/spec-init`) — then waits for your instructions;
-  it then generates `workflow.yaml` via `/sf-react-workflow` or `/spec-react-workflow`
-  and enters the Drive Loop — enforcing the human gates and delegating phase work to subagents.
+- **Workflows** — the phase machine comes from your project's vendored specflow template
+  (`specflow/src/workflows/<variant>.yaml`, override `.specflow/workflows/`), not this bundle.
+  `/sf-react-workflow` translates it into the spec's `workflow.yaml`, binding React `oac-*` skills
+  to each phase (`id / command / inputs / outputs / skills / gate / exitWhen`; ids match
+  `.meta.yaml`). Specflow-managed projects use `/spec-*` instead.
+- **Commands** — one generic, stack-neutral `/sf-*` stage set (process + gates only; names no
+  skill or stack).
+- **Skills** — the stack-specific know-how the stages bind (`oac-*` React, `fl-*` Flutter),
+  including prevent/detect pairs (`oac-implementation` ↔ `oac-implementation-review`,
+  `oac-test-contract` ↔ `oac-test-forensics`) and the `*-react-workflow` generators.
+- **Agents** — two stack-neutral **drivers**: `sflow-driver` (`/sf-*`) and `specflow-driver`
+  (`/spec-*`). A driver is a pure orchestrator — see [How the driver works](#how-the-driver-works).
 
-You typically **vendor this repo into your project** (e.g. a git submodule) and link it into the
-project's `.claude/`; or link it into your **global `~/.claude`**. Either way the links are relative
-to this repo, so they keep resolving wherever the repo lives.
+Vendor this repo into your project (e.g. a git submodule) and link it into the project's
+`.claude/`, or into your global `~/.claude/`. Links are relative, so they resolve wherever the
+repo lives.
+
+## How the driver works
+
+The driver holds no process knowledge of its own — it reads the spec's `workflow.yaml` and runs
+the phases:
+
+1. **Setup** — worktree check, scaffold the spec (`/sf-init` or `/spec-init`), then **wait for
+   your instructions and context**.
+2. **Generate** — turn the template into the spec's `workflow.yaml` via `/sf-react-workflow`
+   (or `/spec-react-workflow`).
+3. **Drive Loop** (per phase) — read its `command / skills / gate / exitWhen`; run it, delegating
+   heavy work to subagents; verify the `exitWhen` holds; record the result in `.meta.yaml` and
+   advance to the next phase.
+4. **Implement** — each unit runs as a **TestAgent** (writes the failing AC test) → **WorkAgent**
+   (implements it to green, never touching the test), across the tasks' parallel waves; a
+   **ReviewAgent** then reviews the whole branch and loops fixes back.
+5. **Human gates** — at each `gate: human` (e.g. the post-implement code check, QA sign-off) it
+   presents the artifacts and waits for your approval; it never advances past an open gate.
 
 ## Layout
 
 ```
 my-claude/
-├── sflow/
-│   ├── commands/     the generic /sf-* stage commands (real files; the canonical command set)
-│   └── README.md     the full workflow: stages, the agent-as-binding-layer model, picking a driver
-├── react/            React profile — skills/ (oac-*), rules/
-├── flutter/          Flutter profile — skills/ (fl-*), rules/
-├── skills/           aggregation view: profile skills (committed symlinks) + shared real skills —
-│                 sf-react-workflow, spec-react-workflow, standalone reviews
-├── agents/           the two unified driver agents (real files) — sflow-driver, specflow-driver
-├── rules/            canonical shared rules (real) + stack-prefixed profile rule symlinks
-├── commands/         aggregation view: the /sf-* commands (committed symlinks)
-├── internal-link.sh    populate the root aggregation dirs from the stack sources (repair/refresh)
-├── internal-unlink.sh  remove a stack's entries from the root aggregation dirs
-├── link.sh             link a per-stack selection of the root dirs into ~/.claude or a project's .claude
-└── unlink.sh           remove exactly those symlinks
+├── sflow/       generic /sf-* stage commands (real) + the full workflow README
+├── react/       React profile — skills/ (oac-*), rules/
+├── flutter/     Flutter profile — skills/ (fl-*), rules/
+├── skills/      aggregation: profile skills (symlinks) + shared real skills
+│                (the *-react-workflow generators, jira-ac-align, scan-resource)
+├── agents/      the two driver agents (real files) — sflow-driver, specflow-driver
+├── rules/       shared rules (real) + stack-prefixed profile rule symlinks
+├── commands/    aggregation: the /sf-* commands (symlinks)
+├── internal-link.sh / internal-unlink.sh   build/prune the aggregation dirs from stack sources
+└── link.sh / unlink.sh                     link/remove a stack selection into a .claude/
 ```
 
-### One layer, two scripts
+## Linking — one layer, two script pairs
 
-The root `agents/ commands/ rules/ skills/` dirs are **committed aggregation views**:
-per-asset relative symlinks into the stack sources (`flutter/`, `react/`, `sflow/`) plus real
-shared files (the driver agents under `agents/`, `rules/engineering-discipline.md`,
-`rules/preferences.md`, and the standalone skills — including the React `sf-react-workflow` /
-`spec-react-workflow` generators — under `skills/`). Editing a stack source is instantly
-visible through its aggregation entry. Two script pairs, two directions:
+The root `agents/ commands/ rules/ skills/` are **committed aggregation views**: per-asset
+relative symlinks into `flutter/ react/ sflow/`, plus real shared files (the drivers, the shared
+rules, the generators). Editing a stack source shows through its aggregation entry instantly.
 
-- **`internal-link.sh` / `internal-unlink.sh`** — INSIDE the repo: (re)populate or prune the
-  aggregation dirs from the stack sources (`./internal-link.sh all` also repairs them after any
-  damage). Rules get a `<stack>-` prefix because both profiles share basenames.
-- **`link.sh` / `unlink.sh`** — OUTSIDE the repo: link the aggregation entries into an external
-  `.claude/`. A legacy whole-dir symlink at the destination is auto-migrated to per-file links
-  (`unlink.sh` treats it as the thing to remove) — neither script ever reaches through it into
-  the repo.
+- **`internal-link.sh` / `internal-unlink.sh`** — inside the repo: (re)build or prune the
+  aggregation from the stack sources (`./internal-link.sh all` also repairs). Rules get a
+  `<stack>-` prefix because both profiles share basenames; they apply ambiently via their `paths:`
+  frontmatter, so the drivers never list them.
+- **`link.sh` / `unlink.sh`** — outside the repo: link/remove a per-stack selection into an
+  external `.claude/`. Relative links; existing correct links skipped; foreign files never
+  clobbered; `unlink.sh all` also removes shared assets and the rc block; re-running is safe.
 
-### Rules
-
-```
-rules/engineering-discipline.md          REAL FILE  — stack-agnostic, the single source of truth
-rules/preferences.md                     REAL FILE  — stack-agnostic, the single source of truth
-rules/flutter-architecture-principles.md → ../flutter/rules/architecture-principles.md (gated to *.dart)
-rules/flutter-test-quality.md            → ../flutter/rules/test-quality.md
-rules/react-architecture-principles.md   → ../react/rules/architecture-principles.md  (gated to *.ts,*.tsx)
-rules/react-test-quality.md              → ../react/rules/test-quality.md
-```
-
-Rule links are **stack-prefixed** (`<stack>-<basename>`) because the same filenames appear under
-both `flutter/rules/` and `react/rules/`; the prefix keeps them distinct.
-
-Rules apply ambiently via their `paths:` frontmatter — the driver agents don't list them. `link.sh` links them into `.claude/rules/` like every other type.
-
-## Install / link
+## Install
 
 ```sh
-./link.sh --global all                  # everything into ~/.claude
-./link.sh --project ../myapp react      # React profile into a project (sflow auto-added —
-                                        #   the drivers need the /sf-* commands)
-./link.sh                               # interactive: choose destination + stacks
-
-./unlink.sh --project ../myapp react    # remove the React entries (shared assets stay)
-./unlink.sh --global all                # remove everything this repo linked
+./link.sh --global all                 # everything into ~/.claude
+./link.sh --project ../myapp react     # React into a project (sflow auto-added — drivers need /sf-*)
+./link.sh                              # interactive
+./unlink.sh --project ../myapp react   # remove React entries (shared assets stay)
+./unlink.sh --global all               # remove everything this repo linked
 ```
 
-For each selected stack, `link.sh` creates relative per-asset symlinks
-`<dest>/.claude/<type>/<name>` → this repo's `<type>/<name>` for the four types
-(`agents commands rules skills`); the bundle ships no workflow templates — the generators
-resolve the project's vendored specflow templates (`specflow/src/workflows/`, with
-`.specflow/workflows/` as override). Shared root assets (the driver agents, the cross-stack
-rules, and the standalone skills) are linked with any selection and removed only by `unlink.sh all` — a
-single-stack unlink leaves them for the remaining stack. Existing correct links are skipped; a
-foreign real file at a destination path is never clobbered; `unlink.sh` removes only symlinks
-that resolve back into this repo and prunes emptied type dirs. Re-running either script is safe.
-
-After linking, `link.sh` offers (or `--aliases` / `--no-aliases` to skip the prompt) to write a
-**shell function per linked driver agent** into your rc file as a managed block, so you can launch
-a driver directly:
+`link.sh` can also write a **shell function per driver** into your rc file (`--aliases` /
+`--no-aliases` to skip the prompt), so you can launch one directly — otherwise invoke it raw:
 
 ```sh
 sflow-driver "add a logout button"     # = claude --agent sflow-driver "..." --worktree
-specflow-driver
+claude --agent specflow-driver --worktree my-feature
 ```
 
-`unlink.sh all` offers to remove the block.
-
-> **Submodule tip.** When this repo is vendored in your project, submodules are synced by the
-> driver agent's Setup (worktree check) on session start — no separate hook installation
-> required.
-
-> **Windows symlink note.** Git restores the in-repo symlinks only when `core.symlinks=true` (default
-> on macOS/Linux). On Windows, enable Developer Mode or `git config core.symlinks true && git checkout -- .`.
-
-## Run a workflow driver agent in a worktree
-
-Once the agents are linked into a target's `.claude/agents/`, invoke a driver directly
-with Claude Code:
-
-```sh
-claude --agent <driver-name> --worktree <worktree-name>
-```
-
-The driver orchestrates the entire sflow lifecycle — `init → preflight → requirements → clarify →
-design → tasks → implement → validate → qa → drift` — inside the worktree, following the phase
-machine in the spec's generated `workflow.yaml`.
-
-Available workflow-driver agents:
-
-- **`sflow-driver`** — this bundle's `/sf-*` flow (Setup, then generates `workflow.yaml` from your instructions)
-- **`specflow-driver`** — company specflow projects driven through the `/spec-*` commands
-
-> The agent must be linked into the target's `.claude/agents/` first (run `link.sh`).
+> **Submodules** are synced by the driver's Setup on session start — no hook needed. **Windows:**
+> in-repo symlinks need `core.symlinks=true` (enable Developer Mode, then `git checkout -- .`).
 
 ## Editing
 
-Edit stack content under `sflow/`, `react/`, or `flutter/` directly — the aggregation symlinks
-resolve straight to it. When you add, remove, or rename an asset, re-run `./internal-link.sh
-<stack>` (and `./internal-unlink.sh` for removals) to refresh the aggregation dirs, commit the
-symlink change, then re-run `./link.sh` on each destination.
+Edit under `sflow/ react/ flutter/` directly. On add/remove/rename, re-run `./internal-link.sh
+<stack>` (`./internal-unlink.sh` for removals), commit the symlink change, then `./link.sh` each
+destination.
 
 ## The workflow
 
-See **[sflow/README.md](sflow/README.md)** for the full lifecycle, the workflow YAML schema,
-the agent-as-binding-layer model, the human verification gate after `/sf-implement`, and how to pick
-the right driver agent (`sflow-driver` for this bundle's `/sf-*` flow, `specflow-driver` for
-specflow projects).
-
-sflow is interoperable with the project-side **specflow** toolchain — see [sflow/README.md](sflow/README.md).
+See **[sflow/README.md](sflow/README.md)** for the full lifecycle, the `workflow.yaml` schema, the
+agent-as-binding-layer model, the human gate after `/sf-implement`, and picking a driver. sflow
+interoperates with the project-side **specflow** toolchain.
