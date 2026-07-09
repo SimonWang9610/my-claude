@@ -14,16 +14,13 @@ Produce: `qa-journey-plan.md` at the caller-named location, human-approved.
 
 ## Instructions
 
-1. **Extract the journeys.** From the user stories (`US-<n>` / `AC-<story>.<n>`), write each journey `J-<n>`
-   in plain English — steps, expected outcome, CRUD type, ACs covered — and a "NOT automated"
-   list with reasons (manual-only, out of scope, needs a real backend, …).
-   → `references/journey-plan.md` for the exact format.
+1. **Extract the journeys** from the user stories (`US-<n>` / `AC-<story>.<n>`) into `J-<n>`
+   entries, plus a "NOT automated" list. → `references/journey-plan.md` for the exact format.
 2. **Check coverage.** Every user story has ≥1 journey; every write journey has an error-path
    counterpart listed (the failure the automation must force). ACs not covered by any journey
    appear in "NOT automated" with a reason — never silently dropped.
-3. **Approval gate (blocking).** Present the plan and STOP. Accept `approve` /
-   `revise: <feedback>` / `skip J-<n>` / `add: <description>`. Record who approved and when.
-   Approval is on the final plan — re-present after any change. → `references/journey-plan.md`.
+3. **Approval gate (blocking).** Present the plan and STOP for human approval.
+   → `references/journey-plan.md` for the response protocol.
 
 The approved plan is the scope contract for later E2E authoring: tests are written only for
 listed journeys, one per `J-<n>`.

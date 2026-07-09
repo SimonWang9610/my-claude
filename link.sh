@@ -4,8 +4,8 @@
 #
 # The root dirs (agents/ commands/ rules/ skills/) are committed aggregation views:
 # per-asset relative symlinks into the stack sources (flutter/ react/ sflow/) plus real shared
-# files (the agents/ driver agents, rules/engineering-discipline.md, the *-workflow-generator
-# skills and other standalone skills). This script links
+# files (the agents/ driver agents, rules/engineering-discipline.md, the *-react-workflow
+# generator skills and other standalone skills). This script links
 # a per-stack selection of those entries into the destination .claude/.
 #
 #     ./link.sh --global all                 # link everything into ~/.claude
@@ -16,8 +16,8 @@
 #     ./link.sh --global all --aliases       # also write shell functions for the driver agents
 #
 # Shared root assets (real files: driver agents, cross-stack rules, standalone skills) are
-# linked with any selection. This repo ships no workflow templates — the *-workflow-generator
-# skills resolve the PROJECT's vendored specflow templates (specflow/src/workflows/, with
+# linked with any selection. This repo ships no workflow templates — the *-react-workflow
+# generator skills resolve the PROJECT's vendored specflow templates (specflow/src/workflows/, with
 # .specflow/workflows/ as override). Symlinks are RELATIVE; existing
 # correct links are skipped; a foreign real file at a destination path is never clobbered (warned
 # and left as-is). After linking, offers to write a shell function per linked driver agent

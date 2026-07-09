@@ -18,9 +18,6 @@ grep -rln "useCartTotal" src/            # widen if re-exported through a barrel
 - For a TanStack Query key or `select` shape, the importers are every `useQuery`/`useMutation`
   site keyed on it — a key or shape change invalidates their cached reads.
 
-The importer set is the regression surface: each is a consumer whose behavior your change must
-not silently break.
-
 ## 2. Read-only adopted / shared components
 
 Among the touched units and their importers, flag every **adopted shared component** — a unit

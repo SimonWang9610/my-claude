@@ -47,7 +47,7 @@ If an effect has no external system on either side, it probably shouldn't exist.
 **Dependency arrays must tell the truth.** List every reactive value the effect/callback reads.
 Don't silence the linter by omitting a dep — stabilize the value instead (functional `setState`,
 `useCallback`, a ref for values needed but not depended-on). Every subscription an effect opens
-gets a matching teardown — see `hf-effect-cleanup`.
+gets a matching teardown — see `hf-effect-cleanup` (in `oac-implementation-review`).
 
 **Never `setState` during render** (outside the one documented derived-from-prev-props pattern) —
 it loops. Compute the value inline; if it must reset on a prop change, prefer a `key` on the

@@ -48,10 +48,10 @@ plus `generator`/`executor` hints, `validators`, and `hooks`, which this skill i
 
 Read `references/phase-map.md` (under this skill's own dir) for each phase's React `oac-*` skill
 bindings and its `exitWhen` line. Command mapping: every phase's command is the project's
-**`/spec-<id>`** (`preflight` → `/spec-preflight`, …, `spec-qa` → `/spec-qa`; `taskstoissues` →
-`/spec-taskstoissues` — human-gated, gh-driven, follow the project command verbatim, with the
-`_oac-jira-status-automation` playbook as its skill binding). Driver-led template phases without
-a project command (`analysis`, `describe` on the deprecated variants) omit `command:`.
+**`/spec-<id>`** (`preflight` → `/spec-preflight`, …, `spec-qa` → `/spec-qa`). Driver-led template
+phases without a project command (`analysis`, `describe` on the deprecated variants) omit `command:`.
+`taskstoissues` is dropped from the React flow — if a vendored template still declares it, emit
+`skills: []`, `gate: auto`, `exitWhen: taskstoissues unused — record skipped in .meta.yaml`.
 
 **The flow's validate command is `/spec-validate`** — it gates `spec-qa`'s `exitWhen` (run it,
 report results in chat) and is never a phase; NO extra phases are ever injected — phase ids
@@ -62,7 +62,7 @@ follow-up, also never a phase.
 
 Each `?`-marked skill in the phase map is conditional. Check its trigger against the actual
 spec/project and **decide now** where possible — keep or drop per the decision table in
-`references/phase-map.md` (design links, legacy/port scan, E2E coverage, Jira tracker). A
+`references/phase-map.md` (design links, legacy/port scan, E2E coverage). A
 trigger that can't be decided yet stays in the output with its condition attached.
 
 ### Step 5 — Emit the generated schema

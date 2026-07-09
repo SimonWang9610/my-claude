@@ -12,10 +12,9 @@ fail. Pair every blocking finding with at least one confirmed mutation or a mech
 - **No `expect()` in the block.** Arrange-act-no-assert. Always a confirmed false positive. *(high)*
 - **`expect()` of a value the test supplied.** `getByText(message)` where `message` is the prop passed
   in; `toEqual(input)` against the literal just constructed. A tautology. *(high)*
-- **`toBeTruthy()` / `toBeDefined()` on a `getBy*` result.** The `getBy*` already throws if absent; the
-  matcher is dead code. *(high)*
-- **`toContain` on a single DOM node, `toBe`/`toEqual` on DOM nodes, `>= N` count assertions.** Matcher
-  misuse or loose bound; passes through regressions. *(medium → high once confirmed a no-op)*
+- **Matcher misuse** (`toContain`/`toBe`/`toEqual` on a DOM node, `toBeTruthy()` on a `getBy*` result,
+  `>= N` count assertions) — full catalogue and grep recipes in `heuristics-pass3-forms.md`
+  (Matcher misuse section). *(medium → high once confirmed a no-op)*
 - **`toHaveClass('bg-…')` for a color/contrast NFR.** JSDOM cannot resolve CSS variables; class
   presence never verifies the rendered color. *(high)*
 

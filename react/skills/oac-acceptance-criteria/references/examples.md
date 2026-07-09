@@ -3,13 +3,6 @@
 Four recurring anti-patterns, each shown as the ill-formed criterion, the corrected
 observable form, and the test-name skeleton it produces.
 
-## Contents
-
-- [1. The cache-invalidation no-op (spy-on-the-call AC)](#1-the-cache-invalidation-no-op-spy-on-the-call-ac)
-- [2. The mock-call assertion (callback fired, nothing happened)](#2-the-mock-call-assertion-callback-fired-nothing-happened)
-- [3. The render-it-back tautology](#3-the-render-it-back-tautology)
-- [4. The one-shot ban that decays](#4-the-one-shot-ban-that-decays)
-
 ---
 
 ## 1. The cache-invalidation no-op (spy-on-the-call AC)
@@ -23,9 +16,8 @@ while nothing refetches. `invalidateQueries` only refetches queries that match t
 ```
 AC-9: When the user toggles "Include sub-scopes", the system shall call
       invalidate(queryClient).
-      // "invalidate(queryClient)" is not a real API; the real call is
-      // queryClient.invalidateQueries({ queryKey: [...] }) — but even with
-      // the correct call, asserting that the call was made is the wrong AC shape.
+      // even with the correct call (queryClient.invalidateQueries(...)),
+      // asserting the call happened is the wrong AC shape.
 ```
 
 **Require:**

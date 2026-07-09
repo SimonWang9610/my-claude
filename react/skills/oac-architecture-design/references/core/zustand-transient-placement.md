@@ -37,4 +37,4 @@ interface PlaybackState {
 
 Reading a fast-changing value in a component without re-rendering — the transient
 `subscribe`/ref technique — is a coding concern, not a placement one. See the
-`oac-implementation` skill (`rerender-transient-subscribe`).
+`oac-implementation-review` skill (`rerender-transient-subscribe`).

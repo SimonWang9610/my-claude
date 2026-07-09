@@ -10,9 +10,8 @@ description: >
 
 # oac-figma-decompose
 
-Turn a design source (Figma screen) + the codebase into one compact **component map**: every element
-tagged EXISTING / PARTIAL / NEW vs what's already built, ~150 tokens/component. A planning doc — never
-raw Figma JSON, never pixel-perfect code. **Reuse discovery first; extract only what's new.**
+Turn a Figma screen + the codebase into one compact **component map** — never raw Figma JSON, never
+pixel-perfect code. **Reuse discovery first; extract only what's new.**
 
 ## Seams — resolve per project, nothing is hardcoded
 

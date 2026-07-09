@@ -6,18 +6,6 @@ architecture rules. Work every step in order. All paths are relative to this
 
 ---
 
-## Contents
-
-- [Step 1 — Assign units to feature folders and layers](#step-1--assign-units-to-feature-folders-and-layers)
-- [Step 2 — Choose the state-ownership tier per fact](#step-2--choose-the-state-ownership-tier-per-fact)
-- [Step 3 — Server-state path: TanStack Query as SSOT](#step-3--server-state-path-tanstack-query-as-ssot)
-- [Step 4 — Zustand store shape](#step-4--zustand-store-shape)
-- [Step 5 — Component composition and hook extraction](#step-5--component-composition-and-hook-extraction)
-- [Step 6 — Per-unit testability seam](#step-6--per-unit-testability-seam)
-- [Step 7 — Write the contracts and the design doc](#step-7--write-the-contracts-and-the-design-doc)
-
----
-
 ## Step 1 — Assign units to feature folders and layers
 
 Read `core/layer-feature-folders.md`, `core/layer-unidirectional-deps.md`. List every
@@ -106,24 +94,8 @@ Step-1 units independently verifiable at the gate; carry the seam into each cont
 
 ## Step 7 — Write the contracts and the design doc
 
-**`contracts/<unit>.md`** — one per unit from Step 1, stated concretely enough that
-implementation and tests write against it without re-deriving the design:
-
-```markdown
-## <UnitName> — contract
-- **Kind / layer:** component | hook | store | api | service · <feature folder>
-- **Public API** (exact types — no `any`):
-  - component → `interface <Unit>Props { … }`; what it renders; callbacks it fires
-  - hook → `use<Unit>(args: …): { … }` — full return type
-  - store → state shape + action signatures (intent-named)
-  - service → `create<Unit>(opts): <Unit>` + lifecycle (create/destroy) + events
-- **States it must expose:** loading · empty · error · success · disabled — each
-  tied to an observable signal (rendered text, role/aria state, enabled control).
-  Model with a discriminated union, not loose booleans.
-- **Traces to:** AC-<story>.<n>, … (the criteria this unit satisfies)
-- **Testability seam:** the isolation path from Step 6.
-- **Depends on:** inward-pointing units only.
-```
+**`contracts/<unit>.md`** — one per unit from Step 1, in the Contract skeleton shape from
+`SKILL.md`; fill **Testability seam** with the isolation path decided in Step 6.
 
 **`design.md`** — the layer map (Step 1), state-ownership decisions (Step 2),
 server-state path (Step 3), Zustand shape (Step 4), composition notes (Step 5), and an

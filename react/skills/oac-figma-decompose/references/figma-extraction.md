@@ -6,9 +6,8 @@ raw nodeId+fileKey).
 
 ## Discover the layer tree
 
-Call `get_metadata` on the target node — it returns the layer hierarchy cheaply. **Full-page nodes
-(1440×900+) return empty from `get_design_context`**, so metadata is always the entry point; use it to
-find the meaningful child node IDs.
+`get_metadata` on the target node returns the layer hierarchy and the meaningful child node IDs (why
+it must be the entry point, not `get_design_context` → SKILL.md Step 1).
 
 ### Which layers are components
 
@@ -36,8 +35,8 @@ map; you simply skip extraction and NEW components carry no pixel spec.
 
 ## Extract (NEW + PARTIAL only)
 
-One parallel agent per NEW/PARTIAL node, all fanned out in a single message. Each agent returns **only**
-its compact spec — no raw JSON, no code, no asset URLs. Adapt this prompt per component:
+One agent per node (fan-out rule → SKILL.md Step 3). Each returns **only** its compact spec — no raw
+JSON, no code, no asset URLs. Adapt this prompt per component:
 
 ```
 Extract component "{name}" from Figma for planning. Output under 200 tokens.
@@ -68,5 +67,5 @@ Extract component "{name}" from Figma for planning. Output under 200 tokens.
 For a **PARTIAL** node, narrow the agent to the gap only — the new variant/prop/slot the existing
 component lacks — not a full re-spec.
 
-Colors and spacing MUST come out as token names, using the project map in `token-map.md`; that map also
-records space-token pixel quirks and font-weight conventions the raw Figma values don't reveal.
+`token-map.md` also records space-token pixel quirks and font-weight conventions the raw Figma values
+don't reveal — consult it for layout and typography, not just color.

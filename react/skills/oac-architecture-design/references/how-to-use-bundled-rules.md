@@ -6,14 +6,6 @@ incorrect/correct example pair. Do not cite a rule from memory; confirm against 
 
 ---
 
-## Contents
-
-- [Reading procedure](#reading-procedure)
-- [Architecture rules — core/](#architecture-rules--core-22-files)
-- [Trigger → rule map](#trigger--rule-map)
-
----
-
 ## Reading procedure
 
 1. Walk the categories in **priority order** (tables below). For each surface in scope, decide
@@ -30,7 +22,7 @@ All paths below are relative to this `references/` directory.
 Priority: `state-` (CRITICAL) → `zustand-` (HIGH) → `query-` (HIGH) → `compose-` (MEDIUM-HIGH) → `layer-` (MEDIUM).
 
 Each rule here is a **design decision** — what to decide and record in `design.md`/`contracts/`.
-Rules marked **↔ impl: `<name>`** have a coding-discipline twin in the `oac-implementation` skill:
+Rules marked **↔ impl: `<name>`** have a coding-discipline twin in `oac-implementation`; **↔ review: `<name>`** a performance twin in `oac-implementation-review` (checked at the implement review gate):
 the same topic seen from the implementation lens (how to honor the decision in code). Decide here;
 the twin governs the code that carries it out.
 
@@ -45,14 +37,14 @@ the twin governs the code that carries it out.
 - `core/zustand-actions-in-store.md` — mutation logic in store actions, not scattered `setState` in components.
 - `core/zustand-slice-organization.md` — one domain per store/slice; split mega-stores, merge confetti stores.
 - `core/zustand-no-component-coupling.md` — stores expose domain operations, never know about components/UI.
-- `core/zustand-transient-placement.md` — high-frequency/per-frame values don't belong in the store; emit them from the service, keep only discrete session state. ↔ impl: `rerender-transient-subscribe`.
+- `core/zustand-transient-placement.md` — high-frequency/per-frame values don't belong in the store; emit them from the service, keep only discrete session state. ↔ review: `rerender-transient-subscribe`.
 - `core/zustand-persist-discipline.md` — `persist` only whitelisted fields via `partialize`; version + migrate.
 
 ### 3. Server State / TanStack Query — `query-` (HIGH)
 - `core/query-no-effect-fetching.md` — no `useEffect` + fetch + setState; use `useQuery`.
 - `core/query-key-factory.md` — centralized, typed query-key factories per domain.
 - `core/query-mutation-invalidation.md` — design each mutation's invalidation graph (families invalidated/updated); no manual refetch. ↔ impl: `query-mutation-wiring`.
-- `core/query-select-transform.md` — the derived shape is part of the query hook's contract; shape with `select`, not in components or stored copies. ↔ impl: `query-narrow-subscriptions`.
+- `core/query-select-transform.md` — the derived shape is part of the query hook's contract; shape with `select`, not in components or stored copies. ↔ review: `query-narrow-subscriptions`.
 
 ### 4. Component Composition — `compose-` (MEDIUM-HIGH)
 - `core/compose-avoid-boolean-props.md` — don't accrete `isX`/`hideY` props; restructure with composition.
@@ -61,7 +53,7 @@ the twin governs the code that carries it out.
 - `core/compose-extract-hooks.md` — components past their threshold of mixed logic+JSX: extract logic into custom hooks. **(Trigger 1 / Trigger 3 anchor.)**
 - `core/compose-explicit-variants.md` — divergent behavior → separate variant components, not mode flags.
 
-### 5. Layering & Module Structure — `layer-` (MEDIUM)
+### 5. Layering & Module Structure — `layer-` (MEDIUM) · always-on **P8** (`rules/architecture-principles.md`)
 - `core/layer-feature-folders.md` — organize by feature (components/hooks/store/api per feature).
 - `core/layer-unidirectional-deps.md` — dependencies point one way: ui → hooks/state → services.
 - `core/layer-service-isolation.md` — side-effectful integrations wrapped in service modules, accessed via hooks/stores. **(Trigger 3 seam anchor.)**
@@ -70,8 +62,5 @@ the twin governs the code that carries it out.
 
 ## Trigger → rule map
 
-| Blocking trigger | Primary bundled rules to confirm against |
-|------------------|------------------------------------------|
-| **1 — God-component / God-hook** | `core/compose-extract-hooks.md`, `core/layer-feature-folders.md`, `core/compose-explicit-variants.md` |
-| **2 — Server-state-in-Zustand / dual-source-of-truth** | `core/state-no-server-data-in-stores.md`, `core/state-single-source-of-truth.md`, `core/state-derive-dont-store.md`, `core/query-no-effect-fetching.md`, `core/zustand-persist-discipline.md` |
-| **3 — Testability seam missing** | `core/compose-extract-hooks.md`, `core/layer-service-isolation.md`, `core/query-no-effect-fetching.md` |
+Full table (trigger → gate lens → bundled rules) lives in `principle-checks.md` under
+"Trigger → principle → bundled-rule map" — open it there when running the gate.

@@ -1,17 +1,7 @@
 # Authoring journey tests
 
-Stack: Vitest + React Testing Library + MSW + `userEvent`. A journey drives the real component tree
-through user-visible interactions and intercepts its writes at the network boundary with MSW. Match
-the project's existing test setup and harness conventions — this file carries the discipline.
-
-## Table of contents
-
-- [Page object](#page-object)
-- [Driving the app](#driving-the-app)
-- [Test harness (Vitest + RTL)](#test-harness-vitest--rtl)
-- [Happy vs error paths](#happy-vs-error-paths)
-- [Naming & grouping](#naming--grouping)
-- [Traceability manifest](#traceability-manifest)
+A journey drives the real component tree through user-visible interactions and intercepts its
+writes at the network boundary with MSW.
 
 ## Page object
 
@@ -72,69 +62,6 @@ const heading = await screen.findByRole('heading', { name: /success/i });
 // also fine for checking non-existence after an action
 await screen.findByText(/saved/i);
 expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-```
-
-### TanStack Query v5 — key patterns
-
-Use the object form; avoid positional args. `isPending` means no data yet (loading + no cache);
-`isLoading` (= `isPending && isFetching`) still exists in v5 — prefer `isPending` for the initial-load guard.
-
-```ts
-// co-locate key + fn with queryOptions
-import { queryOptions, useQuery, useMutation } from '@tanstack/react-query';
-
-export const doorListOptions = queryOptions({
-  queryKey: ['doors', 'list'],
-  queryFn: () => fetchDoors(),
-});
-
-// in a component
-const { data, isPending, isError } = useQuery(doorListOptions);
-
-// mutation — side effects in callbacks, not onSuccess on useQuery
-const { mutate, isPending: isSaving } = useMutation({
-  mutationFn: (payload: CreateDoorPayload) => createDoor(payload),
-  onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doors'] }),
-  onError: (err: unknown) => reportError(err),
-});
-```
-
-`gcTime` replaces `cacheTime`; `throwOnError` replaces `useErrorBoundary`;
-`placeholderData: keepPreviousData` replaces the old `keepPreviousData: true` flag —
-`keepPreviousData` is an imported sentinel, not a bare identifier or string:
-
-```ts
-import { keepPreviousData } from '@tanstack/react-query';
-// ...
-placeholderData: keepPreviousData,
-```
-
-`useInfiniteQuery` requires `initialPageParam`.
-
-### Zustand store access in tests
-
-Import `useShallow` from `zustand/react/shallow` (not `zustand/shallow`). Never destructure the
-whole store without `useShallow`; prefer atomic selectors or wrapper hooks.
-
-```ts
-import { useShallow } from 'zustand/react/shallow';
-
-const { filter, setFilter } = useMyStore(
-  useShallow((s) => ({ filter: s.filter, setFilter: s.setFilter })),
-);
-```
-
-Server data (lists, detail records) belongs in TanStack Query, not in Zustand.
-
-### TypeScript — catch blocks
-
-```ts
-// always type caught errors as unknown
-try {
-  await saveDoor(payload);
-} catch (e: unknown) {
-  const message = e instanceof Error ? e.message : 'Unknown error';
-}
 ```
 
 ## Happy vs error paths

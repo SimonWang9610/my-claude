@@ -1,8 +1,7 @@
 # Pass 2 shapes — tests-pass-but-miss-behavior
 
-Grep/read recipes and before→after examples for Pass 2. Targets React 19 + Vitest + RTL + Zustand +
-TanStack Query v5. Greps narrow where to read — confirm every hit by reading the file. Examples use a
-neutral "list + detail" feature (`DeviceListPage`, `useDevices`, `DeviceRecord`).
+Grep/read recipes and before→after examples for Pass 2. Examples use a neutral "list + detail" feature
+(`DeviceListPage`, `useDevices`, `DeviceRecord`).
 
 ## Shape A — RTL render-without-assert (no triggering action)
 

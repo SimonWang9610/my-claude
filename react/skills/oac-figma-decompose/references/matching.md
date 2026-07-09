@@ -27,10 +27,6 @@ domain file to find them. For each: file path, function name, "inline in {Parent
 Return a single flat list.
 ```
 
-Illustrative layout (one project — yours will differ): `src/components/shared/`,
-`src/components/layout/` (AppShell, HeaderBar), `src/components/icons/FigmaIcons.tsx` (all icon
-exports), plus domain dirs (notifications, people, hardware, dashboard).
-
 ## 2. Match each Figma element
 
 Walk the flat component list from Step 1 for each Figma element and apply the signal table (see
@@ -47,12 +43,8 @@ SKILL.md). Notes per signal:
 
 ## 3. Tag
 
-- **EXISTING** — a signal fires and the component renders the same thing. Record import + the props to
-  pass. No extraction.
-- **PARTIAL** — a close component exists but the design needs something it lacks (a new variant, a new
-  prop, an extra slot). Record the component **and the exact gap** — "use `Badge` but add `size='xs'`"
-  is more useful for planning than a from-scratch spec. Extract only the gap.
-- **NEW** — no signal fires. Extract a full spec (`figma-extraction.md`).
+Apply the rubric in SKILL.md. For PARTIAL, the gap note beats a from-scratch spec — "use `Badge` but
+add `size='xs'`" is more actionable than restating the whole component.
 
 ## Anti-patterns
 

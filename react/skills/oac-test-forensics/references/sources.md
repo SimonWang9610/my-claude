@@ -25,8 +25,7 @@ Cite these URLs when justifying a finding; paraphrase, never paste substantial t
 
 ## Local-evidence notes
 
-- **Form 4 (CSS-class instead of resolved value):** JSDOM cannot resolve CSS custom properties; no
-  canonical external source for this specific limitation. Mark as local-evidence-driven and confirm in
-  the target project's JSDOM setup before blocking.
+- **Form 4 (CSS-class instead of resolved value):** no canonical external source for this JSDOM
+  limitation — mark as local-evidence-driven and confirm in the target project's setup before blocking.
 - **Mutation-test protocol and on-sight signal catalogue:** general engineering practices distilled into
   React/TS form; not single-source citations.

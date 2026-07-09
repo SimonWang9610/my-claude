@@ -8,7 +8,7 @@ Confirm every grep hit by reading the file — greps only narrow where to look.
 ## Pass 1 — `no-spec-coverage`
 
 **Definition.** Code exhibits a behavior with no governing criterion, OR a criterion exists with zero
-mapped tests. Either way the behavior is trivially reversible by a later edit with no failing test.
+mapped tests.
 
 **Procedure**
 

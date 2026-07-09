@@ -7,7 +7,7 @@ tags: rerender, memo, useCallback, useMemo, props
 
 ## Place memo at Expensive Boundaries — and Keep Props Stable
 
-(Skip if the React Compiler is enabled — it inserts this for you; remove leftover ceremony instead. See `react19-modern-apis`.)
+(Skip if the React Compiler is enabled — it inserts this for you; remove leftover ceremony instead. See `react19-modern-apis` in `oac-implementation`.)
 
 `memo` pays off at boundaries where a cheap parent re-renders often but an expensive subtree's props rarely change — e.g., a grid container tracking selection above camera tiles. It is wasted on leaf components rendering three DOM nodes, and *defeated* whenever any prop is a fresh reference each render.
 

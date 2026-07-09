@@ -7,16 +7,6 @@ rule crosswalk, see [`principle-checks.md`](principle-checks.md).
 
 ---
 
-## Contents
-
-- [P1 — Server state in TanStack Query](#p1--server-state-lives-in-tanstack-query-never-copied-into-zustand-or-localstorage)
-- [P2 — Render-only components + single-responsibility hooks](#p2--components-render-logic-in-named-single-responsibility-hooks-soft-ceiling)
-- [P3 — One owner per fact; derive, don't mirror](#p3--one-authoritative-owner-per-fact-derive-client-selection-never-mirror-with-effects)
-- [P4 — Writes via useMutation; errors via isError](#p4--writes-via-usemutation-errors-via-onerrorisError)
-- [P5 — Testability seam per unit](#p5--every-unit-must-be-renderableinvocable-in-isolation-testability-seam)
-- [P6 — Token-layer selection](#p6--token-layer-selection-rule-for-every-color-value)
-- [P7 — No module-scope mutable domain state](#p7--no-module-scope-mutable-domain-state-if-unavoidable-export-_resetfortest)
-
 | ID | Rule | Trigger | Problem class it prevents |
 |----|------|---------|---------------------------|
 | P1 | Server state in TanStack Query, never copied to Zustand/localStorage | new server data | dual-source-of-truth |
@@ -59,12 +49,6 @@ function DevicePanel() {
 }
 ```
 
-**Crosswalk:** `core/state-no-server-data-in-stores.md`,
-`core/state-single-source-of-truth.md`,
-`core/state-ownership-decision.md`.
-
-**Sources:** https://tanstack.com/query/v5/docs/framework/react/guides/does-this-replace-client-state · https://tkdodo.eu/blog/practical-react-query
-
 ---
 
 ## P2 — Components render; logic in named single-responsibility hooks; soft ceiling
@@ -97,12 +81,6 @@ function DeviceListPage() {
 }
 ```
 
-**Crosswalk:** `core/compose-extract-hooks.md`,
-`core/layer-feature-folders.md`,
-`core/query-no-effect-fetching.md`.
-
-**Sources:** https://react.dev/learn/reusing-logic-with-custom-hooks · https://felixgerschau.com/react-hooks-separation-of-concerns/ · https://feature-sliced.design/
-
 ---
 
 ## P3 — One authoritative owner per fact; derive client selection, never mirror with effects
@@ -126,12 +104,6 @@ useEffect(() => {
   if (selected && !devices?.find((d) => d.id === selected.id)) setSelected(null);
 }, [devices, selected]); // fires after render; stale frame visible
 ```
-
-**Crosswalk:** `core/state-derive-dont-store.md`,
-`core/state-no-prop-to-state-copy.md`,
-`core/query-select-transform.md`.
-
-**Source:** https://tkdodo.eu/blog/deriving-client-state-from-server-state
 
 ---
 
@@ -164,12 +136,6 @@ async function handleSave() {
 }
 ```
 
-**Crosswalk:** `core/query-mutation-invalidation.md`,
-`core/query-no-effect-fetching.md`,
-`core/query-key-factory.md`.
-
-**Sources:** https://tanstack.com/query/v5/docs/framework/react/guides/mutations · https://tkdodo.eu/blog/mastering-mutations-in-react-query
-
 ---
 
 ## P5 — Every unit must be renderable/invocable in isolation (testability seam)
@@ -201,12 +167,6 @@ vi.mock('../hooks/useDeviceData', () => ({ useDeviceData: vi.fn(() => mockData) 
 // → filter/tab logic inside useDeviceData is invisible to the test
 ```
 
-**Crosswalk:** `core/compose-extract-hooks.md`,
-`core/compose-children-over-render-props.md`,
-`core/layer-service-isolation.md`.
-
-**Source:** https://testing-library.com/docs/guiding-principles/
-
 ---
 
 ## P6 — Token-layer selection rule for every color value
@@ -235,11 +195,6 @@ can't resolve a CSS variable — so the regression is invisible until production
 <Box sx={{ backgroundColor: '#1A1A1A' }} />
 <div className="bg-gray-900" />
 ```
-
-**Crosswalk:** no bundled architecture rule file maps directly — confirm against the project's
-design-token documentation and pair with a CI guard banning raw hex and scale classes.
-
-**Sources:** https://mui.com/material-ui/customization/dark-mode/ · https://www.w3.org/TR/css-variables-1/
 
 ---
 
@@ -273,8 +228,3 @@ export function getIndex() {
   return searchIndex;
 }
 ```
-
-**Crosswalk:** `core/zustand-slice-organization.md`,
-`core/state-ownership-decision.md`.
-
-**Sources:** https://testing-library.com/docs/guiding-principles/ · https://vitest.dev/api/#beforeeach
