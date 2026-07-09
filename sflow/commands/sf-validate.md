@@ -12,7 +12,7 @@ The blocking gate: the existing checks PLUS clause→test coverage and the archi
 ## Spec Artifacts
 
 Read the spec's artifacts under `.specflow/specs/<name>/`; report the result to the caller (and record the architecture-gate result into `design.md` when the workflow has one).
-- **Required:** the spec's `workflow.yaml` snapshot + `.meta.yaml` (required-phase check); the spec artifacts the workflow declares (`requirements.md`, `design.md`, `contracts/`, `tasks.md` — or `analysis.md`/`describe.md` on the lighter workflows; checks over artifacts the workflow omits are SKIP).
+- **Required:** the spec's generated `workflow.yaml` + `.meta.yaml` (phase-ledger check); the spec artifacts the workflow declares (`requirements.md`, `design.md`, `contracts/`, `tasks.md` — or `analysis.md`/`describe.md` on the lighter workflows; checks over artifacts the workflow omits are SKIP).
 - **Optional:** an open PR (Check 6); prior-phase `references/`.
 - **Additional:** steering `.specflow/steering/*`; the target repo (codebase under audit).
 
@@ -30,7 +30,7 @@ Report status + one-line finding for each:
 4. **Task DAG** — `tasks.md` is acyclic (list any cycle).
 5. **Shared-unit immutability** — no ADOPTED unit modified vs base (report the unit + importers).
 6. **PR body** — no issue-closing keywords adjacent to `#N` in an open PR; skip if none.
-7. **Required phases** — every `required: true` phase that precedes validate in the spec's `workflow.yaml` is `complete`/`skipped` in `.meta.yaml` (later phases, e.g. qa/drift, are not expected yet).
+7. **Phase ledger** — every phase in `.meta.yaml` `phase_status` that precedes `spec-qa` in the spec's `workflow.yaml` is `completed`, or `skipped` with a recorded reason (`spec-qa` itself is not expected yet — this command gates its entry).
 8. **Clause→test coverage** (blocking) — every AC / testable NFR maps to ≥1 passing, observable-outcome test; emit the clause→test table (AC-ID | Test | File | Status).
 9. **Architecture gate** (blocking) — no God-unit, dual-source, or missing testability seam without a recorded justification in `design.md`.
 

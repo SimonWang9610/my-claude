@@ -24,7 +24,7 @@ Exits only when every `(WorkAgent, TestAgent)` group is **Completed** — the Wo
 
 ## Steps
 
-1. **Tracker sync (optional)** — only when the bound workflow lists a tracker-sync skill/playbook: on first run, scan the spec docs for issue keys, confirm with the user, validate, and append to `.meta.yaml`; then transition each linked issue forward. Skip entirely when there is no tracker.
+1. **Tracker sync (optional)** — only when the spec's `workflow.yaml` lists a tracker-sync skill/playbook: on first run, scan the spec docs for issue keys, confirm with the user, validate, and append to `.meta.yaml`; then transition each linked issue forward. Skip entirely when there is no tracker.
 2. **Plan the phases** — group tasks into ordered phases of one-to-one `(WorkAgent, TestAgent)` pairs; persist to `phases.md` (resumable; a single-pair spec, e.g. a quickfix, may run as one pair without `phases.md`). WorkAgent owns its surfaces + contracts + AC-IDs + handoff criteria; TestAgent's pass criteria are the test contract.
 3. **Execute each phase** (coordination loop) — per pair:
    - WorkAgent builds its surfaces to their contracts (write paths included), then hands off on its criteria.

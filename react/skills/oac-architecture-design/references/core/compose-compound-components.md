@@ -34,4 +34,4 @@ Player.Timeline = function Timeline() { ... }
 </Player>
 ```
 
-The guard-throwing `usePlayerContext` hook matters: it converts misuse into an immediate, named error instead of a null-deref.
+The guard-throwing `usePlayerContext` hook matters: it converts misuse into an immediate, named error instead of a null-deref. The design uses the React 19 forms (`use(Context)`, `<Context>` as provider); the implementation idioms behind them belong to the `oac-implementation` skill.

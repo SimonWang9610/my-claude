@@ -1,8 +1,8 @@
 # Design procedure
 
-Step-by-step checklist for authoring `design.md` and `contracts/` against the
-React architecture rules. Work through every step in order. All paths
-are relative to this `references/` directory.
+Step-by-step checklist for authoring `design.md` and `contracts/` against the 22
+architecture rules. Work every step in order. All paths are relative to this
+`references/` directory; open the named `core/<name>.md` before you commit a decision.
 
 ---
 
@@ -10,106 +10,128 @@ are relative to this `references/` directory.
 
 - [Step 1 — Assign units to feature folders and layers](#step-1--assign-units-to-feature-folders-and-layers)
 - [Step 2 — Choose the state-ownership tier per fact](#step-2--choose-the-state-ownership-tier-per-fact)
-- [Step 3 — Server state path: TanStack Query as SSOT](#step-3--server-state-path-tanstack-query-as-ssot)
+- [Step 3 — Server-state path: TanStack Query as SSOT](#step-3--server-state-path-tanstack-query-as-ssot)
 - [Step 4 — Zustand store shape](#step-4--zustand-store-shape)
 - [Step 5 — Component composition and hook extraction](#step-5--component-composition-and-hook-extraction)
-- [Step 6 — Per-unit testability seam](#step-6--per-unit-testability-seam-p5)
-- [Step 7 — Hand-off](#step-7--hand-off)
+- [Step 6 — Per-unit testability seam](#step-6--per-unit-testability-seam)
+- [Step 7 — Write the contracts and the design doc](#step-7--write-the-contracts-and-the-design-doc)
 
 ---
 
 ## Step 1 — Assign units to feature folders and layers
 
-Read `core/layer-feature-folders.md` and `core/layer-unidirectional-deps.md`. List
-every unit with its layer (ui / hooks / store / api / services) and role suffix
-(`*Page`, `*Panel`, `use*`, `*Store`, `*Api`, `*Service`). Verify dependency arrows
-point only inward (ui → hooks/store → api/services); redesign any unit that skips or
-reverses a layer before proceeding.
+Read `core/layer-feature-folders.md`, `core/layer-unidirectional-deps.md`. List every
+unit with its layer (ui / hooks / store / api / services) and role suffix (`*Page`,
+`*Panel`, `use*`, `*Store`, `*Api`, `*Service`). Verify dependency arrows point only
+inward (ui → hooks/store → api/services); redesign any unit that skips or reverses a
+layer before proceeding. This unit list is the spine of the contracts in Step 7.
 
 ---
 
 ## Step 2 — Choose the state-ownership tier per fact
 
-Read `core/state-ownership-decision.md`, `core/state-single-source-of-truth.md`, and
-`core/state-derive-dont-store.md`. For each piece of state:
+Read `core/state-ownership-decision.md`, `core/state-single-source-of-truth.md`,
+`core/state-derive-dont-store.md`. For each fact the feature holds:
 
-- **Local `useState`** — one component only, no sharing, dies with unmount.
-- **Lifted `useState`** — shared by a sibling subtree; passed as props.
-- **Zustand slice** — client UI state shared across unrelated components (open modals,
-  selected tab, sidebar collapse). Never server data.
-- **TanStack Query** — anything fetched from / owned by the server.
+| Tier | Use when |
+|------|----------|
+| Local `useState`/`useReducer` | one component, dies with unmount |
+| Lifted `useState` / narrow Context | shared by a sibling subtree, passed as props |
+| URL search params | selected tab, filters, detail id — survives reload, shareable |
+| Zustand slice | client UI state shared across unrelated components; **never server data** |
+| TanStack Query | anything fetched from / owned by the server |
 
-Do not promote state beyond its narrowest tier. One owner per fact — derive at read
-time, never duplicate. Record each decision in `design.md`.
+Keep each fact at its narrowest tier. One owner per fact — derive the rest at read
+time, never duplicate, never sync with an effect. Record each decision in `design.md`.
 
 ---
 
-## Step 3 — Server state path: TanStack Query as SSOT
+## Step 3 — Server-state path: TanStack Query as SSOT
 
 Read `core/state-no-server-data-in-stores.md`, `core/query-no-effect-fetching.md`,
-`core/query-key-factory.md`, and `core/query-mutation-invalidation.md`.
+`core/query-key-factory.md`, `core/query-mutation-invalidation.md`,
+`core/query-select-transform.md`.
 
-- All server reads use `useQuery`/`useInfiniteQuery` with a centralized query-key
-  factory. No `useEffect` + fetch + setState pattern.
-- All writes use `useMutation`; `onSuccess` invalidates or updates affected queries;
-  no manual refetch.
-- Server data never copied into Zustand or `localStorage`.
-- Derivations / transformations applied via `select`, not stored copies.
+- Reads use `useQuery`/`useInfiniteQuery` with a centralized, typed query-key factory
+  (prefer `queryOptions()`). No `useEffect` + fetch + setState.
+- Writes use `useMutation`; `onSuccess` invalidates or `setQueryData` the affected
+  keys — no manual `refetch()` choreography, no `onSuccess` on `useQuery` (removed in v5).
+- Server data is never copied into Zustand, `useState`, or `localStorage`.
+- Derived shapes come from `select`, not stored copies; a selection keeps only the
+  key in client state and resolves the entity at read time.
 
 ---
 
 ## Step 4 — Zustand store shape
 
-Read `core/zustand-actions-in-store.md`, `core/zustand-slice-organization.md`, and
-`core/zustand-no-component-coupling.md`.
+Read `core/zustand-actions-in-store.md`, `core/zustand-slice-organization.md`,
+`core/zustand-no-component-coupling.md`, `core/zustand-persist-discipline.md`.
 
-- One domain per store/slice; no mega-stores.
-- Mutation logic lives inside store actions, not scattered in component handlers.
-- Stores expose domain operations and have no knowledge of components or JSX.
+- One domain per store/slice; no mega-store, no per-component confetti stores.
+- Mutation logic lives in intent-named store actions, not scattered `setState` in
+  components; multi-field reads use `useShallow` or atomic selectors.
+- Stores expose domain operations and import nothing from `react`/components/MUI.
+- `persist` only whitelisted UI fields via `partialize`, with `version` + `migrate`.
 
 ---
 
 ## Step 5 — Component composition and hook extraction
 
-Read `core/compose-extract-hooks.md`, `core/compose-avoid-boolean-props.md`, and
+Read `core/compose-extract-hooks.md`, `core/compose-avoid-boolean-props.md`,
 `core/compose-explicit-variants.md`.
 
-- Components render; logic, effects, and derivations live in named single-responsibility
-  hooks (`useDeviceFilters`, `useDeviceSelection`).
-- Soft ceiling: ~400 LOC for a component, ~300 LOC for a hook. Past the ceiling, split
-  or carry an `// ARCH-EXCEPTION: <reason>` comment approved at design exit.
-- Boolean-prop accretion (`isX`, `hideY`) is a signal to restructure with composition
-  or explicit variant components.
+- Components render; logic, effects, and derivations live in named
+  single-responsibility hooks (`useDeviceFilters`, `useDeviceSelection`).
+- Soft ceiling: ~400 LOC per component, ~300 LOC per hook. Past it, split — or carry
+  an `// ARCH-EXCEPTION: <reason>` line and record the justification in `design.md`.
+- 3+ boolean props altering *structure* → restructure with composition, compound
+  components, or explicit variant components.
 
 ---
 
-## Step 6 — Per-unit testability seam (P5)
+## Step 6 — Per-unit testability seam
 
-Read `core/compose-extract-hooks.md` and `core/layer-service-isolation.md`. For
-**every** unit from Step 1, state explicitly how it will be exercised in isolation:
+Read `core/compose-extract-hooks.md`, `core/layer-service-isolation.md`. For **every**
+unit from Step 1, state exactly how it is exercised in isolation:
 
-- Component → renderable with a providers wrapper via `render()`; no module-level mock
-  of the host hook.
-- Hook → callable via `renderHook` with constructor-injected or mocked services.
-- Service/API module → wrapped behind an interface; accessed only through hooks/stores
-  (never called directly in components).
+- Component → `render()` behind a providers wrapper; no module-level mock of its host hook.
+- Hook → `renderHook` with injected/mocked services and controlled inputs.
+- Service/API module → wrapped behind an interface, reached only through hooks/stores.
 
-A unit testable only by mocking its entire host is a **design defect**. Fix it here:
-extract the behavior into a named hook or service boundary. Record the seam statement
-in each `contracts/<unit>.md`.
+A unit testable only by mocking its entire host is a **design defect** — fix it here by
+extracting the behavior into a named hook or service boundary. This is what makes the
+Step-1 units independently verifiable at the gate; carry the seam into each contract.
 
 ---
 
-## Step 7 — Hand-off
+## Step 7 — Write the contracts and the design doc
 
-**Record and hand off** — Write `design.md` (layer map, state-ownership decisions,
-server-state path, Zustand shape, composition notes, blank
-`## Architecture Gate — Justifications` section). Write `contracts/<unit>.md` for every
-unit (kind/layer, public API, data shapes, AC-IDs traced to this unit, testability seam,
-direct dependencies). Then run this skill's Verify step (`references/gate-procedure.md`) at phase exit.
+**`contracts/<unit>.md`** — one per unit from Step 1, stated concretely enough that
+implementation and tests write against it without re-deriving the design:
+
+```markdown
+## <UnitName> — contract
+- **Kind / layer:** component | hook | store | api | service · <feature folder>
+- **Public API** (exact types — no `any`):
+  - component → `interface <Unit>Props { … }`; what it renders; callbacks it fires
+  - hook → `use<Unit>(args: …): { … }` — full return type
+  - store → state shape + action signatures (intent-named)
+  - service → `create<Unit>(opts): <Unit>` + lifecycle (create/destroy) + events
+- **States it must expose:** loading · empty · error · success · disabled — each
+  tied to an observable signal (rendered text, role/aria state, enabled control).
+  Model with a discriminated union, not loose booleans.
+- **Traces to:** AC-<story>.<n>, … (the criteria this unit satisfies)
+- **Testability seam:** the isolation path from Step 6.
+- **Depends on:** inward-pointing units only.
+```
+
+**`design.md`** — the layer map (Step 1), state-ownership decisions (Step 2),
+server-state path (Step 3), Zustand shape (Step 4), composition notes (Step 5), and an
+`## Architecture Gate` section (leave a blank `### Justifications` subsection). Then run
+the Verify step (`gate-procedure.md`) before hand-off.
 
 ---
 
-This skill is the **proactive design pass** — build the structure against the rules
-before any code is written. The gate is the **lightweight verification pass** — it
-checks the output once. Same rules, two moments.
+This is the **proactive design pass** — build the structure against the rules before any
+code exists. The gate is the **lightweight verification pass** — it checks the output
+once. Same rules, two moments.

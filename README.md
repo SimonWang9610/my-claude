@@ -4,19 +4,27 @@ A reusable [Claude Code](https://claude.com/claude-code) bundle that drives a st
 spec-driven workflow — `init → preflight → requirements → clarify → design → tasks → implement →
 validate → qa → drift` — for **React/TypeScript** and **Flutter/Dart** projects.
 
-It ships four kinds of asset:
+The moving parts:
 
-- **Workflows** — one YAML per workflow variant (`feature`, `brownfield`, `bugfix`, `quickfix`):
-  the canonical phase machine (phase order, command, roles, gates, required flags). `/sf-init`
-  snapshots the chosen YAML into the spec dir; commands and drivers read that snapshot.
+- **Workflows** — the phase machines come from the project's vendored specflow templates
+  (`specflow/src/workflows/<variant>.yaml`, overridable via `.specflow/workflows/`), not from
+  this bundle. `/sf-react-workflow` translates the chosen template into the spec's bound
+  `workflow.yaml`, binding React `oac-*` skills directly to each phase — phases carry
+  `id / command / inputs / outputs / skills / gate / exitWhen`, workflow and phase ids match
+  `.meta.yaml`, no other fields; commands and the driver read that file. The generators are
+  React-specific; a Flutter/other stack would ship a parallel `*-<tech>-workflow` generator.
+  (Specflow projects use only their `/spec-*` commands: `/spec-init` scaffolds,
+  `/spec-react-workflow` generates the snapshot.)
 - **Commands** — one generic, stack-neutral `/sf-*` stage set (process, goals, inputs, and gates
   only; they name no skill, rule, or stack).
 - **Skills** — the stack-specific know-how the stages use (`oac-*` for React, `fl-*` for Flutter),
   plus standalone review skills.
-- **Agents** — per-stack workflow **drivers** (`oac-*-workflow`, `fl-*-workflow`). The driver is a
-  pure orchestrator: it starts via `/sf-workflow-startup <tech> <variant>` (worktree → seed →
-  bind → init), drives the resulting phases, enforces the human gates, and delegates phase work
-  to subagents.
+- **Agents** — two unified, stack-neutral workflow **drivers**: `sflow-driver` for this bundle's
+  `/sf-*` flow, `specflow-driver` for company specflow projects (`/spec-*` commands). The driver
+  is a pure orchestrator: its initialPrompt runs the embedded Setup section — worktree check,
+  spec init via `/sf-init` (or the project's `/spec-init`) — then waits for your instructions;
+  it then generates `workflow.yaml` via `/sf-react-workflow` or `/spec-react-workflow`
+  and enters the Drive Loop — enforcing the human gates and delegating phase work to subagents.
 
 You typically **vendor this repo into your project** (e.g. a git submodule) and link it into the
 project's `.claude/`; or link it into your **global `~/.claude`**. Either way the links are relative
@@ -27,15 +35,13 @@ to this repo, so they keep resolving wherever the repo lives.
 ```
 my-claude/
 ├── sflow/
-│   ├── workflows/    the canonical phase machines — feature/brownfield/bugfix/quickfix.yaml
-│   │                 (never linked into .claude — the pickers and /sf-init resolve them internally)
 │   ├── commands/     the generic /sf-* stage commands (real files; the canonical command set)
 │   └── README.md     the full workflow: stages, the agent-as-binding-layer model, picking a driver
-├── react/            React profile — agents/ (drivers), skills/ (oac-*), rules/, commands/ (tracker playbook)
-├── flutter/          Flutter profile — agents/ (drivers), skills/ (fl-*), rules/
+├── react/            React profile — skills/ (oac-*), rules/, commands/ (tracker playbook)
+├── flutter/          Flutter profile — skills/ (fl-*), rules/
 ├── skills/           aggregation view: profile skills (committed symlinks) + shared real skills —
-│                 sf-workflow-startup, pick-react-workflow, pick-flutter-workflow, standalone reviews
-├── agents/           aggregation view: every profile driver agent (committed symlinks)
+│                 sf-react-workflow, spec-react-workflow, standalone reviews
+├── agents/           the two unified driver agents (real files) — sflow-driver, specflow-driver
 ├── rules/            canonical shared rules (real) + stack-prefixed profile rule symlinks
 ├── commands/         aggregation view: the /sf-* commands + the react tracker playbook (committed symlinks)
 ├── internal-link.sh    populate the root aggregation dirs from the stack sources (repair/refresh)
@@ -47,10 +53,11 @@ my-claude/
 ### One layer, two scripts
 
 The root `agents/ commands/ rules/ skills/` dirs are **committed aggregation views**:
-per-asset relative symlinks into the stack sources (`flutter/`, `react/`, `sflow/`) plus a few
-real shared files (`rules/engineering-discipline.md`, `rules/preferences.md`, and the standalone
-skills under `skills/`). Editing a stack source is instantly visible through its aggregation
-entry. Two script pairs, two directions:
+per-asset relative symlinks into the stack sources (`flutter/`, `react/`, `sflow/`) plus real
+shared files (the driver agents under `agents/`, `rules/engineering-discipline.md`,
+`rules/preferences.md`, and the standalone skills — including the React `sf-react-workflow` /
+`spec-react-workflow` generators — under `skills/`). Editing a stack source is instantly
+visible through its aggregation entry. Two script pairs, two directions:
 
 - **`internal-link.sh` / `internal-unlink.sh`** — INSIDE the repo: (re)populate or prune the
   aggregation dirs from the stack sources (`./internal-link.sh all` also repairs them after any
@@ -90,9 +97,10 @@ Rules apply ambiently via their `paths:` frontmatter — the driver agents don't
 
 For each selected stack, `link.sh` creates relative per-asset symlinks
 `<dest>/.claude/<type>/<name>` → this repo's `<type>/<name>` for the four types
-(`agents commands rules skills`); the workflow templates are deliberately not linked — the
-pickers and `/sf-init` resolve them through their own installed symlinks back into the bundle. Shared root assets (the cross-stack rules and the
-standalone skills) are linked with any selection and removed only by `unlink.sh all` — a
+(`agents commands rules skills`); the bundle ships no workflow templates — the generators
+resolve the project's vendored specflow templates (`specflow/src/workflows/`, with
+`.specflow/workflows/` as override). Shared root assets (the driver agents, the cross-stack
+rules, and the standalone skills) are linked with any selection and removed only by `unlink.sh all` — a
 single-stack unlink leaves them for the remaining stack. Existing correct links are skipped; a
 foreign real file at a destination path is never clobbered; `unlink.sh` removes only symlinks
 that resolve back into this repo and prunes emptied type dirs. Re-running either script is safe.
@@ -102,14 +110,14 @@ After linking, `link.sh` offers (or `--aliases` / `--no-aliases` to skip the pro
 a driver directly:
 
 ```sh
-oac-feature-workflow "add a logout button"     # = claude --agent oac-feature-workflow "..." --worktree
-fl-bugfix-workflow
+sflow-driver "add a logout button"     # = claude --agent sflow-driver "..." --worktree
+specflow-driver
 ```
 
 `unlink.sh all` offers to remove the block.
 
 > **Submodule tip.** When this repo is vendored in your project, submodules are synced by the
-> driver agent's startup (worktree check) on session start — no separate hook installation
+> driver agent's Setup (worktree check) on session start — no separate hook installation
 > required.
 
 > **Windows symlink note.** Git restores the in-repo symlinks only when `core.symlinks=true` (default
@@ -121,17 +129,17 @@ Once the agents are linked into a target's `.claude/agents/`, invoke a driver di
 with Claude Code:
 
 ```sh
-claude --agent <workflow-agent-name> --worktree <worktree-name>
+claude --agent <driver-name> --worktree <worktree-name>
 ```
 
 The driver orchestrates the entire sflow lifecycle — `init → preflight → requirements → clarify →
 design → tasks → implement → validate → qa → drift` — inside the worktree, following the phase
-machine in the spec's `workflow.yaml` snapshot.
+machine in the spec's generated `workflow.yaml`.
 
 Available workflow-driver agents:
 
-- **Flutter:** `fl-feature-workflow`, `fl-bugfix-workflow`, `fl-quickfix-workflow`, `fl-brownfield-workflow`
-- **React:** `oac-feature-workflow`, `oac-bugfix-workflow`, `oac-quickfix-workflow`, `oac-brownfield-workflow`
+- **`sflow-driver`** — this bundle's `/sf-*` flow (Setup, then generates `workflow.yaml` from your instructions)
+- **`specflow-driver`** — company specflow projects driven through the `/spec-*` commands
 
 > The agent must be linked into the target's `.claude/agents/` first (run `link.sh`).
 
@@ -146,5 +154,7 @@ symlink change, then re-run `./link.sh` on each destination.
 
 See **[sflow/README.md](sflow/README.md)** for the full lifecycle, the workflow YAML schema,
 the agent-as-binding-layer model, the human verification gate after `/sf-implement`, and how to pick
-the right driver agent (`oac-{feature,brownfield,bugfix,quickfix}-workflow` for React, `fl-*` for
-Flutter).
+the right driver agent (`sflow-driver` for this bundle's `/sf-*` flow, `specflow-driver` for
+specflow projects).
+
+sflow is interoperable with the project-side **specflow** toolchain — see [sflow/README.md](sflow/README.md).

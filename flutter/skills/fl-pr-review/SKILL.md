@@ -57,7 +57,8 @@ Full definitions with Flutter examples: `references/severity-model.md`.
    memory (Steps 3a–3g in `references/review-procedure.md`).
 4. Confidence-filter: only report high-confidence findings (Step 4).
 5. Assemble the report per the template in `references/report-format.md`.
-6. If the human requests GitHub posting, confirm before executing (Step 6 in the procedure).
+6. If the human requests GitHub posting, confirm before executing (Step 6 in the procedure;
+   commands in `references/github-posting.md`).
 
 Full procedure with exact rule file paths and pass order: `references/review-procedure.md`.
 
@@ -69,11 +70,13 @@ Full procedure with exact rule file paths and pass order: `references/review-pro
 |------|---------|
 | `references/review-procedure.md` | Full step-by-step procedure, rule-file paths, pass order |
 | `references/severity-model.md` | Three tiers with Flutter examples, rule IDs, verdict mapping |
-| `references/report-format.md` | Report template + opt-in GitHub posting commands |
-| `../fl-architecture-design/references/how-to-use-bundled-rules.md` | Rule index (13 core + `conditional/performance/`) — corpus lives in `fl-architecture-design`; Riverpod idioms in `../fl-riverpod/SKILL.md` |
-| `../fl-architecture-design/references/gate-procedure.md` | Verifiable-unit gate procedure + PASS/FAIL formats (Verify step of fl-architecture-design) |
-| `../fl-test-contract/SKILL.md` | Six authoring-time test-quality rules |
-| `../fl-test-forensics/SKILL.md` | Three gap-class passes (no-spec, miss-behavior, false-positive) |
-| `../../rules/architecture-principles.md` | P1–P8 principles |
-| `../../rules/test-quality.md` | Test quality rules |
-| `engineering-discipline` | Discipline rules (scope, surgical changes) |
+| `references/report-format.md` | Report template |
+| `references/github-posting.md` | Opt-in GitHub posting: PR resolution, REST fallback, single batched review (inline comments + verdict event) |
+| `references/how-to-use-bundled-rules.md` | Rule index (13 core + `conditional/performance/`) — corpus lives in `fl-architecture-design`; Riverpod idioms in the `fl-riverpod` skill |
+| `references/gate-procedure.md` | Verifiable-unit gate procedure + PASS/FAIL formats (Verify step of fl-architecture-design) |
+| `fl-test-contract` skill | Six authoring-time test-quality rules (invoke by name) |
+| `fl-test-forensics` skill | Three gap-class passes (no-spec, miss-behavior, false-positive) (invoke by name) |
+
+Always-on rules — `architecture-principles` (P1–P8), `test-quality`, and
+`engineering-discipline` — are linked into `.claude/rules/` at install and apply ambiently;
+no file path needed.

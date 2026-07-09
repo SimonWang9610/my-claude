@@ -35,4 +35,4 @@ export function createPlayerEngine(opts: { onPosition: (ms: number) => void }) {
 // features/playback/hooks/usePlayerEngine.ts wires onPosition → store/refs
 ```
 
-This is the same discipline as keeping Flutter data-layer providers ignorant of widgets — the wiring lives at the feature boundary, not inside the lower layer.
+The wiring lives at the feature boundary, not inside the lower layer: the service stays ignorant of the store, and the hook connects the two.

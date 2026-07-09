@@ -1,6 +1,7 @@
 # Gate procedure — verifiable-unit gate
 
-Full review procedure, report formats, trigger detail, and scope boundary. Read when running the gate.
+The gate question, the three blocking triggers, the review procedure, and the output
+formats. Read when running the gate. Paths are relative to this `references/` directory.
 
 ---
 
@@ -9,172 +10,138 @@ Full review procedure, report formats, trigger detail, and scope boundary. Read 
 - [Why this gate exists](#why-this-gate-exists)
 - [Procedure](#procedure)
 - [The three blocking triggers](#the-three-blocking-triggers)
-- [Review Report format](#review-report-format)
+- [Output formats](#output-formats)
 - [Scope boundary](#scope-boundary)
 
 ---
 
 ## Why this gate exists
 
-A God-component has no isolation seam, so the only way to "test" it is to mock the whole host —
-which exercises nothing inside it. A dual-source-of-truth lets an AC be true in one owner and
-false in the other simultaneously. A spec flow that never asks the verifiable-unit question lets
-feature specs pile behavior into whichever large host already exists, and agents improvise
-unspecced logic with no testable seam. This gate inserts that question into the lifecycle.
-
-**External practice:**
-- React docs — custom hook extraction: https://react.dev/learn/reusing-logic-with-custom-hooks
-- Feature-Sliced Design — hard feature boundaries: https://feature-sliced.design/
-- bulletproof-react — explicit feature public API: https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md
-- TanStack — server vs client state: https://tanstack.com/query/v5/docs/framework/react/guides/does-this-replace-client-state
-- TkDodo — copying server data into state opts out of background updates: https://tkdodo.eu/blog/practical-react-query
-- TkDodo — derive at read time, not with effects: https://tkdodo.eu/blog/deriving-client-state-from-server-state
+A God-component has no isolation seam, so the only way to "test" it is to mock the whole
+host — which exercises nothing inside it. A dual-source-of-truth lets an AC be true in
+one owner and false in the other at once. A spec that never asks the verifiable-unit
+question piles behavior into whichever large host already exists, with no testable seam.
+This gate asks that question before the design is accepted.
 
 ---
 
 ## Procedure
 
-Run the review at **gate altitude** (architecture, not line-by-line):
+Run at **gate altitude** — architecture and data flow, not line-by-line:
 
-1. **Scope.** Take the file list from `design.md` → Component Impact / surfaces section, plus any
-   files modified or created during implementation. List them before reading.
-
-2. **Map the structure first.** Sketch actual data flow for the surfaces in scope: where state
-   lives (component state, Zustand stores, Query cache, Context), who writes each fact, who reads
-   it, and how components compose. Note the LOC and effect/hook counts of each unit in scope.
-   Misdiagnosis comes from skipping this step.
-
-3. **Check against bundled rules in priority order.** For the rule index and priority order,
-   see `how-to-use-bundled-rules.md`. When a surface
-   looks like it might violate a rule, open the specific file in
-   `core/<name>.md` — do not cite rules from memory.
-   Priority: `state-` (CRITICAL) → `zustand-` (HIGH) → `query-` (HIGH) → `compose-` (MEDIUM-HIGH)
-   → `layer-` (MEDIUM). The three blocking triggers map onto the
-   highest-priority categories — see the crosswalk in
-   `principle-checks.md`.
-
-4. **Confirm against the code.** For each candidate trigger, verify against the actual code (not
-   assumption), note the file path, and assess honestly. A pattern that's technically "wrong" but
-   harmless in context is not a blocking trigger.
-
-5. **Write the Review Report and run the extraction/justification gate** (formats below).
+1. **Scope.** Take the unit/file list from `design.md` (layer map, Component Impact
+   section), plus any files created during implementation if re-running against code.
+   List them before reading.
+2. **Map the structure.** Sketch actual data flow for the surfaces in scope: where each
+   fact lives (component state, Zustand, Query cache, Context), who writes it, who reads
+   it, how components compose. Note LOC and effect/hook counts per unit. Misdiagnosis
+   comes from skipping this.
+3. **Scan for defects, confirm against a rule.** Walk the P1–P7 violation signals in
+   `principle-checks.md` (priority: `state-` → `zustand-` → `query-` → `compose-` →
+   `layer-`). When a surface looks wrong, open the specific `core/<name>.md` and confirm
+   against its right/wrong example — never cite a rule from memory. The three blocking
+   triggers map onto the highest-priority categories (crosswalk in `principle-checks.md`).
+4. **Confirm against the code.** Verify each candidate trigger against the actual
+   file (not assumption); note the path. A pattern technically "wrong" but harmless in
+   context is not a blocking trigger.
+5. **Write the output and resolve every trigger** (formats below).
 
 ---
 
 ## The three blocking triggers
 
-These are **hard blocks**. A phase cannot close while any trigger is unresolved. Resolve via an
-extraction plan or a recorded justification.
+Hard blocks — the design cannot be accepted while any trigger is unresolved. Resolve
+each via an extraction plan or a recorded justification.
 
 ### Trigger 1 — God-component / God-hook
 
-**Condition:** A component past ~400 LOC, or a hook mixing two or more of CRUD/data-fetching,
-UI-state management, and lifecycle side-effects.
-
-**Confirm against:** `core/compose-extract-hooks.md`,
-`core/layer-feature-folders.md`. Cross-check
-`compose-explicit-variants.md` if the bloat comes from mode flags.
-
-**Required extraction pattern:** extract a render-only component (data + callbacks via props, no
-state or effects) and named single-responsibility hooks (one hook per concern, each independently
-invocable via `renderHook`). The host becomes a thin orchestrator.
-
-**The check:** "Can this component/hook's behavior be exercised in an isolated test without mocking
-the entire host?"
+- **Fires when:** a component past ~400 LOC, or a hook mixing ≥2 of CRUD/data-fetch,
+  UI-state management, and lifecycle side-effects.
+- **Confirm against:** `core/compose-extract-hooks.md`, `core/layer-feature-folders.md`;
+  add `core/compose-explicit-variants.md` if the bloat comes from mode flags.
+- **Required fix:** extract a render-only component (data + callbacks via props) and
+  named single-responsibility hooks (one concern each, invocable via `renderHook`); the
+  host becomes a thin orchestrator.
+- **The check:** can this unit's behavior be exercised in isolation without mocking the
+  entire host?
 
 ### Trigger 2 — Server-state-in-Zustand / dual-source-of-truth
 
-**Condition:** The spec introduces or preserves: a server-derived field in a Zustand slice or
-`localStorage`; a `useEffect(() => setX(...), [serverData])` mirror; or two owners for the same
-fact (Query cache + Zustand slice holding the same entity list).
-
-**Confirm against:** `core/state-no-server-data-in-stores.md`,
-`core/state-single-source-of-truth.md`,
-`core/state-derive-dont-store.md`,
-`core/query-no-effect-fetching.md`,
-`core/zustand-persist-discipline.md`.
-
-**Required fix pattern:** server state moves to `useQuery`; Zustand holds only UI-only keys
-(selected ID, open/closed, wizard step). Client selection is derived at read time:
-`const resolved = serverList.find(item => item.id === selectedId)`. Writes go through
-`useMutation` with `onSuccess: () => queryClient.invalidateQueries(...)`.
-
-**The check:** "Is there a single authoritative owner for every fact this spec touches?"
+- **Fires when:** the spec introduces or preserves a server-derived field in a Zustand
+  slice or `localStorage`; a `useEffect(() => setX(...), [serverData])` mirror; or two
+  owners for one fact (Query cache + a store holding the same entity list).
+- **Confirm against:** `core/state-no-server-data-in-stores.md`,
+  `core/state-single-source-of-truth.md`, `core/state-derive-dont-store.md`,
+  `core/query-no-effect-fetching.md`, `core/zustand-persist-discipline.md`.
+- **Required fix:** server state moves to `useQuery`; Zustand holds only UI keys
+  (selected id, open/closed, wizard step); selection is derived at read time
+  (`serverList.find(x => x.id === selectedId)`); writes go through `useMutation` with
+  `onSuccess: () => queryClient.invalidateQueries(...)`.
+- **The check:** is there a single authoritative owner for every fact this spec touches?
 
 ### Trigger 3 — Testability seam missing
 
-**Condition:** A behavior the spec introduces can only be tested by mocking its entire host
-component or hook. Signals: test plan relies on `vi.mock('../hooks/useLargeHook')` at module
-level; behavior is nested inside a God-unit with no callable surface; the spec adds behavior to a
-God-unit with no extraction plan.
-
-**Confirm against:** `core/compose-extract-hooks.md`,
-`core/layer-service-isolation.md`,
-`core/query-no-effect-fetching.md`.
-
-**Required fix:** every unit the spec introduces must expose a testability seam — a component
-independently renderable with a static props fixture, or a hook independently invocable via
-`renderHook` with controlled inputs.
-
-**The check:** "Could a test writer exercise each behavior without mocking the entire host?"
+- **Fires when:** a behavior the spec introduces can only be tested by mocking its entire
+  host. Signals: a test plan leaning on `vi.mock('../hooks/useLargeHook')` at module
+  level; behavior nested in a God-unit with no callable surface; behavior added to a
+  God-unit with no extraction plan.
+- **Confirm against:** `core/compose-extract-hooks.md`, `core/layer-service-isolation.md`,
+  `core/query-no-effect-fetching.md`.
+- **Required fix:** every unit the spec introduces exposes a seam — a component
+  renderable with a static props fixture, or a hook invocable via `renderHook` with
+  controlled inputs.
+- **The check:** could a test writer exercise each behavior without mocking the host?
 
 ---
 
-## Review Report format
+## Output formats
 
-Record the gate result in the shape below, then write it into `design.md` (gate at design) or the validate report (gate at validate).
+Record the result in `design.md` under `## Architecture Gate` (or, when re-running against
+code, in the verification report the caller names).
+
+**Review (structure map + findings):**
 
 ```markdown
 ## Architecture Gate — Review
-
 ### Structure map
 <state ownership / data flow for the surfaces in scope; LOC + effect counts per unit>
-
 ### Findings
-| # | Trigger | Rule (bundled) | Unit / path | Finding |
-|---|---------|----------------|-------------|---------|
-| 1 | God-component | compose-extract-hooks | src/.../Foo.tsx (612 LOC) | mixes fetch + UI + 4 effects, no render-only seam |
+| # | Trigger | Rule (core/) | Unit / path | Finding |
+|---|---------|--------------|-------------|---------|
+| 1 | God-component | compose-extract-hooks | src/.../Foo.tsx (612 LOC) | fetch + UI + 4 effects, no render-only seam |
 ```
 
-### PASS
+**PASS:**
 
 ```markdown
 ## Architecture Gate — Result
 PASS. Checked: God-component/hook, server-state-in-Zustand, testability seam.
-No triggers fired on: [list of surfaces checked].
+No triggers fired on: [surfaces checked].
 ```
 
-The phase may close.
-
-### FAIL (blocking)
-
-Record under `## Architecture Gate — Findings`:
+**FAIL (blocking)** — record and resolve before hand-off:
 
 ```markdown
 FAIL — [Trigger name]
-Unit: [ComponentName / hookName] at [file path]
-Reason: [one sentence: why this unit fails the trigger]
+Unit: [name] at [file path]
+Reason: [one sentence — why this unit fails the trigger]
 Rule confirmed against: core/<name>.md
 Required action: [extraction plan | move server state to useQuery | expose testability seam]
 ```
 
-The phase **cannot close** until the finding is resolved or a justification is recorded.
-
-### Justification (recorded exception)
-
-Record under `## Architecture Gate — Justifications`:
+**Justification (recorded exception)** — under `## Architecture Gate — Justifications`:
 
 ```markdown
 JUSTIFICATION — [Trigger name]
-Unit: [ComponentName / hookName] at [file path]
-Why extraction is deferred: [specific reason — not "too large", but e.g. "being extracted in a
-separate refactor spec; this spec only adds a read-only field to the existing surface"]
-Test strategy without extraction: [how the behavior will be tested despite the missing seam]
+Unit: [name] at [file path]
+Why extraction is deferred: [specific reason — e.g. "this change only adds a read-only
+field to an existing surface; extraction is scoped to a separate refactor"]
+Test strategy without extraction: [how the behavior is tested despite the missing seam]
 Approved by: [author / reviewer]
 ```
 
-A recorded justification satisfies the gate. The validate command checks for this block; if absent
-and the trigger fires, the gate reports `FAIL (blocking)`.
+A recorded justification satisfies the gate. Any later re-run checks for this block; if
+it is absent and the trigger still fires, the gate reports FAIL (blocking).
 
 ---
 
@@ -182,9 +149,9 @@ and the trigger fires, the gate reports `FAIL (blocking)`.
 
 This gate does NOT:
 - Review code line-by-line for style, correctness, or over-engineering.
-- Replace post-implementation test-quality forensics (those run after implementation).
-- Enforce the shared-component immutability rule (that stays in the design / validate / implement commands).
-- Define the target architecture principles (those are P1–P7 in `principle-examples.md`).
+- Replace test-quality forensics (those audit the suite after code lands).
+- Enforce a shared-component immutability rule (that belongs to the caller, not this gate).
+- Define the target principles (those are P1–P7 in `principle-examples.md`).
 
-It does ONE thing: asks whether each spec maps onto an independently verifiable unit, at
-architecture altitude, using the bundled rules, before a phase closes.
+It does ONE thing: asks whether each spec behavior maps onto an independently verifiable
+unit, at architecture altitude, using the bundled rules, before the design is accepted.

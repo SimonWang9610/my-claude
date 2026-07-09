@@ -1,8 +1,8 @@
 # Authoring journey tests
 
-Runner-abstracted discipline. Read the steering files for the project's E2E runner, harness, and
-network-intercept API. Code samples below use Vitest + React Testing Library (the default stack);
-adapt selectors and intercept calls for Playwright or Cypress as needed.
+Stack: Vitest + React Testing Library + MSW + `userEvent`. A journey drives the real component tree
+through user-visible interactions and intercepts its writes at the network boundary with MSW. Match
+the project's existing test setup and harness conventions — this file carries the discipline.
 
 ## Table of contents
 
@@ -139,12 +139,12 @@ try {
 
 ## Happy vs error paths
 
-- **Happy path** — stub the feature's writes to succeed (intercept at the network boundary) and
-  assert the user-visible success outcome.
-- **Error path** — force the failure (4xx/5xx or abort the request) and assert the user-visible
-  error surface. Every write must have at least one error-path journey.
+- **Happy path** — the MSW handler returns success for the feature's writes; assert the
+  user-visible success outcome.
+- **Error path** — override the handler to fail (4xx/5xx or a network error) and assert the
+  user-visible error surface. Every write must have at least one error-path journey.
 - Track intercepted write requests so a silently-changed endpoint surfaces as an unmatched
-  intercept rather than a falsely-green test.
+  MSW request rather than a falsely-green test.
 
 ## Naming & grouping
 

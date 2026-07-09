@@ -30,4 +30,6 @@ const onlineCount = useCameraUiStore(s => s.visibleIds.length)
 
 `useEffect` that only calls a setter from other state/props is the signature of this defect — flag every instance. The fix is deletion, not memoization.
 
+**Implementation lens:** with this placement fixed, the coding discipline is to compute the value in render (or a `useMemo`/selector) — never a `useEffect` + `setState` sync. See the `oac-implementation` skill (`hooks-correctness`).
+
 Reference: [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect)

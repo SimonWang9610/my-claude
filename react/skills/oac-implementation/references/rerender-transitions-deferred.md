@@ -34,4 +34,4 @@ const [isPending, startTransition] = useTransition()
 const switchLayout = (size: GridSize) => startTransition(() => setGridSize(size))
 ```
 
-Caveats reviewers must apply: these reschedule work, they don't shrink it — if the expensive render is avoidable (virtualization, memo boundaries, narrower subscriptions), fix that first; and the subtree consuming the deferred value must be memoized, otherwise it re-renders with the urgent pass anyway and the deferral is a no-op.
+Caveats when you reach for these: they reschedule work, they don't shrink it — if the expensive render is avoidable (virtualization, memo boundaries, narrower subscriptions), fix that first; and the subtree consuming the deferred value must be memoized, otherwise it re-renders with the urgent pass anyway and the deferral is a no-op.

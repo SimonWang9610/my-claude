@@ -1,10 +1,9 @@
-# Principle examples — P1–P7 right/wrong sketches
+# Principle examples — P1–P7 gate-lens right/wrong sketches
 
-Right/wrong code sketches for the seven target-architecture principles enforced by this gate.
-General best practices for a React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI +
-Vitest project; examples use a neutral "list + detail" feature (`useDevices`, `DeviceListPage`)
-so they transfer to any domain. For violation signals and trigger crosswalk, see
-[`principle-checks.md`](principle-checks.md).
+Right/wrong code sketches for the seven verifiable-unit **gate lenses** — each a named cluster of
+the 22 `core/` rules, not a separate rule system. Examples use a neutral "list + detail" feature
+(`useDevices`, `DeviceListPage`) so they transfer to any domain. For violation signals and the
+rule crosswalk, see [`principle-checks.md`](principle-checks.md).
 
 ---
 

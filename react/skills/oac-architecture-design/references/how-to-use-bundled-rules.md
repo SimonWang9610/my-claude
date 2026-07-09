@@ -18,7 +18,7 @@ incorrect/correct example pair. Do not cite a rule from memory; confirm against 
 
 1. Walk the categories in **priority order** (tables below). For each surface in scope, decide
    which category it touches, then open the specific `core/<name>.md` before concluding.
-2. The three blocking triggers (verified in this skill's Verify step and detailed in `gate-procedure.md`) map onto the highest-priority
+2. The three blocking triggers (the verifiable-unit gate, detailed in `gate-procedure.md`) map onto the highest-priority
    architecture categories — see "Trigger → rule map" at the bottom.
 
 All paths below are relative to this `references/` directory.
@@ -29,10 +29,15 @@ All paths below are relative to this `references/` directory.
 
 Priority: `state-` (CRITICAL) → `zustand-` (HIGH) → `query-` (HIGH) → `compose-` (MEDIUM-HIGH) → `layer-` (MEDIUM).
 
+Each rule here is a **design decision** — what to decide and record in `design.md`/`contracts/`.
+Rules marked **↔ impl: `<name>`** have a coding-discipline twin in the `oac-implementation` skill:
+the same topic seen from the implementation lens (how to honor the decision in code). Decide here;
+the twin governs the code that carries it out.
+
 ### 1. State Ownership & Placement — `state-` (CRITICAL)
 - `core/state-ownership-decision.md` — local useState → lifted → Zustand → TanStack Query; keep state as local as possible.
-- `core/state-no-server-data-in-stores.md` — server data lives in TanStack Query; never mirrored into Zustand/useState.
-- `core/state-derive-dont-store.md` — values computable from existing state/props are derived, never stored.
+- `core/state-no-server-data-in-stores.md` — server data lives in TanStack Query; never mirrored into Zustand/useState. ↔ impl: `data-states`.
+- `core/state-derive-dont-store.md` — values computable from existing state/props are derived, never stored. ↔ impl: `hooks-correctness`.
 - `core/state-no-prop-to-state-copy.md` — don't copy props into state; use the prop directly or a `key` reset.
 - `core/state-single-source-of-truth.md` — each fact has exactly one owner.
 
@@ -40,14 +45,14 @@ Priority: `state-` (CRITICAL) → `zustand-` (HIGH) → `query-` (HIGH) → `com
 - `core/zustand-actions-in-store.md` — mutation logic in store actions, not scattered `setState` in components.
 - `core/zustand-slice-organization.md` — one domain per store/slice; split mega-stores, merge confetti stores.
 - `core/zustand-no-component-coupling.md` — stores expose domain operations, never know about components/UI.
-- `core/zustand-transient-subscribe.md` — high-frequency values use `subscribe`/refs, not reactive hooks.
+- `core/zustand-transient-placement.md` — high-frequency/per-frame values don't belong in the store; emit them from the service, keep only discrete session state. ↔ impl: `rerender-transient-subscribe`.
 - `core/zustand-persist-discipline.md` — `persist` only whitelisted fields via `partialize`; version + migrate.
 
 ### 3. Server State / TanStack Query — `query-` (HIGH)
 - `core/query-no-effect-fetching.md` — no `useEffect` + fetch + setState; use `useQuery`.
 - `core/query-key-factory.md` — centralized, typed query-key factories per domain.
-- `core/query-mutation-invalidation.md` — mutations invalidate/update affected queries; no manual refetch.
-- `core/query-select-transform.md` — shape/derive server data with `select`, not in components or stored copies.
+- `core/query-mutation-invalidation.md` — design each mutation's invalidation graph (families invalidated/updated); no manual refetch. ↔ impl: `query-mutation-wiring`.
+- `core/query-select-transform.md` — the derived shape is part of the query hook's contract; shape with `select`, not in components or stored copies. ↔ impl: `query-narrow-subscriptions`.
 
 ### 4. Component Composition — `compose-` (MEDIUM-HIGH)
 - `core/compose-avoid-boolean-props.md` — don't accrete `isX`/`hideY` props; restructure with composition.

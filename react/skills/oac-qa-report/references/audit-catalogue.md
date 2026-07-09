@@ -2,9 +2,9 @@
 
 The build gate and the audit families QA runs before writing the report. Each check, when it fires,
 becomes a finding flagged `⚠️ **<Label>:** <one-line>` and a row in the report's findings table.
-General and stack-agnostic — substitute your project's commands and conventions (from the steering
-files). Optional project extensions (visual/design fidelity, E2E journeys, API-contract compliance)
-live at the adaptation point, not here.
+General and stack-agnostic — substitute the project's own build/test commands and conventions.
+Optional project extensions (visual/design fidelity, E2E journeys, API-contract compliance) are
+included only when the project runs them, not part of the core catalogue.
 
 ## Contents
 
@@ -44,13 +44,13 @@ The specs may describe the work inaccurately. Do not take them at face value.
 - **Baseline accuracy** — if the spec claims a "current behavior" or "bug" on the base branch, verify
   it against the base. A described baseline that never existed → `⚠️ Spec baseline mismatch` (a new
   feature mislabeled as a bugfix).
-- **Workflow type** — does `.meta.yaml`'s `workflow` match the actual work (a `bugfix` must fix
-  something demonstrably broken on the base; a `feature` adds new behavior)?
-- **Phase/task honesty** — for each task marked `completed`, verify the deliverable exists
-  (created files present, deleted files gone, modification sub-items actually landed). Flag
-  `status: validated`/all-tasks-completed on a single spec+code commit (retroactive fiction), any
-  `pending` phase under a `validated`/`complete` status, a `current_phase` that contradicts `status`,
-  and a `name`/directory mismatch.
+- **Declared change type** — does the spec's declared change type match the actual work (a `bugfix`
+  must fix something demonstrably broken on the base; a `feature` adds new behavior)?
+- **Task/status honesty** — for each task marked `completed`, verify the deliverable exists
+  (created files present, deleted files gone, modification sub-items actually landed). If the spec
+  ships tracking metadata, audit it too: flag all-tasks-completed/`validated` claimed on a single
+  spec+code commit (retroactive fiction), status fields that contradict each other or the actual
+  work, and a spec `name`/directory mismatch.
 - **Requirement ↔ task consistency** — for each `FR-*`/`AC-*`, find the `TASK-*` that implements it;
   if they describe different behavior, the implementation can only match one. `⚠️ Spec internal
   contradiction` (Critical — the losing doc must be fixed and QA re-run).
@@ -66,7 +66,7 @@ A feature PR should contain only feature-related changes.
 - **Governance files** — config/CI/ownership surfaces changed (`.github/`, CI workflows, lint/TS/
   bundler config, `.gitignore`, dotenv, the framework's own command/rule files) without the feature
   being a governance task → `⚠️ Scope creep — governance files` (Critical).
-- **Steering placeholders** — steering docs rewritten to template placeholders (`[Describe …]`).
+- **Doc placeholders** — project docs / reference files reverted to template placeholders (`[Describe …]`).
 - **Project identity** — package renamed to a temp/placeholder name, or an unrelated entry point.
 - **Unrelated dependencies** — new runtime deps not traceable to the design; test-only packages added
   to runtime deps.
@@ -77,9 +77,9 @@ A feature PR should contain only feature-related changes.
 
 ## §3 — Coverage + false-positive
 
-Detection mechanics live in the sibling skills — apply them and record the hits here:
-- [`../../oac-test-forensics/SKILL.md`](../../oac-test-forensics/SKILL.md) — the three gap classes, mock-shape drift, matcher misuse, and the **mutation test** (invert/delete the deciding branch — does the test still pass? → false positive). A false positive mapped to an `AC-*` is **Critical** (the AC has no real verification).
-- [`../../oac-test-contract/SKILL.md`](../../oac-test-contract/SKILL.md) — the six per-test rules.
+Detection mechanics live in sibling skills — invoke each by name, apply it, and record the hits here:
+- Invoke the `oac-test-forensics` skill — the three gap classes, mock-shape drift, matcher misuse, and the **mutation test** (invert/delete the deciding branch — does the test still pass? → false positive). A false positive mapped to an `AC-*` is **Critical** (the AC has no real verification).
+- Invoke the `oac-test-contract` skill — the six per-test rules any coverage finding maps back to.
 
 QA-specific coverage checks not covered there:
 - **Colocated tests** — every newly created unit has a colocated test; if not → `⚠️ Missing colocated test`.

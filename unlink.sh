@@ -7,8 +7,9 @@
 #     ./unlink.sh                            # interactive
 #
 # Only symlinks that resolve back into THIS repo are ever removed; anything else is left
-# untouched. Shared root assets (cross-stack rules, standalone skills) are removed only with
-# "all" — a single-stack unlink leaves them for the remaining stack. Empty type dirs are pruned.
+# untouched. Shared root assets (the driver agents, cross-stack rules, standalone skills) are
+# removed only with "all" — a single-stack unlink leaves them for the remaining stack. Empty
+# type dirs are pruned.
 #
 set -euo pipefail
 

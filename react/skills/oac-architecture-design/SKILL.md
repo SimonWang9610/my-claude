@@ -1,89 +1,96 @@
 ---
 name: oac-architecture-design
 description: >
-  Applies React architecture rules while authoring design.md and contracts/ for a
-  React 19 + TypeScript + Zustand + TanStack Query v5 + MUI feature. Enforces four
-  concerns: state ownership and placement, server state as TanStack Query SSOT,
-  Zustand store discipline, and component composition with per-unit testability seams.
-  Runs the verifiable-unit gate at design exit (three blocking triggers: God-component,
-  server-state-in-Zustand, missing testability seam). Trigger:
-  any session that structures components, hooks, stores, query keys, or write paths
-  from scratch or extends an existing design.md.
+  Records the architecture decisions for a feature in design.md + contracts/ — where each
+  piece of state lives and who owns it, server data as the TanStack Query source of truth,
+  Zustand store shape, component composition, and layering — then runs the verifiable-unit
+  gate. Reach for it when structuring components, hooks, stores, query keys, or write paths,
+  or extending an existing design (React 19 + TS + Zustand + TanStack Query v5).
 ---
 
 # oac-architecture-design
 
-Author `design.md` and `contracts/<unit>.md` as a *design-time authoring discipline* —
-not a retroactive reviewer. Apply principles P1–P7 before any TypeScript is written
-so every blocking trigger is a non-issue at gate: no God-components, no server data in
-Zustand, no unit lacking a testability seam. A seam missing from the design cannot be
-tested in the implementation — catch it here.
+Turn the requirements + clarifications artifacts (paths the caller supplies) into
+`design.md` plus one `contracts/<unit>.md` per unit, then a gate verdict.
 
----
+**Perspective — this is a decision navigator.** Every `core/` rule is an architecture
+*decision* you make and record in `design.md`/`contracts/` — where state lives and who owns
+it, the server-state path, the store shape, the composition and layer boundaries. The rules
+are grouped by **decision area** (`state-` → `zustand-` → `query-` → `compose-` → `layer-`);
+several carry a coding-discipline twin in the `oac-implementation` skill that governs the code
+honoring the decision (marked in the rule index). This is a **design-time authoring
+discipline**, not a retro reviewer: decide before any TypeScript exists so every blocking
+trigger is a non-issue at the gate. A seam missing from the design cannot be tested in the
+code — catch it here.
 
-## Instructions
+**Produce**
+- `design.md` — layer map, state-ownership decisions, server-state path, Zustand
+  shape, composition notes, and an `## Architecture Gate` section.
+- `contracts/<unit>.md` — one per unit (skeleton below).
+- a gate verdict per unit: PASS, an extraction plan, or a recorded justification.
 
-### 1. Load the rule index first
+## Procedure
 
-Open `references/how-to-use-bundled-rules.md` — it lists all 22 `core/` rules (always
-applied) by priority category. Keep it at hand throughout.
+1. **Load the rule index.** Open `references/how-to-use-bundled-rules.md` — the 22
+   `core/` rules in priority order (`state-` → `zustand-` → `query-` → `compose-` →
+   `layer-`). Keep it at hand; open the specific `core/<name>.md` before you commit a
+   decision — never cite a rule from memory.
+2. **Author `design.md`.** Work `references/design-procedure.md` steps 1–7 in order,
+   recording each decision as you go.
+3. **Write one contract per unit** in the shape below.
+4. **Gate at hand-off.** Run `references/gate-procedure.md` over the three blocking
+   triggers; write PASS / extraction plan / justification into `design.md`. The
+   caller may re-run the same gate later against implemented code.
 
-### 2. Follow the design procedure
+## Contract skeleton — `contracts/<unit>.md`
 
-Open `references/design-procedure.md` and work through all 7 steps in order.
+Every unit from Step 1 gets a contract stating its public surface concretely — enough
+that implementation and tests can be written against it without re-deriving the design:
 
-### 3. Key decisions
+```markdown
+## <UnitName> — contract
+- **Kind / layer:** component | hook | store | api | service · <feature folder>
+- **Public API** (name the exact types — no `any`):
+  - component → `interface <Unit>Props { … }`; what it renders; callbacks it fires
+  - hook → `use<Unit>(args: …): { … }` — the full return type
+  - store → state shape + action signatures (intent-named)
+  - service → `create<Unit>(opts): <Unit>` + lifecycle (create/destroy) + events
+- **States it must expose:** loading · empty · error · success · disabled — each
+  mapped to an observable signal (rendered text, role/aria state, enabled control)
+  the ACs assert against. Use discriminated unions, not scattered booleans.
+- **Traces to:** AC-<story>.<n>, … (the criteria this unit satisfies)
+- **Testability seam:** how it runs in isolation — `render(<Unit/>)` behind a
+  providers wrapper / `renderHook(() => use<Unit>())` with controlled inputs /
+  direct service call. Never requires a module-level mock of its host.
+- **Depends on:** <inward-pointing units only — ui → hooks/store → api/services>
+```
 
-- **Feature-folder / layer assignment** — `references/core/layer-feature-folders.md`,
-  `references/core/layer-unidirectional-deps.md`
-- **State-ownership tier** (local useState → lifted → Zustand → TanStack Query) —
-  `references/core/state-ownership-decision.md`
-- **Server data is SSOT in TanStack Query, never mirrored to Zustand** —
-  `references/core/state-no-server-data-in-stores.md`,
-  `references/core/query-no-effect-fetching.md`
-- **One owner per fact, derive the rest** —
-  `references/core/state-single-source-of-truth.md`,
-  `references/core/state-derive-dont-store.md`
-- **Zustand store discipline** (actions in store, one domain per slice) —
-  `references/core/zustand-actions-in-store.md`,
-  `references/core/zustand-slice-organization.md`
-- **Component composition over boolean-prop accretion** —
-  `references/core/compose-extract-hooks.md`,
-  `references/core/compose-avoid-boolean-props.md`
-- **Every unit independently verifiable (testability seam)** —
-  `references/core/compose-extract-hooks.md`,
-  `references/core/layer-service-isolation.md`
+## The verifiable-unit gate (at hand-off)
 
-### 4. Verify — the verifiable-unit gate
+> Does each spec behavior map onto an independently verifiable unit —
+> renderable/invocable in isolation without mocking its host?
 
-> **Token cost note:** this step reads only `references/gate-procedure.md` (lightweight). Do NOT re-open the full corpus under `core/` — that is for authoring (steps 1–3).
+Three blocking triggers — hard blocks until each is resolved:
 
-At design exit **and** at validate, confirm the gate question and the three blocking triggers:
+| # | Trigger | Fires when |
+|---|---------|-----------|
+| 1 | God-component / God-hook | a component past ~400 LOC, or a hook mixing ≥2 of CRUD/data-fetch, UI-state, lifecycle side-effects |
+| 2 | Server-state-in-Zustand / dual-source | a server-derived field in Zustand or `localStorage`, a `useEffect` mirroring server data into state, or two owners for one fact |
+| 3 | Testability seam missing | a behavior reachable only by mocking its entire host hook/component |
 
-> **Does each spec map onto an independently verifiable unit — renderable/invocable in isolation without mocking its host?**
-
-**Three blocking triggers (hard blocks — phase cannot close while unresolved):**
-
-1. **God-component / God-hook** — component past ~400 LOC, or a hook mixing two or more of
-   CRUD/data-fetching, UI-state management, and lifecycle side-effects.
-2. **Server-state-in-Zustand / dual-source-of-truth** — server-derived field stored in Zustand
-   or localStorage, a `useEffect` mirroring server data into state, or two owners for the same fact.
-3. **Testability seam missing** — a spec behavior reachable only by mocking its entire host hook
-   or component at the module level.
-
-For each trigger, write PASS or record an extraction plan / justification per
-`references/gate-procedure.md` (report formats: Review Report, PASS, FAIL, Justification).
-If this skill was applied correctly through steps 1–3, all triggers should be non-issues.
-
----
+For each trigger emit **PASS**, an **extraction plan**, or a **recorded
+justification** — output formats and the confirm-against-rules procedure are in
+`references/gate-procedure.md`. If steps 1–3 were applied, all three are non-issues.
 
 ## References
 
-| Resource | Path |
-|----------|------|
-| Rule index (read first) | `references/how-to-use-bundled-rules.md` |
-| Step-by-step design procedure | `references/design-procedure.md` |
-| Core rules (22, universal) | `references/core/` |
-| Right/wrong principle sketches | `references/principle-examples.md` |
-| Per-principle violation signals | `references/principle-checks.md` |
-| Verification procedure + report formats | `references/gate-procedure.md` |
+| Resource | Path | Open when |
+|----------|------|-----------|
+| Rule index — 22 core rules, priority order | `references/how-to-use-bundled-rules.md` | first; kept open through authoring |
+| Design procedure (7 steps) + contract detail | `references/design-procedure.md` | authoring `design.md` + `contracts/` |
+| Core rules (right/wrong per rule) | `references/core/` | confirming one specific decision |
+| Gate lenses P1–P7 — right/wrong sketches (each a named cluster of the 22 core rules) | `references/principle-examples.md` | quick pattern lookup while authoring |
+| Gate lenses P1–P7 — violation signals + rule crosswalk | `references/principle-checks.md` | scanning a surface for a defect at the gate |
+
+> **P1–P7 are gate lenses, not a rival rule list** — each groups a slice of the 22 `core/` rules for the verifiable-unit scan. The `core/` rules are the single rule vocabulary; the P-lenses are how the gate reads them.
+| Gate procedure + report formats | `references/gate-procedure.md` | running the gate |

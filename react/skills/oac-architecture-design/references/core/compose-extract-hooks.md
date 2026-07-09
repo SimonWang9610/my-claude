@@ -7,7 +7,7 @@ tags: composition, hooks, separation-of-concerns
 
 ## Extract Logic into Custom Hooks
 
-When a component interleaves substantial logic (subscriptions, derived calculations, multi-step handlers, effect orchestration) with JSX, extract the logic into named custom hooks. The component becomes the view; the hook becomes the testable, reusable behavior unit. This is the React analogue of pulling logic out of a Flutter widget into a notifier/controller.
+When a component interleaves substantial logic (subscriptions, derived calculations, multi-step handlers, effect orchestration) with JSX, extract the logic into named custom hooks. The component becomes the view; the hook becomes the testable, reusable behavior unit.
 
 **Smells indicating extraction:**
 - Component > ~150 lines with mixed concerns

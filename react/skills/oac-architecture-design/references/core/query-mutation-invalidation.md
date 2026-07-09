@@ -1,22 +1,26 @@
 ---
-title: Mutations Must Settle the Cache
+title: Design the Mutation's Invalidation Graph
 impact: HIGH
-impactDescription: un-invalidated mutations leave the UI showing pre-mutation data
-tags: query, mutations, invalidation, optimistic
+impactDescription: an undesigned invalidation graph leaves the UI showing pre-mutation data
+tags: query, mutations, invalidation, cache
 ---
 
-## Mutations Must Settle the Cache
+## Design the Mutation's Invalidation Graph
 
-Every `useMutation` must reconcile the cache on success: either invalidate affected query families or update them directly (`setQueryData`). Manual choreography — calling `refetch()` from components, passing "reload" callbacks down props, or full page state resets — indicates the mutation isn't owning its consequences.
+**Decision:** for every write, decide up front which cached query families it makes stale —
+its *invalidation graph* — and record it. A mutation owns its consequences: on success it
+either invalidates the affected families or writes them directly (`setQueryData`). Manual
+choreography — components calling `refetch()`, "reload" callbacks passed down props, full
+page-state resets — is the signature of a missing invalidation graph, and belongs in the
+design as a defect to remove.
 
-**Incorrect:**
+Record in `design.md` / the mutation's contract, per mutation:
 
-```tsx
-const rename = useMutation({ mutationFn: api.renameCamera })
-// caller: rename.mutate(...); then props.onSaved() → parent calls refetch() ...
-```
+| Mutation | Invalidates (families) | Updates directly (`setQueryData`) |
+|----------|------------------------|-----------------------------------|
+| `renameCamera` | `cameraKeys.lists()` | `cameraKeys.detail(id)` |
 
-**Correct:**
+**The graph, expressed:**
 
 ```tsx
 const rename = useMutation({
@@ -28,4 +32,6 @@ const rename = useMutation({
 })
 ```
 
-Optimistic updates (`onMutate` snapshot → rollback in `onError` → `invalidateQueries` in `onSettled`) are the upgrade path for latency-sensitive interactions; recommend them only where users actually notice the wait.
+Design decides *what* is invalidated; implementation wires *how*. The exact
+`onSuccess`/`onError`/`onSettled` callback placement, optimistic application, and rollback are
+coding concerns — see the `oac-implementation` skill (`query-mutation-wiring`).

@@ -23,7 +23,7 @@ useQuery({
 })
 ```
 
-Review checklist:
+Checklist:
 - Is `staleTime` deliberate (set app-wide and/or per-domain), or accidental default-0?
 - `refetchInterval` polling: is the interval justified, and is it disabled when hidden (`refetchIntervalInBackground: false`)? Should this be a push channel (WebSocket → `setQueryData`) instead of polling?
 - For genuinely-live data, polling many keys individually multiplies requests — batch endpoints or push updates.

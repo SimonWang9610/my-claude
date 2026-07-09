@@ -36,17 +36,19 @@ Each example becomes one `AC-<story>.<n>` in the observable Given/When/Then form
 all of them — happy, edge, and counter — before numbering. This is how edge and negative
 coverage is captured at authoring time instead of being deferred to task-breakdown.
 
-## 3. Open questions → ranked clarifications
+## 3. Open questions → surface, don't guess
 
-Do not guess past a Question. Return every unresolved Question to the caller as a ranked
-question; only once answered does its example (and AC) get written.
+Do not guess past a Question. Return every unresolved Question to the caller, and write its
+example (and the AC) only once it's answered. During discovery you only surface the gap into
+`## Open questions`; ranking and settling contested/ambiguous/untestable criteria happens in the
+Hard-checks step (rank by Impact × Uncertainty, settle with the caller, then rephrase or record).
 
 ## 4. Ubiquitous language — a small glossary
 
 Capture the feature's domain terms, one definition each, in a **Glossary** section of
 `requirements.md`. Use those exact terms — verbatim — in ACs, `design.md`, contracts, and test
 names. One word per concept, no synonyms; this is what stops "scope" / "site" / "group"
-drifting across phases.
+drifting across artifacts.
 
 | Term  | Definition |
 |-------|------------|

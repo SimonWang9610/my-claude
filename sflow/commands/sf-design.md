@@ -7,7 +7,7 @@ Produce the technical design plus the contract artifacts (interfaces, data model
 
 ---
 
-**Purpose.** Decide the structure before any code is written and capture it as concrete, referenceable **contracts** — one per unit (module, data model, API/service) — so the next phase decomposes tasks against real interfaces, not prose. Technology-agnostic: the concrete principles and verifiable-unit checks live in the driver's bound assets, so the flow retargets to another stack by swapping those.
+**Purpose.** Decide the structure before any code is written and capture it as concrete, referenceable **contracts** — one per unit (module, data model, API/service) — so the next phase decomposes tasks against real interfaces, not prose. Technology-agnostic: the concrete principles and verifiable-unit checks live in the skills the spec's `workflow.yaml` lists for this phase, so the flow retargets to another stack by swapping those.
 
 ## Spec Artifacts
 

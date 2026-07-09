@@ -1,59 +1,72 @@
 ---
 name: oac-acceptance-criteria
 description: >
-  Authors and validates acceptance criteria for React 19 + TypeScript + TanStack Query v5
-  + Zustand features. Assigns stable IDs (AC-<story>.<n>, NFR-<n>), enforces observable
-  Given/When/Then phrasing, rejects implementation-step criteria (no "shall call X()",
-  "shall set isPending", "shall dispatch to store"), and defines how IDs flow into Vitest
-  describe/it names so coverage is a grep query. Runs Example Mapping discovery (rules/examples/questions) and a domain glossary before authoring. Trigger: use when writing or reviewing
-  acceptance criteria or NFRs for a spec, or when a criterion may be untestable,
-  ill-formed, or missing an ID before design begins.
+  Authors a feature's requirements.md (React 19 + TS): Example Mapping discovery + a domain
+  glossary → EARS functional requirements → user stories and acceptance criteria with stable IDs
+  (AC-<story>.<n>, NFR-<n>) in observable Given/When/Then form, each ID wired to the front of a
+  Vitest describe so coverage is a grep query. Rejects implementation-step phrasing ("shall call
+  X()", "shall set isPending"). Use when writing, extending, or hardening the acceptance criteria,
+  user stories, or NFRs for a feature — or turning a scope (or figma map) into a testable spec.
 ---
 
 # oac-acceptance-criteria
 
-Produce ACs with stable IDs, user-observable outcomes (not implementation steps), and
-one-to-one flow into test names. These IDs are the spine that tasks, implementation,
-and validation anchor to.
+Author a feature's requirements document: user stories, EARS functional requirements,
+acceptance criteria (`AC-<story>.<n>`), and NFRs (`NFR-<n>`) — every criterion phrased as an
+observable outcome, its ID embedded at the front of a Vitest `describe` name. These IDs are
+the spine every later artifact (task list, tests, coverage check) anchors to, so they must be
+unique, stable, and greppable.
 
-## Instructions
+- **Given:** a feature scope, plus any figma component map the caller hands you.
+- **Produce:** `requirements.md` with a Glossary, EARS FRs, ID'd user stories, ACs, NFRs, and an
+  `## Open questions` section holding every Example-Mapping question you couldn't answer
+  (surfaced for the caller to settle during clarification).
 
-1. Read the feature scope and any existing criteria from the relevant requirements artifact
-   (e.g. `requirements.md`). → read `references/ac-format.md` §1 for EARS pattern guidance.
-2. Write EARS functional requirements for system-level outcomes.
-3. **Run Example Mapping discovery** before writing ACs (→ `references/discovery.md`). Per user
-   story, enumerate the business **rules**, then concrete observable **examples** for each
-   (happy, edge, counter), and capture open **questions**. Record domain terms in a `Glossary`
-   section of `requirements.md`; surface open questions back to the caller rather than guessing.
-4. If the criteria already exist and you are only reviewing, skip to step 6 (hard checks).
-5. Derive ACs from the discovery examples — each example becomes ≥1 AC with ID `AC-<story#>.<n>`
-   in Given/When/Then form; for behaviour that varies only by data, use an Examples-table AC.
-   → read `references/ac-format.md` §2–3 and `references/discovery.md` §5.
-6. Run the hard checks against every criterion (→ `references/ac-format.md` §5 checklist):
-   - ID is unique and stable; no renumbering.
-   - Then clause is user-observable — no internal call, state, or mechanism.
-   - Not a mock-call assertion or render-it-back tautology (→ `references/examples.md`).
-7. For every NFR, assign a unique `NFR-<n>` ID using the same observable phrasing contract.
-8. For each AC/NFR, confirm its ID embeds in the Vitest `describe` name.
-   → read `references/traceability.md` §2 for naming convention and optional tags.
-9. Flag any criterion failing a hard check as a blocking authoring condition — fix the
-   source artifact before proceeding.
+## Procedure
 
-### Hard checks — a criterion fails if any are true
+1. **Example Mapping discovery** — per user story (`US-<n>`), surface the business rules, make
+   each concrete with happy / edge / counter examples, and capture open questions. Don't guess
+   past a question; surface it to the caller. → `references/discovery.md`.
+2. **Glossary** — record each domain term once in a `Glossary` section; then use those exact
+   words verbatim in every AC, NFR, and test name. → `references/discovery.md` §4.
+3. **EARS functional requirements** — write the system-level outcomes in EARS; they stay
+   alongside the per-story ACs, they don't replace them. → `references/ac-format.md` §1.
+4. **ACs from examples** — turn each discovery example into ≥1 `AC-<story>.<n>` in observable
+   Given/When/Then form. For behaviour that varies only by data, write one Examples-table AC
+   instead of many near-duplicates. → `references/ac-format.md` §3, `references/discovery.md` §5.
+   Anti-patterns to avoid (spy-on-call, mock-call, render-it-back tautology, one-shot ban),
+   each with a corrected form → `references/examples.md`.
+5. **NFRs** — assign each a unique `NFR-<n>` under the same observable phrasing contract; a
+   pattern-ban NFR must name itself an enduring CI guard, not a one-shot grep. → `references/ac-format.md` §3.
+6. **Assign + verify IDs** — unique, stable, append-only (never renumber). Confirm each ID sits
+   at the front of a Vitest `describe` name so `grep -r "AC-2.1" src/` finds the test.
+   → `references/traceability.md`.
+7. **Authoring checklist** — run the hard checks (below) over everything before handoff.
 
-- No `AC-<story#>.<n>` or `NFR-<n>` ID, or the ID duplicates another.
-- Describes an internal call, state, or mechanism (`shall call X()`, `shall set isPending`).
-- Then clause is only verifiable by spying on an internal function or reading internal state.
+Why the ID + observable-phrasing discipline matters → `references/rationale.md`.
+
+## Hard checks — an authored criterion fails if any are true
+
+- No `AC-<story>.<n>` / `NFR-<n>` ID, or the ID duplicates another.
+- Not in Given/When/Then form, or the Then clause isn't observable.
+- Describes an internal call, state, or mechanism (`shall call X()`, `shall set isPending`,
+  `shall dispatch to store`) — verifiable only by spying on a function or reading internals.
+- A story with zero ACs, or an NFR with no ID.
+
+Fix every failing criterion in `requirements.md` before handoff. When a criterion is ambiguous,
+contested, or untestable in a way rewriting can't settle, rank the open items by Impact ×
+Uncertainty and settle them with the caller (one question at a time, each with a recommended
+answer); then rephrase to an observable form, or record it under `## Open questions`.
 
 ## References
 
-- [references/ac-format.md](references/ac-format.md) — ID scheme, EARS patterns, full
-  phrasing contract (reject/require examples), authoring checklist.
+- [references/ac-format.md](references/ac-format.md) — ID scheme, EARS patterns, the full
+  observable-phrasing contract (reject/require examples), the authoring checklist.
 - [references/discovery.md](references/discovery.md) — Example Mapping (rules / examples /
   questions), the domain glossary, and the Examples-table AC form for data-varying behaviour.
-- [references/examples.md](references/examples.md) — Before/after for the four most
-  common AC anti-patterns with test-name skeletons.
-- [references/traceability.md](references/traceability.md) — How an AC ID flows into
-  Vitest describe/it names and optional --tags-filter tags.
-- [references/rationale.md](references/rationale.md) — Why this skill exists, the
-  two-layer EARS + AC model, and the downstream coverage chain.
+- [references/examples.md](references/examples.md) — Before/after for the four most common AC
+  anti-patterns, each with its corrected form and a test-name skeleton.
+- [references/traceability.md](references/traceability.md) — How an AC ID flows into Vitest
+  describe/it names (and optional `--tags-filter` tags) so coverage is a query.
+- [references/rationale.md](references/rationale.md) — Why stable IDs + observable phrasing
+  exist: the passing-test-that-misses-behaviour failure they prevent.
