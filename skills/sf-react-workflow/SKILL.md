@@ -102,6 +102,7 @@ Emission rules:
 - `gate` — `approval: human` → `human`; `auto`/`skip` → `auto`; `implement` is always `human`
   (the bundle's post-implement code check).
 - `exitWhen` — the phase map's `exitWhen` line for that phase (one line).
+- **Artifact completeness** — `outputs` are the artifacts that MUST exist (non-empty) before a phase advances; when an output is a collection (e.g. `contracts/`), fold the per-item rule into `exitWhen` (one `contracts/<unit>.md` per unit named in `design.md`) so the driver's verify catches a missing one.
 - **Drop** everything else — `required`, `validators`, `hooks`, `generator`/`executor`. Global
   disciplines live in the driver's Hard Rules; escalation lives in the driver's Drive Loop.
 

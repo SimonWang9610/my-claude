@@ -16,7 +16,7 @@ Stack: React 19 + Vite + TypeScript + Zustand + TanStack Query v5 + MUI + Vitest
 | describe | `/oac-acceptance-criteria` | exactly one AC with a stable ID + observable Given/When/Then phrasing |
 | requirements | `/oac-acceptance-criteria` | every AC/NFR has a stable ID + observable Given/When/Then phrasing |
 | clarify | `/oac-acceptance-criteria` | top ambiguities resolved; every untestable AC rephrased or recorded |
-| design | `/oac-architecture-design`, `/oac-journey-plan`? | every AC covered by >=1 contract; architecture gate PASS or justified |
+| design | `/oac-architecture-design`, `/oac-journey-plan`? | every AC covered by >=1 contract; a `contracts/<unit>.md` for every unit named in design.md; architecture gate PASS or justified |
 | tasks | `/oac-task-design`, `/oac-test-contract` | valid dependency order + a parallel-wave plan (independent units grouped into concurrency waves); >=1 test task per AC plus edge-case tasks |
 | implement | `/oac-implementation`, `/oac-test-contract`, `/oac-implementation-review` | every task completed with a passing AC-traceable test, authored red-before-green by a separate test agent; branch passes `/oac-implementation-review` (no unresolved Critical/Major findings); human verifies the code before spec-qa |
 | spec-qa | `/oac-qa-report`, `/oac-test-forensics`, `/oac-journey-tests`? | enters only after the flow's validate command PASSES (static checks, reported in chat — never a ledger phase); findings dispositioned by the reviewer (sign-off); suite green via a single eslint + vitest run |

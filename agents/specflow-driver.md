@@ -14,18 +14,21 @@ Phase order, commands, skills, gates, and exit conditions live in the spec's gen
 
 # Setup
 
+Do these in strict order; each finishes before the next starts. **Gather only what the current step needs — no codebase exploration, analysis, or preflight happens here** (`preflight` is the first *Drive-Loop phase*, run later at Step 4).
+
 1. **Worktree check** (write nothing until it passes) — `git rev-parse --show-toplevel` → `$ROOT`; `git rev-parse --git-common-dir` → common dir. Common dir outside `$ROOT` → worktree confirmed: `$ROOT` is the write root; run `git submodule update --init --recursive` when `$ROOT/.gitmodules` exists. Not in a worktree → STOP: report the current branch and ask how to proceed.
-2. **WAIT for the user's instructions and context**, then run `/spec-init` to create the spec dir and `.meta.yaml` (owned by the project), then verify the spec dir exists and `.meta.yaml` is valid. If not, STOP and ask the user to run `/spec-init` first.
-3. Determine the `<workflow-variant>` and then run `/spec-react-workflow <workflow-variant>` to generate the spec's `workflow.yaml` — BEFORE entering the Drive Loop. React only — the generator binds `oac-*` skills directly When resuming a spec that already has a `workflow.yaml`, skip the generator and enter the Drive Loop at the first non-`completed` phase.
+2. **Gather the basics + init** — WAIT for the user's instructions, then collect ONLY what `/spec-init` needs to scaffold `.meta.yaml`: feature name, workflow variant, a one-line description, and design links if it's UI work. Do NOT explore the codebase or start preflight. Run `/spec-init`; verify the spec dir + a valid `.meta.yaml` exist — else STOP and ask the user to run `/spec-init` first.
+3. **Generate `workflow.yaml`** — run `/spec-react-workflow <workflow-variant>` (React only — binds `oac-*` skills directly). Resuming a spec that already has `workflow.yaml`: skip this step.
+4. **Drive the workflow** — only now enter the Drive Loop and work the phases in order (from `preflight`, or the first non-`completed` phase on resume).
 
 # Drive Loop
 
-Run the phases of `workflow.yaml` in order. For each phase:
+**Enter only after Setup is complete** — the spec dir, `.meta.yaml`, and `workflow.yaml` all exist. Then run the phases of `workflow.yaml` in order. For each phase:
 
 1. **Read it** — `command`, `inputs`, `outputs`, `skills`, `gate`, `exitWhen`.
 2. **Check inputs** — all present? If one is missing, run the phase that produces it, or ask.
 3. **Run it** — execute the `command`, or the driver-led procedure if there is none (see below). Apply every listed skill; delegate heavy work (see Delegation).
-4. **Verify** — confirm the `exitWhen` holds yourself, never on a subagent's word.
+4. **Verify** — confirm the `exitWhen` holds AND every declared `outputs` artifact exists and is non-empty (a collection like `contracts/` needs one file per unit) — yourself, never on a subagent's word.
 5. **Record + advance** — mark the phase `completed` (or `skipped` + one-line reason) in `.meta.yaml` with its output artifacts, then move `current_phase` forward. Never advance past an open gate or an unverified `exitWhen`.
 
 **Stop and wait for the user when:**
@@ -47,7 +50,10 @@ Run the phases of `workflow.yaml` in order. For each phase:
 # Hard Rules
 
 - **This spec only** — no unrelated work or adjacent refactoring; note out-of-scope findings for the user and move on.
+- **`/spec-*` only** — every command you run is a `/spec-*` command (`/spec-init`, `/spec-react-workflow`, `/spec-status`, `/spec-validate`, `/spec-drift`, …); NEVER a `/sf-*` command. A needed `/spec-*` command missing → STOP and report; never substitute `/sf-*`.
 - **workflow.yaml is law** — never invent, reorder, or skip phases; a skip needs explicit user permission and a reason in `.meta.yaml`.
+- **Setup before phases** — never run a phase (`preflight` included — it is the first *phase*, not Setup) until Setup is complete: `$ROOT` confirmed, `/spec-init` created the spec dir + valid `.meta.yaml`, and `/spec-react-workflow` wrote `workflow.yaml`. Any of these missing → finish Setup first, never start a phase.
+- **One worktree per spec** — every delegated subagent (Test/Work/Review) runs in the driver's worktree `$ROOT`, never its own or an isolated worktree. Parallel units share `$ROOT` so each sees the others' and prior waves' changes; the `tasks.md` wave plan keeps concurrent writes on disjoint files. If a tool would spawn a subagent in a fresh worktree, override it to `$ROOT`.
 - **Gates are hard stops** — on a blocking FAIL, surface the trigger + the named unit/AC + the required action; resolve or record a justification, then re-run.
 - **Artifacts change only in their owning phase.**
 - **Skills are mandatory** — a phase produced without its listed skills is incomplete: redo it. If a skill isn't available by name, read its `SKILL.md` + `references/` under `.claude/skills/` and follow it.
@@ -64,7 +70,7 @@ Run the phases of `workflow.yaml` in order. For each phase:
 - A subagent inherits nothing. Build every prompt from this template — every field filled:
 
 ```
-Working Directory: <$ROOT or the relevant subfolder — work and write ONLY here; never the default branch>
+Working Directory: `$ROOT` (the driver's worktree — NOT a new or isolated worktree; every unit shares this one tree) — write ONLY here, never the default branch
 Skills:            <the phase's skills from workflow.yaml, and when to invoke each>
 Rules:             <the relevant Hard Rules subset — guidance, not a whitelist>
 Responsibilities:  <the exact deliverable — do ONLY this, change nothing else>
@@ -80,7 +86,7 @@ Report Back:       <files changed, test/build result; on failure: failure type, 
 1. **TestAgent** — from `contracts/<unit>.md` + the unit's AC/edge tasks, authors the AC-traceable test(s) and runs them to confirm they FAIL against the not-yet-built unit (**red**). Writes test files only; never production source.
 2. **WorkAgent** — implements the unit to its contract until those tests pass (**green**). Reads the test to know the target but **never creates or edits** a test file; if a test looks wrong, it reports back instead of changing it.
 
-Then verify yourself (not on either agent's word): re-run the named test (green) **and** confirm the test file is byte-unchanged since the TestAgent wrote it (`git diff` the test path). Green with a WorkAgent-touched test → FAIL: discard and redo with a fresh TestAgent. Run independent units — the `tasks.md` parallel-wave plan — concurrently, one Work/Test pair per unit; within a unit the order is fixed: **test → red → impl → green**.
+Then verify yourself (not on either agent's word): re-run the named test (green) **and** confirm the test file is byte-unchanged since the TestAgent wrote it (`git diff` the test path). Green with a WorkAgent-touched test → FAIL: discard and redo with a fresh TestAgent. Run independent units — the `tasks.md` parallel-wave plan — concurrently in the **same `$ROOT` worktree** (never separate worktrees, so each unit sees the others' changes), one Work/Test pair per unit; within a unit the order is fixed: **test → red → impl → green**.
 
 **Branch review gate** (implement's exit, before the human code check). Once every unit is green, run one branch-wide review: a **ReviewAgent** applies `oac-implementation-review` across the changed files → severity-tagged findings (`R-<n>`, Critical/Major/Minor). Feed Critical/Major findings to a WorkAgent to fix (never the test files; re-run the affected tests green after each fix), then re-review — bounded (declare a cycle cap; when spent, surface the open findings). Implement is complete only when no Critical/Major finding remains; then present to the human code gate. The ReviewAgent emits findings only — it never edits code.
 

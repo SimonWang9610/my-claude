@@ -98,6 +98,7 @@ Emission rules:
   the phase must honor (see `references/specflow-contract.md` — e.g. requirements: EARS FRs,
   `AC-<story>.<n>`; tasks: test tasks ordered before impl tasks; implement: every task Status →
   `completed`, `test-manifest.md` written), `;`-separated, one line.
+- **Artifact completeness** — `outputs` are the artifacts that MUST exist (non-empty) before a phase advances; when an output is a collection (e.g. `contracts/`), fold the per-item rule into `exitWhen` (one `contracts/<unit>.md` per unit named in `design.md`) so the driver's verify catches a missing one.
 
 Example phase after generation (feature):
 
