@@ -3,7 +3,7 @@
 A repro test must be **named** (the AC-ID in the `describe` label so coverage is greppable),
 **deterministic** (no wall-clock, random, network, or ordering dependence — MSW handles the
 network), and **failing before any fix exists for the stated reason**. Author it under the
-`oac-test-contract` rules; phrase the asserted behavior with the `oac-acceptance-criteria`
+test-task gate disciplines of `plan-react-tasks`; phrase the asserted behavior with the `build-acceptance-criteria`
 observable-phrasing contract.
 
 ## Skeleton

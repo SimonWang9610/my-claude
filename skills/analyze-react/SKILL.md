@@ -29,9 +29,9 @@ proves nothing.
    unit + line that is wrong. Distinguish the observed symptom from the causing unit.
    → `references/root-cause.md`.
 2. **Phrase the AC** — state the correct behavior as one `AC-<story>.<n>` in observable
-   Given/When/Then form, using the `oac-acceptance-criteria` observable-phrasing contract.
+   Given/When/Then form, using the `build-acceptance-criteria` phrasing contract.
 3. **Author the failing repro test** — a NAMED, DETERMINISTIC Vitest + RTL test whose `describe`
-   label carries the AC-ID (so `grep -r "AC-3.2" src/` finds it). It obeys the `oac-test-contract`
+   label carries the AC-ID (so `grep -r "AC-3.2" src/` finds it). It obeys the test-task gate disciplines of `plan-react-tasks`
    rules. Skeleton → `references/repro-test.md`.
 4. **RUN it — it must FAIL, for the stated reason, before any fix exists.**
    → `references/repro-test.md` (gate).

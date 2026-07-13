@@ -1,135 +1,118 @@
 ---
 name: sf-react-workflow
 description: >
-  React-only generator for the spec's workflow.yaml, from the project-hosted specflow workflow
-  template (feature | brownfield | bugfix | quickfix): maps each template phase to its /sf-*
-  command, binds React `oac-*` skills DIRECTLY to phases (references/phase-map.md), resolves
-  conditional bindings against the actual spec/project (design links, legacy port, E2E coverage),
-  verifies against the spec's .meta.yaml, and WRITES workflow.yaml into the spec dir.
-  Usage: /sf-react-workflow <variant> [spec-dir]. Run AFTER /sf-init (which owns the spec dir
-  and .meta.yaml) and before the driver's Drive Loop.
-argument-hint: "<variant> [spec-dir]"
+  Generate workflow.yaml for an sflow spec: maps each phase to its /sf-<id> command with a prompt
+  that invokes the OAC React skills (build-acceptance-criteria, design-react-architecture,
+  plan-react-tasks, implement-react-code), and writes <spec-dir>/workflow.yaml. Identical to
+  /oac-workflow apart from the command mapping (/sf-<id> instead of /spec-<id>).
+  Usage: /sf-react-workflow $SPEC_DIR.
+argument-hint: $SPEC_DIR
 ---
 
 # sf-react-workflow
 
-Convert the project's specflow workflow template into the spec's generated `workflow.yaml` and
-write it. This generator is **React-only** — it binds `oac-*` skills directly to phases; another
-stack would use its own parallel `*-<tech>-workflow` generator. `/sf-init` owns the spec dir and
-`.meta.yaml`; this skill is the sole writer of `workflow.yaml`.
+Generate a `workflow.yaml` under the sflow `$SPEC_DIR` — a YAML representation of the phases:
+commands, prompts, inputs, outputs, gates, exit conditions. Skills are invoked through each phase's
+`prompt` (the extra prompt appended to the command), not a separate field. The spec dir and
+`.meta.yaml` are owned by `/sf-init`: this skill writes **only** `$SPEC_DIR/workflow.yaml`.
 
-`<variant>` is `feature` | `brownfield` | `bugfix` | `quickfix`. (A specflow-managed project uses
-`/spec-react-workflow` instead.)
+This is the `/sf-*` twin of `/oac-workflow`: same phases, prompts, inputs, outputs, gates, and
+exitWhen — the **only** difference is the command mapping (`/sf-<id>` instead of `/spec-<id>`).
 
-**Target spec** — the spec being planned under `.specflow/specs/` (just scaffolded by `/sf-init`:
-`.meta.yaml` present, no `workflow.yaml` yet); pass `[spec-dir]` to target one explicitly, else
-ask if ambiguous. Spec dir missing → tell the caller to run `/sf-init` first. Re-running against
-an existing `workflow.yaml` (e.g. escalating to a larger variant) overwrites it.
+## Instructions
 
-## Procedure
+1. **Collect required phases** — Read `$SPEC_DIR/.meta.yaml` for the `workflow:` variant and the
+   `phase_status` keys. `.meta.yaml` missing → **STOP**, ask the user to run `/sf-init` first.
+   A variant other than `feature` is deprecated — warn but allow.
+2. **Emit one entry per phase** from the [Phase Mapping](#phase-mapping) below, in
+   `phase_status` order — ids verbatim (they ARE the `phase_status` keys); never invent or
+   inject a phase.
+3. **Verify, then write** — the generated `workflow:` equals `.meta.yaml`'s and the phase ids
+   match its `phase_status` keys in order; mismatch → STOP and report. Every phase's `outputs`
+   must exist non-empty before the driver advances past it. Write `$SPEC_DIR/workflow.yaml` —
+   nothing else.
 
-### Step 1 — Locate the template
-
-The bundle ships no templates. Read the project-hosted specflow template for `<variant>`, in
-this order:
-
-1. `specflow/src/workflows/<variant>.yaml` — the specflow repo vendored in the target project.
-2. `.specflow/workflows/<variant>.yaml` — project override.
-
-Neither found → STOP and report that the project must vendor specflow, or ask the user for the
-template path. `brownfield`/`bugfix`/`quickfix` are deprecated upstream — WARN but allow.
-
-Never invent phases: generate exactly what the template declares, ids verbatim (`spec-qa`
-stays `spec-qa`). Per phase the template carries `id`, `approval` (`human|auto|skip`),
-`required`, `inputs`, `outputs` — plus `generator`/`executor` hints, `validators`, and `hooks`,
-which this skill ignores.
-
-### Step 2 — Map phases to commands and skills
-
-Read `references/phase-map.md` (under this skill's own dir) for each phase's React `oac-*` skill
-bindings and its `exitWhen` line. Command mapping to the `/sf-*` set:
-
-| Template phase     | Command                                |
-| ------------------ | -------------------------------------- |
-| preflight          | `/sf-preflight`                        |
-| requirements       | `/sf-requirements`                     |
-| clarify            | `/sf-clarify`                          |
-| design             | `/sf-design`                           |
-| tasks              | `/sf-tasks`                            |
-| implement          | `/sf-implement`                        |
-| spec-qa            | `/sf-qa`                               |
-| analysis, describe | _(none — driver-led; omit `command:`)_ |
-
-`taskstoissues` is dropped from the React flow — if a vendored template still declares it, emit
-`skills: []`, `gate: auto`, `exitWhen: taskstoissues unused — record skipped in .meta.yaml`.
-
-**The flow's validate command is `/sf-validate`** — it gates `spec-qa`'s `exitWhen` and is
-never a phase. `/sf-drift` is an optional post-merge follow-up, also never a phase.
-
-### Step 3 — Resolve conditional bindings (`?`)
-
-Each `?`-marked skill in the phase map is conditional. Check its trigger against the actual
-spec/project and **decide now** where possible — keep or drop per the decision table in
-`references/phase-map.md` (design links, legacy/port scan, E2E coverage). A
-trigger that can't be decided yet stays in the output with its condition attached.
-
-### Step 4 — Emit the generated schema
-
-Emit exactly this shape — nothing else:
+### Workflow Template
 
 ```yaml
-workflow: feature | brownfield | bugfix | quickfix # MUST match .meta.yaml `workflow:`
-description: <workflow-description>
+workflow: <workflow> # copy from .meta.yaml
 phases:
   - id: <phase-id> # MUST match the .meta.yaml phase_status keys
-    command: <phase-command>
-    inputs:
-      - <input-name>
-    outputs:
-      - <output-name>
-    skills:
-      - <skill-name>
-    gate: human | auto
+    command: /sf-<id>
+    prompt: <extra prompt appended when invoking the command: `/sf-<id> <prompt>`> # optional
+    inputs: [<input1>]
+    outputs: [<output1>]
+    gate: <human | auto>
     exitWhen: <exit-condition>
 ```
 
-Emission rules:
+## Phase Mapping
 
-- `id`, `inputs`, `outputs` — verbatim from the template.
-- `command` — per the Step 2 mapping; absent for driver-led phases.
-- `skills` — the phase map's bindings for that phase; an undecided conditional keeps its
-  condition in parentheses.
-- `gate` — `approval: human` → `human`; `auto`/`skip` → `auto`; `implement` is always `human`
-  (the bundle's post-implement code check).
-- `exitWhen` — the phase map's `exitWhen` line for that phase (one line).
-- **Artifact completeness** — `outputs` are the artifacts that MUST exist (non-empty) before a phase advances; when an output is a collection (e.g. `contracts/`), fold the per-item rule into `exitWhen` (one `contracts/<unit>.md` per unit named in `design.md`) so the driver's verify catches a missing one.
-- **Drop** everything else — `required`, `validators`, `hooks`, `generator`/`executor`. Global
-  disciplines live in the driver's Hard Rules; escalation lives in the driver's Drive Loop.
+Emit one entry per phase the `.meta.yaml` `phase_status` declares, **in that order** — the id and
+order come from `.meta.yaml`, never from the sequence below. Each phase carries the bindings below;
+`?` marks an optional input.
 
-Example phase after generation (feature):
+### preflight
+- command: `/sf-preflight`
+- prompt: use `/scan-resource` if relevant references or resources are given; use
+  `/oac-figma-decompose` if design links are provided
+- inputs: none · outputs: `preflight.md` · gate: human
+- exitWhen: preflight.md records the reuse verdict and shared-unit impact
 
-```yaml
-workflow: feature
-description: specflow feature lifecycle driven via the /sf-* command set
-phases:
-  # …
-  - id: spec-qa
-    command: /sf-qa
-    skills:
-      [
-        "/oac-qa-report",
-        "/oac-test-forensics",
-        "/oac-journey-tests (only if E2E coverage wanted; requires the approved journey plan)",
-      ]
-    inputs: [requirements.md, design.md, tasks.md]
-    outputs: [qa-report.md]
-    gate: human
-    exitWhen: enters only after /sf-validate PASSES (static checks, reported in chat — never a ledger phase); suite green via a single eslint + vitest run; findings dispositioned by the reviewer (sign-off)
-```
+### analysis
+- command: `/analyze-react`
+- inputs: none · outputs: `analysis.md` · gate: human
+- exitWhen: bugfix: named, deterministic, FAILING reproduction test asserts the bug's AC;
+  brownfield: change surface + shared-unit impact mapped in analysis.md
 
-### Step 5 — Verify against `.meta.yaml`, then write
+### requirements
+- command: `/sf-requirements`
+- prompt: run `/build-acceptance-criteria` to author requirements.md (Glossary, EARS FRs, US/AC/NFR
+  with stable IDs in observable Given/When/Then form); never guess past an open question — record
+  it under `## Open questions`
+- inputs: `preflight.md`, ?`references/*` · outputs: `requirements.md` · gate: human
+- exitWhen: Glossary + EARS FRs present; every US/AC/NFR carries a stable unique ID in observable
+  Given/When/Then form
 
-Read the spec's `.meta.yaml` (created by `/sf-init`): the generated `workflow:` MUST equal its
-`workflow:`, and the generated phase ids MUST exactly match its `phase_status` keys, in order.
-Mismatch → STOP and report (wrong variant, or a stale `.meta.yaml` — re-run `/sf-init`).
-Then write the generated YAML to `.specflow/specs/<name>/workflow.yaml`.
+### clarify
+- command: `/sf-clarify`
+- prompt: settle the open questions in `requirements.md`, ranked by Impact × Uncertainty, each with
+  a recommended answer
+- inputs: `requirements.md`, ?`references/*` · outputs: `clarify.md` · gate: human
+- exitWhen: top ambiguities resolved; every untestable AC rephrased to observable form or recorded
+  under `## Open questions`
+
+### design
+- command: `/sf-design`
+- prompt: run `/design-react-architecture` to produce design.md + contracts/ (including the
+  AC → Verification table); challenge the draft (checks C1–C8) with fresh eyes — a subagent given
+  only the draft tables and contracts
+- inputs: `requirements.md`, ?`clarify.md`, ?`references/*` · outputs: `design.md`, `contracts/` · gate: human
+- exitWhen: one `contracts/<unit>.md` per MODIFY/NEW unit in the index; every AC/NFR has an
+  AC → Verification row; C1–C8 hand-off criteria met (no open CRITICAL; HIGH passed or justified;
+  MEDIUM passed or debt-recorded)
+
+### tasks
+- command: `/sf-tasks`
+- prompt: run `/plan-react-tasks` to produce tasks.md + the parallel-wave plan — transcribe from the
+  design (dependencies from the unit index, test plan from AC → Verification), never re-derive
+- inputs: `design.md`, `contracts/` · outputs: `tasks.md` · gate: auto
+- exitWhen: count check holds (MODIFY/NEW units + AC → Verification rows + edge cases); every task
+  carries the four fields; parallel-wave plan present; test tasks ordered before impl tasks
+
+### implement
+- command: `/sf-implement`
+- inputs: `tasks.md`, `contracts/`, ?`references/*` · outputs: code, `test-manifest.md` · gate: human
+- exitWhen: every task Status → completed with its Gate passing; no test edited to make code pass;
+  design gaps resolved or human-dispositioned; test-manifest.md written
+
+### spec-qa
+- command: `/sf-qa`
+- prompt: run `/sf-validate` first and report its results in chat (a check, not a phase); if E2E
+  coverage is wanted, author the journey tests with `/build-react-e2e` before the audit (it consumes
+  the approved `qa-journey-plan.md` when present, otherwise generates one and stops for approval);
+  then produce qa-report.md and save it at `$SPEC_DIR/qa-report.md`
+- inputs: `requirements.md`, `design.md`, `tasks.md`, ?`test-manifest.md`, code diff · outputs:
+  `qa-report.md` · gate: human
+- exitWhen: `/sf-validate` PASSES; findings dispositioned by the reviewer (sign-off); suite green
+  via a single eslint + vitest run
