@@ -44,6 +44,8 @@ phases:
 
 ## Phase Mapping
 
+> ? for optional
+
 1. **preflight**
    - command: `/spec-preflight`
    - prompt: use `/scan-resource` if relevant references or resources are given; use
@@ -53,7 +55,7 @@ phases:
 
 2. **analysis**
    - command: `/oac-analyze`
-   - inputs: `preflight.md`, `references/*` · outputs: `analysis.md` · gate: human
+   - inputs: none · outputs: `analysis.md` · gate: human
    - exitWhen: bugfix: named, deterministic, FAILING reproduction test asserts the bug's AC;
      brownfield: change surface + shared-unit impact mapped in analysis.md
 
@@ -62,7 +64,7 @@ phases:
    - prompt: run `/build-acceptance-criteria` to author requirements.md (Glossary, EARS FRs,
      US/AC/NFR with stable IDs in observable Given/When/Then form); never guess past an open
      question — record it under `## Open questions`
-   - inputs: `preflight.md`, `references/*` · outputs: `requirements.md` · gate: human
+   - inputs: `preflight.md`, ?`references/*` · outputs: `requirements.md` · gate: human
    - exitWhen: Glossary + EARS FRs present; every US/AC/NFR carries a stable unique ID in
      observable Given/When/Then form
 
@@ -70,7 +72,7 @@ phases:
    - command: `/spec-clarify`
    - prompt: settle the open questions in `requirements.md`, ranked
      by Impact × Uncertainty, each with a recommended answer
-   - inputs: `requirements.md`, `references/*` · outputs: `clarify.md` · gate: human
+   - inputs: `requirements.md`, ?`references/*`? · outputs: `clarify.md` · gate: human
    - exitWhen: top ambiguities resolved; every untestable AC rephrased to observable form or
      recorded under `## Open questions`
 
@@ -79,7 +81,7 @@ phases:
    - prompt: run `/design-react-architecture` to produce design.md + contracts/ (including the
      AC → Verification table); challenge the draft (checks C1–C8) with fresh eyes — a subagent
      given only the draft tables and contracts;
-   - inputs: `requirements.md`, `clarify.md`, `references/*` · outputs: `design.md`, `contracts/` · gate: human
+   - inputs: `requirements.md`, ?`clarify.md`, ?`references/*` · outputs: `design.md`, `contracts/` · gate: human
    - exitWhen: one `contracts/<unit>.md` per MODIFY/NEW unit in the index; every AC/NFR has an
      AC → Verification row; C1–C8 hand-off criteria met (no open CRITICAL; HIGH passed or
      justified; MEDIUM passed or debt-recorded)
@@ -95,7 +97,7 @@ phases:
 
 7. **implement**
    - command: `/spec-implement`
-   - inputs: `tasks.md`, `contracts/`, `references/*` · outputs: code, `test-manifest.md` · gate: human
+   - inputs: `tasks.md`, `contracts/`, ?`references/*` · outputs: code, `test-manifest.md` · gate: human
    - exitWhen: every task Status → completed with its Gate passing; no test edited to make code
      pass; design gaps resolved or human-dispositioned; test-manifest.md written
 
@@ -105,7 +107,7 @@ phases:
      if E2E coverage is wanted, author the journey tests with `/build-react-e2e` before the audit
      (it consumes the approved `qa-journey-plan.md` when present, otherwise generates one and
      stops for approval); then produce qa-report.md and save it at `<spec-dir>/qa-report.md`;
-   - inputs: `requirements.md`, `design.md`, `tasks.md`, `test-manifest.md`, code diff · outputs:
+   - inputs: `requirements.md`, `design.md`, `tasks.md`, ?`test-manifest.md`, code diff · outputs:
      `qa-report.md` · gate: human
    - exitWhen: `/spec-validate` PASSES; findings dispositioned by the reviewer (sign-off); suite
      green via a single eslint + vitest run
