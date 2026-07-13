@@ -1,8 +1,7 @@
 ---
-name: oac-analyze
+name: analyze-react
 description: >
-  Produces an evidence-grounded analysis.md before any fix is written to existing
-  React 19 + TypeScript + Vite code. Defect mode: locates the ROOT cause in the real
+  Produces an evidence-grounded analysis.md before any fix is written. Defect mode: locates the ROOT cause in the real
   code (unit + line, symptom vs. cause), phrases the fix as an AC-<story>.<n>, and
   authors a NAMED failing Vitest reproduction test that must fail pre-fix. In-place
   mode: maps the change surface and blast radius — which units/hooks/stores the change
@@ -11,7 +10,7 @@ description: >
   "reproduce the bug", "impact analysis", "what does this change touch".
 ---
 
-# oac-analyze
+# analyze-react
 
 Ground a change in evidence before a line of fix code is written. Pick ONE mode from the work
 the caller states, run its procedure, and record the result in the `analysis.md` the caller
