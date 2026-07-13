@@ -1,1 +1,0 @@
-../react/rules/test-quality.md
