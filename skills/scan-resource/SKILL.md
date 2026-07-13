@@ -93,4 +93,6 @@ ALWAYS use this structure. Omit a section only if it has no in-scope content.
 - **Recall over re-scan** — re-reading source is the exception, signalled by the `Gaps` section.
 - **Portable substance first** — favor business logic and abstractions that survive a framework change over framework-specific detail.
 - **Instruction is the filter** — out-of-scope content stays out.
+- **Terse prose** — references are re-read on every downstream step: no filler; entities, paths,
+  and shapes exact; drop words, never invent abbreviations.
 - **Don't invent** — record only what is in the source; flag ambiguity in `Gaps`.

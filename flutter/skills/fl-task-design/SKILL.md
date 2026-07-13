@@ -86,7 +86,8 @@ Every task (implementation and test) must include:
 ### Output format
 
 Write tasks as a numbered markdown list in `tasks.md`. Group them under headings that match the
-dependency order from (b):
+dependency order from (b). Keep entries terse — facts only (unit names, exit checks, trace IDs,
+contract paths), never sentences restating the contract:
 
 ```markdown
 ## Domain models

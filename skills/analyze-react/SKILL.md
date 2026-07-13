@@ -19,6 +19,8 @@ React Testing Library + MSW + userEvent.
 
 - **Input:** the affected code the caller points you at, plus the defect report or change intent.
 - **Output:** the `analysis.md` at the caller-supplied path (contents per the chosen mode).
+- **Style:** later phases re-read `analysis.md` — terse prose; unit + line, IDs, paths, and the
+  decisive error line exact; no narration of how the investigation went.
 
 ## Mode 1 — Defect / root-cause (repro-first)
 

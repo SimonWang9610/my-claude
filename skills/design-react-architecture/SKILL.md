@@ -17,6 +17,10 @@ Design a React feature's architecture before any code exists. Requirements are a
 **Right-size:** ≤2 NEW units and no MODIFY → `design.md` collapses to the unit index, ownership
 lines, AC → Verification table, and gate verdict. Contracts are always one per unit.
 
+**Write terse:** later phases re-read `design.md` and every contract — terse prose, reference
+requirement/rule IDs instead of restating them; identifiers, paths, and IDs exact; no invented
+abbreviations. Human-gated content (gate verdict, justifications) stays in clear full sentences.
+
 ## Instructions
 
 1. **Learn the rules** — Read [references/principles.md](./references/principles.md) (R1–R11) — the

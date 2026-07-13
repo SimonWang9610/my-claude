@@ -48,14 +48,17 @@ Run the phases of `workflow.yaml` strictly in order. For each phase:
 3. **Run it** — run `$command $prompt` with the given `inputs`. If `prompt` is missing, run `$command` alone. Consultant [Delegation](#delegation) for subtasks, parallelization, and work/test separation.
 4. **Verify it** — confirm the `exitWhen` holds AND every declared output exists non-empty (a
    collection like `contracts/` needs one file per MODIFY/NEW unit) — **yourself, never on a
-   subagent's word**.
+   subagent's word**. Verify mechanically — existence/size checks, grep counts (e.g. AC-ID
+   coverage), named tests green, `git diff` on guarded paths; load full artifact content into
+   context only to present a human gate.
 5. **Record + advance** — mark the phase `completed` (or `skipped` + one-line reason) in
    `.meta.yaml`, keep `updated_at` ISO 8601, move `current_phase` forward. Never advance past an
    open gate or an unverified `exitWhen`.
 
 **Stop and wait for the user when:**
 - the phase is `gate: human` — present the artifacts compactly (what was produced, what to check,
-  open questions) and wait for approval;
+  open questions) and wait for approval; gate summaries are human-facing — clear full sentences,
+  never terse fragments, especially for warnings, irreversible steps, and multi-step sequences;
 - an input is missing or ambiguous — ask with a recommended answer, don't guess;
 - a blocking check won't clear within the iteration budget — surface the failing check, the named
   unit/AC, what was tried, and the options;
@@ -94,7 +97,9 @@ specifics on top of it:
   group from the parallel-wave plan: a **TestAgent** authors the AC-traceable tests from the
   contract and the task's fields and confirms they FAIL (red — test files only, never source);
   then a **WorkAgent** applies `/implement-react-code` to make them pass (green — source only,
-  never test files; a wrong-looking test is reported back). Verify yourself: the named tests are
+  never test files; a wrong-looking test is reported back). The WorkAgent prompt names the
+  unit's level(s) from the contract's layer decision (component / hook / store / service) so it
+  opens only the matching rule-card directories. Verify yourself: the named tests are
   green AND the test files are byte-unchanged since the TestAgent wrote them (`git diff` the test
   paths) — green with a WorkAgent-touched test → discard and redo with a fresh TestAgent. Run
   waves concurrently in `$ROOT`, one Work/Test pair per unit; within a unit the order is fixed:
