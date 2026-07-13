@@ -20,7 +20,7 @@ Write planning artifacts (`phases.md`, and `tasks.md` status updates) under `.sp
 
 ## Gate / exit
 
-Exits only when every `(TestAgent, WorkAgent)` group is **Completed** — the TestAgent's AC-traceable outcome test is green and byte-unchanged since it was written, the WorkAgent met its handoff criteria, shared-unit immutability held — `tasks.md`/`phases.md` record the test that satisfies each AC, and the branch passes `oac-implementation-review` (no unresolved Critical/Major finding).
+Exits only when every `(TestAgent, WorkAgent)` group is **Completed** — the TestAgent's AC-traceable outcome test is green and byte-unchanged since it was written, the WorkAgent met its handoff criteria, shared-unit immutability held — `tasks.md`/`phases.md` record the test that satisfies each AC, and the branch passes the flow's bound review pass (no unresolved Critical/Major finding).
 
 ## Steps
 
@@ -30,4 +30,4 @@ Exits only when every `(TestAgent, WorkAgent)` group is **Completed** — the Te
    - WorkAgent builds the surfaces to their contracts (write paths included) until the test passes (**green**); it never creates or edits a test.
    - Copy an adopted shared unit instead of modifying it.
    A unit is Completed only when its test is green and unmodified since the TestAgent wrote it; update `tasks.md` and `phases.md`.
-3. **Branch review** — once every unit is green, a ReviewAgent runs `oac-implementation-review` across the changed files; Critical/Major findings loop back to a WorkAgent (never the test) and re-review until none remain.
+3. **Branch review** — once every unit is green, a ReviewAgent audits the changed files against the flow's bound implementation rules; Critical/Major findings loop back to a WorkAgent (never the test) and re-review until none remain.

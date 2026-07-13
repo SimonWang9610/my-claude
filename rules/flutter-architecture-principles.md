@@ -1,1 +1,0 @@
-../flutter/rules/architecture-principles.md

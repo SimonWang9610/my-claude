@@ -8,15 +8,15 @@ for **React/TypeScript** and **Flutter/Dart** projects.
 
 - **Workflows** — the phase machine comes from your project's vendored specflow template
   (`specflow/src/workflows/<variant>.yaml`, override `.specflow/workflows/`), not this bundle.
-  `/sf-react-workflow` translates it into the spec's `workflow.yaml`, binding React `oac-*` skills
+  `/sf-react-workflow` translates it into the spec's `workflow.yaml`, binding the OAC React skills
   to each phase (`id / command / inputs / outputs / skills / gate / exitWhen`; ids match
   `.meta.yaml`). Specflow-managed projects use `/spec-*` instead.
 - **Commands** — one generic, stack-neutral `/sf-*` stage set (process + gates only; names no
   skill or stack).
-- **Skills** — the stack-specific know-how the stages bind (`oac-*` React, `fl-*` Flutter),
-  including prevent/detect pairs (`oac-implementation` ↔ `oac-implementation-review`,
-  `oac-test-contract` ↔ `oac-test-forensics`) and the `*-react-workflow` generators.
-- **Agents** — two stack-neutral **drivers**: `sflow-driver` (`/sf-*`) and `specflow-driver`
+- **Skills** — the stack-specific know-how the stages bind (the OAC React set, `fl-*` Flutter),
+  with prevention and detection folded into each skill (rule cards, gates, checks)
+  and the workflow generators (`sf-react-workflow`, `oac-workflow`).
+- **Agents** — two **drivers**: `sflow-driver` (`/sf-*`) and `oac-specflow-driver`
   (`/spec-*`). A driver is a pure orchestrator — see [How the driver works](#how-the-driver-works).
 
 Vendor this repo into your project (e.g. a git submodule) and link it into the project's
@@ -45,40 +45,38 @@ the phases:
 
 ```
 my-claude/
-├── sflow/       generic /sf-* stage commands (real) + the full workflow README
-├── react/       React profile — skills/ (oac-*), rules/
-├── flutter/     Flutter profile — skills/ (fl-*), rules/
-├── skills/      aggregation: profile skills (symlinks) + shared real skills
-│                (the *-react-workflow generators, jira-ac-align, scan-resource)
-├── agents/      the two driver agents (real files) — sflow-driver, specflow-driver
-├── rules/       shared rules (real) + stack-prefixed profile rule symlinks
-├── commands/    aggregation: the /sf-* commands (symlinks)
-├── internal-link.sh / internal-unlink.sh   build/prune the aggregation dirs from stack sources
-└── link.sh / unlink.sh                     link/remove a stack selection into a .claude/
+├── skills/      the React skill set (real dirs) + shared skills + the two workflow generators
+├── agents/      the driver agents (real files) — sflow-driver, oac-specflow-driver
+├── rules/       shared rules (real files)
+├── sflow/       the /sf-* stage commands (sflow/commands/) + the full workflow README
+├── flutter/     Flutter profile — skills/ (fl-*), rules/ (dormant, not linked by default)
+└── link.sh / unlink.sh    link/remove the bundle into a .claude/
 ```
 
-## Linking — one layer, two script pairs
+## Linking
 
-The root `agents/ commands/ rules/ skills/` are **committed aggregation views**: per-asset
-relative symlinks into `flutter/ react/ sflow/`, plus real shared files (the drivers, the shared
-rules, the generators). Editing a stack source shows through its aggregation entry instantly.
+The bundle is flat — `skills/ agents/ rules/` are real directories and the `/sf-*` command files
+live in `sflow/commands/`. `link.sh` per-entry relative-symlinks them into a destination `.claude/`:
 
-- **`internal-link.sh` / `internal-unlink.sh`** — inside the repo: (re)build or prune the
-  aggregation from the stack sources (`./internal-link.sh all` also repairs). Rules get a
-  `<stack>-` prefix because both profiles share basenames; they apply ambiently via their `paths:`
-  frontmatter, so the drivers never list them.
-- **`link.sh` / `unlink.sh`** — outside the repo: link/remove a per-stack selection into an
-  external `.claude/`. Relative links; existing correct links skipped; foreign files never
-  clobbered; `unlink.sh all` also removes shared assets and the rc block; re-running is safe.
+| Source | Destination |
+|--------|-------------|
+| `skills/*` | `<dest>/.claude/skills/` |
+| `agents/*` | `<dest>/.claude/agents/` |
+| `rules/*` | `<dest>/.claude/rules/` |
+| `sflow/commands/*` | `<dest>/.claude/commands/` |
+
+Relative links; an existing correct link is skipped; a foreign real file (or a link pointing
+outside this repo) is never clobbered; re-running is safe. `unlink.sh` removes only symlinks that
+resolve back into this repo.
 
 ## Install
 
 ```sh
-./link.sh --global all                 # everything into ~/.claude
-./link.sh --project ../myapp react     # React into a project (sflow auto-added — drivers need /sf-*)
-./link.sh                              # interactive
-./unlink.sh --project ../myapp react   # remove React entries (shared assets stay)
-./unlink.sh --global all               # remove everything this repo linked
+./link.sh --global                 # link the bundle into ~/.claude
+./link.sh --project ../myapp       # link into ../myapp/.claude
+./link.sh                          # interactive
+./unlink.sh --project ../myapp     # remove this repo's links from ../myapp/.claude
+./unlink.sh --global --aliases     # remove links + the managed rc block
 ```
 
 `link.sh` can also write a **shell function per driver** into your rc file (`--aliases` /
@@ -86,7 +84,7 @@ rules, the generators). Editing a stack source shows through its aggregation ent
 
 ```sh
 sflow-driver "add a logout button"     # = claude --agent sflow-driver "..." --worktree
-claude --agent specflow-driver --worktree my-feature
+claude --agent oac-specflow-driver --worktree my-feature
 ```
 
 > **Submodules** are synced by the driver's Setup on session start — no hook needed. **Windows:**
@@ -94,9 +92,8 @@ claude --agent specflow-driver --worktree my-feature
 
 ## Editing
 
-Edit under `sflow/ react/ flutter/` directly. On add/remove/rename, re-run `./internal-link.sh
-<stack>` (`./internal-unlink.sh` for removals), commit the symlink change, then `./link.sh` each
-destination.
+Edit `skills/ agents/ rules/` and `sflow/commands/` directly — the links are per-entry, so a new
+skill or command shows up after one `./link.sh` at each destination (removals need `./unlink.sh`).
 
 ## The workflow
 
