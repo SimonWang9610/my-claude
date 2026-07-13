@@ -2,13 +2,15 @@
 #
 # link.sh — link this bundle's assets into a project's .claude/ or the global ~/.claude/.
 #
-# The bundle is flat: skills/ agents/ rules/ are real directories, and the /sf-* command files
-# live in sflow/commands/. This script per-entry relative-symlinks them into <dest>/.claude/:
+# The bundle is flat: skills/ agents/ rules/ are real directories. This script per-entry
+# relative-symlinks them into <dest>/.claude/:
 #
 #     skills/*        -> <dest>/.claude/skills/
 #     agents/*        -> <dest>/.claude/agents/
 #     rules/*         -> <dest>/.claude/rules/
-#     sflow/commands/* -> <dest>/.claude/commands/
+#
+# The /sf-* commands (sflow/commands/) are handled SEPARATELY by link-commands.sh — globally
+# they'd shadow a project's own /spec-* set, so linking them is an explicit, standalone step.
 #
 #     ./link.sh --global                 # into ~/.claude
 #     ./link.sh --project ../myapp       # into ../myapp/.claude
@@ -22,8 +24,8 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-# source dir  ->  dest type under .claude/
-SRC_MAP="skills:skills agents:agents rules:rules sflow/commands:commands"
+# source dir  ->  dest type under .claude/  (commands are handled by link-commands.sh)
+SRC_MAP="skills:skills agents:agents rules:rules"
 REPLY_LINE=""
 
 relpath() {
@@ -42,7 +44,8 @@ read_line() {
 
 usage() {
   echo "usage: link.sh [--global | --project <dir>] [--aliases | --no-aliases]"
-  echo "  per-entry symlinks skills/ agents/ rules/ and sflow/commands/ into <dest>/.claude/"
+  echo "  per-entry symlinks skills/ agents/ rules/ into <dest>/.claude/"
+  echo "  the /sf-* commands are linked separately — see link-commands.sh"
 }
 
 # --- parse args --------------------------------------------------------------

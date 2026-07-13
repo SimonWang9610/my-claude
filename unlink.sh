@@ -7,13 +7,14 @@
 #     ./unlink.sh                            # interactive
 #     ./unlink.sh --global --aliases         # also drop the managed shell-function block
 #
-# Only symlinks that resolve back into THIS repo are removed; anything else is left untouched.
-# Empty type dirs are pruned. Re-running is safe. See link.sh.
+# Removes skills/ agents/ rules/ links only — the /sf-* commands are removed by
+# unlink-commands.sh. Only symlinks that resolve back into THIS repo are removed; anything else
+# is left untouched. Empty type dirs are pruned. Re-running is safe. See link.sh.
 #
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-TYPES="skills agents rules commands"
+TYPES="skills agents rules"
 REPLY_LINE=""
 
 read_line() {

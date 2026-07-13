@@ -50,32 +50,36 @@ my-claude/
 ├── rules/       shared rules (real files)
 ├── sflow/       the /sf-* stage commands (sflow/commands/) + the full workflow README
 ├── flutter/     Flutter profile — skills/ (fl-*), rules/ (dormant, not linked by default)
-└── link.sh / unlink.sh    link/remove the bundle into a .claude/
+├── link.sh / unlink.sh           link/remove skills+agents+rules into a .claude/
+└── link-commands.sh / unlink-commands.sh   link/remove the /sf-* commands (separate)
 ```
 
 ## Linking
 
 The bundle is flat — `skills/ agents/ rules/` are real directories and the `/sf-*` command files
-live in `sflow/commands/`. `link.sh` per-entry relative-symlinks them into a destination `.claude/`:
+live in `sflow/commands/`. Two script pairs per-entry relative-symlink them into a destination
+`.claude/`, kept separate so the commands never get installed by accident:
 
-| Source | Destination |
-|--------|-------------|
-| `skills/*` | `<dest>/.claude/skills/` |
-| `agents/*` | `<dest>/.claude/agents/` |
-| `rules/*` | `<dest>/.claude/rules/` |
-| `sflow/commands/*` | `<dest>/.claude/commands/` |
+| Script | Source → Destination |
+|--------|----------------------|
+| `link.sh` / `unlink.sh` | `skills/* agents/* rules/*` → `<dest>/.claude/{skills,agents,rules}/` |
+| `link-commands.sh` / `unlink-commands.sh` | `sflow/commands/*` → `<dest>/.claude/commands/` |
 
-Relative links; an existing correct link is skipped; a foreign real file (or a link pointing
-outside this repo) is never clobbered; re-running is safe. `unlink.sh` removes only symlinks that
-resolve back into this repo.
+The `/sf-*` commands live in their **own** script pair because, installed globally, they shadow a
+project's own `/spec-*` set — so link them only where an sflow workflow is actually used (usually a
+specific project, not `~/.claude`). Both pairs use relative links; an existing correct link is
+skipped; a foreign real file (or a link pointing outside this repo) is never clobbered; re-running
+is safe. The `unlink*` scripts remove only symlinks that resolve back into this repo.
 
 ## Install
 
 ```sh
-./link.sh --global                 # link the bundle into ~/.claude
+./link.sh --global                 # link skills+agents+rules into ~/.claude
 ./link.sh --project ../myapp       # link into ../myapp/.claude
 ./link.sh                          # interactive
-./unlink.sh --project ../myapp     # remove this repo's links from ../myapp/.claude
+./link-commands.sh --project ../myapp   # add the /sf-* commands to that project only
+./unlink.sh --project ../myapp     # remove skills+agents+rules from ../myapp/.claude
+./unlink-commands.sh --project ../myapp # remove the /sf-* commands
 ./unlink.sh --global --aliases     # remove links + the managed rc block
 ```
 
@@ -93,7 +97,8 @@ claude --agent oac-specflow-driver --worktree my-feature
 ## Editing
 
 Edit `skills/ agents/ rules/` and `sflow/commands/` directly — the links are per-entry, so a new
-skill or command shows up after one `./link.sh` at each destination (removals need `./unlink.sh`).
+skill/agent/rule shows up after one `./link.sh` (a new command after one `./link-commands.sh`) at
+each destination (removals need the matching `./unlink*.sh`).
 
 ## The workflow
 
