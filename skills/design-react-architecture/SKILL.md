@@ -1,10 +1,10 @@
 ---
-name: design-react-achitecture
+name: design-react-architecture
 description: >
   Design code contracts and architecture overview for given user requirements/stories/ACs/NFRs.
 ---
 
-# design-react-achitecture
+# design-react-architecture
 
 Design a React feature's architecture before any code exists. Requirements are an **input** (the caller supplies stories, ACs, NFRs and etc.); this skill decides boundaries, interfaces and units, never concrete implementations.
 
