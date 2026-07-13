@@ -1,7 +1,7 @@
 ---
 name: design-react-architecture
 description: >
-  Design code contracts and architecture overview for given user requirements/stories/ACs/NFRs.
+  Design code contracts, architecture and test strategy for given user requirements/stories/ACs/NFRs.
 ---
 
 # design-react-architecture
