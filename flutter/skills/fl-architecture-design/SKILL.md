@@ -21,6 +21,10 @@ Author `design.md` and `contracts/<unit>.md` such that at phase exit, each block
 
 A seam missing from the design cannot be tested in the implementation; catch it here.
 
+Write both artifacts terse — later phases re-read them each turn: terse prose, reference rule/AC
+IDs instead of restating them; identifiers and paths exact; no invented abbreviations. Gate
+verdicts and justifications are human-read: clear full sentences.
+
 ---
 
 ## Instructions

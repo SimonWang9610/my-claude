@@ -37,6 +37,8 @@ Produce acceptance criteria that carry stable IDs, describe user-observable outc
    → read `references/traceability.md` §1 for naming convention and §2 for `--plain-name` filtering.
 9. Flag any criterion failing a hard check as a blocking authoring condition — fix the
    source artifact before proceeding.
+10. Write `requirements.md` terse — every later phase re-reads it: no filler or restated
+    context; Glossary terms, IDs, and Given/When/Then facts exact; no invented abbreviations.
 
 ### Hard checks — a criterion fails if any are true
 

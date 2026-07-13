@@ -51,12 +51,20 @@ Working Directory: <the exact tree to write in — never a new/isolated worktree
 Skills:            <the skills to apply, and when to invoke each>
 Rules:             <the relevant constraints — guidance, not a whitelist>
 Responsibilities:  <the exact deliverable — do ONLY this, change nothing else>
-Materials:         <exact file paths it needs — never "look around">
+Materials:         <exact file paths, sliced to the task — the unit's own contract, its task
+                    rows, the AC lines it traces to; never a whole spec dir or "look around".
+                    Slice along existing boundaries only — a reviewer checking cross-unit rules
+                    still gets all changed files + every contract's must-nots>
 Done When:         <a mechanically checkable condition — a named test green, a file existing>
 Report Back:       <the compact structured return — files changed, results; on failure: failure
                     type, what was tried, partial findings — never a bare "failed">
 ```
 
 - **Batch independents** in one message; sequence only what truly depends.
-- **Demand compact structured returns** — the session consumes conclusions, not transcripts.
+- **Demand compact structured returns** — the session consumes conclusions, not transcripts. Fix
+  the exact format in `Report Back`: line-oriented with a hard item cap (e.g. findings as
+  `<path:line> — <symbol> — <≤6-word note>`), zero prose around it. Facts stay exact — paths,
+  IDs, commands, the one decisive error line verbatim; everything else is dropped, never
+  abbreviated. An exploration agent returns locations and conclusions, not fix proposals or
+  file dumps.
 - **Scope tightly** — a subagent with a vague charter wanders; "do ONLY this" is load-bearing.

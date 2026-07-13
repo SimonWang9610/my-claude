@@ -33,3 +33,4 @@ that formalizes what to build. The document holds:
 - **Unique IDs** — Ensure every user story, acceptance criterion, and non-functional requirement has a unique ID.
 - **Observable Given/When/Then** — Verify that each acceptance criterion and non-functional requirement is phrased in observable Given/When/Then form.
 - **Independent verifiability** — Check that each criterion can be independently verified without reaching into the implementation's internals.
+- **Terse artifact** — Every later phase re-reads this document: no filler or restated context; Glossary terms, IDs, and Given/When/Then facts exact; no invented abbreviations.

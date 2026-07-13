@@ -41,7 +41,9 @@ Each task is formatted as a table row with the following fields:
 6. **Assemble and count-check** — write `tasks.md` from [tasks-doc.md](./tasks-doc.md), then verify:
    `total = MODIFY/NEW units + AC → Verification rows + edge cases`. A task missing **Traces to**
    is an orphan — assign or delete; a task missing a **Gate** is unverifiable — fix it. A count
-   mismatch means something was dropped or duplicated — reconcile before hand-off.
+   mismatch means something was dropped or duplicated — reconcile before hand-off. Keep rows
+   terse — field values are facts (IDs, paths, gate commands), never sentences restating the
+   contract.
 
 ## Edge-case enumeration
 
