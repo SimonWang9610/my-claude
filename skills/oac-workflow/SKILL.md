@@ -1,7 +1,7 @@
 ---
 name: oac-workflow
 description: >
-  Generate workflow.yaml for an OAC specflow spec: for each phase, emit the skills it invokes (the
+  Generate workflow.yaml for an OAC specflow spec (`/spec-*` command): for each phase, emit the skills it invokes (the
   /spec-<id> command included as the first skill) and a self-contained prompt that weaves those
   skills — binding the OAC React skills (build-acceptance-criteria, design-react-architecture,
   plan-react-tasks, implement-react-code) — then writes <spec-dir>/workflow.yaml.

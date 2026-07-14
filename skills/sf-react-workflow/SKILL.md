@@ -1,11 +1,10 @@
 ---
 name: sf-react-workflow
 description: >
-  Generate workflow.yaml for an sflow spec: for each phase, emit the skills it invokes (the /sf-<id>
+  Generate workflow.yaml for an sflow spec (`/sf-*`): for each phase, emit the skills it invokes (the /sf-<id>
   command included as the first skill) and a self-contained prompt that weaves those skills —
   binding the OAC React skills (build-acceptance-criteria, design-react-architecture,
-  plan-react-tasks, implement-react-code) — then writes <spec-dir>/workflow.yaml. Identical to
-  /oac-workflow apart from the command mapping (/sf-<id> instead of /spec-<id>).
+  plan-react-tasks, implement-react-code) — then writes <spec-dir>/workflow.yaml.
   Usage: /sf-react-workflow $SPEC_DIR.
 argument-hint: $SPEC_DIR
 ---
