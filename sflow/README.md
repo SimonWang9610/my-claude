@@ -73,7 +73,7 @@ Starting a spec is driver-led. The driver's embedded **Setup** section (run by i
 2. **`/sf-init`** — scaffolds `.specflow/specs/<name>/` + `.meta.yaml` ONLY (phase ids read
    from the variant's project-hosted template, all `pending`). No `workflow.yaml` yet.
 3. **WAIT for the user's instructions**, then **`/sf-react-workflow <variant>`** — the sole
-   writer of `workflow.yaml`: it translates the template (commands, skills, gates, exitWhen),
+   writer of `workflow.yaml`: it translates the template (skills, prompts, gates, exitWhen),
    verifies `workflow:` + phase ids against `.meta.yaml`, and writes
    `.specflow/specs/<name>/workflow.yaml`. Then the Drive Loop begins.
 
@@ -89,23 +89,25 @@ workflow: feature | brownfield | bugfix | quickfix   # MUST match .meta.yaml `wo
 description: <workflow-description>
 phases:
   - id: <phase-id>          # MUST match the .meta.yaml phase_status keys
-    command: <phase-command>
+    skills:
+      - <skill-name>        # every skill the phase invokes; the /sf-* command is the first
+    prompt: <text>          # self-contained instruction naming each skill above verbatim
     inputs:
       - <input-name>
     outputs:
       - <output-name>
-    skills:
-      - <skill-name>
     gate: human | auto
     exitWhen: <exit-condition>
 ```
 
-`command` is absent on driver-led phases (`analysis`, `describe`); `taskstoissues`, if a template
-still declares it, is skip-guarded (the React flow has no tracker). `gate` maps from the template's `approval` (`human` → `human`, `auto`/`skip`
-→ `auto`; `implement` is always `human` — the bundle's post-implement code check). `exitWhen`
-is one line from the phase map (React exitWhen additions folded in). There are no other
-fields — former per-phase stage notes are folded into `exitWhen`; global disciplines (changed
-tests only, single non-parallel suite run, shared-component immutability, no PR closing
+There is **no** `command` field — a phase's `/sf-*` command is just the first entry in `skills`,
+woven verbatim into `prompt`; the driver runs `prompt` directly and never dispatches a command.
+Driver-led phases (`analysis`, `describe`) simply list only their own skill (`/analyze-react`,
+`/build-acceptance-criteria`). `taskstoissues`, if a template still declares it, is skip-guarded
+(the React flow has no tracker). `gate` maps from the template's `approval` (`human` → `human`,
+`auto`/`skip` → `auto`; `implement` is always `human` — the bundle's post-implement code check).
+`exitWhen` is one line from the phase map (React exitWhen additions folded in). Global disciplines
+(changed tests only, single non-parallel suite run, shared-component immutability, no PR closing
 keywords) live in the drivers' Hard Rules.
 
 ## Command set

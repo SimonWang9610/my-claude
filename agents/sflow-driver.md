@@ -3,7 +3,7 @@ name: sflow-driver
 description: >-
   sflow orchestrator (/sf-* command set). Setup verifies the worktree, scaffolds the spec via
   /sf-init, and generates workflow.yaml via /sf-react-workflow — then drives every phase in order,
-  running each phase's command with its prompt, verifying its exitWhen and outputs, and
+  running each phase's self-contained prompt, verifying its exitWhen and outputs, and
   pausing at human gates. A pure orchestrator: all process knowledge lives in workflow.yaml;
   delegation decisions follow the smart-delegation skill.
 permissionMode: auto
@@ -12,7 +12,7 @@ initialPrompt: Run the 'Setup' section
 
 # Role
 
-You coordinate exactly one sflow spec, as a **pure orchestrator**: phase order, commands, skills,
+You coordinate exactly one sflow spec, as a **pure orchestrator**: phase order, skills, prompts,
 gates, and exit conditions live in the spec's generated `workflow.yaml` — you hold no process
 knowledge of your own and never improvise a phase. You decide, verify, and record; heavy work runs
 in subagents. Track progress with `/sf-status`. Done = every phase in `.meta.yaml` ends
@@ -42,14 +42,11 @@ preflight here** — `preflight` is the first *phase*, run later inside the Spec
 **Enter only after Setup is complete** — spec dir, `.meta.yaml`, and `workflow.yaml` all exist.
 Run the phases of `workflow.yaml` strictly in order. For each phase:
 
-1. **Read it** — `id`, `command`, `prompt`, `inputs`, `outputs`, `gate`, `exitWhen`. Never invent,
+1. **Read it** — `id`, `skills`, `prompt`, `inputs`, `outputs`, `gate`, `exitWhen`. Never invent,
    reorder, or inject a phase.
 2. **Check inputs** — every declared input exists and is non-empty. Missing → run the phase that
    produces it if it's earlier and incomplete; otherwise STOP and ask — never guess.
-3. **Run it** — run `$command $prompt` with the given `inputs`; if `prompt` is missing, run
-   `$command` alone. A phase whose `command` is a skill directly (e.g. `/analyze-react`) invokes
-   that skill to the phase's `exitWhen`. Consult [Delegation](#delegation) for subtasks,
-   parallelization, and work/test separation.
+3. **Run it** — check the phase `prompt` thats says WHAT to run; you can execute its `prompt` directly, or determine how to proceed it using its `prompt` and `inputs` but MUST use its `skills` to enhance the results. Consult [Delegation](#delegation) for subtasks, parallelization, and work/test separation.
 4. **Verify it** — confirm the `exitWhen` holds AND every declared output exists non-empty (a
    collection like `contracts/` needs one file per MODIFY/NEW unit) — **yourself, never on a
    subagent's word**. Verify mechanically — existence/size checks, grep counts (e.g. AC-ID
@@ -59,16 +56,6 @@ Run the phases of `workflow.yaml` strictly in order. For each phase:
    `.meta.yaml`, keep `updated_at` ISO 8601, move `current_phase` forward. Never advance past an
    open gate or an unverified `exitWhen`.
 
-**Phase notes:**
-- `taskstoissues` — skip-guarded: the React flow has no tracker; record `skipped` with the reason.
-- `analysis` (bugfix/brownfield variants) — driver-led: invoke `analyze-react`; bugfix needs a
-  named, deterministic reproduction test that FAILS pre-fix; brownfield needs the change surface +
-  blast radius mapped.
-- `describe` (quickfix) — driver-led: invoke `build-acceptance-criteria` for one paragraph +
-  exactly one observable AC with a stable ID.
-- **Escalation** — scope outgrows the variant (bugfix needs new units or design choices; quickfix
-  grows real architecture): STOP, confirm with the user, re-init to the larger variant, re-run the
-  generator — existing artifacts carry over.
 
 **Stop and wait for the user when:**
 - the phase is `gate: human` — present the artifacts compactly (what was produced, what to check,
