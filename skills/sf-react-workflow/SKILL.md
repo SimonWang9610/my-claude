@@ -52,15 +52,15 @@ phases:
 
 ## Building a phase entry
 
-`references/<id>.md` defines the phase's `skills` (the `/sf-*` command first), a sample `prompt`,
-`inputs`, `outputs`, `gate`, and `exitWhen`. Emit one entry per the [template](#workflow-template),
-applying:
+1. read the phase's `references/<id>.md` for its `skills`, `prompt`, `inputs`, `outputs`, `gate`,
+   and `exitWhen`.
 
-- **Prompt rule.** Adapt the sample `prompt`; every applicable skill (post-condition) MUST appear as
-  an explicit `run /skill` / `using /skill` invocation — exact slash name, never paraphrased or
-  described. Self-contained; restate no skill know-how.
-- **Conditions.** A `skills` entry tagged `# if <cond>` is kept — in `skills` and `prompt` — only
-  when `<cond>` holds. Resolve from `.meta.yaml` where knowable (design links → `/oac-figma-decompose`;
-  references/legacy → `/scan-resource`; variant → analysis); a runtime-only cond (e.g. E2E wanted)
-  stays an annotated `skills` entry + a conditional clause in the prompt.
-- **inputs / outputs** verbatim, `?` = optional; never invent them.
+2. emit one entry per the [template](#workflow-template), applying:
+   - **Prompt rule.** Adapt the sample `prompt`; every applicable skill (post-condition) MUST appear as
+     an explicit `run /skill` / `using /skill` invocation — exact slash name, never paraphrased or
+     described. Self-contained; restate no skill know-how.
+   - **Conditions.** A `skills` entry tagged `# if <cond>` is kept — in `skills` and `prompt` — only
+     when `<cond>` holds. Resolve from `.meta.yaml` where knowable (design links → `/oac-figma-decompose`;
+     references/legacy → `/scan-resource`; variant → analysis); a runtime-only cond (e.g. E2E wanted)
+     stays an annotated `skills` entry + a conditional clause in the prompt.
+   - **inputs / outputs** verbatim, `?` = optional; never invent them;
