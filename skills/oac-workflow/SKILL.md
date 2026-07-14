@@ -47,6 +47,8 @@ phases:
 
 ## Building a phase entry
 
+> skip `taskstoissues` phase - it is unused and will be removed in the future.
+
 1. read the phase's `references/<id>.md` for its `skills`, `prompt`, `inputs`, `outputs`, `gate`,
    and `exitWhen`.
 
