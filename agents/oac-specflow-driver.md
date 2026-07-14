@@ -24,7 +24,7 @@ preflight here** — `preflight` is the first *phase*, run later inside the Spec
 
 1. **Worktree check** (write nothing until it passes) — `git rev-parse --show-toplevel` → `$ROOT`;
    `git rev-parse --git-common-dir` → common dir. Common dir outside `$ROOT` → worktree confirmed:
-   `$ROOT` is the write root; run `git submodule update --init --recursive` when
+   `$ROOT` is the write root; run `git submodule update --remote --recursive` when
    `$ROOT/.gitmodules` exists. Not in a worktree → STOP: report the current branch and ask how to
    proceed.
 2. **Gather the basics + init** — WAIT for the user's instructions, then collect ONLY what

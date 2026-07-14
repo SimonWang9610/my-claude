@@ -7,6 +7,9 @@ description: Audits one or more legacy folders/resources and distills each into 
 
 Given a set of legacy folders/resources, produce **one markdown reference per folder** plus an **index** — a recallable knowledge base a downstream agent (e.g. migrating Flutter → React) can query on demand instead of re-scanning source. Re-open source files only when a reference flags a gap.
 
+A reference exists to answer ONE question: **what do I need to rebuild this in the target system?**
+Every line must pass the signal test — *would it change what gets built?* If not, drop it.
+
 ## Inputs
 
 1. **Resources** — one or more folders (and possibly files/URLs). Each folder becomes its own reference.
@@ -29,7 +32,7 @@ Derive `<folder-slug>` from the folder's path (e.g. `lib/features/auth/` → `fe
 
 ## Workflow
 
-1. **Resolve scope** from the instruction. For each folder, decide what's in scope; if the instruction names a functionality, scan only that.
+1. **Resolve scope** from the instruction. For each folder, decide what's in scope; if the instruction names a functionality, scan only that. **Always out of scope** (never scan, never record): tests, generated/build output, assets, styling/theming detail, i18n strings, DI/import wiring, framework boilerplate, dead code.
 2. **For each folder**: scan it as a unit (grep first, open only relevant files), then write `<folder-slug>.md` using the reference template. Don't merge folders into one file.
 3. **Write/refresh `INDEX.md`** so the agent can recall what's available at a glance.
 4. **Re-audit behavior**: if a reference already exists, update it in place. Only re-scan source for a folder when its reference is missing, stale, or flagged incomplete.
@@ -49,6 +52,7 @@ _Source: <root path(s)> · Scope: <instruction> · Updated: <date>_
 ## Reference format (one per folder)
 
 ALWAYS use this structure. Omit a section only if it has no in-scope content.
+**Budget: ≤120 lines per reference.** Over budget → tighten or narrow scope; never pad.
 
 ```markdown
 # <Folder name / what it is>
@@ -60,27 +64,38 @@ ALWAYS use this structure. Omit a section only if it has no in-scope content.
 
 ## Overview
 
-<2–4 sentences: what this legacy area does and the business purpose it serves. Big-picture, migration-oriented.>
+<1–3 sentences: what this area does and the business purpose it serves.>
 
-## Business Logic & Abstractions
+## Behavior
 
-<The reusable substance the agent will port — rules, state machines, models, services, contracts. Framework-agnostic where possible (the migration target may differ from the source):>
+<What the feature DOES — observable behavior, business rules, validation, edge/error cases.
+These become the target system's requirements/ACs. One line each:>
 
-- `<entity / rule / abstraction>` — <what it does; inputs/outputs or shape; where it lives>
+- <rule / behavior / edge case — condition → outcome>
 
-## Map
+## Model & Contracts
 
-<Where things live, so the agent can jump straight to source if needed. One line per file/area:>
+<The shapes the target must honor — framework-agnostic:>
 
-- `<file or area>` — <its role>
+- `<entity>` — <fields/shape, invariants>
+- `<API / storage / integration contract>` — <endpoint or schema; consumed/produced where>
 
-## How It Connects
+## Flow & State
 
-<Data/control flow and dependencies — entry points, what calls what, what holds state. Short.>
+<Entry points, who owns what state, key sequences (happy path + error paths). Terse — arrows over prose:>
 
-## Migration Notes
+- <trigger> → <steps> → <outcome>
 
-<Optional. Source-stack-specific (framework-specific) coupling to unwind, anti-patterns, framework-bound vs. portable logic, and anything that will bite when rebuilding in the target stack. Skip if none.>
+## Pitfalls
+
+<Optional. What will bite when rebuilding: hidden coupling, framework-bound logic to unwind,
+non-obvious ordering/timing, known bugs kept for compatibility. Skip if none.>
+
+## Key sources
+
+<≤10 pointers for deep-dives only — the files that define the logic above. NOT an inventory:>
+
+- `<file>` — <why you'd open it>
 
 ## Gaps
 
@@ -89,9 +104,13 @@ ALWAYS use this structure. Omit a section only if it has no in-scope content.
 
 ## Principles
 
+- **Signal test on every line** — record it only if it changes what gets built in the target
+  system. Plumbing, boilerplate, styling, and per-file narration never pass.
+- **No file inventory** — `Key sources` is capped at 10 pointers; source layout is not knowledge,
+  behavior is. The target system will have its own layout.
 - **One reference per folder** — never merge; save each separately with a stable slug so re-audits overwrite, not duplicate.
 - **Recall over re-scan** — re-reading source is the exception, signalled by the `Gaps` section.
-- **Portable substance first** — favor business logic and abstractions that survive a framework change over framework-specific detail.
+- **Portable substance first** — behavior, rules, models, and contracts survive a framework change; framework-specific detail belongs only in `Pitfalls`, and only when it will bite.
 - **Instruction is the filter** — out-of-scope content stays out.
 - **Terse prose** — references are re-read on every downstream step: no filler; entities, paths,
   and shapes exact; drop words, never invent abbreviations.
