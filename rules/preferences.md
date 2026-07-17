@@ -1,58 +1,50 @@
-# Rules of Preferences
+# Working discipline
 
-Throughline: spend effort where it has leverage — stay at architecture altitude, delegate deliberately, route models by fit, and refactor only when first principles say it pays off.
+The floor for every turn. When the contracts family (audit → design → plan → implement →
+test) or the specflow driver is active, their procedures own the detail; these rules bind
+wherever the skills don't reach.
 
-## 1. Architect, Don't Execute
+## Leverage
 
-### Do
-- Keep the main session on design, architecture, planning, and subagent coordination.
-- Delegate implementation and substantial research.
+- **Architect, don't execute.** Main session: design, decisions, verification,
+  coordination. Subagents: implementation, substantial research. Inline: trivial,
+  cache-cheap work — spawning costs more than doing.
+- **Delegate deliberately.** Fan-out, noisy exploration, fresh eyes, or separation of
+  duties → subagent (protocol: `smart-delegation`). Sequential steps and decisions →
+  inline. Needs this session's context → fork.
+- **Route models by fit.** Top-tier: architecture, hard reasoning. Mid: routine coding.
+  Small: search, scan, summarize.
 
-### Inline carve-out
-- Do trivial, cache-cheap work directly: a single file read, a 1–2 call lookup, a quick grep, editing a rules/plan file.
+## Code
 
-### Why / goal
-- A fresh subagent is a cold cache start on a 5-min TTL, so spawning one for tiny work costs more than it saves — and the parent's cache is untouched either way, so there's no isolation benefit to bank.
-- Goal: a clean, authoritative main context without paying for needless spawns.
+- **Simplicity-first.** Only the in-hand AC's behavior; a diff large for its AC gets
+  rewritten smaller.
+- **Surgical.** Touch only what the task requires; remove only orphans your own change
+  created; mention pre-existing dead code, never delete it.
+- **Read-before-write.** Read the target and its imports first; reuse the existing
+  unit/type/constant over adding a second.
+- **Convention beats novelty** — but an architecture principle beats convention; name the
+  conflict, never pick silently.
+- **Goal-driven.** A named test asserting the AC's outcome defines done; a bugfix starts
+  with its failing reproduction.
+- **Iteration budgets.** Declare the stopping point before any loop; spent → stop and
+  surface (failing check · what was tried · suspected cause). Never re-apply a rejected
+  fix.
 
-## 2. Smart Delegation
+## Refactor to unblock
 
-### Delegate when
-- Parallel fan-out of independent work.
-- Isolating noisy exploration (many file reads/searches) behind a compact summary.
-- Reusing the same stable-prompt subagent within ~5 min (later calls hit its warm cache).
+A forced fix triggers evaluation, not a patch or a rewrite: **root friction** (the exact
+structural flaw) → **restricted scope** (one class/interface, no creep) → **payoff**
+(this task + near-term vs cost). Low → documented hotfix, note the debt. High → refactor
+the bounded scope, then implement. Beyond the scope → propose to the human, never silent.
 
-### Don't delegate when
-- Tightly sequential steps.
-- Work needing context the main session already holds — prefer a fork there, since it inherits the parent's warm cache.
+## Tokens
 
-### How
-- Batch independent calls in one turn.
-- Pass only what's needed; demand a compact structured return.
-- Subagents summarize findings for the main session to review and decide next steps.
-
-### Goal
-- Maximize cache reuse and parallelism while keeping intermediate noise out of the main context.
-
-## 3. Right-Sized Model Routing
-
-### Match the model to the task
-- Opus for complex reasoning.
-- Sonnet for coding.
-- Haiku for research and summarization.
-
-### Goal
-- Pay for capability only where the task demands it.
-
-## 4. Refactor to Unblock — by First Principles
-
-Don't blindly patch broken code. If a bug fix or feature feels forced, pause. Before writing a workaround or starting a massive rewrite, evaluate the *localized* payoff from first principles.
-
-### Three-step evaluation
-1. **Identify the root friction** — pinpoint the exact structural flaw causing the resistance (e.g. tight coupling, state leakage).
-2. **Define a restricted scope** — can the fix be isolated to a strictly bounded radius (a single class or interface) without scope creep?
-3. **Calculate the payoff** — does refactoring now save more time and prevent more complexity, for this task and near-term features, than it costs?
-
-### Execution guardrails
-- **Low/no payoff** → apply a clean, documented hotfix, note the debt, and move on.
-- **High payoff** → stop. Refactor the isolated scope to build a clean foundation, then implement the fix or feature elegantly.
+- **Outputs cost more than inputs.** Point at the source or generate mechanically (a grep
+  beats a hand-written manifest); never author restatements of static or derivable
+  knowledge; rows are facts (IDs, paths, commands).
+- **Compress what compounds.** Always-loaded text (agents, descriptions, rules) first;
+  lazily-loaded references opportunistically, never as a bulk pass.
+- **Cut overhead, not clarity.** Drop filler and restated context; no invented
+  abbreviations or arrow-chains; code, paths, IDs, and error strings stay exact;
+  human-facing output (gates, reports, warnings) in full sentences.
