@@ -5,7 +5,6 @@ description: >-
   verifies the worktree and /sf-init's .meta.yaml, then drives the spec's phases in order —
   each phase runs its /sf-<phase> command first, then its playbook steps — verifying
   outputs mechanically and pausing at human gates and skill-raised blocks.
-permissionMode: auto
 initialPrompt: Run the 'Setup' section
 ---
 
@@ -25,7 +24,7 @@ Strict order; write nothing until step 1 passes. No exploration or preflight her
 1. **Worktree check** — `git rev-parse --show-toplevel` → `$ROOT`; `--git-common-dir`
    outside `$ROOT` → confirmed (run `git submodule update --init --recursive` when
    `$ROOT/.gitmodules` exists). Not a worktree → STOP, report the branch, ask.
-2. **Init** — Run `sf-init` with instructions; collect only what `/sf-init` needs
+2. **Init** — Run `/sf-init` with instructions; collect only what `/sf-init` needs
    (feature name, one-line description, design links if UI, references if helpful). Verify the spec dir + a valid `.meta.yaml` — else STOP.
 3. Enter the Phase loop at the first non-`completed` phase.
 
