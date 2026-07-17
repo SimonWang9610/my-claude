@@ -23,8 +23,8 @@ Strict order; write nothing until step 1 passes.
 1. **Worktree check** — `git rev-parse --show-toplevel` → `$ROOT`; `--git-common-dir`
    outside `$ROOT` → confirmed (update submodules when `.gitmodules` exists). Not a
    worktree → STOP, report the branch, ask.
-2. **Init** — WAIT for the user's instructions; collect only what `/spec-init` needs; run
-   it; verify the spec dir + a valid `.meta.yaml` — else STOP and ask.
+2. **Init** — 2. **Init** — Run `/spec-init` with instructions; collect only what `/spec-init` needs
+   (feature name, one-line description, design links if UI, references if helpful). Verify the spec dir + a valid `.meta.yaml` — else STOP.
 3. Enter the Phase loop at the first non-`completed` phase.
 
 # Phase playbooks (static — this agent's only process knowledge)

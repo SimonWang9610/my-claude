@@ -6,7 +6,7 @@ wherever the skills don't reach.
 
 ## Leverage
 
-- **Architect, don't execute.** Main session: design, decisions, verification,
+- **Orchestrate** Main session: design, decisions, verification,
   coordination. Subagents: implementation, substantial research. Inline: trivial,
   cache-cheap work — spawning costs more than doing.
 - **Delegate deliberately.** Fan-out, noisy exploration, fresh eyes, or separation of
