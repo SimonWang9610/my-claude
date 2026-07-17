@@ -66,6 +66,46 @@ const onSaveEvent = useEffectEvent(onSave)
 useEffect(() => { conn.on('save', onSaveEvent); return () => conn.off('save', onSaveEvent) }, [conn])
 ```
 
+## No update loops — an effect never writes what re-triggers it
+
+"Maximum update depth exceeded" is always one of three shapes:
+
+- **The effect writes a value it depends on** — directly, or via an **unstable dep** (an
+  object/array/callback recreated every render re-runs the effect every render). Fix:
+  derive instead of setting (see Derive, don't mirror), stabilize the dep
+  (`useMemo`/primitive deps), or use a functional update and drop the dep. **When the
+  unstable dep is another hook's return, fix the producer** (build-hooks § Stable
+  returns) — stabilizing only your consumption site leaves the landmine for the next
+  consumer.
+
+```ts
+// ✗ filters is a new object each render → effect re-runs → setState → render → loop
+const filters = { query, sort }
+useEffect(() => setRows(applyFilters(data, filters)), [data, filters])
+// ✓ derive in render — no state, no effect, no loop
+const rows = applyFilters(data, { query, sort })
+```
+
+- **setState during render** — calling a setter (own or a parent's, via a callback prop)
+  in the render body. Fix: move it to an event handler or effect; a parent that must
+  react to child render output has an ownership problem — lift the state.
+
+- **An emitter wired through an unstable subscription** — the source (observable, ticker,
+  synchronizer) is recreated per render, or the subscription synchronously emits into
+  `setState` on every (re)subscribe: subscribe → emit → setState → render → resubscribe →
+  loop. Fix: the source lives outside render (module, service, `useRef`); bridge with
+  `useSyncExternalStore` (stable `subscribe`, `getSnapshot` returning a cached value —
+  a fresh object per `getSnapshot` call is itself a loop); per-tick/per-frame values go
+  to a ref or stay in the service, never `setState` per tick.
+
+```ts
+// ✗ new source per render + sync emit on subscribe — infinite depth
+const ticker = createTicker()
+useEffect(() => ticker.subscribe(setNow), [ticker])
+// ✓ stable source, stable subscription
+const positionMs = useSyncExternalStore(engine.subscribe, engine.getPosition)
+```
+
 ## Async results check staleness before applying
 
 An async effect's result can land after the input changed or the component unmounted —

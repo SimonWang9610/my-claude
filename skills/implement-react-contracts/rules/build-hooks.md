@@ -17,8 +17,11 @@ function useDeviceFilters(devices: Device[], query: string): Device[] { /* deriv
 ## Stable returns
 
 Callbacks in the return are `useCallback` with functional updates (dependency-free where
-possible); derived objects that consumers memo against are `useMemo`. A return value whose
-identity churns every render silently defeats every memo consumer downstream.
+possible); derived objects/arrays are `useMemo`. An unstable return is not a style issue —
+it's a **latent correctness bug**: harmless while nothing watches its identity, then the
+first consumer that puts it in an effect's dep array loops ("Maximum update depth
+exceeded") and every memo downstream is silently defeated. Stability is part of the
+hook's contract, not an optimization.
 
 ```ts
 // ✗ fresh object + fresh callback every render

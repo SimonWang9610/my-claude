@@ -6,8 +6,9 @@ memoizing over a structural cause is a bandage that silently rots.
 
 ## When to run
 
-During self-check for hot paths (per-frame, large list, main interaction) and perf NFRs;
-or on a reported symptom. Cold path, no NFR, no symptom → exit. No browser available
+For hot paths (per-frame, large list, main interaction), perf NFRs, diffs touching
+subscriptions/services/caches, or a reported symptom. Cold path, no NFR, no symptom →
+exit. No browser available
 (headless/CI agent) → record the diagnostic as **deferred**, never fabricate measurements;
 perf NFR rows still verify through their Test strategy harnesses.
 
@@ -41,13 +42,13 @@ Diagnose from architecture downward; a fix applied below the cause's level is a 
 
 ## Route the fix
 
-- **Implementation-level cause** (2–4, within the contract): apply
-  [optimize-hooks.md](./optimize-hooks.md) / [optimize-components.md](./optimize-components.md),
-  re-measure, done.
-- **Design-level cause** (1, or a boundary the design drew wrong): raise a **DESIGN GAP**
-  (friction — or defect when the contract mandates the slow structure), measurement
-  attached as evidence, per SKILL.md § Steer the design. Do not patch locally what the
-  design must fix.
+- **Implementation-level cause** (2–4, within the contract): a finding whose fix
+  direction cites `implement-react-contracts/rules/optimize-hooks.md` /
+  `optimize-components.md`.
+- **Design-level cause** (1, or a boundary the design drew wrong): a **DESIGN GAP**
+  finding (friction — or defect when the contract mandates the slow structure),
+  measurement attached as evidence. Never suggest patching locally what the design must
+  fix.
 
 ```markdown
 DESIGN GAP — DeviceGrid · friction

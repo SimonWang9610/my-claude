@@ -2,9 +2,9 @@
 name: implement-react-contracts
 description: >
   Implement React units against their contracts (or a direct request): level-specific
-  rules for using/building/optimizing hooks and components, stores and services, plus a
-  performance & memory diagnostic. Self-check verifies contract conformance and raises
-  DESIGN GAPs that steer the architecture.
+  rules for using/building/optimizing hooks and components, stores and services. Verifies
+  its done-condition and raises DESIGN GAPs that steer the architecture; deep conformance
+  checking lives in check-react-implementation.
 ---
 
 # implement-react-contracts
@@ -50,18 +50,11 @@ clear code first, never pre-optimize a cold path.
    component/hook/type/query-key/store-slice — never add a second one.
 2. **Implement per level** — most changes are mixed-level (a filtered list touches
    component + hook rules at once); apply every rules file whose level the diff touches.
-3. **Self-check the diff** — every changed unit, in order:
-   - **Contract conformance:** public API name-for-name and type-for-type; every promised
-     state in "States exposed" rendered and observable; the Test seam workable (the unit
-     runs in isolation); traced ACs satisfied.
-   - **Rules re-scan:** the touched levels' rules, correctness first.
-   - **Done-condition:** the task's gate when one exists; otherwise typecheck + relevant
-     tests. Tests define behaviour — make the code satisfy them; NEVER rewrite a test to
-     make failing code pass.
-   - **Performance & memory:** hot paths, perf NFRs, or a diff touching
-     subscriptions/services/caches → run
-     [rules/performance-check.md](./rules/performance-check.md); it routes each cause to an
-     implementation fix or a design gap (step 4).
+3. **Verify the done-condition** — the task's gate when one exists; otherwise typecheck +
+   the relevant tests. Tests define behaviour — make the code satisfy them; NEVER rewrite
+   a test to make failing code pass. Deep conformance checking (contract audit, rules
+   re-scan, performance & memory) is `check-react-implementation`'s job after the phase —
+   conform while writing; don't re-review your own diff.
 4. **Steer the design** — when a governing decision is ambiguous, missing a case, or
    provably wrong, raise it; never silently deviate, never blindly implement a defect:
 
