@@ -1,33 +1,33 @@
 ---
-description: Implement each unit to its contract and write the AC-traceable tests until green.
+description: Implement each wave's tasks with independent test and implementation agents; completed means the AC-traceable test passes.
 ---
 # sf:implement
 
-Plan the work into `(TestAgent, WorkAgent)` phases and execute them test-first; "completed" means an AC-traceable outcome test passes.
+Execute tasks.md wave by wave under an evidence contract that makes "completed" structural:
+an AC-named, outcome-asserting test passes — authored independently of the implementation —
+so "completed" can never mean "a checkbox" or "existing tests ran". Updates `tasks.md`
+status under `.specflow/specs/<name>/`; code goes to the target repo. Requires `tasks.md` +
+`design.md` + `contracts/`; optional `qa-journey-plan.md` (drives step 4); steering as
+context.
 
----
+**Steps.**
 
-**Purpose.** Build the spec's tasks under a paired-agent contract that makes test evidence structural: a **TestAgent** authors the AC test red-before-green, a separate **WorkAgent** implements it to green (never editing the test), and a unit is "completed" only when that named, AC-traceable, outcome-asserting test passes and is unmodified — so "completed" can't mean "a checkbox" or "existing tests ran".
+1. **Author tests per wave batch** — a test agent writes each task's AC-named outcome
+   tests from the contracts (test files only; tests derive from contracts, never from the
+   code under test); run them: **red per task**, failing on behavior, not setup — record
+   the ref.
+2. **Implement per wave batch** — a separate implementation agent (never the test author)
+   builds to the contracts (source only); a wrong-looking test is raised, never edited;
+   copy an adopted shared unit instead of modifying it.
+3. **Verify per task** — tests **green**, AND test paths byte-unchanged since red;
+   modified → redo the task with a fresh test/impl pair. Chunked batch pairs run
+   concurrently.
+4. **Journeys** — `qa-journey-plan.md` exists → per entry: **NEW** → author the
+   end-to-end test (`J-<n>` + AC IDs in the name); **MODIFY** → update the named existing
+   test (a material change to an existing test is surfaced, never silent); run to green.
+   Unautomatable journeys stay in the plan's NOT-automated table.
 
-This command merges the original `/implement` with the `(TestAgent, WorkAgent)` phased-execution model — it both plans the execution phases and runs them, so no separate phase stage is needed.
-
-## Spec Artifacts
-
-Write planning artifacts (`phases.md`, and `tasks.md` status updates) under `.specflow/specs/<name>/`. The implementation **code** is written to the target repo, **not** here.
-- **Required:** the workflow's planning artifacts — `tasks.md` + `design.md` + `contracts/` (feature/brownfield), `tasks.md` + `analysis.md` (bugfix), or `describe.md` alone (quickfix: the one AC is the task).
-- **Optional:** prior-phase `references/`.
-- **Additional:** steering `.specflow/steering/*`; the target repo (where code is written).
-
-## Gate / exit
-
-Exits only when every `(TestAgent, WorkAgent)` group is **Completed** — the TestAgent's AC-traceable outcome test is green and byte-unchanged since it was written, the WorkAgent met its handoff criteria, shared-unit immutability held — `tasks.md`/`phases.md` record the test that satisfies each AC, and the branch passes the flow's bound review pass (no unresolved Critical/Major finding).
-
-## Steps
-
-1. **Plan the phases** — group tasks into the parallel waves `tasks.md` declares (independent units run concurrently), each unit a one-to-one `(TestAgent, WorkAgent)` pair; persist to `phases.md` (resumable; a single-pair spec, e.g. a quickfix, may run as one pair without `phases.md`). TestAgent's pass criteria are the AC test contract; WorkAgent owns the surfaces + contracts + AC-IDs + handoff criteria.
-2. **Execute each unit** — `test → red → impl → green`, per pair:
-   - TestAgent writes the AC-named outcome test against the contract's seam and runs it to confirm it **FAILS** (red) before any implementation — test files only.
-   - WorkAgent builds the surfaces to their contracts (write paths included) until the test passes (**green**); it never creates or edits a test.
-   - Copy an adopted shared unit instead of modifying it.
-   A unit is Completed only when its test is green and unmodified since the TestAgent wrote it; update `tasks.md` and `phases.md`.
-3. **Branch review** — once every unit is green, a ReviewAgent audits the changed files against the flow's bound implementation rules; Critical/Major findings loop back to a WorkAgent (never the test) and re-review until none remain.
+**Exit.** Every task's AC-traceable outcome test is green and byte-unchanged since
+authoring; journey tests green (or the plan's skip note stands); shared-unit immutability
+held; `tasks.md` records the test satisfying each AC; the flow's bound review pass leaves
+no unresolved Critical/Major finding.

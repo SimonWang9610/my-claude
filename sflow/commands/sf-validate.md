@@ -3,35 +3,27 @@ description: Run the blocking validation gate — clause-to-test coverage plus t
 ---
 # sf:validate
 
-The blocking gate: the existing checks PLUS clause→test coverage and the architecture gate.
+The cheap machine pre-gate before `/sf-qa`: no spec advances while a stated intent is
+unproven. Reads `.meta.yaml` + the spec artifacts (checks over an absent optional artifact
+are SKIP); records the architecture-gate result into `design.md`; steering as context.
 
----
-
-**Purpose.** No spec reaches `validated` while a stated intent is unproven. A gate that only confirms ACs *exist* — never that each maps to a named passing test, never reviewing architecture beyond shared-unit immutability — lets hollow tests, God-units, and dual-source-of-truth through. This stage adds those two gates as blocking failures.
-
-## Spec Artifacts
-
-Read the spec's artifacts under `.specflow/specs/<name>/`; report the result to the caller (and record the architecture-gate result into `design.md` when the workflow has one).
-- **Required:** the spec's generated `workflow.yaml` + `.meta.yaml` (phase-ledger check); the spec artifacts the workflow declares (`requirements.md`, `design.md`, `contracts/`, `tasks.md` — or `analysis.md`/`describe.md` on the lighter workflows; checks over artifacts the workflow omits are SKIP).
-- **Optional:** an open PR (Check 6); prior-phase `references/`.
-- **Additional:** steering `.specflow/steering/*`; the target repo (codebase under audit).
-
-## Gate / exit
-
-Output `VALIDATED` only when every check is PASS (or SKIP where inapplicable); any blocking FAIL → `BLOCKED (N failing checks)`.
-
-## Checks
-
-Report status + one-line finding for each:
+**Steps** — run every check; report status + one-line finding each:
 
 1. **Requirements completeness** — every story has ≥1 AC.
-2. **EARS notation** — all requirements use valid EARS.
-3. **Design consistency** — every `FR-N`/AC in `design.md` exists in `requirements.md`; every `contracts/<unit>.md` traces to ≥1 AC.
-4. **Task DAG** — `tasks.md` is acyclic (list any cycle).
-5. **Shared-unit immutability** — no ADOPTED unit modified vs base (report the unit + importers).
-6. **PR body** — no issue-closing keywords adjacent to `#N` in an open PR; skip if none.
-7. **Phase ledger** — every phase in `.meta.yaml` `phase_status` that precedes `spec-qa` in the spec's `workflow.yaml` is `completed`, or `skipped` with a recorded reason (`spec-qa` itself is not expected yet — this command gates its entry).
-8. **Clause→test coverage** (blocking) — every AC / testable NFR maps to ≥1 passing, observable-outcome test; emit the clause→test table (AC-ID | Test | File | Status).
-9. **Architecture gate** (blocking) — no God-unit, dual-source, or missing testability seam without a recorded justification in `design.md`.
+2. **AC shape** — every AC/NFR carries a stable ID (`AC-<story#>.<n>` / `NFR-<n>`) and
+   observable Given/When/Then phrasing.
+3. **Design consistency** — every AC in `design.md` exists in `requirements.md`; every
+   `contracts/<unit>.md` traces to ≥1 AC.
+4. **Task DAG** — `tasks.md` acyclic (list any cycle).
+5. **Shared-unit immutability** — no ADOPTED unit modified vs base (report unit + importers).
+6. **PR body** — no issue-closing keywords adjacent to `#N`; skip if no open PR.
+7. **Phase ledger** — every phase preceding `spec-qa` in `.meta.yaml` `phase_status` is
+   `completed`, or `skipped` with a recorded reason (this command gates `spec-qa`'s entry).
+8. **Clause→test coverage** (blocking) — every AC / testable NFR maps to ≥1 passing
+   observable-outcome test, and every `qa-journey-plan.md` journey to an end-to-end test
+   (NOT-automated entries are SKIP); emit the table `AC-ID | Test | File | Status`.
+9. **Architecture gate** (blocking) — no God-unit, dual source of truth, or missing
+   testability seam without a recorded justification in `design.md`.
 
-Report: the summary line, each check's status + finding, the Check 8 table, and Check 9's surfaces/justifications.
+**Exit.** Output `VALIDATED` only when every check is PASS (or SKIP where inapplicable);
+any blocking FAIL → `BLOCKED (N failing checks)`.

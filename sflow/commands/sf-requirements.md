@@ -1,29 +1,27 @@
 ---
-description: Author user stories and acceptance criteria — discovered via Example Mapping — with stable IDs and observable Given/When/Then phrasing.
+description: Author user stories and acceptance criteria with stable IDs and observable Given/When/Then phrasing.
 ---
 # sf:requirements
 
-Author requirements in EARS notation; every acceptance criterion gets a stable ID and observable Given/When/Then phrasing.
+Produce the source of truth for all downstream phases: intent bound to stable, testable AC
+IDs at authoring time. Writes `requirements.md` under `.specflow/specs/<name>/`. Requires
+`.meta.yaml`; optional `preflight.md` + `references/design-units.md` (ground UI stories in
+real units); steering as context.
 
----
+**Steps.**
 
-**Purpose.** Produce the source of truth for all downstream phases: bind intent to a testable, named unit *at authoring time*. Stable AC IDs are the spine the whole chain anchors to — without them, tasks can emit zero test tasks and behavior ships unverified.
+1. **First principles** — name the problem behind the ask (a requested solution is one
+   candidate, never the requirement); check the request's assumptions against preflight
+   notes and system fundamentals — a wrong or unverifiable one becomes a question, never a
+   silent AC.
+2. **Extract** — one US-<n> per user goal; per story, AC-<story>.<n> as observable
+   Given/When/Then outcomes (never implementation steps); constraints as NFR-<n>; one
+   glossary term per fact, used verbatim. Classify each AC's verification level
+   (unit / journey / manual) so journey candidates surface now — design reconciles it.
+3. **Ask ONE batched question round** — every ambiguity and challenged assumption, each
+   with a recommended answer; fold answers in; record Q→A under `## Clarifications`,
+   unanswered as OPEN (they feed the clarify phase).
 
-## Spec Artifacts
-
-Write `requirements.md` under `.specflow/specs/<name>/`.
-- **Required:** `.meta.yaml` — run `/sf-init` if missing.
-- **Optional:** `preflight.md` (reuse + shared-unit context); prior-phase `references/`; the design unit map (`references/design-units.md`) if preflight produced one.
-- **Additional:** steering `.specflow/steering/*`.
-
-## Gate / exit
-
-Exits only when every story has ≥1 AC; every AC/NFR carries a unique stable ID (`AC-<story#>.<n>` / `NFR-<n>`) phrased as an observable Given/When/Then outcome; and EARS notation is valid. IDs never renumber.
-
-## Steps
-
-1. **Write user stories** — each with its acceptance criteria — when `references/design-units.md` is present, ground UI stories and their ACs in the actual screen units it lists.
-2. **Define functional requirements** — EARS notation (Ubiquitous / Event / State / Optional / Unwanted).
-3. **Run Example Mapping discovery** — per story, enumerate business **rules** → concrete observable **examples** (happy / edge / counter) → open **questions**; capture domain terms in a `Glossary` section. Derive ACs from the examples; carry open questions into `/sf-clarify`..
-4. **List NFRs** — as `NFR-<n>`; include stack-relevant NFRs (per steering).
-5. **Apply the AC contract** — every AC/NFR gets a stable ID and observable Given/When/Then phrasing; for data-varying behaviour use an Examples-table AC; reject implementation-step phrasing.
+**Exit.** Every story has ≥1 AC; every AC/NFR carries a unique stable ID
+(`AC-<story#>.<n>` / `NFR-<n>`) phrased as an observable Given/When/Then outcome; IDs never
+renumber.

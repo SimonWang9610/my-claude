@@ -1,29 +1,50 @@
 ---
-description: Produce the technical design and per-unit contracts, then pass the architecture gate.
+description: Produce the technical design, per-unit contracts, per-AC test strategy, and the approved QA journey plan.
 ---
 # sf:design
 
-Produce the technical design plus the contract artifacts (interfaces, data models, APIs), then run the architecture gate before the phase closes.
+Decide the structure before any code — one contract per unit (module, data model,
+API/service) so tasks decompose against real interfaces — and design the verification with
+the feature: test strategy, journey plan, and blast radius are authored here, not deferred
+to QA. Writes `design.md` + `contracts/` (+ `qa-journey-plan.md` when the spec has
+user-facing journeys) under `.specflow/specs/<name>/`. Requires `requirements.md` (run
+`/sf-requirements` if missing); optional `clarify.md`, `preflight.md`,
+`references/design-units.md`; steering as context; the target repo is read, never written.
 
----
+**Steps.**
 
-**Purpose.** Decide the structure before any code is written and capture it as concrete, referenceable **contracts** — one per unit (module, data model, API/service) — so the next phase decomposes tasks against real interfaces, not prose. Technology-agnostic: the concrete principles and verifiable-unit checks live in the skills the spec's `workflow.yaml` lists for this phase, so the flow retargets to another stack by swapping those.
+1. **Architecture** — decompose into units with clear responsibilities and interactions,
+   data models, error-handling strategy; diagram where it clarifies; every AC lands on a
+   unit and a flow.
+2. **Reconcile with existing code** — a reuse verdict per touched existing unit; a Shared
+   Unit Plan classifying each shared unit Reuse or Copy — never modify an adopted unit;
+   reconcile with the design-units map when present.
+3. **Contracts** — one `contracts/<unit>.md` per introduced unit: its interface, the
+   AC-IDs it traces, its testability seam; `design.md` indexes them, never restates them.
+4. **Test strategy** — per AC/NFR a verification level (unit / journey / manual) in a
+   `design.md` table, reconciling the requirements-time classification and resolving any
+   unclassified AC; name each behavior as a positive + a negative + a boundary; **ask the
+   user what failure modes are missing** before finalizing.
+5. **Journey plan** — driven by the test strategy: no AC classified journey-level → skip,
+   one-line note in `design.md`. Otherwise `qa-journey-plan.md`: per journey-level story a
+   happy-path + every error/boundary journey step 4 surfaced (`J-<n>`: precondition ·
+   steps with expected outcomes · covers ACs), each entry marked **NEW** or
+   **MODIFY <existing test path>** — an existing journey test already covering the
+   affected flow is planned as a change, never duplicated — plus a "Journeys NOT
+   automated" table with reasons.
+6. **Journey approval** — present the plan at design review:
+   `approve` · `revise: <feedback>` · `skip J-<n>` · `add: <description>`; incorporate and
+   re-present until approved — the file reflects the final approved plan. On approval, add
+   an "E2E Surface" note to `design.md`: where journey tests live per project convention,
+   one suite per story, one test per `J-<n>` citing its ACs.
+7. **Blast radius** — `design.md` section listing the existing tests this change can
+   break: reverse-import closure of the changed files → their tests (may legitimately be
+   empty — say so). An existing test that must *change* is flagged, never silently planned.
+8. **Architecture gate** — ONE pass: every AC covered, no God-unit, no dual source of
+   truth, no missing testability seam; PASS or record each justification in `design.md`.
 
-## Spec Artifacts
-
-Read inputs and write outputs (`design.md`, `contracts/`) under `.specflow/specs/<name>/`.
-- **Required:** `requirements.md` — run `/sf-requirements` if missing.
-- **Optional:** `clarify.md`; `preflight.md`; `references/design-units.md` (the design unit map).
-- **Additional:** steering `.specflow/steering/*`; prior-phase `references/`; the target repo (read to design against existing code — no code is written there).
-
-## Gate / exit
-
-Exits only when: every `AC-<story#>.<n>` / testable `NFR-<n>` is covered by ≥1 contract; a `contracts/<unit>.md` exists per introduced unit, each tracing to its AC-IDs and stating its testability seam; `design.md` indexes them and carries a Shared Unit Plan (Reuse-or-Copy; never modify an adopted unit); and the architecture gate returns PASS or every trigger has a recorded justification in `design.md`.
-
-## Steps
-
-1. **Map the units and their architecture layers per the project's architecture** — units, data flow, state ownership, error and testing strategy; diagram where it clarifies.
-2. **Author each unit to the project's architecture rules** and the independently-verifiable-unit question, following the design procedure.
-3. **Draft the contracts** — one `contracts/<unit>.md` per unit (kind, interface, data shapes, ownership, AC-IDs, testability seam, dependencies); every AC covered by ≥1 contract.
-4. **Plan shared units** — classify each referenced shared unit Reuse or Copy; never modify an adopted unit — when `references/design-units.md` is present, reconcile each UI unit with its EXISTING (reuse) / PARTIAL (extend) / NEW (build) classification.
-5. **Run the architecture gate (verify)** — the lightweight gate confirms each unit is independently verifiable; PASS, or record an extraction plan / justification under `## Architecture Gate — Justifications`.
+**Exit.** Every `AC-<story#>.<n>` / testable `NFR-<n>` covered by ≥1 contract and one test
+strategy row; a `contracts/<unit>.md` per introduced unit with AC trace + testability seam;
+`design.md` indexes them + carries the Shared Unit Plan, test strategy, and blast radius;
+`qa-journey-plan.md` approved (or its skip noted); architecture gate PASS or every trigger
+justified in `design.md`.

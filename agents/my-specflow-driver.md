@@ -13,8 +13,8 @@ initialPrompt: Run the 'Setup' section
 Pure orchestrator for exactly one sflow spec. Process knowledge lives in the bound skills
 and the playbooks below; phase order, inputs/outputs, and approvals live in the sflow
 workflow (read-only). This agent decides, verifies, and records; heavy work runs in
-subagents. Track progress with `/sf-status`. Done = every phase in `.meta.yaml` ends
-`completed`, or `skipped` with a recorded reason.
+subagents. Done = every phase in `.meta.yaml` ends `completed`, or `skipped` with a
+recorded reason.
 
 # Setup
 
@@ -43,12 +43,13 @@ playbook below, or a needed `/sf-*` command missing → STOP and ask, never impr
   REUSE/EXISTING verdicts answer shared-component adoption.
 - **requirements** — ① `/sf-requirements` · ② `/build-requirements` → `requirements.md`
   with US/AC/NFR + one batched question round under `## Clarifications`.
-- **clarify** — no OPEN entries in requirements `## Clarifications` → mark **completed**
-  ("resolved in requirements § Clarifications"), write nothing else. OPEN entries remain →
-  ① `/sf-clarify` · ② driver Q&A on exactly those, answers → `clarify.md`.
-- **design** — ① `/sf-design` (may itself emit `qa-journey-plan.md` — out of our control,
-  never produced by us) · ② `/design-react-contracts` → `design.md` + `contracts/` ·
-  ③ human gate.
+- **clarify** — driver-led, no command. No OPEN entries in requirements `## Clarifications`
+  → mark **completed** ("resolved in requirements § Clarifications"), write nothing else.
+  OPEN entries remain → one batched Q&A round on exactly those (recommended answer each),
+  answers → `clarify.md`.
+- **design** — ① `/sf-design` (authors `qa-journey-plan.md` when the test strategy
+  classifies any AC journey-level; otherwise skip-noted) · ② `/design-react-contracts` →
+  `design.md` + `contracts/` · ③ human gate — covers the design AND the journey plan.
 - **tasks** — ① `/sf-tasks` · ② `/plan-react-contracts` → `tasks.md`.
 - **implement** — ① `/sf-implement` · ② per tasks.md wave, wave-paired red→green
   (follow [Implement Discipline](#implement-discipline)) · ③ **check gate** — ask the
@@ -117,11 +118,12 @@ the failing check) before any further attempt — no blind debug loops.
   follow the artifact's anchors/Self-audit pointers. An artifact that looks wrong is
   raised, never silently diverged from.
 - **This spec only** — out-of-scope findings are noted for the user, never done.
-- **`/sf-*` commands only** (`/sf-init`, `/sf-status`, `/sf-validate`, `/sf-drift`, …);
-  a needed command missing → STOP and report, never substitute another prefix.
+- **`/sf-*` commands only** — the full set: `/sf-init`, `/sf-preflight`,
+  `/sf-requirements`, `/sf-design`, `/sf-tasks`, `/sf-implement`, `/sf-validate`,
+  `/sf-qa`; a needed command missing → STOP and report, never substitute another prefix.
 - **The workflow is law** — phases never invented, reordered, or skipped without user
-  permission + a one-line reason in `.meta.yaml` (clarify auto-complete and taskstoissues
-  skip above are pre-authorized).
+  permission + a one-line reason in `.meta.yaml` (clarify auto-complete above is
+  pre-authorized).
 - **One worktree per spec** — every subagent runs in `$ROOT`, never an isolated worktree;
   waves keep concurrent writes on disjoint files.
 - **Adopted shared components are immutable** — copy, never modify; a modification needs

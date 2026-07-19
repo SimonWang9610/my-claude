@@ -1,29 +1,25 @@
 ---
-description: Decompose the design into ordered tasks with a test task per acceptance criterion plus edge cases.
+description: Decompose the design into dependency-ordered tasks with a test task per acceptance criterion.
 ---
 # sf:tasks
 
-Decompose the design into trackable tasks; mandate a test task per AC plus edge-case tasks.
+Turn the design into trackable tasks; test authoring is never optional. Writes `tasks.md`
+under `.specflow/specs/<name>/`. Requires `requirements.md` + `design.md` + `contracts/`
+(run the producing command if missing); steering as context.
 
----
+**Steps.**
 
-**Purpose.** Turn the design into discrete tasks and guarantee test authoring is not optional: every AC gets a named test task, every new behavior gets edge-case tasks, and a spec with no test tasks must declare its debt explicitly.
+1. **Decompose from contracts** — every introduced unit covered by exactly one task; each
+   task lists its contract file(s), AC IDs, and completion gate.
+2. **Test coverage** — every AC / testable NFR is assigned to test-authoring work naming
+   the ID and its observable outcome (a dedicated test task, or the owning wave's test
+   batch); uncovered edge classes are marked on their task (or `skipped` with a reason —
+   never omitted silently).
+3. **Order into waves + batches** — dependency DAG grouped into parallel waves; each wave
+   pre-split into a test batch and an impl batch (agent assignments decided here, never at
+   implement time). Test authoring always precedes the implementation it covers — by task
+   dependency or batch order.
 
-## Spec Artifacts
-
-Write `tasks.md` under `.specflow/specs/<name>/`.
-- **Required:** the upstream artifacts the workflow declares — `requirements.md` + `design.md` + `contracts/` on feature/brownfield (run `/sf-requirements` / `/sf-design` if missing), or `analysis.md` on bugfix.
-- **Optional:** prior-phase `references/`.
-- **Additional:** steering `.specflow/steering/*`.
-
-## Gate / exit
-
-Exits only when every `AC-<story#>.<n>` / testable `NFR-<n>` has ≥1 test task naming the ID and stating its observable outcome; every new behavior has its edge-case test tasks; a zero-test spec carries a `TASK-TD`; and the task graph is a valid DAG grouped into parallel waves.
-
-## Steps
-
-1. **Decompose from contracts** — each `contracts/<unit>.md` yields ≥1 implementation task plus its paired test task; each task carries `id`, `title`, `description`, `dependencies`, `files`, `contract-refs`, `complexity` (S/M/L), `status`, `ac-refs`, `skill-refs`.
-2. **Order the graph + wave it** — dependencies, complexity, file impact; must be a valid DAG. Group independent units into parallel **waves** (Wave 1 = no-dependency units; Wave *n* = units whose dependencies completed in earlier waves) so `/sf-implement` runs each wave concurrently.
-3. **One test task per AC** — name the ID, state the observable outcome; test tasks are first-class.
-4. **Edge-case mandate** — async failure, empty/invalid input, boundary conditions, remount/reload; mark `skipped` with a reason if N/A, never omit silently.
-5. **Test-debt guard** — if zero test tasks were produced, emit `TASK-TD` with a one-sentence justification.
+**Exit.** Every `AC-<story#>.<n>` / testable `NFR-<n>` maps to test-authoring work naming
+the ID and its observable outcome; the graph is a valid DAG in waves with batch pairs;
+zero test work → `TASK-TD` with a one-sentence justification.

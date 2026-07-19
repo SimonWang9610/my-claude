@@ -173,3 +173,89 @@ re-design of the affected units, no re-check; still-open items pause to the call
 (SKILL.md step 5 + design.md § Self-check reworded). smart-delegation template made
 terse: pointer/constraint placeholders only, new `Effort: <medium | high>` field; the
 "pointers, not prose" bullet became the template's preamble sentence (stated once).
+
+---
+
+## sflow commands rewritten lean (2026-07-19)
+
+All 12 `/sf-*` commands rewritten 398 → 271 lines on a fixed shape: one-paragraph role +
+artifacts, **Method** (embedded stack-agnostic skill, or "the flow's bound skill owns the
+procedure"), **Exit** gate. Commands stay language-agnostic; new rule (README updated in 3
+spots): commands may embed **stack-agnostic skills only** — sf-preflight embeds
+`/audit-code-flows`, sf-requirements embeds `/build-requirements`; stack skills remain
+generator/driver-bound, never named in commands.
+
+Cut as duplication or conflict:
+- **Purpose paragraphs + steps restating bound skills** (design/tasks/implement procedure
+  lives in the skills/driver; commands keep only the gate contract).
+- **`phases.md`** (sf-implement) — duplicated tasks.md § Waves batch pairs; one producer
+  per fact.
+- **EARS notation + Example Mapping** (sf-requirements, sf-clarify, sf-validate check 2) —
+  conflicted with build-requirements' method and requirements.md shape; check 2 is now
+  "AC shape" (stable ID + observable GWT). sf-clarify's "up to 5, one at a time" →
+  ONE batched round (aligned with build-requirements).
+- **Test-first ideology** (sf-implement) — replaced by the evidence contract: author ≠
+  implementer, tests derive from contracts never from code, red-before-impl collected by
+  the driver as mechanical evidence, green + byte-unchanged, review pass clean. The
+  sequencing is driver mechanics, not command doctrine.
+
+Follow-up: command set trimmed 12 → **8** (kept init, preflight, requirements, design,
+tasks, implement, validate, qa; deleted sf-clarify, sf-drift, sf-status, sf-steering).
+my-specflow-driver updated: clarify phase is driver-led (one batched Q&A round on OPEN
+`## Clarifications` entries, no command), `/sf-status` tracking line dropped, the
+`/sf-*`-only hard rule now enumerates the exact 8-command set. sf-requirements' OPEN-entry
+pointer retargeted to the driver-led clarify phase; README command count (2 spots) + table
+updated (clarify → driver-led; drift/status/steering rows removed). link-commands.sh globs
+the dir — no change needed.
+
+Follow-up 2: commands reshaped as **standalone procedure guides** on one uniform format
+(intro+artifacts · Steps · Exit): no driver knowledge (user-invocable one by one), no
+embedded skill names (reverted the /audit-code-flows and /build-requirements embeds — both
+drivers share the same procedure via their own command set to compare performance/quality;
+README's command rule updated in 3 spots). sf-init folds the **feature** `.meta.yaml`
+template in directly (feature-only, no template lookup, taskstoissues dropped; driver's
+taskstoissues pre-authorization removed). E2E gap closed end-to-end: sf-design step 5
+authors `qa-journey-plan.md` (per story: happy + error/boundary `J-<n>` journeys with
+covers-ACs + NOT-automated table; skip noted in design.md), approved at the design human
+gate (driver updated — plan no longer "out of our control"); sf-implement step 4 authors
+one e2e test per journey; sf-validate check 8 maps journeys → e2e tests; sf-qa treats a
+journey gap as a finding, never authors.
+
+Follow-up 3: sf-design rebuilt as a lean adaptation of the oac spec-design override —
+core purposes kept, verbosity/stack-specifics dropped. Kept: verification designed with
+the feature (per-AC test strategy table with unit/journey/manual levels, each behavior
+named positive + negative + boundary, ask-the-user-for-missing-failure-modes), journey
+plan + the approve/revise/skip/add review interaction, E2E Surface note (one suite per
+story, one test per J-<n> citing ACs, per project convention), Blast Radius section
+(reverse-import closure → existing tests; may be empty; a test needing change is flagged)
+consumed by sf-qa's consumers family. Dropped: Playwright/POM rules, GPG commit ceremony,
+rg recipes, failure-patterns catalog, token-coupled style radius (stack-specific).
+
+Follow-up 4: purged react-skill repetition from the commands — commands hold the
+engineering-level procedure only. sf-design: dropped the contract field list, the
+REUSE/MODIFY/REPLACE tag vocabulary, and the skill's self-check blocking list (step 8 is
+now the architecture gate in sf-validate's vocabulary: God-unit / dual source / missing
+seam). sf-tasks: dropped re-cut/pointer-row/Edge-marker mechanics (plan skill's).
+sf-preflight: audit detail (data flow, boundary surfaces) reduced to a surface survey.
+
+Follow-up 5 (full audit vs the spec-* set — sf-* stays agent-facing for the driver A/B):
+adopted spec-* core mechanisms missing from sf-*: preflight Action enum (Reuse as-is ·
+Copy and customize · Modify unadopted · No interaction); requirements-time verification
+classification per AC (unit/journey/manual — design reconciles it, sf-design step 4
+updated); sf-tasks gate reworded to "test-authoring work" (dedicated test task OR wave
+test batch — fits both flows' task models) + explicit test-precedes-impl ordering; sf-qa
+gained spec-qa's scoped-work pre-check (unfinished scoped test → STOP back to implement,
+never a finding), test-bug vs real-defect failure classification (report, never fix), and
+the coverage-matrix format (AC/journey | test | strength | status, hollow = stub passes).
+Deliberately NOT adopted (human-mixed or divergent by design): spec-init branch creation
+(sflow is worktree-driven), trace-viewer/builder-checkpoint ceremony, GPG commit gates,
+Jira transitions, scoped test runs at QA (sflow keeps ONE full-suite run per driver rule),
+EARS. Every sf-* command verified free of "You are…" role prose and human narration.
+
+Follow-up 6: journey plan made requirement-driven. sf-design step 5 keys off the test
+strategy (no journey-level AC → skip with note); each plan entry carries a disposition —
+NEW, or MODIFY <existing test path> when an existing journey test already covers the
+affected flow (planned as a change, never duplicated). sf-implement step 4 executes per
+disposition (author vs update the named test; material changes to existing tests surfaced,
+never silent). Driver design playbook + README row now say "when the test strategy
+classifies any AC journey-level".

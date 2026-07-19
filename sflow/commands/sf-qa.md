@@ -1,36 +1,39 @@
 ---
-description: Audit the implemented branch and produce a sign-off-ready QA report, optionally authoring journey tests.
+description: Audit the implemented branch and produce a sign-off-ready QA report.
 ---
 # sf:qa
 
-Audit the implemented branch against its spec and produce a sign-off-ready report (optionally authoring end-to-end journey tests).
+Audit the branch for mergeability and surface evidence for human disposition — QA never
+approves or blocks. **Precondition:** the post-implement human code check passed AND
+`/sf-validate` returned PASS. Reads the spec artifacts (missing required one → STOP and
+report); writes `qa-report.md` under `.specflow/specs/<name>/`; audits code + tests in the
+target repo; steering supplies the build/test commands.
 
----
+**Steps.**
 
-**Purpose.** After implementation, verify the branch is mergeable: the tests actually prove the behavior, the specs honestly describe the work, nothing crept out of scope, no failure is silently swallowed, and consumers still integrate. QA **audits** and surfaces evidence for a human to disposition; it does not approve or block. The one thing it may *author* is end-to-end journey tests — optional, and only behind a human-approved plan; the per-unit tests are written at implement, not here.
+1. **Scoped-work pre-check** — every test-authoring work item in `tasks.md` complete and
+   every plan journey has its test; one missing → STOP back to implement (an unfinished
+   scoped test is incomplete implementation, never a QA finding).
+2. **Build gate** — ONE full-suite run (journey tests included; they went green at
+   implement) + the project build; red → STOP (audit nothing on a broken branch).
+   Classify any failure **test-bug** (harness/timing) or **real-defect** (impl ≠ spec) as
+   a finding — report, never fix.
+3. **Audit families** — evidence per hit:
+   - **spec authenticity** — the specs honestly describe the work (baseline, phase/task
+     honesty, spec↔code value drift);
+   - **scope creep** — changes outside the feature (governance files, identity, unrelated
+     deps/routes/CI);
+   - **coverage forensics** — a coverage matrix `AC/journey | test | strength | status`
+     (covered · covered-but-hollow · gap); hollow = a stub would pass it; a never-scoped
+     gap is a finding, never authored here;
+   - **silent failures** — swallowed errors, stubs returning fake success, ephemeral state
+     shown as persisted;
+   - **consumers** — each direct consumer still integrates; the tests named in
+     `design.md` § Blast Radius pass, and the radius still matches the shipped diff.
+4. **`qa-report.md`** — coverage matrix, per-family results, `F-<n>` findings table
+   (suggested severity + disposition checkboxes), reviewer checklist; present for human
+   disposition. Rewrite no existing test without sign-off.
 
-**Precondition — enter QA only after the post-implement human code check passed AND `/sf-validate` returned PASS (validate is the cheap machine pre-gate; QA is the final human gate).**
-
-## Spec Artifacts
-
-Read the spec's artifacts under `.specflow/specs/<name>/` and write `qa-report.md` there (plus `journey-plan.md` if the optional journey stage runs); audit the implementation + tests in the target repo, where any authored end-to-end tests are also written.
-- **Required:** `.meta.yaml` plus the spec artifacts the workflow declares (`requirements.md` + `design.md` + `tasks.md` on feature/brownfield; `analysis.md`/`describe.md` + `tasks.md` if present on the lighter workflows) — STOP and report if one the workflow declares is missing.
-- **Optional:** a prior `qa-report.md` (re-run comparison); an open PR (prior-review context); prior-phase `references/`.
-- **Additional:** steering `.specflow/steering/*` (the project's build/test/end-to-end commands and conventions); the target repo (code + tests under audit).
-
-## Gate / exit
-
-Passes only when the build and existing suite are green; every audit family has run and its hits are logged; every AC-mapped test survives the mutation mindset (no false-positive green); and each finding carries a suggested severity. Findings are human-dispositioned — no pass until the reviewer signs off (Approved / Changes requested / Blocked).
-
-## Steps
-
-1. **Discover context** — read every spec artifact and the implementation + changed files; STOP and report if a required artifact is missing.
-2. **Build gate** — run the project's build + test commands from steering; STOP and report if either is red (audit nothing on a broken branch).
-3. **Spec authenticity** — confirm the specs honestly describe the work (commit order, baseline, workflow type, phase/task honesty, requirement↔task consistency, spec↔code value drift).
-4. **Scope-creep check** — flag changes outside the feature's scope (governance files, placeholder steering, identity, unrelated deps/routes/CI).
-5. **Coverage + false-positive forensics** — detect gap classes, false-positive/mutation-survivable tests, mock-shape drift, thin coverage, loose types.
-6. **Silent-failure scan** — flag swallowed errors, stubs returning fake success, ephemeral state shown as persisted, client-generated server IDs.
-7. **Consumer + regression** — verify each direct consumer still integrates; assess blast radius for shared-surface changes.
-8. **(Optional) Author end-to-end journey tests** — only if the project supports end-to-end tests and coverage is wanted: extract journeys from the user stories, get the journey plan approved by a human, then author one test per approved journey (the end-to-end layer above implement's per-unit tests).
-9. **Write `qa-report.md`** — assemble the report: per-section results (incl. end-to-end test results if Step 8 ran), the `F-<n>` findings table (suggested severity + disposition checkboxes), reviewer checklist, timing, disposition block.
-10. **Communicate outcome** — present findings for human disposition; QA reports evidence, never approves/blocks, and rewrites no existing test without sign-off.
+**Exit.** Build + suite green; every family ran with hits logged; every AC-mapped test
+survives the mutation mindset; findings dispositioned by the reviewer
+(Approved / Changes requested / Blocked).
