@@ -2,7 +2,8 @@
 name: plan-react-contracts
 description: >
   Project an approved design (design.md + contracts/) into tasks.md — dependency-ordered
-  tasks with parallel waves; contract groups are the default task unit, rows are pointers
+  tasks with parallel waves, each wave pre-split into a test batch (one TestAgent) and an
+  impl batch (one WorkAgent); contract groups are the default task unit, rows are pointers
   (IDs, paths, gates), never restated contracts. Use after design approval, before
   implementation.
 ---
@@ -35,9 +36,15 @@ failure → back to the design skill; never plan over a broken design.
    `Edge: <unit>·<class>` marker on the task — the test skill's rules fix the assertion.
 4. **Derive waves** — Wave 1 = tasks with no unmet deps; wave *n* = deps all in earlier
    waves. Tasks in a wave build concurrently (group boundaries keep files disjoint).
-5. **Count-check** — tasks = contract groups; every task carries deps + ACs + gate; every
-   AC appears in exactly one task. A mismatch means dropped or duplicated work — reconcile
-   before hand-off.
+5. **Split each wave into agent batches** — decided here with the whole plan in view,
+   never at implement time. Per wave: one **test batch** (every task's AC rows + Edge
+   markers — one TestAgent) and one **impl batch** (every task's units + contracts — one
+   WorkAgent). Default batch = the whole wave; a wave over ~4 tasks or one context's
+   worth of contracts is chunked into named task subsets — each chunk a test+impl pair,
+   reason stated. Batches list task IDs only.
+6. **Count-check** — tasks = contract groups ± recorded re-cuts; every task carries
+   deps + ACs + gate; every AC appears in exactly one task; every task in exactly one
+   batch pair. A mismatch means dropped or duplicated work — reconcile before hand-off.
 
 ## `tasks.md` shape
 
@@ -51,7 +58,11 @@ failure → back to the design skill; never plan over a broken design.
       deps: T1 · ACs: AC-1.1, AC-2.1
       gate: same · importer AlarmsPage unbroken
 
-Waves: 1: T1 · 2: T2
+## Waves
+- W1: T1 — test batch: T1 · impl batch: T1
+- W2: T2 — test batch: T2 · impl batch: T2
+<a chunked wave instead lists pairs: `- W2, chunked (>4 tasks): W2a: T2, T3 — test
+batch: T2, T3 · impl batch: T2, T3 · W2b: T4, T5 — …`>
 ```
 
 **Output discipline:** terse and goal-accurate — field values are facts (IDs, paths, gate

@@ -34,10 +34,8 @@ written. A needed `/spec-*` command missing → STOP and report, never substitut
 - **preflight** — ① `/spec-preflight` · ② conditional on the spec's inputs:
   user-named sources or existing code in scope → `/audit-code-flows` on the blast-radius
   flows (kind: existing vs legacy); Figma/design links → `/decompose-figma`; neither →
-  note it and move on ·
-  ③ persist audit notes into `audit-notes.md` (their single home — design reads this
-  file directly) and the figma component map + gap list into `preflight.md`, which also
-  points to `audit-notes.md`; REUSE/EXISTING verdicts answer the shared-component
+  note it and move on · ③ persist audit notes + flow interaction map into `audit-notes.md` (their single home — design reads this file directly) and the figma component map + gap list into
+  `preflight.md`, which also points to `audit-notes.md`; REUSE/EXISTING verdicts answer the shared-component
   adoption check.
 - **requirements** — ① `/spec-requirements` · ② `/build-requirements` → `requirements.md`
   with US/AC/NFR + one batched question round recorded under `## Clarifications`.
@@ -48,7 +46,10 @@ written. A needed `/spec-*` command missing → STOP and report, never substitut
   `contracts/` · ③ human gate.
 - **tasks** — ① `/spec-tasks` · ② `/plan-react-contracts` → `tasks.md`.
 - **implement** — ① `/spec-implement` · ② per tasks.md wave, wave-paired red→green
-  (follow [Implement Discipline](#implement-discipline)) · ③ `/check-react-implementation` and fix CRITICAL/HIGH findings · ④ **human gate** · ⑤ **E2E** when
+  (follow [Implement Discipline](#implement-discipline)) · ③ **check gate** — ask the
+  user whether to run `/check-react-implementation` (recommend yes for feature-scale
+  waves, skip for bugfix scale; record the decision); if run → present findings and ASK how
+  to handle · ④ **human gate** · ⑤ **E2E** when
   `qa-journey-plan.md` exists: `/test-react-contracts e2e`, author + run. The phase
   completes only with E2E green or skipped-with-note; every fix here runs as a red→green
   fix task, and material post-gate changes re-present.
@@ -87,21 +88,23 @@ irreversible (commit, push, PR).
 
 # Implement discipline
 
-Per tasks.md wave, one **TestAgent** then one **WorkAgent** — two agents per wave, not
-per task; author and implementer are never the same agent:
+tasks.md § Waves pre-splits every wave (or chunk) into a **test batch** and an **impl
+batch** — those batches are the assignments, never re-derived here. Per batch pair, one
+**TestAgent** then one **WorkAgent**; author and implementer are never the same agent:
 
-1. **TestAgent** authors unit tests for ALL the wave's tasks (`/test-react-contracts
+1. **TestAgent** authors unit tests for the test batch's tasks (`/test-react-contracts
 unit`) — test files only, verify all test tasks complete.
 2. **Driver runs them: RED per task** (failing on behaviour, not setup); record the ref.
-3. **WorkAgent** implements ALL the wave's tasks (`/implement-react-contracts`) — source
+3. **WorkAgent** implements the impl batch's tasks (`/implement-react-contracts`) — source
    only; a wrong-looking test is raised, never edited.
 4. **Driver runs green per task AND `git diff`s the test paths since red** —
    byte-unchanged, or only the affected task is redone by a fresh single-task pair.
 
-Chunk a wave that exceeds ~4 tasks (or whose combined contracts would bloat one context)
-into two pairs running concurrently. A DESIGN GAP pauses only its task; the rest of the
-wave proceeds. A red that survives its first fix attempt → `/locate-bug` (blast radius =
-the wave diff + the failing check) before any further attempt — no blind debug loops.
+A chunked wave's batch pairs run concurrently. A wave that still proves too big at run
+time is re-chunked by the same rule (~4 tasks / one context's contracts) and the re-cut
+recorded in tasks.md. A DESIGN GAP pauses only its task; the rest of the wave proceeds. A
+red that survives its first fix attempt → `/locate-bug` (blast radius = the wave diff +
+the failing check) before any further attempt — no blind debug loops.
 
 # Hard rules
 
@@ -119,7 +122,8 @@ the wave diff + the failing check) before any further attempt — no blind debug
 - **Run tests sparingly** — task tests during implement; one full-suite run, at spec-qa.
 - **Iteration budget** declared before any debug loop; spent → stop, surface the failing
   check, what was tried, the suspected cause. Never re-apply a rejected fix.
-- **Fresh eyes** — the design self-check, the post-implement check, and the spec-qa
-  test-quality pass run as subagents given only the artifacts, never the reasoning.
+- **Fresh eyes** — the feature-scale design self-check, the post-implement check (when
+  gated in), and the spec-qa test-quality pass run as subagents given only the artifacts,
+  never the reasoning; fast-path/bugfix scale self-checks inline, no subagent.
 - **New user instructions win** — re-scope, update affected artifacts, re-run invalidated
   phases, confirm before continuing.

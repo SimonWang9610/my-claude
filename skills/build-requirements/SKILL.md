@@ -1,16 +1,18 @@
 ---
 name: build-requirements
 description: >
-  Formalize a raw request into requirements.md — US/AC/NFR as observable Given/When/Then
-  outcomes — and burn down ambiguity in one batched question round with recommended
-  answers. Use at the requirements phase, or whenever an ambiguous scope must become a
-  testable spec.
+  Formalize a raw request into requirements.md — first-principles analysis of the real
+  problem (challenging stated solutions and wrong assumptions), then US/AC/NFR as
+  observable Given/When/Then outcomes — and burn down ambiguity in one batched question
+  round with recommended answers. Use at the requirements phase, or whenever an ambiguous
+  scope must become a testable spec.
 ---
 
 # build-requirements
 
 Turn the caller's request into a testable spec, and burn down ambiguity **now** — a
-question resolved here is a clarify phase that never runs.
+question resolved here is a clarify phase that never runs. The request is evidence of a
+problem, not the spec — recover the real requirement, don't transcribe the ask.
 
 ## Inputs
 
@@ -19,21 +21,30 @@ the ACs) · caller constraints.
 
 ## Procedure
 
-1. **Extract** — one US-<n> per user goal; per story, AC-<story>.<n> as Given/When/Then
+1. **First principles** — before any AC: name the problem behind the ask (a requested
+   solution is one candidate for its underlying problem, never the requirement — spec
+   the problem, note the candidate); list what the request assumes about the system and
+   check each against audit notes and fundamentals — a wrong or unverifiable assumption
+   never enters an AC silently, it becomes a batched question (step 3) with evidence +
+   recommended correction. Requirements derive from problem + invariants, not from
+   current code shape or user belief.
+2. **Extract** — one US-<n> per user goal; per story, AC-<story>.<n> as Given/When/Then
    **observable outcomes** (never implementation steps); cross-cutting constraints as
    NFR-<n>. IDs stable and unique; name facts consistently (one glossary term per fact,
    used verbatim everywhere).
-2. **Sweep for ambiguity** — walk every AC and ask: is the trigger, the actor, the
+3. **Sweep for ambiguity** — walk every AC and ask: is the trigger, the actor, the
    observable outcome, and each edge (error · empty · limit · permission) pinned? Each
-   gap becomes a numbered question **with a recommended answer**.
-3. **Ask in one batch** — present all questions at once; wait. Never pad the spec with
+   gap — and each step-1 challenged assumption — becomes a numbered question **with a
+   recommended answer**.
+4. **Ask in one batch** — present all questions at once; wait. Never pad the spec with
    guesses; never ask one-at-a-time.
-4. **Incorporate** — fold answers into the ACs; record each Q→A as one line under
+5. **Incorporate** — fold answers into the ACs; record each Q→A as one line under
    `## Clarifications`. Unanswered questions stay listed there as **OPEN** — the caller
    routes them (e.g. a later clarify phase).
-5. **Self-check** — every AC observable and testable (an outcome a test can assert);
+6. **Self-check** — every AC observable and testable (an outcome a test can assert);
    no AC restates another; every NFR names its verification (measure, config, or
-   pattern-ban); zero silent assumptions.
+   pattern-ban); zero silent assumptions — including inherited ones the request smuggled
+   in.
 
 ## `requirements.md` shape
 

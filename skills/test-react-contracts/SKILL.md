@@ -18,9 +18,10 @@ that can't be written that way is a design finding, not a testing problem — ra
 
 `/test-react-contracts <scope>` — omit for the full procedure.
 
-- **unit** — steps 1–2.
-- **e2e** — step 3, from a provided `qa-journey-plan.md`; standalone use with no plan →
-  derive journeys from design.md's flows and pause for caller approval first.
+- **unit** — skip step 3.
+- **e2e** — skip step 2; journeys from a provided `qa-journey-plan.md`; standalone use
+  with no plan → derive journeys from design.md's flows and pause for caller approval
+  first.
 
 ## Inputs
 

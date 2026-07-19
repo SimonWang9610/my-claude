@@ -1,19 +1,21 @@
 ---
 name: audit-code-flows
 description: >
-  Distill code in any language into flow-focused audit notes — data models, boundary
-  surfaces (API path/params/body), user flows, cases covered — so downstream phases read
-  notes instead of source. Use before designing against or migrating from existing/legacy
-  code; invoked by design-react-contracts to fill audit gaps.
+  Distill code in any language into flow-focused audit notes — each flow as a
+  GIVEN/WHEN/THEN/HOW chain with entry/exit points and cross-flow interactions, boundary
+  surfaces exact (API path/params/body) — so downstream phases read notes instead of
+  source. Use before designing against or migrating from existing/legacy code; invoked by
+  design-react-contracts to fill audit gaps.
 ---
 
 # audit-code-flows
 
 Answer **what problem the code solves and how its data flows** — never how it is written.
-Language-agnostic: the notes are what another agent reads instead of the source. Notes are
-the index, source is the appendix — every recorded fact anchored `path:symbol`, one jump
-from its evidence — so depth discloses gradually: later phases self-audit the pointed
-spots when a decision needs more, never re-scan.
+Language-agnostic: the notes are what another agent reads instead of the source. Each note
+walks one fixed chain — entry/exit → GIVEN → WHEN → THEN → HOW → interactions — so
+downstream phases can locate the flows a requirement touches and see how a change ripples.
+Notes are the index, source is the appendix — every fact anchored `path:symbol`, one jump
+from its evidence; later phases self-audit the pointed spots, never re-scan.
 
 ## Inputs
 
@@ -62,41 +64,77 @@ data model) → **submission** (target surface). Then trace selectively:
   later phases end-to-end. What's never acceptable is the chain collapsed to the
   mechanism's name with no hops at all.
 
+**Record cross-flow touch points as you trace.** A store/cache key/event topic/table two
+flows both touch is an interaction — note coupling + direction the moment the second flow
+hits it; the interaction map is assembled from these, never from a second scan.
+
 **Scan wide; note narrow and terse.** Read as much relevant source as the boundary allows;
 notes record flows, boundaries, and cases — never code style, line-by-line narration, or
 detail that doesn't affect a downstream decision.
 
-## Note format — one per audited flow/area
+## Note format — one per audited flow, one fixed chain
 
-```markdown
-### <flow or area> — existing | legacy
+Each field a subheading, in this order; omit fields that don't apply. Bodies are facts —
+anchors, surfaces, shapes — in the fewest lines that carry them; no narration, no
+restating the field name's meaning.
 
-- **Problem & approach:** what it solves and the solution shape, 1–2 sentences
-- **Data model:** the facts it handles and the field shapes that matter downstream
-- **Data flow:** per fact — origin (endpoint + response shape · user input · cache ·
-  config/default) → transforms/validation → destination (method + path + query + body ·
-  store · storage · emitted event)
-- **User flow:** trigger → steps → observable outcome, for each interaction it serves
-- **Mechanism chain** (indirection only): config origin → interpreter → collector
-  (+ data model) → submission — each hop `path:symbol`-anchored and marked opened, or
-  boxed (in/out shapes + Self-audit pointer)
-- **Cases covered:** each distinct case/branch (happy · error · empty · races · permissions)
-  with its observable outcome
-- **State:** facts held · where (local state, store, service) · change triggers · propagation
-- **Dependents** (existing only): external importers
-- **Verdict** (existing only): REUSE | MODIFY | REPLACE — one-line reason (a proposal; the
-  caller confirms)
-- **Preserve / drop** (legacy only): behaviors to keep vs deliberately leave behind
-- **Self-audit pointers:** `path:symbol` — one line on what deeper detail lives there and
-  which decision would need it; a later phase reads exactly that spot on demand
-- **Diagram** (when the flow is non-linear — branches, multiple sources/sinks, async hops):
-  a mermaid sequence/flow diagram of the hops, boundary surfaces labeled
-- **Audited files:** the original files read for this note, exact paths
-```
+````markdown
+### <flow> — existing | legacy
 
-Omit lines that don't apply.
+#### Problem
+what it solves + solution shape, 1–2 sentences
+
+#### Entry / exit
+entry (route · mount · exported call · event) → exit (render · navigation · persisted
+write · emitted event), each `path:symbol`
+
+#### GIVEN
+per fact: origin (surface + shape) · preconditions (auth · flag · prior flow) · initial state
+
+#### WHEN
+trigger (user action · timer · external event · state change) + guards
+
+#### THEN
+per case (happy · error · empty · race · permission): outcome · state changed + where ·
+propagation
+
+#### HOW
+transforms per hop · side effects (exact surface: method+path+body · storage key · event) ·
+mechanism per hop
+
+#### Interacts with
+per flow, one line: coupling (shared fact/store/key · triggers · triggered by ·
+invalidates · ordering) + direction
+
+#### Mechanism chain            <!-- indirection only -->
+config origin → interpreter → collector → submission — each hop anchored, opened or
+boxed (in/out shapes + Self-audit pointer)
+
+#### Dependents                 <!-- existing only -->
+external importers
+
+#### Verdict                    <!-- existing only -->
+REUSE | MODIFY | REPLACE — one-line reason (a proposal; the caller confirms)
+
+#### Preserve / drop            <!-- legacy only -->
+behaviors kept vs deliberately dropped
+
+#### Self-audit pointers
+`path:symbol` — what deeper detail lives there + which decision needs it
+
+#### Diagram                    <!-- non-linear flows only -->
+mermaid sequence/flow of the hops, boundary surfaces labeled
+
+#### Audited files
+exact paths
+````
 
 ## Output
 
-Notes + the gap list (what wasn't audited, and why). Concise and goal-accurate: every
-line must serve the stated purpose.
+1. **Notes** — one per flow, format above.
+2. **Flow interaction map** (2+ interacting flows) — mermaid graph (nodes = flows, edges =
+   coupling + direction) or a `flow → flow · coupling · effect` table; built from the
+   Interacts-with lines only, no new facts.
+3. **Gap list** — what wasn't audited, and why.
+
+Every line must serve the stated purpose.

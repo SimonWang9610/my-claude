@@ -68,7 +68,21 @@ graph TD
 ```
 
 ## Flows
-<final ground-truth user & data flow tables — segments tagged NEW/existing, steps citing ACs>
+<one `### F<n>: <name>` per flow: a mermaid sequenceDiagram — participants = units (exact
+names), messages labeled `mechanism: fact`, NEW marked, key steps citing ACs — then that
+flow's ground-truth step table. Diagram = who talks to whom; table = the AC trace;
+neither restates the other.>
+
+### F1: <name>
+```mermaid
+sequenceDiagram
+  actor U as user
+  U->>DeviceTable: select row (AC-2.1)
+  DeviceTable->>useDeviceSelection: store action: selectedId [NEW]
+  useDeviceSelection-->>DeviceTable: store selector: selectedId
+```
+| # | Step (actor + action) | Observable outcome | Segment | AC |
+|---|-----------------------|--------------------|---------|-----|
 
 ## Ownership
 | Fact | Owner | Concrete design | ACs |
@@ -175,7 +189,7 @@ all unaffected | <named migrations>
 Adversarially re-read the draft — try to break it, don't defend it. Findings drive
 re-design, not a report.
 
-**Blocking — re-design the affected units until these pass:**
+**Blocking — the one re-design pass must make these hold:**
 
 - **One owner per fact.** No dual owners, no client copies of server facts, no stored
   derivations. (rules/state-ownership.md)
@@ -200,6 +214,10 @@ re-design, not a report.
 - **Contract minimalism.** Anything not demanded by an AC or a wired flow is invented
   scope — cut it.
 
-**Budget: max 2 design ⇄ check loops.** Open items after that are never silently shipped:
-**pause and reach the caller** — present each item with what was tried, take their decision
-or steering, and resume the affected steps with that input (SKILL.md step 6).
+**Scale:** single-group designs run the blocking checks only — the advisory classes
+re-surface in the post-implement check; spend the advisory pass on multi-group designs.
+
+**Budget: ONE check pass.** Its findings drive one re-design of the affected units — no
+re-check loop; anything still open is never silently shipped: **pause and reach the
+caller** — present each item with what was tried, take their decision or steering, and
+resume the affected steps with that input (SKILL.md step 6).

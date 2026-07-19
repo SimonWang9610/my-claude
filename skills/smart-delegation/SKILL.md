@@ -41,20 +41,27 @@ knows and splitting is only about keeping the main thread clean.
 
 ## Delegate — every field filled, nothing inherited
 
+Every field a pointer or constraint — no field ever carries background narration or your
+reasoning; the Materials artifacts carry the context.
+
 ```
-Working Directory: <the exact tree — never a new/isolated worktree unless told>
-Skills:            <the skills to invoke, and when>
-Rules:             <the constraints in force — e.g. "test files only", "source only">
-Responsibilities:  <the exact deliverable — do ONLY this, change nothing else>
-Materials:         <exact paths, sliced to the task: the unit's contract, its task row,
-                    the AC lines it traces — never a whole spec dir or "look around">
-Done When:         <a mechanically checkable condition — named test green, file exists>
-Report Back:       <the exact return format — line-oriented, hard item cap, zero prose;
-                    facts verbatim (paths, IDs, the one decisive error line); on failure:
-                    failure type + what was tried + partial findings, never bare "failed">
+Working Directory: <exact tree — never a new/isolated worktree unless told>
+Effort:            <medium | high — per the routing rule below>
+Skills:            <skills to invoke, and when>
+Rules:             <constraints in force — "test files only", "source only">
+Responsibilities:  <the exact deliverable — do ONLY this>
+Materials:         <exact paths sliced to the task (contract, task row, AC lines) —
+                    never a whole spec dir or "look around">
+Done When:         <mechanically checkable — named test green, file exists>
+Report Back:       <line-oriented, hard item cap, zero prose; facts verbatim (paths,
+                    IDs, the decisive error line); failure = type + tried + partial
+                    findings, never bare "failed">
 ```
 
 - **Batch independents** in one message; sequence only what truly depends.
 - **Scope tightly** — "do ONLY this" is load-bearing; a vague charter wanders.
+- **Route model effort by task** — **medium** for mechanical, well-scoped work (authoring from
+  contracts, single-unit implementation, scans/inventories); **high** only for judgment
+  (design, forensics, review verdicts). Model tier follows the same split.
 - **Verify the return yourself** — existence, grep, named tests; never advance on a
   subagent's word.

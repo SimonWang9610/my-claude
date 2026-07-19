@@ -1,10 +1,11 @@
 ---
 name: check-react-implementation
 description: >
-  Post-implementation conformance check for React diffs: verifies changed units against
-  their contracts (API, states, constraints), the family rulebooks, and a performance &
-  memory diagnostic — emitting severity-classified findings only, never fixes. Use after
-  an implement phase completes, or on demand ("check this diff against the contracts").
+  Post-implementation check for React diffs on three axes — behavior & outcomes (ACs and
+  contracts demonstrably satisfied), code quality & maintainability (rulebooks, reuse,
+  seams, scope), performance & memory diagnostic — emitting severity-classified findings
+  only, never fixes. Use after an implement phase completes, or on demand ("check this
+  diff against the contracts").
 ---
 
 # check-react-implementation
@@ -16,25 +17,34 @@ re-checking to the caller. One pass per invocation: bounded, never a standing lo
 ## Inputs
 
 - **Diff scope** — the changed files (task, wave, or phase), commit-scoped by the caller.
-- **Contracts + design.md** — the authority the diff is checked against.
+- **Contracts + design.md + traced ACs** — the authority the diff is checked against.
 
-## Checks — in order, severity first
+## Checks — three axes, in order, severity first
 
-Stop collecting advisory findings once the list passes ~12 — the top severities must
-stay visible.
+Behavior, then quality, then runtime cost — code that merely looks correct passes
+nothing. Stop collecting advisory findings once the list passes ~12 — the top severities
+must stay visible.
 
-1. **Contract conformance** (per changed unit)
+1. **Behavior & outcomes** — does the diff do what the requirements say, observably?
+   - Each traced AC's named test asserts the AC's observable outcome (run or trace it),
+     not a proxy of it.
    - Public API name-for-name, type-for-type — no undeclared props, no widened optionals.
-   - Every promised state reachable and observable; the unit's traced ACs demonstrably
-     satisfied.
+   - Every promised state reachable through the public surface; unhappy cases (error ·
+     empty · boundary) behave as contracted — no silent catch, no masking fallback.
    - Stated constraints (must-nots) hold — verify by grep; MODIFY units' listed importers
      unbroken.
    - A deviation with no recorded DESIGN GAP → **CRITICAL** (dishonest divergence).
-2. **Rule conformance** — audit the diff against the family rulebooks, citing the rule
-   file in each finding: `design-react-contracts/rules/` (ownership, decomposition,
-   boundaries) · `implement-react-contracts/rules/` (hooks, components, stores/services).
-   Correctness outranks style.
-3. **Performance & memory** — run
+2. **Quality & maintainability** — what does the diff cost the next change?
+   - Family rulebooks, citing the rule file in each finding:
+     `design-react-contracts/rules/` (ownership, decomposition, boundaries) ·
+     `implement-react-contracts/rules/` (hooks, components, stores/services).
+     Correctness outranks style.
+   - Reuse honored — no second unit/type/query key/store slice duplicating an existing one.
+   - Seams intact — unit testable through its contract's Test seam, not only via its
+     host; no implementation detail leaked into the public surface.
+   - Scope surgical — only what the task requires; unrelated edits, drive-by refactors,
+     and new dead code are findings.
+3. **Performance & memory** — what does the diff cost at runtime? Run
    [rules/performance-check.md](./rules/performance-check.md) for hot paths, perf NFRs,
    or diffs touching subscriptions/services/caches. Route each cause: implementation-level
    → a finding with its fix direction; design-level → a DESIGN GAP finding with the

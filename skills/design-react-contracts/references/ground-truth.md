@@ -23,7 +23,7 @@ origin → transforms → sinks. Give mermaid diagrams and a table:
 unit on a flow path (the audit entry points).
 
 **Coverage guard (blocking):** every AC appears on at least one flow; a flow step citing no
-AC is invented scope — cut it or flag it to the caller. Ensure all ACs are covered in the flows.
+AC is invented scope — cut it or flag it to the caller.
 
 ## Audit (step 2)
 
@@ -48,7 +48,9 @@ Getting the notes:
 
 Refine the flows with the audit notes, in order:
 
-1. **WHERE is the new** — mark each flow segment NEW vs existing.
+1. **WHERE is the new** — mark each flow segment NEW vs existing. The notes' Interacts-with
+   lines / flow interaction map extend the blast radius: a flow coupled to a touched flow
+   (shared fact, trigger, invalidation) is on the radius even when no requirement names it.
 2. **WHICH legacy flows survive** — name the surviving segments and the exact
    **attachment point** (the existing unit) where a new segment joins each one. Legacy
    references contribute cases to preserve here, not attachment points.
@@ -59,8 +61,8 @@ Refine the flows with the audit notes, in order:
    - **REPLACE** — only when the unit becomes **useless** once the new lands (name the
      removal), or **refactoring it demonstrably benefits the architecture** (name the
      payoff; scope to one unit/interface). Anything else is MODIFY. A refactor judged
-     valuable beyond that scope becomes a **gate proposal** (SKILL.md § Propose refactors
-     deliberately), never a silent rewrite.
+     valuable beyond that scope becomes a **gate proposal** (SKILL.md § Refactor
+     proposals), never a silent rewrite.
 4. **HOW each attachment point is wired** — the mechanism per hop (props, shared query key,
    store selector, context, service event, callback), per the picker in
    [design.md](./design.md).

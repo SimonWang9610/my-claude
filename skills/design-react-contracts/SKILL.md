@@ -9,88 +9,62 @@ description: >
 # design-react-contracts
 
 Turn requirements into **contracts** — each unit's public surface, data flow, and state
-design — plus one architecture view wiring them. Contracts only, never implementation:
-name types, boundaries, mechanisms; no code bodies.
+design — plus one architecture view wiring them. Contracts only: name types, boundaries,
+mechanisms; no code bodies. Design from first principles: units derive from what the
+flows fundamentally require, never from the shape existing code happens to have — the
+audit says what exists to wire into, not what the design should look like; structure
+fighting the fundamentals → REPLACE or refactor proposal, never a design bent to fit.
 
 ## Inputs
 
-- **Requirements & ACs** — observable outcomes to achieve, never implementation steps. Do
-  not invent scope beyond them.
-- **Existing implementation** — live code the work wires into or changes. Audited for
-  wiring: verdicts, attachment points, importers.
-- **Legacy code references** — read-only material consulted for behavior only (old version,
-  other repo, samples). A behavioral spec — never wired, never modified.
-- **Audit notes** (optional) — pre-made notes in `audit-code-flows` format; used first,
-  gaps filled by invoking that skill.
-- **Component map** (optional) — a `decompose-figma` map; its EXISTING / PARTIAL / NEW
-  rows seed the unit inventory as REUSE / MODIFY / NEW proposals.
-- **Direct instructions** — caller steering: where to start, focus, avoid. They narrow the
-  procedure, never waive the self-check.
+- **Requirements & ACs** — observable outcomes; never invent scope beyond them.
+- **Existing implementation** — live code to wire into or change; audited for verdicts,
+  attachment points, importers.
+- **Legacy code references** — read-only behavioral spec; never wired, never modified.
+- **Audit notes / component map** (optional) — notes (`audit-code-flows` format) used
+  first, gaps filled by invoking that skill; `decompose-figma` rows seed the unit inventory.
+- **Direct instructions** — narrows the procedure, never waives the self-check.
 
 ## Output
 
-Written to the caller-designated design directory:
+To the caller-designated dir; templates in [references/design.md](./references/design.md):
 
-- `design.md` — architecture diagram, AC-traced flows, ownership table, unit index linking
-  each contract, failure containment, test strategy (AC → level → test location), open
-  items. Never restates a contract.
-- `contracts/<group>.md` — unit contracts grouped by relation (units collaborating on the
-  same flow/feature slice share a file; each unit appears in exactly one). Templates in
-  [references/design.md](./references/design.md).
-- Fast path → a single contract delta instead.
+- `design.md` — architecture diagram, per-flow unit sequence diagrams + step tables,
+  ownership table, unit index, failure containment, test strategy, open items. Never
+  restates a contract.
+- `contracts/<group>.md` — contracts grouped by relation (units on the same flow/slice
+  share a file; each unit in exactly one). Fast path → a single contract delta.
 
-**Output discipline:** every artifact concise, terse and goal-accurate — cite AC/rule IDs, exact
-identifiers and paths, no restatement, no filler.
+**Discipline:** terse, goal-accurate — AC/rule IDs, exact identifiers/paths, no filler.
+Decisions, never reasoning ("why" = a one-line rule citation; unresolved → Open items).
+Fixed shape: code only in the template's fenced blocks; all else one-line prose or table rows.
 
 ## Rules
 
-`rules/` steers design decisions — concise rules with code samples. Read the relevant file
-before deciding; cite it in design notes:
+Read the relevant file before deciding; cite it in design notes:
 
-- [rules/state-ownership.md](./rules/state-ownership.md) — where a fact lives; its concrete
-  state design (useState · custom hook · context provider · store · listenable service ·
-  query hook); URL-addressable state; write semantics (invalidate vs optimistic + rollback)
-- [rules/decompose-components.md](./rules/decompose-components.md) — how to cut units, and
-  when not to (blast radius of splits/merges); performance boundaries (code-split,
-  containment, virtualization)
-- [rules/services-and-boundaries.md](./rules/services-and-boundaries.md) — one-way
-  dependencies, side effects behind services, failure containment, boundary schemas +
-  typed errors, race ownership
+- [rules/state-ownership.md](./rules/state-ownership.md) — fact ownership, concrete state design, URL state, write semantics
+- [rules/decompose-components.md](./rules/decompose-components.md) — cutting units, split/merge blast radius, perf boundaries
+- [rules/services-and-boundaries.md](./rules/services-and-boundaries.md) — one-way deps, services, containment, schemas, races
 
-## Full path (feature-scale work)
+## Full path (feature-scale)
 
-1. **Ground truth** — user & data flows from requirements/ACs alone; scope and blast
-   radius. → [references/ground-truth.md](./references/ground-truth.md)
-2. **Audit** — use provided audit notes first; invoke `/audit-code-flows` for uncovered
-   blast-radius entry points. Skip when unnecessary. → ground-truth.md § Audit
-3. **Reconcile** — refine flows against the notes; tag existing units
-   REUSE / MODIFY / REPLACE; name each attachment point's wiring.
-   → ground-truth.md § Reconcile
-4. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition, applying
-   `rules/`; consolidate into design.md + contracts/.
-   → [references/design.md](./references/design.md)
-5. **Self-check** — internal self-correction, never a user-facing report; blocking findings
-   loop back to step 4 (max 2 loops). → design.md § Self-check
-6. **Resolve or finalize** — open items remaining? **Pause**: present them to the caller
-   with what was tried, wait for decisions or steering, resume the affected steps with that
-   input. Otherwise hand back the artifacts.
+Steps 1–3 → [references/ground-truth.md](./references/ground-truth.md); 4–5 →
+[references/design.md](./references/design.md).
 
-**Propose refactors deliberately.** When the audit shows the touched code fights the
-requirements — tangled ownership, missing seams, duplicated facts — judge whether a
-bounded refactor pays off even though it expands scope: name the **root friction**, the
-**restricted scope**, the **payoff** (this feature + near-term work), and the **cost
-delta** (extra units/tasks). Present it at the gate as an explicit option beside the
-minimal design — the caller chooses. Never silently expand scope; never withhold a
-refactor you judge clearly valuable.
+1. **Ground truth** — user & data flows from requirements/ACs alone; scope + blast radius.
+2. **Audit** — provided notes first; `/audit-code-flows` for uncovered entry points; skip when unnecessary.
+3. **Reconcile** — refine flows against the notes; tag units REUSE/MODIFY/REPLACE; name each attachment point's wiring.
+4. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/.
+5. **Self-check** — internal, ONE pass; findings → one re-design of the affected units.
+6. **Resolve or finalize** — open items → pause with what was tried, wait for steering, resume; else hand back.
 
-## Fast path (small bounded change)
+**Refactor proposals:** touched code fighting the requirements → name root friction,
+restricted scope, payoff, cost delta; present at the gate beside the minimal design — the
+caller chooses. Never silently expand scope; never withhold a clearly valuable refactor.
 
-Take it for a bugfix or tweak: ≤2 existing units, no new fact, no new flow segment. MODIFY
-happens in place.
+## Fast path — bugfix/tweak: ≤2 existing units, no new fact or flow segment
 
 1. Locate the owning unit(s); trace only the affected fact/case.
-2. Write a **contract delta** (template in design.md): case fixed, surface change (often
-   none), must-not-change, importers checked.
-3. Self-check only: one owner per fact + blast radius closed.
-
-A new fact, new flow segment, or third unit → upgrade to the full path.
+2. **Contract delta** (template in design.md): case, surface change, must-not-change, importers.
+3. Self-check: one owner per fact + blast radius closed. Anything more → full path.
