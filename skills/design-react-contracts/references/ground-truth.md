@@ -36,12 +36,12 @@ it. Two source kinds, used differently:
   wired, never tagged.
 
 Getting the facts — `/audit-code-flows`, never ad-hoc scanning; greenfield (no sources)
-→ skip:
+→ skip. Design **queries and extends only** — bulk auditing is the caller's preflight:
 
 1. `/audit-code-flows query "which flows touch DeviceTable and the selection fact?"`
 2. Unanswered → `/audit-code-flows extend <pointer | uncovered reference> — purpose:
-   <the decision needing it> — kind: existing|legacy` (extend builds what the atlas
-   lacks); never re-audit a flow the atlas already answers.
+   <the decision needing it> — kind: existing|legacy` (extend acquires what the atlas
+   lacks, one flow at a time); never re-audit a flow the atlas already answers.
 
 ## Reconcile (step 3 — after the audit)
 

@@ -1,9 +1,11 @@
 ---
 name: design-react-contracts
 description: >
-  Design React contracts — public API, data flow, state design per unit — and the wiring
-  architecture, from requirements/ACs grounded in audit notes. Produces design.md +
-  grouped contract files; fast path yields a contract delta for bugfix-scale changes.
+  Turns requirements into React contracts — each unit's public API, data flow, and state
+  design — plus the architecture wiring them, as design.md + grouped contract files an
+  implementer can build against without guessing. Use after ACs exist and before any code
+  is written, to decide unit boundaries, where a fact lives, or how new work attaches to
+  existing units; a fast path yields a contract delta for bugfix-scale changes.
 ---
 
 # design-react-contracts
@@ -21,8 +23,8 @@ fighting the fundamentals → REPLACE or refactor proposal, never a design bent 
 - **Existing implementation** — live code to wire into or change; audited for verdicts,
   attachment points, importers.
 - **Legacy code references** — read-only behavioral spec; never wired, never modified.
-- **Prior audits** (optional) — `atlas/` queried via `/audit-code-flows`,
-  gaps built by it;
+- **Prior audits / component map** (optional) — an existing `atlas/` is the first source
+  of existing-code facts; `decompose-figma` rows seed the unit inventory.
 - **Direct instructions** — narrows the procedure, never waives the self-check.
 
 ## Output
@@ -49,15 +51,13 @@ Read the relevant file before deciding; cite it in design notes:
 
 ## Full path (feature-scale)
 
-Steps 1–3 → [references/ground-truth.md](./references/ground-truth.md); 4–5 →
-[references/design.md](./references/design.md).
+Steps 1–3 → consultant [references/ground-truth.md](./references/ground-truth.md); Step 4–5 → consultant [references/design.md](./references/design.md).
 
 1. **Ground truth** — user & data flows from requirements/ACs alone; scope + blast radius.
-2. **Audit** — provided notes first; `/audit-code-flows` for uncovered entry points; skip when unnecessary.
-3. **Reconcile** — refine flows against the notes; tag units REUSE/MODIFY/REPLACE; name each attachment point's wiring.
-4. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/.
-5. **Self-check** — internal, ONE pass; findings → one re-design of the affected units.
-6. **Resolve or finalize** — open items → pause with what was tried, wait for steering, resume; else hand back.
+2. **Reconcile** — refine flows against the notes; tag units REUSE/MODIFY/REPLACE; name each attachment point's wiring.
+3. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/.
+4. **Self-check** — internal, ONE pass; findings → one re-design of the affected units.
+5. **Resolve or finalize** — open items → pause with what was tried, wait for steering, resume; else hand back.
 
 **Refactor proposals:** touched code fighting the requirements → name root friction,
 restricted scope, payoff, cost delta; present at the gate beside the minimal design — the

@@ -1,10 +1,11 @@
 ---
 name: test-react-contracts
 description: >
-  Author unit and E2E tests against contracts (Vitest + RTL + MSW): the Test strategy
-  table is the work list, each contract's Test seam the harness, States exposed the
-  assertion targets; AC-labeled test names. Scopes: unit, e2e (from qa-journey-plan.md);
-  default full. Use when writing or hardening tests.
+  Authors React unit and E2E tests that prove contracts (Vitest · RTL · MSW) — driving
+  each unit through its test seam, asserting the states its contract exposes, and naming
+  every test for the AC it verifies. Use when writing tests for new or changed React
+  code, hardening weak coverage, or authoring journey tests from an approved plan; scopes:
+  unit, e2e, or both.
 argument-hint: "[unit | e2e]"
 ---
 

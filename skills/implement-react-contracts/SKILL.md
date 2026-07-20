@@ -1,15 +1,16 @@
 ---
 name: implement-react-contracts
 description: >
-  Implement React units against their contracts (or a direct request): level-specific
-  rules for using/building/optimizing hooks and components, stores and services. Verifies
-  its done-condition and raises DESIGN GAPs that steer the architecture; deep conformance
-  checking lives in check-react-implementation.
+  Writes React/TypeScript code against a contract or request, with level-specific rules
+  for using, building, and optimizing hooks, components, stores, and services — verifying
+  its own done-condition and raising DESIGN GAPs instead of silently deviating. Use when
+  building or changing React units: implementing a contract, making failing tests pass,
+  fixing a bug, or optimizing a hot path.
 ---
 
 # implement-react-contracts
 
-Implementation altitude: the contract decided **what**; you decide **how**. When the *what*
+Implementation altitude: the contract decided **what**; you decide **how**. When the _what_
 fails at code level, classify and raise (§ Steer the design) — never widen an API, move
 state ownership, or cross a boundary silently. With no formal contract, the same discipline
 binds against the caller's request and the codebase's conventions.
@@ -51,8 +52,8 @@ interaction) — clear code first, never pre-optimize a cold path.
    force. Read the target files and their imports first; **reuse** the existing
    component/hook/type/query-key/store-slice — never add a second one. A fact the
    contract/task genuinely doesn't carry → `/audit-code-flows query "who else writes
-   selectedId?"`; unanswered → `extend <pointer | reference>`. Never query what the
-   contract states; never broad re-reading.
+selectedId?"`; unanswered → `/audit-code-flows extend <pointer | reference>`. Never query what the
+   contract states; never broad re-reading; never a bulk audit here.
 2. **Implement per level** — most changes are mixed-level (a filtered list touches
    component + hook rules at once); apply every rules file whose level the diff touches.
 3. **Verify the done-condition** — the task's gate when one exists; otherwise typecheck +
@@ -63,11 +64,11 @@ interaction) — clear code first, never pre-optimize a cold path.
 4. **Steer the design** — when a governing decision is ambiguous, missing a case, or
    provably wrong, raise it; never silently deviate, never blindly implement a defect:
 
-   | Gap | Looks like | Do |
-   |-----|------------|-----|
-   | **Ambiguity** | the contract is silent on a case you must handle | implement the narrowest safe interpretation; raise for the contract to be amended |
-   | **Friction** | the design makes the code fight — missing seam, tangled responsibilities | don't force it with a hack; raise as a re-design candidate |
-   | **Defect** | the decision is provably wrong at tech level | **stop — don't implement a known defect**; raise with evidence |
+   | Gap           | Looks like                                                               | Do                                                                                |
+   | ------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+   | **Ambiguity** | the contract is silent on a case you must handle                         | implement the narrowest safe interpretation; raise for the contract to be amended |
+   | **Friction**  | the design makes the code fight — missing seam, tangled responsibilities | don't force it with a hack; raise as a re-design candidate                        |
+   | **Defect**    | the decision is provably wrong at tech level                             | **stop — don't implement a known defect**; raise with evidence                    |
 
    One block per gap, attached to the result; pause for the caller on Friction/Defect:
 

@@ -1,13 +1,12 @@
 ---
 name: audit-code-flows
 description: >
-  Audit code references (existing or legacy, any language) into a tiered, queryable
-  atlas/ — a greppable flow index over per-flow GIVEN/WHEN/THEN/HOW notes anchored
-  path:symbol — and serve later phases on demand: query answers from the atlas without
-  re-scanning source; extend acquires exactly what the atlas lacks (funds a pointer, or
-  builds the one uncovered flow) and folds it back in. Use before designing against or
-  migrating from existing/legacy code, and whenever a phase needs to locate or dive into
-  audited flows.
+  Turns existing or legacy code (any language) into a tiered, queryable atlas — a flow
+  index over per-flow GIVEN/WHEN/THEN/HOW notes anchored to path:symbol — then answers
+  questions from it (query) or deepens exactly one spot (extend) instead of re-scanning.
+  Use when work depends on understanding code you didn't write: before designing against
+  or migrating from it, to locate the flows a change touches, to answer "where does this
+  data come from" or "who else writes this fact", or to dive into a specific unit.
 argument-hint: "[build | query | extend]"
 ---
 

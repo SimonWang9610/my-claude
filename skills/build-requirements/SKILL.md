@@ -1,11 +1,11 @@
 ---
 name: build-requirements
 description: >
-  Formalize a raw request into requirements.md — first-principles analysis of the real
-  problem (challenging stated solutions and wrong assumptions), then US/AC/NFR as
-  observable Given/When/Then outcomes — and burn down ambiguity in one batched question
-  round with recommended answers. Use at the requirements phase, or whenever an ambiguous
-  scope must become a testable spec.
+  Recovers the real problem behind a request — challenging stated solutions and wrong
+  assumptions from first principles — then writes it as requirements.md: user stories
+  with stable AC/NFR ids phrased as observable Given/When/Then outcomes, ambiguity burned
+  down in one batched question round. Use when a feature request, idea, or vague scope
+  must become a spec someone can build and test against.
 ---
 
 # build-requirements

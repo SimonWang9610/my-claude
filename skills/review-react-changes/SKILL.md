@@ -1,11 +1,11 @@
 ---
 name: review-react-changes
 description: >
-  Review a PR or diff on three axes — specflow integrity (spec ↔ code alignment, QA/AC
-  gates), code behavior (contract conformance, silent failures, test honesty, N+1), and
-  quality (rules, scope creep, build). Severity-classified findings with evidence;
-  gates block dishonest approvals. Use on "review this PR/diff/branch", re-verifies, or
-  spec drift audits.
+  Reviews a React PR, branch, or diff on three axes — spec ↔ code honesty, code behavior
+  (contract conformance, silent failures, test honesty, N+1), and quality (rules, scope
+  creep, build) — producing severity-classified findings with evidence and a verdict that
+  gates block. Use to review a pull request or working diff before merge, to re-verify
+  claimed fixes, or to audit whether the code still matches its spec.
 ---
 
 # review-react-changes

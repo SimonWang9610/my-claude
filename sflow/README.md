@@ -22,9 +22,15 @@ skills/spec-react-workflow        translate a template into the spec's generated
          │                    binding them directly to phases in references/phase-map.md
          │                    (each generator holds its own copy; zero symlinks between skills)
          │ driven by
-agents/                  ── ORCHESTRATORS (repo root, real files): two flow drivers —
-         │                    sflow-driver, oac-specflow-driver; each embeds its Setup (run by its
-         │                    initialPrompt), drives the phases, enforces gates, delegates
+agents/                  ── ORCHESTRATORS: two flow drivers — my-specflow-driver,
+         │                    oac-specflow-driver; each embeds its Setup (run by its
+         │                    initialPrompt), drives the phases, enforces gates, delegates.
+         │                    Plus three BOUND WORKERS both drivers spawn — code-auditor-agent
+         │                    (owns the atlas: build/query/extend), react-test-agent, react-impl-agent:
+         │                    stack-neutral roles whose frontmatter preloads the profile's
+         │                    skills (`skills:` — the language specifics) + audit-code-flows,
+         │                    and pins model/effort/tools; bodies carry fences + return
+         │                    contract only, never skill content
 profiles/skills/         ── IMPLEMENTATION: self-contained problem-solvers with references/
 profiles/rules/          ── ALWAYS-ON: short, path-gated topic files (no code listings)
 ```

@@ -395,6 +395,105 @@ hard rule **Every spawn is templated** — every subagent prompt carries the tem
 field labels; mechanically checkable (a prompt missing a label is not sent). Prose
 references get skipped; a checkable artifact shape doesn't.
 
+Follow-up: **wave economics rebalanced** (user observed heavy subagent token cost). Waves
+were DAG-level-driven and the "~4 tasks → chunk" trigger multiplied pairs — both push
+toward many small spawns, each re-paying a cold start. New strategy: plan-react-contracts
+step 4 merges adjacent DAG levels until the spec fits **2–4 waves** (a wave sized by one
+agent's context — its tasks' combined contracts — never task count; more waves only when
+deps force them); step 5 = ONE test+impl pair per wave; chunking's only trigger is
+contracts overflowing one context (task-count trigger dropped; example annotation
+updated). sf-tasks step 3 + both drivers' re-chunk rule aligned; preferences "Cut batches
+at planning time" gains "fewer, fuller batches beat many small spawns". Parallelism loss
+is wall-clock only — intra-wave concurrency was already gone with one pair per wave.
+
+Follow-up (fork docs read — a fork shares the parent's prompt cache because system
+prompt + tools are identical, so it is CHEAPER than a fresh subagent when the work needs
+existing context): **smart-delegation rewritten** — Decide step 1 is now a three-row
+route table (inline · fork · subagent) keyed on what each *gets* vs *costs*, with "fork
+is the default when context is the payload" and the two things a fork can't give (fresh
+eyes, a narrower tool fence); step 2 bound-agent-or-ad-hoc; step 3 **the 7-field template
+DELETED** → four workflow-agnostic essentials (where · what · materials · done when) +
+the compact-return rule. Both drivers' hard rule renamed "Bound agents first, and every
+spawn carries its four essentials".
+
+**Agents re-specialized**: renamed back to `react-test-agent` / `react-impl-agent` (now
+explicitly React/TypeScript) and each opens with an expert role that activates domain
+knowledge ("senior test engineer specializing in React and TypeScript — Vitest, RTL, MSW,
+Playwright" with an opinion about what a test is worth; "senior React and TypeScript
+engineer" who knows state placement, effect loops, stale closures, memo boundaries;
+`code-auditor-agent` = "staff engineer who specializes in reading unfamiliar systems
+fast", stays language-agnostic). Bodies restructured from rule piles into **Operating
+procedure** (numbered, ending in a self-check/verify step) → **Rules** (fences + stop
+conditions) → **Report back**. User's frontmatter choices preserved (opus/low for the
+auditor, memory: user for impl, permissionMode, colors).
+
+**Skill descriptions rewritten** on the "what it does + when to use it" formula — all 9
+skills (audit-code-flows, build-requirements, design/plan/implement/test-react-contracts,
+check-react-implementation, review-react-changes, decompose-figma, smart-delegation):
+each now leads with the capability in plain terms, then names the concrete situations
+that should trigger it.
+
+Follow-up: **all three workers are stack-neutral roles** — `test-agent` / `impl-agent`
+(renamed from react-*) carry only fences + return contract; the language specifics come
+from the `skills:` frontmatter, which a profile swaps (react bundle preloads
+test-react-contracts / implement-react-contracts). Both gained **audit-code-flows** in
+their skills list + a query/extend clause for behavior their contract doesn't carry
+(never bulk audit, never broad re-reading). design SKILL.md now shows the usage inline
+(step 2: `query "<what the decision needs>"` → miss → `extend <pointer>`; Inputs bullet
+reworded to "Prior audits / component map"). **Drivers simplified** now that agents own
+their procedures: phase playbooks condensed (preflight/requirements/clarify/design/qa
+lost restated detail), phase loop tightened, Implement discipline compressed from a
+4-step list + paragraph to one arrow line + one paragraph — my-specflow 150→133 lines,
+oac 143→126.
+
+Follow-up: auditor renamed **code-auditor-agent** (language-agnostic — its skill always
+was; body now says "language- and stack-agnostic" explicitly; drivers + README updated).
+Layering restored: **domain skills name skills, never agents** — design/plan/implement
+reference `/audit-code-flows` directly and are **limited to query + extend** (bulk build
+belongs to the caller's preflight): ground-truth § Audit back to the 2-step
+query→extend form with "Design queries and extends only"; implement step 1 "never a bulk
+audit here"; plan-react-contracts Inputs gained the same clause for facts design.md
+doesn't carry; design SKILL step 2 reworded ("the atlas first; query/extend for what it
+lacks"). Only the drivers name agents.
+
+Follow-up (official subagent doc consulted — code.claude.com/docs/en/sub-agents):
+renamed to **react-test-agent / react-impl-agent** + new **react-auditor-agent**; all
+three rebuilt on documented frontmatter: `skills:` **preloads the bound skill's full
+content at startup** (binding is now structural, not an instruction — the steadiness fix),
+plus `model: sonnet`, `effort: medium`, scoped `tools:`, `color:`. Bodies carry only
+fences + mode/procedure pointers + return contract (thin-binding rule holds). Auditor owns
+audit-code-flows end-to-end (build/query/extend selection, one-agent-per-build fence,
+atlas-only writes), so drivers stopped hardcoding audit modes: preflight ② spawns it,
+prior-artifacts rule asks it, ground-truth § Audit + implement step 1 ask it (standalone
+skill invocation kept as fallback). smart-delegation Decide restructured again:
+1. delegate at all? · 2. **bound agent or ad-hoc?** (bound preferred — definition pins
+fences/skill/model/effort/return) · 3. model+effort+skills+materials for ad-hoc only;
+template gains "bound agents shrink this to four fields". Both drivers' hard rule now
+reads "Bound agents first"; plan-react-contracts + README de-branded (TestAgent/WorkAgent
+→ test/impl agent).
+
+Superseded first cut: **dedicated batch agents built** — agents/oac-test-agent.md +
+agents/oac-impl-agent.md, shared by both drivers (thin bindings, ~35 lines each): role
+constraints in the system prompt (test files only / source only; never edit a test),
+mandatory first action (invoke the bound skill — steadiness is now structural), pinned
+`model: sonnet`, trimmed tools (test agent has no Bash — driver runs red/green; impl
+agent keeps Bash for typecheck + targeted runs), line-oriented Report back, DESIGN GAP
+per the skill's format (thin-binding rule: agents never restate skill content). Drivers'
+Implement discipline is imperative ("Spawn oac-test-agent…"); spawn prompts shrink to
+Working Directory · Materials · Responsibilities · Done When; "Every spawn is templated"
+hard rule + smart-delegation gained the dedicated-agents-embody-the-template carve-out;
+README ORCHESTRATORS layer notes the pair.
+
+Follow-up: **preferences.md trimmed for focus** (user: more rules = less focus) — 84 → 48
+lines, 13 bullets → 7, four sections. Merged: Orchestrate + Route models + Cut batches →
+one Delegate bullet (smart-delegation owns the detail); Read-before-write → Simplicity-
+first; Judge-behavior-first → Goal-driven; Refactor-to-unblock section → one clause on
+Derive-don't-copy; Artifacts + Tokens → one section (Decisions-never-reasoning + Fixed
+shapes merged). Dropped: Convention-beats-novelty (covered by derive-don't-copy + reuse).
+Kept whole: the compounding gains — first principles, iteration budgets, judgment-authors-
+search-verifies, token economy. Folding into root CLAUDE.md offered but not done (root
+CLAUDE.md is empty + symlinked as global; load-path unknown → risk of double-loading).
+
 Follow-up: smart-delegation's Decide restructured as **three ordered calls** — 1. delegate
 at all? (delegate/inline/fork criteria) · 2. choose model + effort (spawn parameters) ·
 3. bind skills + slice materials (fills the template's Skills/Materials fields verbatim;

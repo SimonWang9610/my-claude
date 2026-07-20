@@ -1,11 +1,11 @@
 ---
 name: plan-react-contracts
 description: >
-  Project an approved design (design.md + contracts/) into tasks.md — dependency-ordered
-  tasks with parallel waves, each wave pre-split into a test batch (one TestAgent) and an
-  impl batch (one WorkAgent); contract groups are the default task unit, rows are pointers
-  (IDs, paths, gates), never restated contracts. Use after design approval, before
-  implementation.
+  Projects an approved design into tasks.md — dependency-ordered tasks grouped into 2–4
+  waves, each pre-split into a test batch and an impl batch so agent assignments are
+  decided while the whole plan is in view. Use after a design is approved and before
+  implementation starts, or whenever contracts must become an ordered, parallelizable
+  work list with per-task gates.
 ---
 
 # plan-react-contracts
@@ -17,7 +17,10 @@ commands), never sentences restating contracts.
 ## Inputs
 
 `design.md` (Units table, Test strategy) + `contracts/`, approved. Any completeness
-failure → back to the design skill; never plan over a broken design.
+failure → back to the design skill; never plan over a broken design. A fact the design
+artifacts genuinely don't carry (an existing unit's importers, a file's owner) →
+`/audit-code-flows query`, then `extend` on a miss — never a bulk audit, never ad-hoc
+scanning.
 
 ## Procedure
 
@@ -34,14 +37,17 @@ failure → back to the design skill; never plan over a broken design.
    rows). **Edge completeness check:** per unit walk error · empty · loading · boundary;
    a class the contract's States exposed demands but no AC row asserts gets one
    `Edge: <unit>·<class>` marker on the task — the test skill's rules fix the assertion.
-4. **Derive waves** — Wave 1 = tasks with no unmet deps; wave *n* = deps all in earlier
-   waves. Tasks in a wave build concurrently (group boundaries keep files disjoint).
-5. **Split each wave into agent batches** — decided here with the whole plan in view,
+4. **Derive waves — dependency order constrains, token economy cuts.** Start from DAG
+   levels (wave *n*'s deps all in earlier waves), then MERGE adjacent levels until the
+   spec fits **2–4 waves**; a wave is sized by one agent's context (its tasks' combined
+   contracts), never by task count. More waves only when dependencies genuinely force
+   them; group boundaries keep files disjoint.
+5. **Split each wave into ONE agent pair** — decided here with the whole plan in view,
    never at implement time. Per wave: one **test batch** (every task's AC rows + Edge
-   markers — one TestAgent) and one **impl batch** (every task's units + contracts — one
-   WorkAgent). Default batch = the whole wave; a wave over ~4 tasks or one context's
-   worth of contracts is chunked into named task subsets — each chunk a test+impl pair,
-   reason stated. Batches list task IDs only.
+   markers — one test agent) and one **impl batch** (every task's units + contracts — one
+   impl agent). Chunk a wave only when its combined contracts overflow one context (reason
+   stated) — every spawn re-pays a cold start, so fewer, fuller pairs beat many small
+   ones. Batches list task IDs only.
 6. **Count-check** — tasks = contract groups ± recorded re-cuts; every task carries
    deps + ACs + gate; every AC appears in exactly one task; every task in exactly one
    batch pair. A mismatch means dropped or duplicated work — reconcile before hand-off.
@@ -61,8 +67,8 @@ failure → back to the design skill; never plan over a broken design.
 ## Waves
 - W1: T1 — test batch: T1 · impl batch: T1
 - W2: T2 — test batch: T2 · impl batch: T2
-<a chunked wave instead lists pairs: `- W2, chunked (>4 tasks): W2a: T2, T3 — test
-batch: T2, T3 · impl batch: T2, T3 · W2b: T4, T5 — …`>
+<a chunked wave instead lists pairs: `- W2, chunked (contracts overflow one context):
+W2a: T2, T3 — test batch: T2, T3 · impl batch: T2, T3 · W2b: T4, T5 — …`>
 ```
 
 **Output discipline:** terse and goal-accurate — field values are facts (IDs, paths, gate

@@ -1,10 +1,11 @@
 ---
 name: decompose-figma
 description: >
-  Decompose a Figma screen into a compact component map — classify each element
-  EXISTING / PARTIAL / NEW against the codebase, extract specs only for the new (never
-  raw Figma JSON). Use on any Figma URL ("break down the figma", "what components does
-  this screen need") or when a spec carries design links.
+  Turns a Figma screen into a compact component map — every element classified
+  EXISTING / PARTIAL / NEW against the codebase, with specs extracted only for what's
+  genuinely new (never raw Figma JSON). Use whenever a design must become buildable
+  work: a Figma URL to break down, "what components does this screen need", or a spec
+  carrying design links.
 ---
 
 # decompose-figma

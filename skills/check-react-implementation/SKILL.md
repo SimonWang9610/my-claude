@@ -1,11 +1,11 @@
 ---
 name: check-react-implementation
 description: >
-  Post-implementation check for React diffs on three axes — behavior & outcomes (ACs and
-  contracts demonstrably satisfied), code quality & maintainability (rulebooks, reuse,
-  seams, scope), performance & memory diagnostic — emitting severity-classified findings
-  only, never fixes. Use after an implement phase completes, or on demand ("check this
-  diff against the contracts").
+  Checks a React diff with fresh eyes on three axes — does it observably satisfy its ACs
+  and contracts, what will it cost the next change, and what does it cost at runtime —
+  returning severity-classified findings with evidence, never fixes. Use after
+  implementation to verify work against its contracts, or on demand to audit a diff for
+  conformance, maintainability, or performance and memory problems.
 ---
 
 # check-react-implementation
