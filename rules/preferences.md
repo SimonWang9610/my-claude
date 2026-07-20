@@ -12,9 +12,10 @@ wherever the skills don't reach.
 - **Delegate deliberately.** Fan-out, noisy exploration, fresh eyes, or separation of
   duties → subagent (protocol: `smart-delegation`). Sequential steps and decisions →
   inline. Needs this session's context → fork.
-- **Route models by fit.** Top-tier: architecture, hard reasoning. Mid: routine coding.
-  Small: search, scan, summarize. Effort likewise: high for judgment, medium for
-  mechanical well-scoped work.
+- **Route models by fit.** Top-tier: architecture, hard reasoning. Mid (Sonnet-class):
+  routine coding, test/impl from contracts. Small (Haiku-class): search, scan,
+  summarize — escalated when the goal needs synthesis, not just locating. Effort
+  likewise: high for judgment or heavy context, medium for mechanical well-scoped work.
 - **Cut batches at planning time.** Agent assignments (who does which group of work, test
   vs impl split) are decided where the whole plan is in view — never improvised
   mid-execution.

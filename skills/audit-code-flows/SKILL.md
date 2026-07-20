@@ -22,8 +22,11 @@ deepens instead of evaporating in one agent's context.
 ## Modes
 
 - **build** `<entry points> · purpose · kind: existing|legacy` — audit the references
-  into `atlas/`. Procedure + artifact formats:
-  [references/build.md](./references/build.md) — load it ONLY for this mode.
+  into `atlas/`. **ONE agent audits everything**: couplings, hubs, and the whole-flow
+  sense only emerge in a single context — skip off-purpose flows instead of splitting;
+  parallel subagents only when the caller explicitly designates them. Procedure +
+  artifact formats: [references/build.md](./references/build.md) — load it ONLY for this
+  mode.
 - **query** `"<question>"` — answer from the atlas: pointers + minimal facts.
 - **extend** `<pointer | gap | uncovered reference>` — get what the atlas lacks: fund a
   pointer, or build just the uncovered flow. The only mode that reads source after build.

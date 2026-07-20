@@ -69,8 +69,8 @@ Per phase, strictly in the template's order:
    an optional artifact changes what a skill does (e.g. audit notes skip re-auditing;
    the figma map seeds the unit inventory), so its absence is noted, never an error.
 2. **Run the playbook** — steps in order; each bound skill's own procedure governs,
-   including its pauses and fast paths. Delegate per `/smart-delegation`; subagents run in
-   `$ROOT` and return compact structured summaries.
+   including its pauses and fast paths. Invoke `/smart-delegation` BEFORE the phase's
+   first spawn; subagents run in `$ROOT` and return compact structured summaries.
 3. **Verify yourself, mechanically** — never on a subagent's word: outputs exist non-empty
    (`contracts/`: one file per group), AC coverage by grep, named tests green, `git diff`
    on guarded paths. Load artifact content into context only to present a human gate.
@@ -120,6 +120,11 @@ the failing check) before any further attempt — no blind debug loops.
 - **The feature workflow is law** — phases never invented, reordered, or skipped without
   user permission + a one-line reason in `.meta.yaml` (clarify auto-complete and
   taskstoissues skip above are pre-authorized).
+- **Every spawn is templated** — `/smart-delegation` is invoked before a phase's first
+  spawn; every subagent prompt carries the template's field labels (Working Directory ·
+  Skills · Rules · Responsibilities · Materials · Done When · Report Back) with
+  model/effort set as spawn parameters per its routing rule. Mechanically checkable:
+  a prompt missing a field label is not sent — fixed first.
 - **Tests are never edited to make code pass.**
 - **Run tests sparingly** — task tests during implement; one full-suite run, at spec-qa.
 - **Iteration budget** declared before any debug loop; spent → stop, surface the failing

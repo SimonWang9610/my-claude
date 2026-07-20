@@ -369,3 +369,34 @@ each in its one home, family vocabulary, no scripts:
    judged once at authoring; re-checks over fixed-shape artifacts are grep/diff/count.
    (Already embodied by test skill's "coverage IS the grep" and drivers' mechanical
    Verify — the principle now named once, globally.)
+
+---
+
+## Field-use fixes: single-agent audit + concrete model routing (2026-07-20)
+
+Two issues from real driver runs:
+
+1. **audit-code-flows fanned out subagents during build** — whole-flow sense (couplings,
+   hubs, skip-decisions) fragments across contexts. Build mode now states: **ONE agent
+   audits everything**; skip off-purpose flows instead of splitting; parallel subagents
+   only on explicit caller designation.
+2. **Model routing too abstract** — smart-delegation's routing bullet is now a concrete
+   mapping: test/impl from contracts → Sonnet (medium when the contract pins the work,
+   high when multi-unit/heavy context) · search/explore → Haiku, escalated to Sonnet when
+   the goal needs synthesis not locating · judgment (design, forensics, review verdicts)
+   → top tier, high. Template field renamed `Model · Effort:`; preferences "Route models
+   by fit" aligned (Sonnet-class/Haiku-class + escalation clause).
+
+Follow-up: (a) `Model · Effort:` REMOVED from the delegation template — model/effort are
+spawn *parameters* the spawning session sets, never prompt content (routing bullet reworded
+to say so). (b) Companion-skill steadiness: invocation pinned to a moment ("invoke
+/smart-delegation BEFORE the phase's first spawn", phase-loop step 2, both drivers) + new
+hard rule **Every spawn is templated** — every subagent prompt carries the template's
+field labels; mechanically checkable (a prompt missing a label is not sent). Prose
+references get skipped; a checkable artifact shape doesn't.
+
+Follow-up: smart-delegation's Decide restructured as **three ordered calls** — 1. delegate
+at all? (delegate/inline/fork criteria) · 2. choose model + effort (spawn parameters) ·
+3. bind skills + slice materials (fills the template's Skills/Materials fields verbatim;
+slicing rule now stated once here, template fields point at it). Delegate section = prompt
+construction only. Description updated to match.
