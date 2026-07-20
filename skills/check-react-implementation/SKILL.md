@@ -38,7 +38,8 @@ must stay visible.
    - Family rulebooks, citing the rule file in each finding:
      `design-react-contracts/rules/` (ownership, decomposition, boundaries) ·
      `implement-react-contracts/rules/` (hooks, components, stores/services).
-     Correctness outranks style.
+     Correctness outranks style. Capabilities gate citations — package.json read once;
+     a rule for an absent library or the wrong react/compiler setup is never cited.
    - Reuse honored — no second unit/type/query key/store slice duplicating an existing one.
    - Seams intact — unit testable through its contract's Test seam, not only via its
      host; no implementation detail leaked into the public surface.
@@ -60,5 +61,7 @@ Fix direction: <one line — direction, never a patch>
 
 ## Output
 
-Findings most-severe first, then one line: `checked <n> units × <checks run>`. No
-findings → that one line alone. Never edit files; never restate unchanged code.
+Findings most-severe first, then one line: `checked <n> units × <checks run>`, plus a
+tally for anything dropped — `suppressed: <n> (<source: advisory cap · caller scope ·
+capability gate>)` — so a clean report means clean, never quietly filtered. No findings
+and no drops → the one line alone. Never edit files; never restate unchanged code.

@@ -61,6 +61,9 @@ the bounded scope, then implement. Beyond the scope → propose to the human, ne
   "why"; unresolved reasoning is a named open item.
 - **Fixed shapes.** Every artifact follows its declared template; fields hold facts, not
   narration; flows and interactions get diagrams, enumerable facts get tables.
+- **Judgment authors, search verifies.** Deciding what correct looks like is judgment —
+  spent once, at authoring. Re-checking it over fixed-shape artifacts is mechanical —
+  grep/diff/count; never re-do by judgment what a search can decide.
 
 ## Tokens
 

@@ -336,3 +336,36 @@ Self-audit pointer and folds the facts back in — persistent deepening). Compar
 protocol: run both on the same references; compare tokens loaded by design/implement,
 answer quality on identical questions, artifact size; winner's structure folds back into
 audit-code-flows and the twin is deleted (duplicate build rules are temporary by design).
+
+---
+
+## react-doctor research (2026-07-20) — proposals implemented, then REVERTED on review
+
+Audited /Users/simonwang/projects/tmp/react-doctor via /audit-code-flows (atlas in session
+scratchpad): fully deterministic scanner — AST rules + project scans under one rule
+contract, one compiled noise filter, capability-gated enablement, LLM only at rule
+authoring time.
+
+Three adoptions were implemented and reverted at user request pending a decision on the
+script-vs-LLM split: P1 sflow/scripts/sflow-check.mjs (5 deterministic gates over spec
+artifacts — verified against planted-defect fixtures) + sf-validate/driver wiring; P2
+capability gating in implement/check skills; P3 rule-card quality bar in .claude/CLAUDE.md.
+The research conclusions stand (hybrid tiering: artifact predicates → scripts · code
+predicates → existing tools, never bespoke scanners · semantics → LLM judging residue);
+no assets remain in the tree.
+
+Follow-up: after discussion, the four research conclusions were folded back cohesively —
+each in its one home, family vocabulary, no scripts:
+1. **Capability gating** — implement-react-contracts leads its Rules priority with
+   "Capabilities first" (package.json once; a rule never decides its own applicability);
+   check-react-implementation mirrors it ("Capabilities gate citations").
+2. **Rule cards carry the why** — .claude/CLAUDE.md Rules: code shape + runtime reason
+   (what lets an LLM generalize without over-flagging) + ≥1 valid look-alike never
+   flagged; false positive = correctness bug; narrow beats broad.
+3. **Suppression accounting** — check-react-implementation Output adds a drop tally
+   (`suppressed: <n> (advisory cap · caller scope · capability gate)`) so a clean report
+   means clean, never quietly filtered.
+4. **Judgment authors, search verifies** — preferences.md § Artifacts: correctness is
+   judged once at authoring; re-checks over fixed-shape artifacts are grep/diff/count.
+   (Already embodied by test skill's "coverage IS the grep" and drivers' mechanical
+   Verify — the principle now named once, globally.)

@@ -38,10 +38,12 @@ Read the relevant file before writing that kind of code; cite rules in review no
 - [rules/build-stores-and-services.md](./rules/build-stores-and-services.md) — store action
   bodies, persistence, transient subscribe, service lifecycle, stream coalescing
 
-**Priority:** a correctness rule beats a performance rule; a project fact (e.g.
-`babel-plugin-react-compiler` configured — check once, it inverts manual-memoization advice)
-beats generic advice. Optimize hot paths only (per-frame, large list, main interaction) —
-clear code first, never pre-optimize a cold path.
+**Capabilities first:** read package.json once at scope time — react version,
+`babel-plugin-react-compiler` (it inverts manual-memoization advice), which state/query
+libraries exist — and skip every rule section for an absent library; a rule never decides
+its own applicability. **Priority:** a correctness rule beats a performance rule; a
+project fact beats generic advice. Optimize hot paths only (per-frame, large list, main
+interaction) — clear code first, never pre-optimize a cold path.
 
 ## Procedure
 
