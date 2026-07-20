@@ -47,7 +47,10 @@ clear code first, never pre-optimize a cold path.
 
 1. **Scope** — from the contract/task: units to touch, behaviour expected, constraints in
    force. Read the target files and their imports first; **reuse** the existing
-   component/hook/type/query-key/store-slice — never add a second one.
+   component/hook/type/query-key/store-slice — never add a second one. A fact the
+   contract/task genuinely doesn't carry → `/audit-code-flows query "who else writes
+   selectedId?"`; unanswered → `extend <pointer | reference>`. Never query what the
+   contract states; never broad re-reading.
 2. **Implement per level** — most changes are mixed-level (a filtered list touches
    component + hook rules at once); apply every rules file whose level the diff touches.
 3. **Verify the done-condition** — the task's gate when one exists; otherwise typecheck +

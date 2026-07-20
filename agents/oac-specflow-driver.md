@@ -32,11 +32,11 @@ Every phase runs its `/spec-<phase>` command **first**, then its steps in the or
 written. A needed `/spec-*` command missing → STOP and report, never substitute.
 
 - **preflight** — ① `/spec-preflight` · ② conditional on the spec's inputs:
-  user-named sources or existing code in scope → `/audit-code-flows` on the blast-radius
-  flows (kind: existing vs legacy); Figma/design links → `/decompose-figma`; neither →
-  note it and move on · ③ persist audit notes + flow interaction map into `audit-notes.md` (their single home — design reads this file directly) and the figma component map + gap list into
-  `preflight.md`, which also points to `audit-notes.md`; REUSE/EXISTING verdicts answer the shared-component
-  adoption check.
+  user-named sources or existing code in scope → `/audit-code-flows build` on the
+  blast-radius flows (kind: existing vs legacy) → `atlas/` in the spec dir (later phases
+  query/extend it, never re-scan); Figma/design links → `/decompose-figma`; neither →
+  note it and move on · ③ figma component map + gap list → `preflight.md`, pointing to
+  `atlas/`; REUSE/EXISTING verdicts answer the shared-component adoption check.
 - **requirements** — ① `/spec-requirements` · ② `/build-requirements` → `requirements.md`
   with US/AC/NFR + one batched question round recorded under `## Clarifications`.
 - **clarify** — no OPEN entries in requirements `## Clarifications` → mark **completed**
@@ -64,7 +64,7 @@ Per phase, strictly in the template's order:
 
 1. **Inputs** — every template-declared input exists non-empty. Missing → run its earlier
    incomplete producing phase; otherwise STOP and ask — never guess. Then gather the
-   **optional carry-forwards** that exist (`audit-notes.md`, the figma component map in
+   **optional carry-forwards** that exist (`atlas/`, the figma component map in
    preflight.md, clarifications, qa-journey-plan.md) and pass them to the phase's skills
    as inputs —
    an optional artifact changes what a skill does (e.g. audit notes skip re-auditing;
@@ -112,7 +112,7 @@ the failing check) before any further attempt — no blind debug loops.
   Materials) grounds its work in the previous phases' artifacts before any fresh
   discovery. Re-deriving what an artifact already answers — re-auditing an audited flow,
   re-extracting ACs, re-inventing flows a design already fixed — is forbidden; need more
-  depth → follow the artifact's anchors/Self-audit pointers to exactly that spot. An
+  depth → `/audit-code-flows query`/`extend` on `atlas/`, or the artifact's anchors. An
   artifact that looks wrong is raised, never silently diverged from.
 - **This spec only** — out-of-scope findings are noted for the user, never done.
 - **The feature workflow is law** — phases never invented, reordered, or skipped without

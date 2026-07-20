@@ -35,12 +35,11 @@ Phases and order come from `.meta.yaml`'s `phase_status` keys; each phase runs i
 playbook below, or a needed `/sf-*` command missing → STOP and ask, never improvise.
 
 - **preflight** — ① `/sf-preflight` · ② conditional on the spec's inputs: user-named
-  sources or existing code in scope → `/audit-code-flows` on the blast-radius flows
-  (kind: existing vs legacy); Figma/design links → `/decompose-figma`; neither → note it
-  and move on · ③ persist audit notes + flow interaction map into `audit-notes.md` (their
-  single home — design reads it directly); figma map + gap list into `preflight.md`,
-  pointing to the notes;
-  REUSE/EXISTING verdicts answer shared-component adoption.
+  sources or existing code in scope → `/audit-code-flows build` on the blast-radius flows
+  (kind: existing vs legacy) → `atlas/` in the spec dir (later phases query/extend it,
+  never re-scan); Figma/design links → `/decompose-figma`; neither → note it and move
+  on · ③ figma map + gap list → `preflight.md`, pointing to `atlas/`; REUSE/EXISTING
+  verdicts answer shared-component adoption.
 - **requirements** — ① `/sf-requirements` · ② `/build-requirements` → `requirements.md`
   with US/AC/NFR + one batched question round under `## Clarifications`.
 - **clarify** — driver-led, no command. No OPEN entries in requirements `## Clarifications`
@@ -70,9 +69,9 @@ Per phase, strictly in order:
 
 1. **Inputs** — every declared input exists non-empty. Missing → run its earlier
    incomplete producing phase; otherwise STOP and ask — never guess. Then gather the
-   **optional carry-forwards** that exist (`audit-notes.md`, the figma map in
-   preflight.md, clarifications, qa-journey-plan.md) and pass them to the phase's skills —
-   absence is noted, never an error.
+   **optional carry-forwards** that exist (`atlas/`, the figma map in preflight.md,
+   clarifications, qa-journey-plan.md) and pass them to the phase's skills — absence is
+   noted, never an error.
 2. **Run the playbook** — steps in order; each bound skill's own procedure governs,
    including its pauses and fast paths. Delegate per `/smart-delegation`; subagents run in
    `$ROOT` and return compact structured summaries.
@@ -115,8 +114,8 @@ the failing check) before any further attempt — no blind debug loops.
 - **Prior artifacts are authoritative** — every phase (and every subagent prompt's
   Materials) grounds its work in the previous phases' artifacts before any fresh
   discovery. Re-deriving what an artifact already answers is forbidden; need more depth →
-  follow the artifact's anchors/Self-audit pointers. An artifact that looks wrong is
-  raised, never silently diverged from.
+  `/audit-code-flows query`/`extend` on `atlas/`, or the artifact's anchors. An artifact
+  that looks wrong is raised, never silently diverged from.
 - **This spec only** — out-of-scope findings are noted for the user, never done.
 - **`/sf-*` commands only** — the full set: `/sf-init`, `/sf-preflight`,
   `/sf-requirements`, `/sf-design`, `/sf-tasks`, `/sf-implement`, `/sf-validate`,

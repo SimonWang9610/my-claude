@@ -259,3 +259,80 @@ affected flow (planned as a change, never duplicated). sf-implement step 4 execu
 disposition (author vs update the named test; material changes to existing tests surfaced,
 never silent). Driver design playbook + README row now say "when the test strategy
 classifies any AC journey-level".
+
+---
+
+## graphify research → audit-code-flows adoptions (2026-07-19)
+
+Reviewed /Users/simonwang/projects/tmp/graphify (codebase → knowledge graph skill:
+tree-sitter extraction, EXTRACTED/INFERRED/AMBIGUOUS edges, god nodes, Leiden communities,
+query/path/explain CLI). Adoptions (source → decision → reason):
+
+- Queryable-artifact idea → **Flow index** as output #1 (`flow · entry anchor · units
+  touched · couples with`): the scoped-graph lookup surface — grep the index → jump to the
+  note → follow anchors to source; three-level disclosure without a re-scan.
+- Confidence tags → **Tag what you didn't read directly** trace rule: untagged =
+  read-from-source, `(inferred)` = deduced, `(uncertain)` = must carry a Self-audit
+  pointer; downstream phases weigh facts by tag.
+- God nodes → **hub flag** on the interaction map: units several flows couple through =
+  widest change radius; feeds design's blast-radius extension.
+
+Rejected: community clustering (flows already are the grouping at audit scale), the
+query/path/explain CLI + MCP server + graph.json (our audits are note-sized and tool-free;
+markdown + grep serves the same access pattern), incremental cache/watch/hooks (drivers
+forbid re-audit via prior-artifacts rule), HTML/Obsidian/Neo4j exports and benchmarks
+(no consumer). Consumers reconciled: both drivers persist "flow index + notes +
+interaction map"; ground-truth § Audit locates notes via the index.
+
+Follow-up (A/B verdict): both skills produced same-quality output → audit-code-flows kept,
+**flow-atlas deleted**, and its structure folded in via a cohesive rewrite (not a patch):
+audit-code-flows now has three modes — **build** (default; boundary + trace rules + tag
+discipline unchanged in substance), **query** (≤20-line answers from the audit: index rows
++ note fields + `Dive:` pointers; never scans source), **extend** (the only post-build
+source-reader; folds facts back in, refreshes the index row, reports delta only). Artifact
+moved to **`audits/`** (tiered: `index.md` always-loaded over one `<flow-id>.md` per flow;
+Dependents/Verdict merged to one field). Consumers switched from receive-notes to
+invoke-the-skill: drivers' preflight runs `build` → `audits/` (preflight.md carries only
+figma map + gaps), carry-forwards + prior-artifacts rule name `audits/` and query/extend;
+ground-truth § Audit is now query → build → extend; design SKILL input renamed "Prior
+audits"; implement-react-contracts step 1 queries `audits/` for surrounding-flow context
+instead of broad re-reading.
+
+Follow-up: extend restated as its two real cases — (1) **new flow** (query miss, no
+atlas, or a pointed spot disclosing a coherent sub-flow: promoted to its own note + index
+row, coupled to the parent in index.md, never inlined) · (2) **more facts on an existing
+flow** (fold into the note, refresh its row). Implement-phase gating sharpened: query/
+extend only for facts the contract/task genuinely doesn't carry — never query what the
+contract states. Note template trimmed against the tiers: **Entry / exit** dropped (entry
+anchor is an index column; exits are THEN outcomes + HOW side-effect surfaces) and
+**Interacts with** dropped (couplings live only in index.md's Couples-with cell —
+now direction + shared fact — and the map); the touch-point trace rule writes them there
+directly. ground-truth § Reconcile reads the index's Couples-with, not note lines.
+
+Follow-up: **extend broadened to the scoped acquirer** — pointed spot → fund it; query
+miss / uncovered reference / no atlas → run build scoped to that one flow (per
+references/build.md), add its note + index row. Consumers collapsed to the two-verb
+pattern (query → unanswered → extend): ground-truth § Audit is now 2 steps with inline
+examples; implement step 1 likewise. Explicit build remains the drivers' preflight bulk
+entry.
+
+Follow-up: audit-code-flows split for mode-scoped loading — SKILL.md is 44 lines (modes +
+query + extend; what a querying subagent actually needs), the build procedure + artifact
+formats moved to references/build.md (103 lines, loaded only on build mode). Artifact dir
+renamed `audits/` → **`atlas/`** everywhere (skill, both drivers, design/implement
+consumers). Consumers now teach usage by concrete example instead of narration:
+ground-truth § Audit shows real build/query/extend invocations; implement step 1 shows a
+query example.
+
+Original twin (superseded by the fold above): **flow-atlas** created as an experimental
+A/B twin of audit-code-flows
+(skills/flow-atlas/SKILL.md, explicitly-invoked, NOT wired into drivers). Same note chain
+and trace discipline (condensed, self-contained duplicate for the experiment); structural
+differences: tiered artifact (`atlas/index.md` always-loaded tier over `flows/F<n>.md`
+per-flow notes) + graphify-style subcommands — query (≤20-line answers: index rows + note
+fields + `Dive:` pointers; atlas-only, never scans source), explain, path (hop walk over
+Interacts-with/HOW; never invents a hop), extend (the only source-reader: funds a
+Self-audit pointer and folds the facts back in — persistent deepening). Comparison
+protocol: run both on the same references; compare tokens loaded by design/implement,
+answer quality on identical questions, artifact size; winner's structure folds back into
+audit-code-flows and the twin is deleted (duplicate build rules are temporary by design).

@@ -21,8 +21,8 @@ fighting the fundamentals → REPLACE or refactor proposal, never a design bent 
 - **Existing implementation** — live code to wire into or change; audited for verdicts,
   attachment points, importers.
 - **Legacy code references** — read-only behavioral spec; never wired, never modified.
-- **Audit notes / component map** (optional) — notes (`audit-code-flows` format) used
-  first, gaps filled by invoking that skill; `decompose-figma` rows seed the unit inventory.
+- **Prior audits** (optional) — `atlas/` queried via `/audit-code-flows`,
+  gaps built by it;
 - **Direct instructions** — narrows the procedure, never waives the self-check.
 
 ## Output

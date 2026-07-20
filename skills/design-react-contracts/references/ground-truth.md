@@ -35,22 +35,22 @@ it. Two source kinds, used differently:
   are a behavioral spec: flows and cases the design preserves or deliberately drops. Never
   wired, never tagged.
 
-Getting the notes:
+Getting the facts — `/audit-code-flows`, never ad-hoc scanning; greenfield (no sources)
+→ skip:
 
-1. Caller-provided audit notes → use first; check they cover the blast-radius entry points.
-2. Gaps, or no notes → invoke **`/audit-code-flows`** on the uncovered flows, with the
-   ground-truth flows as purpose and each source's kind. A note's **Self-audit pointers**
-   are the follow-up path: when a design decision needs more detail, read exactly that
-   anchor — never re-audit the flow.
-3. Greenfield (no sources) → skip.
+1. `/audit-code-flows query "which flows touch DeviceTable and the selection fact?"`
+2. Unanswered → `/audit-code-flows extend <pointer | uncovered reference> — purpose:
+   <the decision needing it> — kind: existing|legacy` (extend builds what the atlas
+   lacks); never re-audit a flow the atlas already answers.
 
 ## Reconcile (step 3 — after the audit)
 
 Refine the flows with the audit notes, in order:
 
-1. **WHERE is the new** — mark each flow segment NEW vs existing. The notes' Interacts-with
-   lines / flow interaction map extend the blast radius: a flow coupled to a touched flow
-   (shared fact, trigger, invalidation) is on the radius even when no requirement names it.
+1. **WHERE is the new** — mark each flow segment NEW vs existing. The atlas index's
+   Couples-with column / interaction map extends the blast radius: a flow coupled to a
+   touched flow (shared fact, trigger, invalidation) is on the radius even when no
+   requirement names it.
 2. **WHICH legacy flows survive** — name the surviving segments and the exact
    **attachment point** (the existing unit) where a new segment joins each one. Legacy
    references contribute cases to preserve here, not attachment points.
