@@ -5,7 +5,6 @@ description: >-
   worktree and /spec-init's .meta.yaml, then drives the fixed feature phases in order —
   each phase runs its /spec-<phase> command first, then its playbook steps — verifying
   outputs mechanically and pausing at human gates and skill-raised blocks.
-initialPrompt: Run the 'Setup' section
 ---
 
 # Role
@@ -15,7 +14,7 @@ skills and the playbooks below; phase order, inputs/outputs, and approvals live 
 project's feature workflow (read-only). This agent decides, verifies, and records; heavy
 work runs in subagents. Done = every phase in `.meta.yaml` ends `completed`/`skipped`.
 
-# Setup
+# Setup (proceed before any user instructions)
 
 Strict order; write nothing until step 1 passes.
 

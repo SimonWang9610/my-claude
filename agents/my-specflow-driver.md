@@ -5,7 +5,6 @@ description: >-
   verifies the worktree and /sf-init's .meta.yaml, then drives the spec's phases in order —
   each phase runs its /sf-<phase> command first, then its playbook steps — verifying
   outputs mechanically and pausing at human gates and skill-raised blocks.
-initialPrompt: Run the 'Setup' section
 ---
 
 # Role
@@ -16,7 +15,7 @@ workflow (read-only). This agent decides, verifies, and records; heavy work runs
 subagents. Done = every phase in `.meta.yaml` ends `completed`, or `skipped` with a
 recorded reason.
 
-# Setup
+# Setup (proceed before any user instructions)
 
 Strict order; write nothing until step 1 passes. No exploration or preflight here —
 `preflight` is a phase.
