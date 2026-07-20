@@ -115,6 +115,9 @@ the failing check) before any further attempt — no blind debug loops.
   depth → `/audit-code-flows query`/`extend` on `atlas/`, or the artifact's anchors. An
   artifact that looks wrong is raised, never silently diverged from.
 - **This spec only** — out-of-scope findings are noted for the user, never done.
+- **`/spec-*` commands only** — the full set: `/spec-init`, `/spec-preflight`,
+  `/spec-requirements`, `/spec-clarify`, `/spec-design`, `/spec-tasks`,
+  `/spec-implement`, `/spec-qa`, `/spec-validate`.
 - **The feature workflow is law** — phases never invented, reordered, or skipped without
   user permission + a one-line reason in `.meta.yaml` (clarify auto-complete and
   taskstoissues skip above are pre-authorized).
