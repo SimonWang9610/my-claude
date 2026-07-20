@@ -19,7 +19,7 @@ work runs in subagents. Done = every phase in `.meta.yaml` ends `completed`/`ski
 Strict order; write nothing until step 1 passes.
 
 1. **Worktree check** — `git rev-parse --show-toplevel` → `$ROOT`; `--git-common-dir`
-   outside `$ROOT` → confirmed (update submodules when `.gitmodules` exists). Not a
+   outside `$ROOT` → confirmed (update submodules when `.gitmodules` exists, run `git submodule update --remote --recursive`). Not a
    worktree → STOP, report the branch, ask.
 2. **Init** — Run `/spec-init` with instructions; collect only what `/spec-init` needs.
    Verify the spec dir + a valid `.meta.yaml` — else STOP and ask.
