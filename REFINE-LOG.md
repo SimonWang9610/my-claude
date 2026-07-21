@@ -669,3 +669,53 @@ the current codebase's entries"** discipline; the guardrails (hints-not-truth / 
 standard) still hold. Descriptions + README bullets reworded "project-scoped" → "personal
 memory, per codebase". (`local` scope — project-specific + git-ignored — was offered as the
 alternative that fits "not committed" without the cross-project bleed; user chose user-level.)
+
+**Follow-up (same session):** audit-code-flows + code-auditor-agent support a read-only
+**external atlas** (a curated atlas outside the spec dir, for shared/stable code). Design:
+self-describing — the **local** `atlas/index.md` declares its external baselines on an
+*External atlases:* line, so any query auto-discovers them with no per-call path plumbing.
+**Query reads local + external; build and heal write the LOCAL atlas only** — a flow that
+lives only in an external atlas gets a local note citing the external origin (local overlays
+external); on overlap, local wins (it holds this run's heals) and a material local↔external
+disagreement is surfaced, not hidden. build.md: external atlases are an optional read-only
+input (consult to skip well-covered flows, link instead of re-audit); index.md gained the
+*External atlases* declaration line. Agent: build records the caller's external path in the
+local index, query reads both, write rule now "write only the local atlas; external is
+read-only — query it, never write it." README audit bullet notes the read-only baseline.
+
+**Follow-up (same session):** external-atlas model changed from **federated query** to
+**absorb-at-build** (user preference: absorb/rephrase relevant flows, then create + query one
+own atlas). Now: when a caller supplies a read-only external atlas, **build absorbs its
+on-purpose flows** into the local atlas — rephrased to this scope, anchors kept, tagged
+`(absorbed <path>)`, with a Self-audit pointer so a high-stakes decision can verify against
+current source — and audits source only for what the external doesn't cover (absorbing is a
+rephrase, not a source read). **Query reads the single local atlas only** (reverted the
+dual-index read + overlap/conflict handling). Reverts: SKILL query bullet/step 1/Acquire back
+to local-only; build.md Inputs "seed you absorb, never re-audit"; index.md line "External
+atlases: (query reads)" → "Seeded from:" (provenance); new `(absorbed)` tag in the Organize
+tag-list. Agent: build absorbs, query local-only, write rule "read-only: absorb from it, never
+write it." README audit bullet: "absorbs the relevant flows into its own, then queries the one
+self-contained atlas." Net: simpler query, portable self-contained local atlas, external
+consumed once as a seed.
+
+**Follow-up (same session):** external-atlas reframed once more, absorb → **distill** (user:
+the external saves time but doesn't reflect what *we* need, so we still audit ourselves, using
+it to go faster). It is now a **map that speeds our own audit, not content to copy**: at build,
+distill the external's entries / couplings / boundaries to skip the cold Locate and shortcut
+the Walk (jump straight to its anchors), **but still Walk source and write our own purpose-
+framed notes**. A peripheral flow we don't open can be carried as context, tagged
+`(external <path>)` (a candidate until a read confirms it — parallel to `(grep)`/`(inferred)`,
+no longer "trusted at its quality"). index.md line "Seeded from" → "Guided by"; Locate step
+"Absorb" → "Distill"; agent build/​write-rule and README bullet updated. Same guardrail shape as
+the conventions memory: a rich hint that accelerates where you look, never authority that
+replaces the audit.
+
+**Follow-up (same session):** external-atlas distillation made concrete — a persisted
+**`atlas/references/` tier**. The auditor now **audits the external atlas itself**: cherry-picks
+the purpose-relevant flows into `atlas/references/<flow>.md` (headed `— external, from <path>`,
+trimmed), uses them as the Locate map (entries, couplings, boundaries), then **still Walks
+source and writes its own top-level notes** for its purpose, citing the reference. A cherry-
+picked flow it doesn't re-audit stays a reference only and answers queries tagged `(external)`.
+So the external's contribution is persisted + clearly separated from our source-read notes, and
+portable (no dependency on the external path). Threaded through SKILL (intro/build/query),
+build.md (Distill step + references/ artifact entry), agent build step, README bullet.

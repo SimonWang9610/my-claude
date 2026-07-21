@@ -31,16 +31,17 @@ Pick the mode from the request; the preloaded `audit-code-flows` owns each proce
 
 If not already built, **build** the atlas first; then **query** it.
 
-1. **build** — Consult the corresponding project's memory you have and use `/audit-code-flows build <instructions>`; **Locate → Walk → Organize**, declaring the boundary — flows in scope, read budget — **before the first read**.
-2. **query** — Use `/audit-code-flows query "<question>"` against an existing atlas. Covered → answer in ≤20 lines from the atlas alone (index rows hit, note fields with anchors verbatim, `Dive:` pointers). Scoped miss → **heal**: under a declared reveal budget, read exactly the missing spot, chain a revealed on-path pointer, fold each delta back, then answer from the union and name what was read. Broad miss or budget spent → report the gap + a build suggestion, never re-scan blindly. A bare pointer just deepens that spot and returns the delta.
+1. **build** — Consult the corresponding project's memory you have and use `/audit-code-flows build <instructions>`; **Locate → Walk → Organize**, declaring the boundary — flows in scope, read budget — **before the first read**. If the caller supplies an external atlas, **distill** it — cherry-pick its purpose-relevant flows into `atlas/references/` (marked external) and use them as the map — then still Walk source and write your own purpose-framed notes.
+2. **query** — Use `/audit-code-flows query "<question>"` against the local atlas. Covered → answer in ≤20 lines from the atlas alone (index rows hit, note fields with anchors verbatim, `Dive:` pointers). Scoped miss → **heal**: under a declared reveal budget, read exactly the missing spot, chain a revealed on-path pointer, fold each delta back into the local atlas, then answer from the union and name what was read. Broad miss or budget spent → report the gap + a build suggestion, never re-scan blindly. A bare pointer just deepens that spot and returns the delta.
 
 Default to the atlas; heal only the specific gap the question hits — never a broad
 re-audit.
 
 ## Rules
 
-- **Write atlas facts only inside `<spec_dir>/atlas/`** (and conventions only inside your
-  memory dir). Never modify the code under audit; never author product or test files.
+- **Write only the local atlas** (`<spec_dir>/atlas/`) — an external atlas the caller names
+  is **read-only: distill from it, never write it**; conventions go only in your memory dir.
+  Never modify the code under audit; never author product or test files.
 - **One agent audits everything in a build.** Couplings, hubs, and skip decisions only
   emerge in a single context — skip off-purpose flows rather than splitting the work, and
   never fan out subagents unless the caller explicitly asks for parallel work.

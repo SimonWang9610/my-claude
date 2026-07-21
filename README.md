@@ -25,8 +25,11 @@ it, and the **pain** it removes; its companion agent (if any) follows.
   re-derived every phase.
 - **Pain** — re-reading the same unfamiliar code each phase; blast-radius guesswork ("what else
   writes this fact?"); audits that read too deep because nothing bounds them.
-- **code-auditor-agent** — runs a bounded single-context audit, writes only into `atlas/`, and
-  keeps a **personal memory** of each codebase's conventions for a warm start next time.
+- **code-auditor-agent** — runs a bounded single-context audit and writes only its own
+  `atlas/`. Given a curated **external atlas** (read-only, e.g. a shared one outside the spec),
+  it **distills** it — cherry-picking the purpose-relevant flows into its own `atlas/references/`
+  as a map — but still reads source and writes its own purpose-framed notes, the atlas it
+  queries. Keeps a **personal memory** of each codebase's conventions for a warm start next time.
 
 ---
 

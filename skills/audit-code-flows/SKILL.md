@@ -22,24 +22,36 @@ need) → source (via `path:symbol` anchors). Build once per scope; afterwards p
 itself by reading exactly the missing spot and folding it back, so the atlas deepens
 instead of evaporating in one agent's context.
 
+When a caller supplies an **external atlas** — read-only, curated for shared or stable code —
+first **audit the external itself**: cherry-pick the flows relevant to your purpose and save
+them, trimmed, under `atlas/references/` (marked external). Those references are your map — the
+entries, couplings, and boundaries that skip the cold Locate and shortcut the Walk — but they
+were framed for another purpose, so you **still read source and write your own top-level notes**
+for what your purpose needs, citing the reference. The local `atlas/` is the one thing you build
+and query; the external is only ever a read-only guide, never written.
+
 ## Modes
 
 - **build** `<entry points> · purpose · kind: existing|legacy` — **Locate → Walk →
   Organize** the code into `atlas/`: locate the entry by keyword, walk the definition graph
   outward on-purpose (go-to-definition style), organize the walked hops into flows. Bounded
-  during the walk, so the read can't run away. **ONE agent audits everything**: couplings,
+  during the walk, so the read can't run away. When an **external atlas** is supplied, cherry-
+  pick its purpose-relevant flows into `atlas/references/` first, use them as the map, then
+  still Walk source and write your own notes for the flows your purpose needs. **ONE agent
+  audits everything**: couplings,
   hubs, and the whole-flow sense only emerge in a single context — skip off-purpose flows
   instead of splitting; parallel subagents only when the caller explicitly designates them.
   Procedure + artifact formats: [references/build.md](./references/build.md) — load it ONLY
   for this mode.
-- **query** `"<question>" | <pointer>` — a **question** is answered from the atlas, healing
-  on a miss; a bare **pointer** just deepens that spot and returns the delta. The only mode
-  that reads source after build.
+- **query** `"<question>" | <pointer>` — a **question** is answered from the local atlas,
+  healing on a miss; a bare **pointer** just deepens that spot and returns the delta. The only
+  mode that reads source after build.
 
 ## query — answer, healing on a miss
 
 1. **Atlas answers** — match the question against `atlas/index.md`; open ONLY the matching
-   flow notes. Answer in ≤ 20 lines: index rows hit · the note fields that answer (field +
+   flow notes — a flow covered only under `atlas/references/` answers from there, tagged
+   `(external)`. Answer in ≤ 20 lines: index rows hit · the note fields that answer (field +
    fact + anchor, verbatim) · `Dive:` pointers (`atlas/<flow>.md § <field>` · `path:symbol`).
 2. **Scoped miss → heal** — the question maps to a clear pointer / one uncovered flow.
    Declare a reveal budget first (default: 3 acquisitions), then loop: acquire the nearest

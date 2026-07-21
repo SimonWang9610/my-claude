@@ -3,7 +3,10 @@
 Inputs: **entry points** · **purpose** (the caller's questions — gates every read) ·
 **source kind** per entry: **existing** (live code — the note adds Dependents + a
 REUSE/MODIFY/REPLACE proposal) · **legacy** (read-only reference — the note is a
-behavioral spec: preserve vs drop).
+behavioral spec: preserve vs drop). Optional: an **external atlas** (read-only, caller-supplied
+— a curated atlas for shared/stable code) → a **map you distill** to audit faster (Locate §
+Distill), never finished notes to copy; you still Walk source for the details your purpose
+needs. Every note you **write** goes in the local `atlas/`; the external is never written.
 
 Explore the way you would by hand — **Locate → Walk → Organize** — bounding depth *during* the
 walk (jump only where a purpose question is still open), so the off-purpose graph is never
@@ -15,6 +18,14 @@ Start where a human starts: **grep the purpose's keywords** (symbol names, route
 field names) + project structure to find the candidate entry file(s) / symbols, and list the
 entry modules' exported surface. Text search is the right tool here — fast, no pattern to
 author. Cheap and wide — the starting point, not a full-graph sweep.
+
+**Distill an external atlas** (if one guides this build) — audit the external itself: read its
+index and **cherry-pick the flows relevant to your purpose into `atlas/references/`** (one note
+per flow, headed `— external, from <path>`, trimmed to what helps). Those references are your
+Locate result — their entry anchors, coupling map, and boundary surfaces tell you where to look
+— but they were framed for another purpose, so you **still Walk the source and write your own
+top-level notes**, citing the reference. A cherry-picked flow you don't audit yourself stays a
+reference only and answers queries tagged `(external <path>)`.
 
 **Warm start** — if you carry the project's conventions (where kinds of unit live, standard
 boundaries, naming), check the conventional location first: a hint that biases order, never a
@@ -62,7 +73,9 @@ Turn the walked hops into each flow's note fields + the couplings index.
   moment the second flow hits it. Never in flow notes, never a second scan.
 - **Tag what you didn't read directly** — untagged = read from source · `(inferred)` =
   deduced · `(uncertain)` = must carry a Self-audit pointer · `(grep)` = a walked edge
-  found without ast-grep, a candidate until a read confirms it.
+  found without ast-grep, a candidate until a read confirms it · `(external <path>)` = carried
+  from an external atlas as context, not read from source this run — a candidate until a read
+  confirms it.
 - **Scan wide; note narrow** — facts, anchors, surfaces, shapes; no narration, nothing
   that doesn't affect a downstream decision.
 
@@ -76,6 +89,8 @@ authors, search verifies.
 
 ````markdown
 # Atlas — <scope> · <purpose, one line>
+
+Guided by: `<path/to/external/atlas>` <!-- external atlas distilled to speed this audit; omit if none -->
 
 | Flow | Kind | Entry anchor | Units touched | Couples with |
 |------|------|--------------|---------------|--------------|
@@ -123,3 +138,8 @@ behaviors kept vs deliberately dropped
 ## Self-audit pointers
 `path:symbol` — what deeper detail lives there + which decision needs it
 ````
+
+`references/<flow>.md` — optional; a flow cherry-picked from an external atlas while distilling
+it (Locate § Distill). Same note shape, headed `# <flow> — external, from <path>`, trimmed to
+what guided this audit. Reference material, not your source-read notes — a finding taken from it
+is tagged `(external <path>)`, a candidate until a read confirms it.
