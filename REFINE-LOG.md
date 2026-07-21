@@ -660,3 +660,12 @@ effect loop, stale closure). Standard = the skill's rules; truth = the contract 
 memory never enshrines a bad practice, never overrides a failing test. Role para ("decide the
 how the way the codebase does things *well*, never its bad habits") and description reworded to
 drop the mirror framing.
+
+**Follow-up (same session):** both memory agents `memory: project` → **`memory: user`** — the
+user found project scope writes into the repo's `.claude/agent-memory/` (committable, others can
+mess with it). User scope is global (`~/.claude/agent-memory/`), so to prevent one project's
+learnings bleeding into another's, both Memory sections gained a **"tag by project — apply only
+the current codebase's entries"** discipline; the guardrails (hints-not-truth / rules-are-the-
+standard) still hold. Descriptions + README bullets reworded "project-scoped" → "personal
+memory, per codebase". (`local` scope — project-specific + git-ignored — was offered as the
+alternative that fits "not committed" without the cross-project bleed; user chose user-level.)

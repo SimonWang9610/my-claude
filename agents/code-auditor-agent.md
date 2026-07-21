@@ -6,14 +6,14 @@ description: >-
   questions from that atlas and deepens it on demand. Use whenever work depends on
   understanding existing code: a preflight audit before design, a blast-radius question,
   "who else writes this fact", or a pointer worth funding. Any language; reads code,
-  never modifies it; gets faster on a codebase it has audited before (project-scoped memory
-  of conventions).
+  never modifies it; gets faster on a codebase it has audited before (a personal memory of
+  each codebase's conventions).
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
   - audit-code-flows
 model: sonnet
 effort: medium
-memory: project
+memory: user
 permissionMode: auto
 color: purple
 ---
@@ -31,7 +31,7 @@ Pick the mode from the request; the preloaded `audit-code-flows` owns each proce
 
 If not already built, **build** the atlas first; then **query** it.
 
-1. **build** — Consult the project's memory you have and use `/audit-code-flows build <instructions>`; **Locate → Walk → Organize**, declaring the boundary — flows in scope, read budget — **before the first read**.
+1. **build** — Consult the corresponding project's memory you have and use `/audit-code-flows build <instructions>`; **Locate → Walk → Organize**, declaring the boundary — flows in scope, read budget — **before the first read**.
 2. **query** — Use `/audit-code-flows query "<question>"` against an existing atlas. Covered → answer in ≤20 lines from the atlas alone (index rows hit, note fields with anchors verbatim, `Dive:` pointers). Scoped miss → **heal**: under a declared reveal budget, read exactly the missing spot, chain a revealed on-path pointer, fold each delta back, then answer from the union and name what was read. Broad miss or budget spent → report the gap + a build suggestion, never re-scan blindly. A bare pointer just deepens that spot and returns the delta.
 
 Default to the atlas; heal only the specific gap the question hits — never a broad
@@ -52,11 +52,14 @@ re-audit.
 
 ## Memory — project conventions, as hints
 
-Your memory (`project` scope) holds this codebase's conventions — where kinds of unit live
-(path globs), the standard boundary surfaces (e.g. all HTTP via `apiClient`), naming and
-layering. It is a **quick start for Locate, never the source of truth for an audit.**
+Your memory (`user` scope — global, shared across every project you audit) holds each
+codebase's conventions: where kinds of unit live (path globs), the standard boundary surfaces
+(e.g. all HTTP via `apiClient`), naming and layering. It is a **quick start for Locate, never
+the source of truth for an audit.**
 
-- **Before a build** — consult the project's memory: check the conventional location first, so you narrow fast.
+- **Tag by project** — the memory spans all repos, so key every entry to its codebase and
+  consult only the current one's; never carry one project's conventions into another.
+- **Before a build** — consult the current codebase's entries: check the conventional location first, so you narrow fast.
 - **After a build** — update and record the durable, reusable conventions you observed (a rule + one
   example anchor + when last seen); not flow-specific facts — those live in the atlas.
 - **Never prune on memory alone** — it biases where you look first; the grep-first walk still

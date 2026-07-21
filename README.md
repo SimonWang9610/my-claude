@@ -26,7 +26,7 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 - **Pain** — re-reading the same unfamiliar code each phase; blast-radius guesswork ("what else
   writes this fact?"); audits that read too deep because nothing bounds them.
 - **code-auditor-agent** — runs a bounded single-context audit, writes only into `atlas/`, and
-  keeps **project-scoped memory** of the codebase's conventions for a warm start next time.
+  keeps a **personal memory** of each codebase's conventions for a warm start next time.
 
 ---
 
@@ -78,8 +78,8 @@ it, and the **pain** it removes; its companion agent (if any) follows.
   hooks, components, stores, and services keep the *how* correct.
 - **Pain** — silent deviation from the design; stale-closure, effect-loop, and needless-re-render
   bugs; reinventing a unit that already exists.
-- **react-impl-agent** — a source-only fence (never edits a test) + **project-scoped memory** of
-  the codebase's good practices, anti-patterns, and pitfalls (judged against the skill's rules)
+- **react-impl-agent** — a source-only fence (never edits a test) + a **personal memory** of
+  each codebase's good practices, anti-patterns, and pitfalls (judged against the skill's rules)
   so quality compounds across waves.
 
 ### `check-react-implementation` · companion **react-checker-agent**
