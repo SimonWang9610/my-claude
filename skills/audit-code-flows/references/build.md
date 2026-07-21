@@ -95,7 +95,7 @@ inapplicable; bodies are facts in the fewest lines that carry them:
 ````markdown
 # F<n> <flow> — existing | legacy
 
-## Problem
+## Abstract
 what it solves + solution shape, 1–2 sentences
 
 ## GIVEN
