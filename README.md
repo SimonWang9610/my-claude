@@ -25,11 +25,11 @@ it, and the **pain** it removes; its companion agent (if any) follows.
   re-derived every phase.
 - **Pain** — re-reading the same unfamiliar code each phase; blast-radius guesswork ("what else
   writes this fact?"); audits that read too deep because nothing bounds them.
-- **code-auditor-agent** — runs a bounded single-context audit and writes only its own
-  `atlas/`. Given a curated **external atlas** (read-only, e.g. a shared one outside the spec),
-  it **distills** it — cherry-picking the purpose-relevant flows into its own `atlas/references/`
-  as a map — but still reads source and writes its own purpose-framed notes, the atlas it
-  queries. Keeps a **personal memory** of each codebase's conventions for a warm start next time.
+- **code-auditor-agent** — *initializes* the atlas as one bounded, single-context audit: **build**
+  from source, and a fast **distill** of any curated external atlas (distill first, then build
+  deepens from that map). Writes only its own `atlas/`; querying it afterwards is the skill's
+  `query` mode, run inline by whoever needs an answer. Keeps a **personal memory** of each
+  codebase's conventions for a warm start next time.
 
 ---
 
@@ -187,9 +187,8 @@ correct without heavy oversight.
 - **Bounded exploration** — the audit walks the definition graph on-purpose, one hop at a time,
   capping depth *during* the walk (Locate → Walk → Organize) so the off-purpose graph is never
   built and a read can't run away.
-- **grep to narrow, ast-grep to sharpen** — fast text search finds candidates; structural search
-  is reserved for where text is ambiguous — complementary, not either/or, with a grep-only path
-  when ast-grep is absent.
+- **grep + glob to locate and walk** — keyword search narrows to the candidate entries, then the
+  walk follows definitions hop by hop by grepping symbols and reading — no heavier tooling needed.
 - **Route to the cheapest execution** — `smart-delegation` picks inline / fork / subagent and the
   model + effort by task complexity, batching work to avoid re-paying a subagent's cold start.
 - **Progressive disclosure + terse prompts** — SKILL.md stays lean; heavy procedure lives in

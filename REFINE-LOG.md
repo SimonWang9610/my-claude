@@ -719,3 +719,49 @@ picked flow it doesn't re-audit stays a reference only and answers queries tagge
 So the external's contribution is persisted + clearly separated from our source-read notes, and
 portable (no dependency on the external path). Threaded through SKILL (intro/build/query),
 build.md (Distill step + references/ artifact entry), agent build step, README bullet.
+
+---
+
+## audit-code-flows: frontmatter-routed query · ast-grep removed · distill mode
+
+Three simplifications, plus adopting the user's new atlas templates.
+
+**New templates.** Flow notes gained YAML frontmatter (`id`, `title`, `keywords`, `outline`,
+optional `source`) — the `## Problem`/`Abstract` body section folded into `outline:`. index.md
+restructured (`# Atlas` / `<scope>` / `<purpose>` / `## Index` table / `## interaction map` /
+`## Gaps`).
+
+**1. Query streamlined via frontmatter.** Was: match index → open notes → Dive-pointer chase →
+heal. Now three crisp steps: **Find** (match the question against flow `keywords`/`outline`,
+grep the frontmatter across `atlas/*.md`) → **Answer** (open the matched note whole; reading it
+beats pointer-chasing) → **Miss → heal** (reveal-budget loop, unchanged). Fewer reads, no
+choreography.
+
+**2. ast-grep removed entirely.** Deleted references/ast-grep-usage.md; Locate/Walk now grep +
+glob only (grep the symbol, read the enclosing unit); dropped the availability gate, the
+grep-vs-ast-grep tool bullets, and the `(grep)` tag. Reason: dependency + capability gate + a
+whole reference file for benefit that never materialized (never even installed).
+
+**3. External atlases → a `distill` mode (chose Option B over A).** Skill is now
+**build | query | distill**. `query` is pure local + heal, ignorant of externals — the local
+atlas stays intact. `distill <external path> · purpose` (references/distill.md, ~20 lines) is a
+fast quick-start: cherry-pick purpose-relevant external flows, rephrase into **ordinary local
+flows** marked `source: distilled from <path>`, no source read; query heals them against source
+on demand, build deepens any that need it. Dropped the `atlas/references/` tier entirely (it
+broke atlas intactness). Chose Option B (distill as a skill mode) over A (distill as agent
+logic) to keep the agent thin — procedure lives in the skill, not the agent body. Agent modes
+build|query|distill; agent keeps query (core to its blast-radius charter). README mechanism
+bullet "grep to narrow, ast-grep to sharpen" → "grep + glob to locate and walk"; audit companion
+bullet rewritten for distill-as-mode. Net sizes: SKILL 70→54, build 145→109, ast-grep-usage (42)
+deleted, distill +20.
+
+**Follow-up (same session):** code-auditor-agent repositioned as an **atlas initializer** —
+`query` removed from the agent (querying is light + inline: the skill's `query` mode, run by
+whoever needs an answer — drivers/impl/test/checker already call it directly). Agent modes are
+now **distill → build**, and they **co-exist in order**: when a curated external atlas is
+provided, distill first (fast, external-derived local flows), then build, which is **warmed by
+the distilled flows** (their entries/couplings/boundaries map where to look) and **deepens them
+in place** (verify from source, drop the `source: distilled` mark; never duplicate) while
+auditing source for what the external didn't cover. Description/role/report-back reframed from
+"answers questions" to "stands up / initializes the atlas"; build.md Organize gained a
+**Deepen, don't duplicate** rule; README companion bullet reworded (initializer; query inline).

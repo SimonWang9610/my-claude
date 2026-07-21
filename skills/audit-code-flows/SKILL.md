@@ -10,61 +10,45 @@ description: >
   specific unit. Not for authoring the spec or design (use build-requirements,
   design-react-contracts) or judging a diff (use review-react-changes). Output: atlas/
   (flow index + per-flow notes).
-argument-hint: "[build | query]"
+argument-hint: "[build | query | distill]"
 ---
 
 # audit-code-flows
 
 Answer **what problem the code solves and how its data flows** — never how it is written.
-Disclosure is tiered: `atlas/index.md` (tiny, load first) → `atlas/<flow>.md` (open per
-need) → source (via `path:symbol` anchors). Build once per scope; afterwards phases
-**query** instead of re-scanning — a query answers from the atlas and, on a miss, heals
-itself by reading exactly the missing spot and folding it back, so the atlas deepens
-instead of evaporating in one agent's context.
-
-When a caller supplies an **external atlas** — read-only, curated for shared or stable code —
-first **audit the external itself**: cherry-pick the flows relevant to your purpose and save
-them, trimmed, under `atlas/references/` (marked external). Those references are your map — the
-entries, couplings, and boundaries that skip the cold Locate and shortcut the Walk — but they
-were framed for another purpose, so you **still read source and write your own top-level notes**
-for what your purpose needs, citing the reference. The local `atlas/` is the one thing you build
-and query; the external is only ever a read-only guide, never written.
+Disclosure is tiered: `atlas/index.md` (tiny, load first) → `atlas/<flow>.md` (opened per
+need, matched by its frontmatter `keywords`/`outline`) → source (via `path:symbol` anchors).
+Build once per scope; afterwards phases **query** instead of re-scanning — a query answers
+from the atlas and, on a miss, heals itself by reading exactly the missing spot and folding it
+back, so the atlas deepens instead of evaporating in one agent's context.
 
 ## Modes
 
 - **build** `<entry points> · purpose · kind: existing|legacy` — **Locate → Walk →
-  Organize** the code into `atlas/`: locate the entry by keyword, walk the definition graph
-  outward on-purpose (go-to-definition style), organize the walked hops into flows. Bounded
-  during the walk, so the read can't run away. When an **external atlas** is supplied, cherry-
-  pick its purpose-relevant flows into `atlas/references/` first, use them as the map, then
-  still Walk source and write your own notes for the flows your purpose needs. **ONE agent
-  audits everything**: couplings,
-  hubs, and the whole-flow sense only emerge in a single context — skip off-purpose flows
-  instead of splitting; parallel subagents only when the caller explicitly designates them.
-  Procedure + artifact formats: [references/build.md](./references/build.md) — load it ONLY
-  for this mode.
-- **query** `"<question>" | <pointer>` — a **question** is answered from the local atlas,
-  healing on a miss; a bare **pointer** just deepens that spot and returns the delta. The only
-  mode that reads source after build.
+  Organize** the code into `atlas/`: grep the entry by keyword, walk the definition graph
+  outward on-purpose, organize the walked hops into flows. Bounded during the walk, so the
+  read can't run away. **ONE agent audits everything**: couplings, hubs, and the whole-flow
+  sense only emerge in a single context — skip off-purpose flows instead of splitting;
+  parallel subagents only when the caller explicitly designates them. Procedure + artifact
+  formats: [references/build.md](./references/build.md) — load it ONLY for this mode.
+- **query** `"<question>" | <pointer>` — a **question** is answered from the atlas, healing on
+  a miss; a bare **pointer** just deepens that spot and returns the delta. The only mode that
+  reads source after build. Local atlas only — knows nothing of external atlases.
+- **distill** `<external atlas path> · purpose` — a fast quick-start when a curated external
+  atlas exists: cherry-pick its purpose-relevant flows into local flows (marked
+  external-derived), no source read. Procedure: [references/distill.md](./references/distill.md).
 
-## query — answer, healing on a miss
+## query — answer from the atlas, heal on a miss
 
-1. **Atlas answers** — match the question against `atlas/index.md`; open ONLY the matching
-   flow notes — a flow covered only under `atlas/references/` answers from there, tagged
-   `(external)`. Answer in ≤ 20 lines: index rows hit · the note fields that answer (field +
-   fact + anchor, verbatim) · `Dive:` pointers (`atlas/<flow>.md § <field>` · `path:symbol`).
-2. **Scoped miss → heal** — the question maps to a clear pointer / one uncovered flow.
-   Declare a reveal budget first (default: 3 acquisitions), then loop: acquire the nearest
-   fundable gap (below), re-check, follow a revealed on-path pointer, repeat until answered
-   or budget spent. Answer from the union and **name what was read** (`healed via F3 §HOW,
-   F7 §GIVEN`) so the source reads + atlas growth are visible.
-3. **Broad miss / budget spent** — no atlas, the question spans many unaudited flows, or the
-   loop capped → don't run away: return the best partial + the remaining gap + a build
-   suggestion. Never re-scan blindly, never guess.
-
-**Acquire** (each loop step, and a bare-pointer query) — read source only for that spot,
-under [references/build.md](./references/build.md)'s Walk boundary; fold the delta back
-**best-effort** (persist to `atlas/` when the caller can write; a read-only caller keeps the
-facts in its answer only). A disclosed sub-flow is promoted to its own note + index row
-(coupled to its parent); deeper facts on a covered flow fold into that note's fields
-(tagged). Report only the delta lines.
+1. **Find the flow(s)** — match the question against flow `keywords` + `outline` (grep the
+   frontmatter across `atlas/*.md`, cross-checked with `index.md`); open the full note(s) of
+   the best matches — reading a matched note whole beats chasing pointers. Nothing matches → 3.
+2. **Answer** — in ≤ 20 lines from the opened note's fields (fact + `path:symbol` anchor,
+   verbatim); pull blast radius from `index.md`'s Couples-with when the question needs it.
+3. **Miss → heal** — no matching flow, or the note lacks the fact → declare a reveal budget
+   (default 3), then loop: read source for exactly that spot (build.md § Walk boundary), chain
+   a revealed on-path pointer, fold each delta into the atlas (best-effort — a read-only caller
+   keeps it in the answer only), until answered or budget spent. A disclosed sub-flow becomes
+   its own note + index row; deeper facts fold into the covered note. Name what was read
+   (`healed via F3 §HOW`). Budget spent or the question spans many unaudited flows → return the
+   gap + a build suggestion. Never re-scan blindly, never guess.
