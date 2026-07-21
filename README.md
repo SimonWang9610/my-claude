@@ -4,88 +4,221 @@ A reusable [Claude Code](https://claude.com/claude-code) bundle that drives a st
 spec-driven workflow — `preflight → requirements → design → tasks → implement → validate → qa` —
 for **React/TypeScript** and **Flutter/Dart** projects.
 
-It ships three layers you install into a project's (or your global) `.claude/`:
-
-| Layer | What it is | Lives in |
-|-------|-----------|----------|
-| **Skills** | the stack know-how — *how to do a phase well* | `skills/`, `flutter/` |
-| **Agents** | who runs the work — orchestrators + workers | `agents/` |
-| **Commands** | the stack-neutral `/sf-*` process + gates | `sflow/commands/` |
-| **Scripts** | per-entry symlink installers | `*.sh` (repo root) |
-
-Skills carry the judgment, agents carry the execution, commands carry the process. You drive it
-by launching a **driver agent**; everything else is bound or spawned from there.
+It is built on one idea: **skills carry the judgment, agents carry the execution, commands
+carry the process, scripts install it.** A skill is a self-contained procedure Claude loads on
+demand; some skills have a **companion agent** — an expert with a narrow tool fence and the
+skill preloaded — that runs the skill under separation-of-duties or fresh-eyes constraints the
+skill alone can't enforce. Below, each skill is described by its **purpose**, the **why** behind
+it, and the **pain** it removes; its companion agent (if any) follows.
 
 ---
 
-## Skills — the know-how
+## Understand code you didn't write
 
-A skill is a self-contained procedure Claude loads on demand. Invoke one directly with
-`/<skill-name>`, or let its description auto-trigger it; a driver binds the right skill to each
-phase, and a worker agent preloads its skills at startup (`skills:` frontmatter). Each skill
-states its own inputs, procedure, output shape, and rules.
+### `audit-code-flows` · companion **code-auditor-agent**
 
-**The React contract flow** (spec → shipped code), one artifact per phase:
-
-- `build-requirements` → `requirements.md` (user stories + observable Given/When/Then ACs)
-- `design-react-contracts` → `design.md` + `contracts/` (per-unit API, data flow, state)
-- `plan-react-contracts` → `tasks.md` (dependency-ordered waves, test + impl batches)
-- `test-react-contracts` → tests named for the AC they prove (Vitest · RTL · MSW · Playwright)
-- `implement-react-contracts` → source that makes the batch's failing tests pass
-- `check-react-implementation` → severity-classified conformance findings (no verdict)
-- `review-react-changes` → PR/branch review + a block/pass merge verdict
-
-**Cross-cutting** (any codebase, any phase):
-
-- `audit-code-flows` — reverse-engineers existing code into a queryable **atlas**, then answers
-  questions from it and heals itself on a miss (`build` / `query`). The go-to before designing
-  against or changing code you didn't write.
-- `decompose-figma` — a Figma screen → a component map (EXISTING / PARTIAL / NEW)
-- `smart-delegation` — routes a piece of work to the cheapest execution (inline / fork / subagent)
-- `jira-ac-align` — reconciles a JIRA ticket's AC against the spec + shipped code
-
-**Flutter/Dart:** `fl-pr-review` — reviews a Flutter PR against the architecture/Riverpod/Dart 3
-rules. Flutter rules live in `flutter/rules/` (dormant — not linked by default).
+- **Purpose** — reverse-engineers existing/legacy code into a queryable **atlas** (a flow index
+  over per-flow GIVEN/WHEN/THEN/HOW notes), then answers questions from it and heals itself on a
+  miss by reading exactly the missing spot.
+- **Why** — understanding is expensive work worth banking: a one-shot exploration evaporates in
+  an agent's context, while an atlas persists, is queryable, and *deepens* instead of being
+  re-derived every phase.
+- **Pain** — re-reading the same unfamiliar code each phase; blast-radius guesswork ("what else
+  writes this fact?"); audits that read too deep because nothing bounds them.
+- **code-auditor-agent** — runs a bounded single-context audit, writes only into `atlas/`, and
+  keeps **project-scoped memory** of the codebase's conventions for a warm start next time.
 
 ---
 
-## Agents — who runs it
+## The contract flow — spec to shipped code
 
-An agent is a scoped Claude with its own tools, model, and bound skills. There are two kinds.
+### `build-requirements`
 
-**Drivers — you launch these.** A pure orchestrator for one spec: it decides, verifies
-mechanically, and records; it holds no stack know-how (that's in the skills) and never does heavy
-work itself (that goes to workers). It reads the spec's `.meta.yaml` phase ledger and runs each
-phase — its `/sf-<phase>` command first, then the phase playbook — pausing at human gates.
+- **Purpose** — turns a request or idea into `requirements.md`: user stories with stable AC/NFR
+  ids phrased as observable Given/When/Then outcomes.
+- **Why** — a request is evidence of a problem, not the spec; recovering the real problem and
+  burning down ambiguity up front is a clarify phase that never has to run.
+- **Pain** — vague scope; solution-shaped asks that hide the real need; ambiguity discovered late
+  during implementation.
 
-- `my-specflow-driver` — drives this bundle's `/sf-*` commands.
-- `oac-specflow-driver` — drives an external **specflow** project's `/spec-*` commands (the
-  bundle interoperates with, but does not ship, that command set).
+### `design-react-contracts`
 
-**Workers — drivers spawn these** (you can also invoke one directly). Each is an expert with a
-narrow tool fence and its skills preloaded:
+- **Purpose** — turns ACs into React **contracts** (per-unit API, data flow, state) plus the
+  architecture wiring them, as `design.md` + `contracts/`.
+- **Why** — deciding unit boundaries and where a fact lives *before* code is written is far
+  cheaper than discovering them mid-implementation; an implementer should build without guessing.
+- **Pain** — "where does this state belong?"; re-litigating boundaries while coding; designs an
+  implementer can't act on.
 
-- `code-auditor-agent` — owns `audit-code-flows` end-to-end (build / query the atlas). Any
-  language; reads code, never modifies it.
-- `react-test-agent` — authors the failing tests for a batch. Writes test files only.
-- `react-impl-agent` — implements units to green. Writes source only, never touches a test.
-- `react-checker-agent` — read-only fresh-eyes conformance check on a diff (Read/Grep/Glob/Bash,
-  no Write/Edit — so it reports findings, never fixes).
+### `plan-react-contracts`
 
-**How a feature runs:** you launch a driver → Setup (worktree check, `/sf-init` scaffolds the spec
-+ `.meta.yaml`) → it drives the phases, delegating heavy work to workers via `smart-delegation`.
-Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
-(green, test paths byte-unchanged) — then an optional `react-checker-agent` pass before the human
-gate. It never advances past an open gate.
+- **Purpose** — projects an approved design into `tasks.md`: dependency-ordered tasks in 2–4
+  waves, each pre-split into a test batch and an impl batch.
+- **Why** — assignments decided while the whole plan is in view parallelize cleanly; deciding
+  them ad hoc during implementation thrashes.
+- **Pain** — unclear task order; serial work that could have run in parallel; re-deriving batches
+  mid-flight.
+
+### `test-react-contracts` · companion **react-test-agent**
+
+- **Purpose** — authors tests that prove contracts (Vitest · RTL · MSW · Playwright), each named
+  for the AC it verifies.
+- **Why** — a test written first, red, by someone other than the implementer proves behavior
+  instead of ratifying whatever the code happens to do.
+- **Pain** — tests that pass against a stub; coverage that doesn't map to ACs; author marking
+  their own homework.
+- **react-test-agent** — a test-files-only tool fence (it cannot touch source), so red-first is
+  structural, not a promise.
+
+### `implement-react-contracts` · companion **react-impl-agent**
+
+- **Purpose** — writes React/TS source against a contract until the batch's failing tests pass,
+  raising DESIGN GAPs instead of silently deviating.
+- **Why** — the contract fixes the *what*; level-specific rules for using/building/optimizing
+  hooks, components, stores, and services keep the *how* correct.
+- **Pain** — silent deviation from the design; stale-closure, effect-loop, and needless-re-render
+  bugs; reinventing a unit that already exists.
+- **react-impl-agent** — a source-only fence (never edits a test) + **project-scoped memory** of
+  the codebase's good practices, anti-patterns, and pitfalls (judged against the skill's rules)
+  so quality compounds across waves.
+
+### `check-react-implementation` · companion **react-checker-agent**
+
+- **Purpose** — a fresh-eyes conformance check of a diff on three axes — behavior/ACs,
+  maintainability, performance & memory — returning severity-classified findings, never fixes.
+- **Why** — the author is the worst judge of their own work; a checker given the artifacts but
+  not the reasoning catches what the author rationalized away.
+- **Pain** — bugs that "look correct"; self-review blind spots; findings quietly "fixed" instead
+  of surfaced.
+- **react-checker-agent** — a read-only tool fence (no Write/Edit), so "findings, never fixes" is
+  unbreakable by construction.
+
+### `review-react-changes`
+
+- **Purpose** — reviews a PR/branch/diff on three axes (spec ↔ code honesty, behavior, quality)
+  and returns severity findings + a block/pass merge verdict.
+- **Why** — a merge decision belongs to a human informed by an evidence-backed verdict, not to
+  the author's confidence.
+- **Pain** — merges that drift from spec; unverified "fixed" claims; review notes with no clear
+  gate.
+
+---
+
+## Supporting skills
+
+### `decompose-figma`
+
+- **Purpose** — turns a Figma screen into a component map (EXISTING / PARTIAL / NEW), extracting
+  specs only for what's genuinely new.
+- **Why** — most of a screen already exists in the codebase; dumping raw Figma JSON for
+  everything wastes effort and buries the actual new work.
+- **Pain** — rebuilding components that already exist; design handoffs that don't say what to
+  actually build.
+
+### `smart-delegation`
+
+- **Purpose** — routes a piece of work to the cheapest execution that does it well: inline, a
+  fork, or a subagent (bound or ad-hoc), and fixes what the spawn must carry back.
+- **Why** — a subagent re-pays a cold start; fanning out blindly burns tokens, while keeping
+  everything inline floods one context.
+- **Pain** — token-wasteful over-delegation; context floods from noisy exploration; a reviewer
+  seeing the reasoning that produced the work.
+
+### `jira-ac-align`
+
+- **Purpose** — a three-way reconcile of a JIRA ticket's AC against the spec and the shipped code,
+  updating the ticket and posting one alignment comment.
+- **Why** — tickets go stale the moment requirements shift mid-development, and a ticket that lies
+  about what was built misleads everyone downstream.
+- **Pain** — "the ticket doesn't match the code"; AC drift after mid-flight changes.
+
+---
+
+## Flutter
+
+### `fl-pr-review`
+
+- **Purpose** — reviews a Flutter/Dart PR against the architecture rules (P1–P8), Riverpod code-gen
+  idioms, Dart 3 patterns, and test-quality rules → a rule-cited severity report.
+- **Why** — architectural rules only hold if something checks them on every PR; humans miss them
+  under delivery pressure.
+- **Pain** — architecture erosion; Riverpod/Dart-3 anti-patterns; tests that don't actually
+  assert. (Flutter rules live in `flutter/rules/`, dormant — not linked by default.)
+
+---
+
+## The drivers — orchestration
+
+Two **driver agents** you launch to run a whole spec: `my-specflow-driver` (drives this bundle's
+`/sf-*` commands) and `oac-specflow-driver` (drives an external **specflow** project's `/spec-*`
+commands). A driver is not tied to one skill — it binds them all.
+
+- **Purpose** — drive one spec through its phases: run each phase's command + playbook, delegate
+  heavy work to the worker agents, verify every output mechanically, and pause at human gates.
+- **Why** — separating orchestration (decide, verify, record) from execution (skills + workers)
+  keeps each simple; the driver holds no stack know-how and never does heavy work itself.
+- **Pain** — half-run phases; advancing past an open gate; trusting a subagent's word instead of
+  verifying; a whole process crammed into one unmaintainable prompt.
 
 ```sh
-my-specflow-driver "add a logout button"     # if aliases were installed
-claude --agent my-specflow-driver --worktree "add a logout button"   # raw
+my-specflow-driver "add a logout button"                              # if aliases were installed
+claude --agent my-specflow-driver --worktree "add a logout button"    # raw
 ```
+
+Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
+(green, test paths byte-unchanged) — then an optional `react-checker-agent` pass before the human
+gate; the driver never advances past an open gate.
 
 ---
 
-## Scripts — installing the bundle
+## How these are optimized — the mechanisms
+
+Cross-cutting techniques the skills and agents share, developed to keep them cheap to run and
+correct without heavy oversight.
+
+**Efficiency — fewer tokens, less re-work**
+
+- **Queryable, self-healing atlas** — `audit-code-flows` banks understanding once; later phases
+  *query* it instead of re-scanning, and a query heals itself on a miss (a bounded reveal budget)
+  rather than dead-ending. Understanding compounds instead of evaporating each phase.
+- **Bounded exploration** — the audit walks the definition graph on-purpose, one hop at a time,
+  capping depth *during* the walk (Locate → Walk → Organize) so the off-purpose graph is never
+  built and a read can't run away.
+- **grep to narrow, ast-grep to sharpen** — fast text search finds candidates; structural search
+  is reserved for where text is ambiguous — complementary, not either/or, with a grep-only path
+  when ast-grep is absent.
+- **Route to the cheapest execution** — `smart-delegation` picks inline / fork / subagent and the
+  model + effort by task complexity, batching work to avoid re-paying a subagent's cold start.
+- **Progressive disclosure + terse prompts** — SKILL.md stays lean; heavy procedure lives in
+  lazy-loaded `references/` (opened only in the mode that needs it); inter-agent prompts carry
+  four essentials — where · what · materials · done-when. Skills load on every trigger, so every
+  line earns its cost.
+- **Declared iteration budgets** — every loop (a query's reveal chain, a red→green fix) names its
+  stopping point up front; spent → stop and surface what was tried. No blind loops.
+
+**Correctness — by construction, not by instruction**
+
+- **Narrow tool fences** — the test agent writes tests only, the impl agent source only, the
+  checker reads only. Red-first, author ≠ implementer, and findings-never-fixes become
+  *structural*, not a promise that can slip.
+- **Judgment authors, search verifies** — mechanical facts (call edges, anchors, couplings) come
+  from tools; judgment fills only what tools can't (a flow's GIVEN/WHEN/THEN/HOW), so what's
+  verifiable is verified rather than re-argued.
+- **Fixed-shape artifacts** — every output lands in a declared template, so a driver verifies it
+  by grep / diff / count, never by re-judging or trusting a subagent's word.
+- **Memory as hints, not truth** — the auditor remembers where things live; the impl agent
+  remembers good/bad/pitfall patterns judged against the skill's rules. Memory biases where you
+  look or how you build — it never prunes a search or overrides the contract and tests.
+- **Thin-binding agents** — an agent body is role + procedure + fence + return contract; the stack
+  know-how is preloaded from its `skills:`, never restated, so bindings stay steady and the agent
+  stays small.
+- **Description-as-router** — each skill's description states capability + when-to-use +
+  not-for (→ alternative) + output, so an orchestrator routes to the right skill without opening
+  its body.
+
+---
+
+## Installing — the scripts
 
 The bundle is flat: `skills/ agents/ rules/` are real directories and the `/sf-*` command files
 live in `sflow/commands/`. Two script pairs relative-symlink them, per entry, into a destination
@@ -97,18 +230,15 @@ live in `sflow/commands/`. Two script pairs relative-symlink them, per entry, in
 | `link-commands.sh` / `unlink-commands.sh` | `sflow/commands/*` → `<dest>/.claude/commands/` |
 
 The `/sf-*` commands get their **own** pair because, installed globally, they shadow a project's
-own `/spec-*` set — so link them only where an sflow workflow is actually used (a specific
-project, rarely `~/.claude`). Links are relative (they resolve wherever the repo lives); an
-existing correct link is skipped; a foreign real file or an outside-pointing link is never
+own `/spec-*` set — so link them only where an sflow workflow is actually used. Links are relative;
+an existing correct link is skipped; a foreign real file or an outside-pointing link is never
 clobbered; re-running is safe. `unlink*` removes only symlinks that resolve back into this repo.
 
 ```sh
 ./link.sh --global                        # skills+agents+rules → ~/.claude
 ./link.sh --project ../myapp              # → ../myapp/.claude
-./link.sh                                 # interactive (pick global/project)
 ./link-commands.sh --project ../myapp     # add the /sf-* commands to that project only
 ./unlink.sh --project ../myapp            # remove skills+agents+rules
-./unlink-commands.sh --project ../myapp   # remove the /sf-* commands
 ./unlink.sh --global --aliases            # remove links + the managed rc block
 ```
 
@@ -120,21 +250,21 @@ launch a driver by name (`my-specflow-driver "..."`); `--no-aliases` skips the p
 
 ---
 
-## Editing & layout
+## Layout & editing
 
 Edit `skills/ agents/ rules/` and `sflow/commands/` directly — links are per-entry, so a new
-skill/agent/rule appears after one `./link.sh` (a new command after one `./link-commands.sh`) at
-each destination; removals need the matching `./unlink*.sh`.
+skill/agent/rule appears after one `./link.sh` (a new command after one `./link-commands.sh`);
+removals need the matching `./unlink*.sh`.
 
 ```
 my-claude/
-├── skills/    React contract flow + cross-cutting skills (real dirs)
-├── agents/    2 drivers + 4 workers (real files)
-├── rules/     shared rules — preferences.md
+├── skills/    the skills above (real dirs)
+├── agents/    2 drivers + 4 companion workers (real files)
+├── rules/     shared working-discipline rules — preferences.md
 ├── sflow/     /sf-* stage commands (sflow/commands/) + the full workflow README
 ├── flutter/   Flutter profile — rules/ (dormant, not linked by default)
 └── *.sh       link/unlink installers (bundle + commands, separate pairs)
 ```
 
-For the full phase lifecycle, the `.meta.yaml` ledger, human gates, and picking a driver, see
+For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
 **[sflow/README.md](sflow/README.md)**.
