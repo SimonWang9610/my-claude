@@ -1,8 +1,8 @@
-# ast-grep — structural walk queries
+# ast-grep — structural query reference for the walk
 
-Used by the Locate + Walk passes ([build.md](./build.md) §§ 1–2, **ast-grep mode**) to map
-structure mechanically. Language-agnostic — pick `--lang` from the source. (The mode gate
-and grep fallback live in build.md § 1, not here.)
+*How* to run the Walk's structural queries; *when* to reach for ast-grep vs grep is decided in
+[build.md](./build.md) § 2, and availability in § 1. Language-agnostic — pick `--lang` from
+the source.
 
 **When a form below is missing or a command errors, ask the tool, not memory:**
 `ast-grep -h` for the command list, `ast-grep <command> -h` (`ast-grep run -h`,
@@ -11,7 +11,7 @@ form here — versions drift.
 
 ## Language — `--lang <L>`
 
-Pick per source: `tsx` (React/JSX — MUST, `ts` won't parse JSX) · `ts` · `js` · `jsx` · `tsx`
+Pick per source: `tsx` (React/JSX — MUST, `ts` won't parse JSX) · `ts` · `js` · `jsx` ·
 `dart` · `python` · `go` · `rust` · `java` · `c` · `cpp` · `kotlin` · `swift`. Any grammar
 ast-grep ships works. Confirm a node's `kind` with `--debug-query=cst` before relying on it
 (kind names come from the grammar and differ per language).

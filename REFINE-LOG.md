@@ -608,3 +608,55 @@ line, implement/plan SKILLs, design ground-truth Audit step — all now "query (
 miss)", no separate extend call. argument-hint + description de-extended. ast-grep-usage.md
 retitled "structural walk queries" (§§ 1–2). "extends the blast radius" → "widens" to free
 the word.
+
+**Follow-up (same session):** grep + ast-grep reframed as complementary, not either/or —
+prompted by ast-grep's own "when to use" (structural search, *not* text search). The old
+build.md framed them as substitutable **modes** (ast-grep mode vs grep fallback); corrected
+to a division of labor: **Locate** greps keywords to narrow the range (grep is the right tool,
+not a fallback); **Walk** uses grep to find candidate references fast and reaches for ast-grep
+**only when text is ambiguous** (common identifier in string/comment noise, call-by-shape,
+a structural predicate grep can't express); ast-grep genuinely absent → grep-only walk, edges
+tagged `(grep)` — the real fallback, and only for the structural step. ast-grep-usage.md
+retitled "structural precision for the walk" with an explicit "for plain keyword-finding,
+grep is faster — don't reach here." No more "ast-grep mode / grep mode" binary.
+
+**Follow-up (same session):** audit skill simplified — deduplicated build.md ↔
+ast-grep-usage.md and polished the procedure. Single-sourced each fact to its owner:
+the **grep-vs-ast-grep decision** lives only in build.md § 2 (usage.md stopped re-arguing it
+and is now a pure command reference — "*how* to run it; *when* is § 2"); the **try/catch**
+example appears once (usage.md's inline-rule, where the command is); the **`(grep)` tag** is
+defined once (Organize's tag-list, § 3) with Locate/Walk pointing to it instead of restating;
+ast-grep command forms left in usage.md only (build.md carries concepts, usage.md commands).
+Compressed build.md's intro (it restated its own § headings). Fixed a bug — `tsx` was listed
+twice on the language line. build.md 125→121, usage 44→42; SKILL.md already lean at 58.
+
+**Follow-up (same session):** code-auditor-agent learns project conventions —
+`memory: user` → **`memory: project`** (per the official scope table: project = shareable via
+version control, no cross-project leak). The loose trailing "record a PATTERN" line became a
+formal **## Memory — project conventions, as hints** section: consult before a build (warm the
+Locate step), record durable conventions after (a rule + example anchor + last-seen; not
+flow-facts — those are the atlas), and the guardrail the user set — **guidance, never the
+source of truth**: memory biases where you look first, the grep-first walk still confirms, a
+misfiring convention is corrected not trusted. Write rule carved out the memory dir; role para
++ description note the warm start. Shared skill: build.md § Locate gained one conditional
+**Warm start** line (a no-op for a caller without conventions, e.g. react-checker-agent) that
+pins the same hint-not-prune guardrail in the procedure itself.
+
+**Follow-up (same session):** react-impl-agent memory formalized to match — its loose trailing
+"record a pattern" line became a **## Memory — codebase idioms, for consistency** section,
+parallel to the auditor's but role-specific: the auditor remembers *where code lives* (Locate
+hints), the impl agent remembers *how this codebase does things* (state placement, data-
+fetching/effect patterns, styling/error idioms, reusable units, cross-wave decisions) so its
+`how` stays consistent. Same guardrail shape, different source of truth: **memory never
+overrides the contract or a failing test** — those are the spec; a stale idiom is corrected,
+not trusted. Description gained a matching clause. (`memory: project` was already set.)
+
+**Follow-up (same session):** react-impl-agent memory reframed from "mirror the codebase's
+idioms" to a **quality ledger judged against implement-react-contracts's rules** — the user's
+concern that mirroring would enshrine project-wide bad practices. Now three entry kinds: (1)
+good practices to reuse (match the skill's rules), (2) anti-patterns to avoid (bad practices
+the rules flag — never copied for consistency), (3) pitfalls to route around (store re-render,
+effect loop, stale closure). Standard = the skill's rules; truth = the contract + tests;
+memory never enshrines a bad practice, never overrides a failing test. Role para ("decide the
+how the way the codebase does things *well*, never its bad habits") and description reworded to
+drop the mirror framing.

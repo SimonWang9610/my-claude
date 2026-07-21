@@ -5,33 +5,39 @@ Inputs: **entry points** · **purpose** (the caller's questions — gates every 
 REUSE/MODIFY/REPLACE proposal) · **legacy** (read-only reference — the note is a
 behavioral spec: preserve vs drop).
 
-Build the way you'd explore by hand: **Locate** the entry → **Walk** the definition graph
-outward on-purpose → **Organize** the walked hops into flows. Depth is bounded *during* the
-walk — you jump only where a purpose question is still open — so the read can't run away and
-the off-purpose graph is never built.
+Explore the way you would by hand — **Locate → Walk → Organize** — bounding depth *during* the
+walk (jump only where a purpose question is still open), so the off-purpose graph is never
+built and the read can't run away.
 
-## 1. Locate — the entry, and the mode
+## 1. Locate — narrow by keyword
 
-**Pick the mode once, before any read:**
+Start where a human starts: **grep the purpose's keywords** (symbol names, routes, store /
+field names) + project structure to find the candidate entry file(s) / symbols, and list the
+entry modules' exported surface. Text search is the right tool here — fast, no pattern to
+author. Cheap and wide — the starting point, not a full-graph sweep.
 
-- `ast-grep --version` succeeds (or `npx --yes @ast-grep/cli --version`) → **ast-grep
-  mode**: use the queries in [ast-grep-usage.md](./ast-grep-usage.md) for the walk.
-- neither resolves → **grep/read mode**: walk with Grep + Glob + targeted Read, and tag the
-  walked edges `(grep)` — candidates until a read confirms them.
+**Warm start** — if you carry the project's conventions (where kinds of unit live, standard
+boundaries, naming), check the conventional location first: a hint that biases order, never a
+prune — the grep still runs and confirms.
 
-Then locate fast: from the purpose's keywords + project structure, find the entry file(s) /
-symbols and list the entry modules' exported surface (`outline`, or export/definition grep).
-Cheap and wide — the starting point, not a full-graph sweep.
+Check once whether the structural tool is available for the walk: `ast-grep --version` (or
+`npx --yes @ast-grep/cli --version`); absent → the walk runs on grep alone (§ 2). ast-grep
+commands: [ast-grep-usage.md](./ast-grep-usage.md).
 
 ## 2. Walk — go-to-definition, on-purpose, one hop at a time
 
-From each entry, follow the definition graph outward like go-to-definition — **only where a
-purpose question is still open.** Per hop, both directions:
+From each located entry, follow the definition graph outward like go-to-definition — **only
+where a purpose question is still open.** Per hop, both directions: what it calls / who calls
+it (the next unit), and the fact touch points it reads or writes (a store / key / field the
+purpose names — the couplings surface here).
 
-- **what it calls / who calls it** → the next hop's unit (`run -p '<sym>($$$)'` = call
-  sites; `outline` / grep = where a symbol is defined).
-- **fact touch points** → every site that reads or writes a store / key / field the purpose
-  names → this is where couplings are found, as you walk, not by a later re-scan.
+Pick the tool by precision — grep and ast-grep are complementary, not interchangeable:
+
+- **grep** finds candidate references fast — enough when the symbol is uncommon or unique.
+- **ast-grep** resolves them structurally when text would be ambiguous: a common identifier
+  buried in string / comment hits, a call to match by shape, or a structural predicate grep
+  can't express. Reach for it *when necessary*, not for plain keyword-finding.
+- ast-grep absent → grep alone; its edges are `(grep)` candidates (§ 3) until a read confirms.
 
 Stop a branch when it's understood, off-purpose (record the name), already walked, or a
 boundary / cap is hit. A branch cut while still on-purpose becomes a **Self-audit pointer**.
