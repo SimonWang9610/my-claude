@@ -5,7 +5,9 @@ description: >
   (contract conformance, silent failures, test honesty, N+1), and quality (rules, scope
   creep, build) — producing severity-classified findings with evidence and a verdict that
   gates block. Use to review a pull request or working diff before merge, to re-verify
-  claimed fixes, or to audit whether the code still matches its spec.
+  claimed fixes, or to audit whether the code still matches its spec. Not for
+  post-implementation conformance checking without a merge verdict (use
+  check-react-implementation). Output: severity findings + a block/pass verdict.
 ---
 
 # review-react-changes

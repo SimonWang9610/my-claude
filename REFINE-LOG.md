@@ -510,3 +510,101 @@ at all? (delegate/inline/fork criteria) · 2. choose model + effort (spawn param
 3. bind skills + slice materials (fills the template's Skills/Materials fields verbatim;
 slicing rule now stated once here, template fields point at it). Delegate section = prompt
 construction only. Description updated to match.
+
+---
+
+## Reference audit: ast-grep skeleton-first build + description formula
+
+Audited sd0x-dev-flow (architecture, ask, code-explore, code-investigate, codex-architect
++ rules/) and agent-skill/ast-grep (ast-grep, outline) for transferable structure.
+
+**Source → decision → reason (one line each):**
+- ast-grep `outline` + structural `run -p` → **ADOPT** as build mode's deterministic
+  skeleton → couplings/call-sites/dependents were judged-by-reading (grep false pos/neg);
+  ast-grep makes them exact + bounds trace depth (user pain: "audit thinks too long/deep").
+- ast-grep skill's own shape (pure instructional, no scripts) → **ADOPT the shape** → recipes
+  live in build.md, not a scripts/ folder — distinct from the reverted P1/2/3 script infra.
+- ast-grep no built-in fallback → **REJECT that gap** → we gate on `command -v ast-grep`
+  (npx fallback) and degrade to grep, tagging the skeleton `(grep)`.
+- sd0x description formula (`… Not for X (use alt). Output: <shape>.`) → **ADOPT** → adds
+  negative routing + output contract so a driver routes without opening the body.
+- sd0x References-table "When to Read" column → **REJECT (defer)** → elegant but low value
+  until a skill has several references; we have one.
+- sd0x inline `Agent({Input/Output/Constraints})` handoff → **REJECT** → our bound-agent
+  4-field prompt + agent-owned return contract is leaner (no per-spawn restatement).
+- sd0x decorative ASCII/mermaid, inline-prompt drift, stub rules → **REJECT (already avoid)**.
+
+**build mode restructured skeleton-first** (references/build.md): three passes —
+① Skeleton (deterministic, wide, cheap: `outline` for the export surface, `run -p '<sym>($$$)'`
+for the caller chain, fact-touch-point queries for couplings) → ② Select the on-purpose
+slice (skeleton = the depth cap; off-purpose = gaps, never read) → ③ Annotate only that
+slice (the old trace rules, now scoped to selected flows). Couplings are found in pass ①,
+not a second scan. Artifact note: skeleton fills the mechanical cells (Units touched, call
+edges, Audited files), annotation fills GIVEN/WHEN/THEN/HOW — judgment authors, search
+verifies. Capability-gated (`command -v ast-grep`, else `npx --yes @ast-grep/cli`), grep
+fallback tagged `(grep)`. SKILL.md build bullet names the skeleton-first flow. code-auditor
+-agent already has Bash + binds the skill, so it inherits this at build time — no agent edit.
+
+**Description formula applied to all 12 skills** — appended `Not for <X> (use <alt>).
+Output: <shape>.` to each; tightened the two verbose trigger-lists (fl-pr-review,
+jira-ac-align) in the same pass. Near-twin routing now explicit in-description:
+check-react-implementation (no verdict) ↔ review-react-changes (gates merge) ↔
+audit-code-flows (builds atlas).
+
+**Follow-up (same session):** three tightenings of the skeleton work —
+- **Language-agnostic** — recipes dropped the hardcoded `--lang tsx`; `--lang <L>` is picked
+  per source. ast-grep-usage.md lists tsx/ts/js/jsx/**dart**/python/go/rust/java/c/cpp/kotlin/
+  swift (the skill is "any language" — TS-only recipes contradicted that).
+- **ast-grep-usage.md extracted** (42 lines) — availability gate + npx fallback, `--lang`
+  table, metavariables, the three skeleton queries, and the inline-rule escape hatch. build.md
+  § 1 shrank to the three passes + a pointer (progressive disclosure — the how-to loads only
+  when a build actually runs).
+- **Flow note slimmed** 8→6 always-on fields: **cut Diagram** (duplicates WHEN→THEN→HOW prose
+  + index's Interaction map) and **cut Audited files** (duplicates index's Units touched + the
+  inline `path:symbol` anchors); **folded Mechanism chain into HOW** (HOW already carries
+  mechanism-per-hop; indirection is one clause there now). Core GIVEN/WHEN/THEN/HOW + Problem +
+  Self-audit + the kind-specific field (Dependents|Preserve) untouched.
+
+**Follow-up (same session):** mode gate moved into the procedure + `-h` as the authority —
+- The `ast-grep` **availability check now opens build.md § 1** (not the usage ref): `ast-grep
+  --version` → **ast-grep mode**; neither that nor npx resolves → **grep/read mode** (same
+  three passes via Grep+Glob+Read, skeleton tagged `(grep)`). The gate decides which mode
+  runs, so it belongs in the procedure; the usage ref only loads once ast-grep mode is chosen.
+- ast-grep-usage.md dropped its Availability section and gained a **`-h` self-help pointer**:
+  `ast-grep -h` / `ast-grep <command> -h` is the truth for flags when a form is missing or a
+  command errors — trusted over the documented forms, which drift across versions.
+
+---
+
+## query+extend merged into self-healing query; build reframed Locate→Walk→Organize
+
+Two user-driven changes to audit-code-flows, applied together.
+
+**Modes 3→2 (build + query); extend folded into query.** A query answers from the atlas
+and, on a **scoped miss**, heals itself: declare a **reveal budget** (default 3
+acquisitions) first, then loop — acquire the nearest fundable gap under build.md's Walk
+boundary, re-check, follow a revealed on-path pointer, repeat until answered or budget spent
+(iteration-budget discipline: the loop is declared, chained reveals allowed, spent → stop).
+Answer from the union and name what was read (`healed via F3 §HOW, F7 §GIVEN`) so the
+source reads + atlas growth are visible. **Broad miss / budget spent** → report gap + build
+suggestion, never re-scan blindly. A bare **pointer** arg = proactive deepen (the old
+extend). Acquisition folds back **best-effort** — persisted to atlas/ when the caller can
+write, kept in the answer only when it can't → this preserves react-checker-agent's
+read-only guarantee (no Write tool) while every writable caller still grows the atlas.
+
+**build reframed to match manual exploration** (references/build.md): skeleton→select→
+annotate became **Locate → Walk → Organize**, mirroring how a dev works — fast-locate the
+entry by keyword, walk the definition graph outward *go-to-definition style* one hop at a
+time (only where a purpose question is still open), organize the walked hops into flows.
+Depth is bounded **during** the walk (jump on-purpose only), so the off-purpose graph is
+never built — a cheaper, more faithful fix for "audit thinks too long/deep" than
+sweep-then-prune. Same engine (ast-grep mode / grep fallback); ast-grep is now the
+walk's go-to-definition tool (outline = where defined, `run -p` = who calls). LSP noted as a
+more precise jump engine where available, not mandated (portability).
+
+**Callers updated** for the merge: code-auditor-agent (3 modes → build + self-healing
+query), react-impl/test-agent gap step, both drivers' prior-artifacts rule, README atlas
+line, implement/plan SKILLs, design ground-truth Audit step — all now "query (heals on a
+miss)", no separate extend call. argument-hint + description de-extended. ast-grep-usage.md
+retitled "structural walk queries" (§§ 1–2). "extends the blast radius" → "widens" to free
+the word.

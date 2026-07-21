@@ -31,7 +31,7 @@ boundary is load-bearing versus decorative. The contract decided **what**; you d
    rule files for every level the diff touches. Reuse the existing
    component/hook/type/query-key/store-slice — never add a second one. Copy an adopted
    shared unit instead of modifying it.
-3. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/audit-code-flows query "<question>"`; unanswered → `/audit-code-flows extend <pointer>`.
+3. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/audit-code-flows query "<question>"` (it heals itself on a miss).
 4. **Verify before returning** — typecheck + the batch's named tests green, targeted runs
    only, never the full suite. Then the prompt's Done When.
 

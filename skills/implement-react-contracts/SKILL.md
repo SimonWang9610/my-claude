@@ -5,7 +5,9 @@ description: >
   for using, building, and optimizing hooks, components, stores, and services — verifying
   its own done-condition and raising DESIGN GAPs instead of silently deviating. Use when
   building or changing React units: implementing a contract, making failing tests pass,
-  fixing a bug, or optimizing a hot path.
+  fixing a bug, or optimizing a hot path. Not for authoring the tests (use
+  test-react-contracts) or checking the result (use check-react-implementation). Output:
+  source that passes the batch's tests.
 ---
 
 # implement-react-contracts
@@ -52,8 +54,8 @@ interaction) — clear code first, never pre-optimize a cold path.
    force. Read the target files and their imports first; **reuse** the existing
    component/hook/type/query-key/store-slice — never add a second one. A fact the
    contract/task genuinely doesn't carry → `/audit-code-flows query "who else writes
-selectedId?"`; unanswered → `/audit-code-flows extend <pointer | reference>`. Never query what the
-   contract states; never broad re-reading; never a bulk audit here.
+selectedId?"` (it heals itself on a miss). Never query what the contract states; never
+   broad re-reading; never a bulk audit here.
 2. **Implement per level** — most changes are mixed-level (a filtered list touches
    component + hook rules at once); apply every rules file whose level the diff touches.
 3. **Verify the done-condition** — the task's gate when one exists; otherwise typecheck +

@@ -5,7 +5,9 @@ description: >
   EXISTING / PARTIAL / NEW against the codebase, with specs extracted only for what's
   genuinely new (never raw Figma JSON). Use whenever a design must become buildable
   work: a Figma URL to break down, "what components does this screen need", or a spec
-  carrying design links.
+  carrying design links. Not for writing requirements (use build-requirements) or
+  designing contracts (use design-react-contracts). Output: a component map
+  (EXISTING / PARTIAL / NEW) with specs only for what's new.
 ---
 
 # decompose-figma

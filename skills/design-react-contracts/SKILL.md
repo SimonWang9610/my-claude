@@ -5,7 +5,9 @@ description: >
   design — plus the architecture wiring them, as design.md + grouped contract files an
   implementer can build against without guessing. Use after ACs exist and before any code
   is written, to decide unit boundaries, where a fact lives, or how new work attaches to
-  existing units; a fast path yields a contract delta for bugfix-scale changes.
+  existing units; a fast path yields a contract delta for bugfix-scale changes. Not for
+  understanding existing code (use audit-code-flows query) or ordering the work (use
+  plan-react-contracts). Output: design.md + grouped contract files.
 ---
 
 # design-react-contracts

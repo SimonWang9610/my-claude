@@ -5,7 +5,9 @@ description: >
   and contracts, what will it cost the next change, and what does it cost at runtime —
   returning severity-classified findings with evidence, never fixes. Use after
   implementation to verify work against its contracts, or on demand to audit a diff for
-  conformance, maintainability, or performance and memory problems.
+  conformance, maintainability, or performance and memory problems. Not for a pre-merge PR
+  review that gates the merge (use review-react-changes) or building the atlas (use
+  audit-code-flows). Output: severity-classified findings with evidence, never fixes.
 ---
 
 # check-react-implementation

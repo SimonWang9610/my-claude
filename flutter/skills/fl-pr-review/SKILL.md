@@ -1,14 +1,13 @@
 ---
 name: fl-pr-review
 description: >
-  Reviews a Flutter/Dart PR or local diff against the Flutter architecture rules
-  (P1–P8, verifiable-unit gate), Riverpod code-gen idioms (@riverpod, Notifier,
-  AsyncNotifier), Dart 3 patterns (sealed classes, records, exhaustive switch), and
-  flutter_test + Mocktail test-quality rules. Produces a severity-classified (Critical /
-  Major / Minor), rule-cited report. GitHub posting opt-in, confirm-first; human makes the
-  merge decision. Use when: "review this Flutter PR", "review the diff/branch", "check this
-  PR against the rules", "audit this branch against the flutter rules", "check the diff for
-  architecture violations", "review my Flutter changes".
+  Reviews a Flutter/Dart PR or local diff against the Flutter architecture rules (P1–P8),
+  Riverpod code-gen idioms (@riverpod, Notifier, AsyncNotifier), Dart 3 patterns (sealed
+  classes, records, exhaustive switch), and flutter_test + Mocktail test-quality rules —
+  producing a severity-classified (Critical / Major / Minor), rule-cited report; GitHub
+  posting is opt-in and confirm-first, and the human makes the merge call. Use to review a
+  Flutter PR, branch, or diff against the rules. Not for React review (use
+  review-react-changes). Output: a rule-cited severity report.
 ---
 
 # fl-pr-review

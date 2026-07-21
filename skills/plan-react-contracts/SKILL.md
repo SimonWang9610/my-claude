@@ -5,7 +5,9 @@ description: >
   waves, each pre-split into a test batch and an impl batch so agent assignments are
   decided while the whole plan is in view. Use after a design is approved and before
   implementation starts, or whenever contracts must become an ordered, parallelizable
-  work list with per-task gates.
+  work list with per-task gates. Not for designing the contracts (use
+  design-react-contracts) or implementing them (use implement-react-contracts). Output:
+  tasks.md (2–4 waves, each a test batch + an impl batch).
 ---
 
 # plan-react-contracts
@@ -19,7 +21,7 @@ commands), never sentences restating contracts.
 `design.md` (Units table, Test strategy) + `contracts/`, approved. Any completeness
 failure → back to the design skill; never plan over a broken design. A fact the design
 artifacts genuinely don't carry (an existing unit's importers, a file's owner) →
-`/audit-code-flows query`, then `extend` on a miss — never a bulk audit, never ad-hoc
+`/audit-code-flows query` (it heals itself on a miss) — never a bulk audit, never ad-hoc
 scanning.
 
 ## Procedure

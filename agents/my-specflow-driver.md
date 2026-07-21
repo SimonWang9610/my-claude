@@ -99,7 +99,7 @@ radius = the wave diff + the failing check) — no blind debug loops.
 - **Prior artifacts are authoritative** — every phase (and every subagent prompt's
   Materials) grounds its work in the previous phases' artifacts before any fresh
   discovery. Re-deriving what an artifact already answers is forbidden; need more depth →
-  ask `code-auditor-agent` (it queries the atlas and extends only when it must), or
+  use `/audit-code-flows query "<question>"` (it queries the atlas, which heals itself on a miss), or
   follow the artifact's anchors. An artifact that looks wrong is raised, never silently
   diverged from.
 - **This spec only** — out-of-scope findings are noted for the user, never done.

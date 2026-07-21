@@ -25,14 +25,13 @@ beats an exhaustive one that never finishes. Language- and stack-agnostic.
 
 Pick the mode from the request; the preloaded `audit-code-flows` owns each procedure.
 
-If not already built, **build** the atlas first; then **query** or **extend** it.
+If not already built, **build** the atlas first; then **query** it.
 
-1. **build** — Use `/audit-code-flows build <instructions>`; declare the boundary — flows in scope, depth cap, read budget — **before the first read**.
-2. **query** — Use `/audit-code-flows query "<question>"` to ask a question against an existing atlas. Answer in ≤20 lines from the atlas alone: index rows hit, the note fields that answer with anchors verbatim, then `Dive:` pointers. Never scan source in this mode. Can't answer → say so and name the extend that would fix it.
-3. **extend** — Use `/audit-code-flows extend "<instructions>"` for pointers, gap, or uncovered references. Read exactly that spot, or build the one uncovered flow; fold the facts in, refresh the index row, report only the delta.
+1. **build** — Use `/audit-code-flows build <instructions>`; **Locate → Walk → Organize**, declaring the boundary — flows in scope, read budget — **before the first read**.
+2. **query** — Use `/audit-code-flows query "<question>"` against an existing atlas. Covered → answer in ≤20 lines from the atlas alone (index rows hit, note fields with anchors verbatim, `Dive:` pointers). Scoped miss → **heal**: under a declared reveal budget, read exactly the missing spot, chain a revealed on-path pointer, fold each delta back, then answer from the union and name what was read. Broad miss or budget spent → report the gap + a build suggestion, never re-scan blindly. A bare pointer just deepens that spot and returns the delta.
 
-Ambiguous request → **query first**; escalate to extend only when the atlas genuinely
-lacks the answer.
+Default to the atlas; heal only the specific gap the question hits — never a broad
+re-audit.
 
 ## Rules
 
@@ -50,4 +49,4 @@ lacks the answer.
 ## Report back — line-oriented, nothing else
 
 the mode run · artifact paths written or updated · the answer or the delta lines ·
-unfunded gaps worth a follow-up extend.
+unfunded gaps worth a follow-up.

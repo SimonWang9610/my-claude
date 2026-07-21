@@ -4,10 +4,10 @@ description: >
   Performs a three-way reconcile of a JIRA ticket's acceptance criteria against the spec
   (requirements.md) and the shipped implementation (test assertions + branch diff), then
   updates the ticket description with accurate AC and posts a single alignment-notes comment.
-  Trigger when a ticket's AC is stale after mid-development requirement changes: e.g.
-  "align the ticket with the implementation", "the JIRA ticket is out of date",
-  "update the ticket's acceptance criteria", "reconcile AC with what we built",
-  "the ticket description doesn't match the code", "sync the ticket to reality".
+  Use when a ticket's AC is stale after mid-development requirement changes — "align the
+  ticket with what we built", "the JIRA ticket is out of date", "sync the ticket to
+  reality". Not for writing the initial spec (use build-requirements). Output: updated
+  ticket AC + one alignment comment.
 ---
 
 # jira-ac-align

@@ -5,7 +5,8 @@ description: >
   that inherits this session's context, or a subagent (bound or ad-hoc) with its own —
   and fixes what the spawn must carry back. Use before spawning anything, when work could
   run in parallel, when exploration would flood this context, or when a reviewer must not
-  see the reasoning that produced the work.
+  see the reasoning that produced the work. Output: an execution choice (inline / fork /
+  subagent) and the handoff the spawn carries.
 ---
 
 # smart-delegation

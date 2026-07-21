@@ -5,7 +5,9 @@ description: >
   each unit through its test seam, asserting the states its contract exposes, and naming
   every test for the AC it verifies. Use when writing tests for new or changed React
   code, hardening weak coverage, or authoring journey tests from an approved plan; scopes:
-  unit, e2e, or both.
+  unit, e2e, or both. Not for implementing the code under test (use
+  implement-react-contracts) or checking coverage after (use check-react-implementation).
+  Output: test files, each named for the AC it proves.
 argument-hint: "[unit | e2e]"
 ---
 

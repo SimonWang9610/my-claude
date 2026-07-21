@@ -5,7 +5,9 @@ description: >
   assumptions from first principles — then writes it as requirements.md: user stories
   with stable AC/NFR ids phrased as observable Given/When/Then outcomes, ambiguity burned
   down in one batched question round. Use when a feature request, idea, or vague scope
-  must become a spec someone can build and test against.
+  must become a spec someone can build and test against. Not for designing the solution
+  (use design-react-contracts) or decomposing a Figma screen (use decompose-figma).
+  Output: requirements.md.
 ---
 
 # build-requirements

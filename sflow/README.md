@@ -26,7 +26,7 @@ agents/                  ── ORCHESTRATORS: two flow drivers — my-specflow-
          │                    oac-specflow-driver; each embeds its Setup (run by its
          │                    initialPrompt), drives the phases, enforces gates, delegates.
          │                    Plus four BOUND WORKERS both drivers spawn — code-auditor-agent
-         │                    (owns the atlas: build/query/extend), react-test-agent, react-impl-agent
+         │                    (owns the atlas: build/query), react-test-agent, react-impl-agent
          │                    (wave batches), react-checker-agent (read-only fresh-eyes conformance
          │                    check): expert roles whose frontmatter preloads the profile's skills
          │                    (`skills:` — the language specifics) + audit-code-flows, and pins

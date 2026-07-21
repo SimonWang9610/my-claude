@@ -36,19 +36,20 @@ it. Two source kinds, used differently:
   wired, never tagged.
 
 Getting the facts — `/audit-code-flows`, never ad-hoc scanning; greenfield (no sources)
-→ skip. Design **queries and extends only** — bulk auditing is the caller's preflight:
+→ skip. Design **queries only** — the query heals itself on a miss; bulk auditing is the
+caller's preflight:
 
-1. `/audit-code-flows query "which flows touch DeviceTable and the selection fact?"`
-2. Unanswered → `/audit-code-flows extend <pointer | uncovered reference> — purpose:
-   <the decision needing it> — kind: existing|legacy` (extend acquires what the atlas
-   lacks, one flow at a time); never re-audit a flow the atlas already answers.
+- `/audit-code-flows query "which flows touch DeviceTable and the selection fact? —
+  purpose: <the decision needing it>"` — covered → answered from the atlas; on a miss it
+  reads exactly the missing spot (one flow at a time) and folds it back, never re-auditing
+  a flow the atlas already answers.
 
 ## Reconcile (step 3 — after the audit)
 
 Refine the flows with the audit notes, in order:
 
 1. **WHERE is the new** — mark each flow segment NEW vs existing. The atlas index's
-   Couples-with column / interaction map extends the blast radius: a flow coupled to a
+   Couples-with column / interaction map widens the blast radius: a flow coupled to a
    touched flow (shared fact, trigger, invalidation) is on the radius even when no
    requirement names it.
 2. **WHICH legacy flows survive** — name the surviving segments and the exact
