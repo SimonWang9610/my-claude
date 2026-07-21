@@ -11,7 +11,7 @@ form here — versions drift.
 
 ## Language — `--lang <L>`
 
-Pick per source: `tsx` (React/JSX — MUST, `ts` won't parse JSX) · `ts` · `js` · `jsx` ·
+Pick per source: `tsx` (React/JSX — MUST, `ts` won't parse JSX) · `ts` · `js` · `jsx` · `tsx`
 `dart` · `python` · `go` · `rust` · `java` · `c` · `cpp` · `kotlin` · `swift`. Any grammar
 ast-grep ships works. Confirm a node's `kind` with `--debug-query=cst` before relying on it
 (kind names come from the grammar and differ per language).

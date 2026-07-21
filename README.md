@@ -1,107 +1,140 @@
 # my-claude — a spec-driven-development bundle for Claude Code
 
 A reusable [Claude Code](https://claude.com/claude-code) bundle that drives a structured,
-spec-driven workflow — `preflight → requirements → clarify → design → tasks → implement → qa` —
+spec-driven workflow — `preflight → requirements → design → tasks → implement → validate → qa` —
 for **React/TypeScript** and **Flutter/Dart** projects.
 
-## Moving parts
+It ships three layers you install into a project's (or your global) `.claude/`:
 
-- **Workflows** — the phase machine comes from your project's vendored specflow template
-  (`specflow/src/workflows/<variant>.yaml`, override `.specflow/workflows/`), not this bundle.
-  `/sf-react-workflow` translates it into the spec's `workflow.yaml`, binding the OAC React skills
-  to each phase (`id / command / inputs / outputs / skills / gate / exitWhen`; ids match
-  `.meta.yaml`). Specflow-managed projects use `/spec-*` instead.
-- **Commands** — one generic, stack-neutral `/sf-*` stage set (process + gates only; names no
-  skill or stack).
-- **Skills** — the stack-specific know-how the stages bind (the OAC React set, `fl-*` Flutter),
-  with prevention and detection folded into each skill (rule cards, gates, checks)
-  and the workflow generators (`sf-react-workflow`, `oac-workflow`).
-- **Agents** — two **drivers**: `sflow-driver` (`/sf-*`) and `oac-specflow-driver`
-  (`/spec-*`). A driver is a pure orchestrator — see [How the driver works](#how-the-driver-works).
+| Layer | What it is | Lives in |
+|-------|-----------|----------|
+| **Skills** | the stack know-how — *how to do a phase well* | `skills/`, `flutter/` |
+| **Agents** | who runs the work — orchestrators + workers | `agents/` |
+| **Commands** | the stack-neutral `/sf-*` process + gates | `sflow/commands/` |
+| **Scripts** | per-entry symlink installers | `*.sh` (repo root) |
 
-Vendor this repo into your project (e.g. a git submodule) and link it into the project's
-`.claude/`, or into your global `~/.claude/`. Links are relative, so they resolve wherever the
-repo lives.
+Skills carry the judgment, agents carry the execution, commands carry the process. You drive it
+by launching a **driver agent**; everything else is bound or spawned from there.
 
-## How the driver works
+---
 
-The driver holds no process knowledge of its own — it reads the spec's `workflow.yaml` and runs
-the phases:
+## Skills — the know-how
 
-1. **Setup** — worktree check, scaffold the spec (`/sf-init` or `/spec-init`), then **wait for
-   your instructions and context**.
-2. **Generate** — turn the template into the spec's `workflow.yaml` via `/sf-react-workflow`
-   (or `/spec-react-workflow`).
-3. **Drive Loop** (per phase) — read its `command / skills / gate / exitWhen`; run it, delegating
-   heavy work to subagents; verify the `exitWhen` holds; record the result in `.meta.yaml` and
-   advance to the next phase.
-4. **Implement** — each unit runs as a **TestAgent** (writes the failing AC test) → **WorkAgent**
-   (implements it to green, never touching the test), across the tasks' parallel waves; a
-   **ReviewAgent** then reviews the whole branch and loops fixes back.
-5. **Human gates** — at each `gate: human` (e.g. the post-implement code check, QA sign-off) it
-   presents the artifacts and waits for your approval; it never advances past an open gate.
+A skill is a self-contained procedure Claude loads on demand. Invoke one directly with
+`/<skill-name>`, or let its description auto-trigger it; a driver binds the right skill to each
+phase, and a worker agent preloads its skills at startup (`skills:` frontmatter). Each skill
+states its own inputs, procedure, output shape, and rules.
 
-## Layout
+**The React contract flow** (spec → shipped code), one artifact per phase:
 
+- `build-requirements` → `requirements.md` (user stories + observable Given/When/Then ACs)
+- `design-react-contracts` → `design.md` + `contracts/` (per-unit API, data flow, state)
+- `plan-react-contracts` → `tasks.md` (dependency-ordered waves, test + impl batches)
+- `test-react-contracts` → tests named for the AC they prove (Vitest · RTL · MSW · Playwright)
+- `implement-react-contracts` → source that makes the batch's failing tests pass
+- `check-react-implementation` → severity-classified conformance findings (no verdict)
+- `review-react-changes` → PR/branch review + a block/pass merge verdict
+
+**Cross-cutting** (any codebase, any phase):
+
+- `audit-code-flows` — reverse-engineers existing code into a queryable **atlas**, then answers
+  questions from it and heals itself on a miss (`build` / `query`). The go-to before designing
+  against or changing code you didn't write.
+- `decompose-figma` — a Figma screen → a component map (EXISTING / PARTIAL / NEW)
+- `smart-delegation` — routes a piece of work to the cheapest execution (inline / fork / subagent)
+- `jira-ac-align` — reconciles a JIRA ticket's AC against the spec + shipped code
+
+**Flutter/Dart:** `fl-pr-review` — reviews a Flutter PR against the architecture/Riverpod/Dart 3
+rules. Flutter rules live in `flutter/rules/` (dormant — not linked by default).
+
+---
+
+## Agents — who runs it
+
+An agent is a scoped Claude with its own tools, model, and bound skills. There are two kinds.
+
+**Drivers — you launch these.** A pure orchestrator for one spec: it decides, verifies
+mechanically, and records; it holds no stack know-how (that's in the skills) and never does heavy
+work itself (that goes to workers). It reads the spec's `.meta.yaml` phase ledger and runs each
+phase — its `/sf-<phase>` command first, then the phase playbook — pausing at human gates.
+
+- `my-specflow-driver` — drives this bundle's `/sf-*` commands.
+- `oac-specflow-driver` — drives an external **specflow** project's `/spec-*` commands (the
+  bundle interoperates with, but does not ship, that command set).
+
+**Workers — drivers spawn these** (you can also invoke one directly). Each is an expert with a
+narrow tool fence and its skills preloaded:
+
+- `code-auditor-agent` — owns `audit-code-flows` end-to-end (build / query the atlas). Any
+  language; reads code, never modifies it.
+- `react-test-agent` — authors the failing tests for a batch. Writes test files only.
+- `react-impl-agent` — implements units to green. Writes source only, never touches a test.
+- `react-checker-agent` — read-only fresh-eyes conformance check on a diff (Read/Grep/Glob/Bash,
+  no Write/Edit — so it reports findings, never fixes).
+
+**How a feature runs:** you launch a driver → Setup (worktree check, `/sf-init` scaffolds the spec
++ `.meta.yaml`) → it drives the phases, delegating heavy work to workers via `smart-delegation`.
+Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
+(green, test paths byte-unchanged) — then an optional `react-checker-agent` pass before the human
+gate. It never advances past an open gate.
+
+```sh
+my-specflow-driver "add a logout button"     # if aliases were installed
+claude --agent my-specflow-driver --worktree "add a logout button"   # raw
 ```
-my-claude/
-├── skills/      the React skill set (real dirs) + shared skills + the two workflow generators
-├── agents/      the driver agents (real files) — sflow-driver, oac-specflow-driver
-├── rules/       shared rules (real files)
-├── sflow/       the /sf-* stage commands (sflow/commands/) + the full workflow README
-├── flutter/     Flutter profile — skills/ (fl-*), rules/ (dormant, not linked by default)
-├── link.sh / unlink.sh           link/remove skills+agents+rules into a .claude/
-└── link-commands.sh / unlink-commands.sh   link/remove the /sf-* commands (separate)
-```
 
-## Linking
+---
 
-The bundle is flat — `skills/ agents/ rules/` are real directories and the `/sf-*` command files
-live in `sflow/commands/`. Two script pairs per-entry relative-symlink them into a destination
-`.claude/`, kept separate so the commands never get installed by accident:
+## Scripts — installing the bundle
 
-| Script | Source → Destination |
-|--------|----------------------|
+The bundle is flat: `skills/ agents/ rules/` are real directories and the `/sf-*` command files
+live in `sflow/commands/`. Two script pairs relative-symlink them, per entry, into a destination
+`.claude/` — kept separate so the commands never install by accident:
+
+| Script pair | Source → Destination |
+|-------------|----------------------|
 | `link.sh` / `unlink.sh` | `skills/* agents/* rules/*` → `<dest>/.claude/{skills,agents,rules}/` |
 | `link-commands.sh` / `unlink-commands.sh` | `sflow/commands/*` → `<dest>/.claude/commands/` |
 
-The `/sf-*` commands live in their **own** script pair because, installed globally, they shadow a
-project's own `/spec-*` set — so link them only where an sflow workflow is actually used (usually a
-specific project, not `~/.claude`). Both pairs use relative links; an existing correct link is
-skipped; a foreign real file (or a link pointing outside this repo) is never clobbered; re-running
-is safe. The `unlink*` scripts remove only symlinks that resolve back into this repo.
-
-## Install
+The `/sf-*` commands get their **own** pair because, installed globally, they shadow a project's
+own `/spec-*` set — so link them only where an sflow workflow is actually used (a specific
+project, rarely `~/.claude`). Links are relative (they resolve wherever the repo lives); an
+existing correct link is skipped; a foreign real file or an outside-pointing link is never
+clobbered; re-running is safe. `unlink*` removes only symlinks that resolve back into this repo.
 
 ```sh
-./link.sh --global                 # link skills+agents+rules into ~/.claude
-./link.sh --project ../myapp       # link into ../myapp/.claude
-./link.sh                          # interactive
-./link-commands.sh --project ../myapp   # add the /sf-* commands to that project only
-./unlink.sh --project ../myapp     # remove skills+agents+rules from ../myapp/.claude
-./unlink-commands.sh --project ../myapp # remove the /sf-* commands
-./unlink.sh --global --aliases     # remove links + the managed rc block
+./link.sh --global                        # skills+agents+rules → ~/.claude
+./link.sh --project ../myapp              # → ../myapp/.claude
+./link.sh                                 # interactive (pick global/project)
+./link-commands.sh --project ../myapp     # add the /sf-* commands to that project only
+./unlink.sh --project ../myapp            # remove skills+agents+rules
+./unlink-commands.sh --project ../myapp   # remove the /sf-* commands
+./unlink.sh --global --aliases            # remove links + the managed rc block
 ```
 
-`link.sh` can also write a **shell function per driver** into your rc file (`--aliases` /
-`--no-aliases` to skip the prompt), so you can launch one directly — otherwise invoke it raw:
+`link.sh --aliases` also writes a **shell function per driver** into your rc file, so you can
+launch a driver by name (`my-specflow-driver "..."`); `--no-aliases` skips the prompt.
 
-```sh
-sflow-driver "add a logout button"     # = claude --agent sflow-driver "..." --worktree
-claude --agent oac-specflow-driver --worktree my-feature
+> **Windows:** in-repo symlinks need `core.symlinks=true` (enable Developer Mode, then
+> `git checkout -- .`). **Submodules** are synced by the driver's Setup on session start.
+
+---
+
+## Editing & layout
+
+Edit `skills/ agents/ rules/` and `sflow/commands/` directly — links are per-entry, so a new
+skill/agent/rule appears after one `./link.sh` (a new command after one `./link-commands.sh`) at
+each destination; removals need the matching `./unlink*.sh`.
+
+```
+my-claude/
+├── skills/    React contract flow + cross-cutting skills (real dirs)
+├── agents/    2 drivers + 4 workers (real files)
+├── rules/     shared rules — preferences.md
+├── sflow/     /sf-* stage commands (sflow/commands/) + the full workflow README
+├── flutter/   Flutter profile — rules/ (dormant, not linked by default)
+└── *.sh       link/unlink installers (bundle + commands, separate pairs)
 ```
 
-> **Submodules** are synced by the driver's Setup on session start — no hook needed. **Windows:**
-> in-repo symlinks need `core.symlinks=true` (enable Developer Mode, then `git checkout -- .`).
-
-## Editing
-
-Edit `skills/ agents/ rules/` and `sflow/commands/` directly — the links are per-entry, so a new
-skill/agent/rule shows up after one `./link.sh` (a new command after one `./link-commands.sh`) at
-each destination (removals need the matching `./unlink*.sh`).
-
-## The workflow
-
-See **[sflow/README.md](sflow/README.md)** for the full lifecycle, the `workflow.yaml` schema, the
-agent-as-binding-layer model, the human gate after `/sf-implement`, and picking a driver. sflow
-interoperates with the project-side **specflow** toolchain.
+For the full phase lifecycle, the `.meta.yaml` ledger, human gates, and picking a driver, see
+**[sflow/README.md](sflow/README.md)**.
