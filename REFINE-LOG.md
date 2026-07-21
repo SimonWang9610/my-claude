@@ -406,6 +406,17 @@ updated). sf-tasks step 3 + both drivers' re-chunk rule aligned; preferences "Cu
 at planning time" gains "fewer, fuller batches beat many small spawns". Parallelism loss
 is wall-clock only — intra-wave concurrency was already gone with one pair per wave.
 
+Follow-up: **react-checker-agent built** — the one role where a subagent is structurally
+required, not just cheaper: the check skill's fresh-eyes premise maps to exactly one route
+(a subagent that can't inherit the author's reasoning; a fork would defeat it), and
+**read-only tools** (`Read, Grep, Glob, Bash` — no Write/Edit) make "findings never fixes"
+unbreakable. Binds `check-react-implementation` + `audit-code-flows` (queries the atlas to
+verify conformance, never re-scans), `model: sonnet`, `effort: high`; expert-reviewer role,
+three-axis procedure ending in per-finding evidence verification, severity-ranked
+line-oriented return. Both drivers' implement check-gate now spawns it instead of running
+`/check-react-implementation` ad-hoc; bound-agents hard rule + README (three→four workers)
+updated. review-react-changes left a standalone skill (user-triggered, verdict-producing).
+
 Follow-up (fork docs read — a fork shares the parent's prompt cache because system
 prompt + tools are identical, so it is CHEAPER than a fresh subagent when the work needs
 existing context): **smart-delegation rewritten** — Decide step 1 is now a three-row

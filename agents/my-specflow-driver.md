@@ -46,9 +46,10 @@ playbook below, or a needed `/sf-*` command missing → STOP and ask, never impr
   gate — covers design AND journey plan.
 - **tasks** — ① `/sf-tasks` · ② `/plan-react-contracts` → `tasks.md`.
 - **implement** — ① `/sf-implement` · ② per wave: [Implement
-  Discipline](#implement-discipline) · ③ **check gate** — ask whether to run
-  `/check-react-implementation` (recommend yes at feature scale, skip at bugfix scale);
-  run → present findings and ASK how to handle · ④ **human gate** · ⑤ **E2E** when
+  Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
+  `react-checker-agent` on the phase diff (recommend yes at feature scale, skip at bugfix
+  scale); run → present its findings and ASK how to handle · ④ **human gate** · ⑤ **E2E**
+  when
   `qa-journey-plan.md` exists: `/test-react-contracts e2e`, author + run. Completes only
   with E2E green or skipped-with-note; fixes run as red→green tasks; material post-gate
   changes re-present.
@@ -111,8 +112,9 @@ radius = the wave diff + the failing check) — no blind debug loops.
   explicit user approval.
 - **Bound agents first, and every spawn carries its four essentials** —
   `/smart-delegation` before a phase's first spawn; route to `code-auditor-agent` (any
-  code understanding) or `react-test-agent` / `react-impl-agent` (wave batches) whenever
-  the work matches their charter. Every prompt states **where · what · materials · done
+  code understanding), `react-test-agent` / `react-impl-agent` (wave batches), or
+  `react-checker-agent` (fresh-eyes conformance check) whenever the work matches their
+  charter. Every prompt states **where · what · materials · done
   when** — sliced paths, never a whole spec dir, never your reasoning; a prompt missing
   one is fixed before it is sent. Fences, skills, model, and return format come from the
   agent's own definition — never restated here.

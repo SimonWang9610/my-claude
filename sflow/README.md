@@ -25,11 +25,12 @@ skills/spec-react-workflow        translate a template into the spec's generated
 agents/                  ── ORCHESTRATORS: two flow drivers — my-specflow-driver,
          │                    oac-specflow-driver; each embeds its Setup (run by its
          │                    initialPrompt), drives the phases, enforces gates, delegates.
-         │                    Plus three BOUND WORKERS both drivers spawn — code-auditor-agent
-         │                    (owns the atlas: build/query/extend), react-test-agent, react-impl-agent:
-         │                    stack-neutral roles whose frontmatter preloads the profile's
-         │                    skills (`skills:` — the language specifics) + audit-code-flows,
-         │                    and pins model/effort/tools; bodies carry fences + return
+         │                    Plus four BOUND WORKERS both drivers spawn — code-auditor-agent
+         │                    (owns the atlas: build/query/extend), react-test-agent, react-impl-agent
+         │                    (wave batches), react-checker-agent (read-only fresh-eyes conformance
+         │                    check): expert roles whose frontmatter preloads the profile's skills
+         │                    (`skills:` — the language specifics) + audit-code-flows, and pins
+         │                    model/effort/tools; bodies carry role + procedure + fences + return
          │                    contract only, never skill content
 profiles/skills/         ── IMPLEMENTATION: self-contained problem-solvers with references/
 profiles/rules/          ── ALWAYS-ON: short, path-gated topic files (no code listings)
