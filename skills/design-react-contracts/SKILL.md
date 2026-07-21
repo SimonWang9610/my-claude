@@ -56,10 +56,9 @@ Read the relevant file before deciding; cite it in design notes:
 Steps 1–3 → consultant [references/ground-truth.md](./references/ground-truth.md); Step 4–5 → consultant [references/design.md](./references/design.md).
 
 1. **Ground truth** — user & data flows from requirements/ACs alone; scope + blast radius.
-2. **Reconcile** — refine flows against the notes; tag units REUSE/MODIFY/REPLACE; name each attachment point's wiring.
-3. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/.
-4. **Self-check** — internal, ONE pass; findings → one re-design of the affected units.
-5. **Resolve or finalize** — open items → pause with what was tried, wait for steering, resume; else hand back.
+2. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/.
+3. **Self-check** — internal, ONE pass; findings → one re-design of the affected units.
+4. **Resolve or finalize** — open items → pause with what was tried, wait for steering, resume; else hand back.
 
 **Refactor proposals:** touched code fighting the requirements → name root friction,
 restricted scope, payoff, cost delta; present at the gate beside the minimal design — the
