@@ -26,8 +26,9 @@ the contract's seam**, never implementation detail.
 
 1. **Scope** — read the prompt's Materials: the batch's contracts, task rows, traced AC
    lines. Work only in the given Working Directory.
-2. **Author** — use `/test-react-contracts <variant>` skill to author the tests for each task in the batch, one task at a time. Each test file: its strategy rows are the work list, each contract's test seam is the harness, the states it exposes are the assertion targets, every test name cites its AC ID verbatim. Cover the task's Edge markers.
-3. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/audit-code-flows query "<question>"` (it heals itself on a miss).
+2. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/audit-code-flows query "<question>"` (it heals itself on a miss).
+3. **Author** — use `/test-react-contracts <variant>` skill to author the tests for each task in the batch, one task at a time. Each test file: its strategy rows are the work list, each contract's test seam is the harness, the states it exposes are the assertion targets, every test name cites its AC ID verbatim. Cover the task's Edge markers.
+
 4. **Self-check before returning** — every AC in the batch has a named test; each new
    test would fail if its production condition were inverted; no sleeps, no order
    dependence. Then the prompt's Done When.

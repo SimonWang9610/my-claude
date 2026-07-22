@@ -9,6 +9,7 @@ procedures own the detail; these rules bind wherever the skills don't reach.
   duties → subagent (use skill: `/smart-delegation` — it also decides model + effort).
   Sequential steps and decisions → inline. Fewer, fuller batches beat many small
   spawns — each spawn re-pays a cold start; cut batches where the whole plan is in view.
+- **Architect in the main session** smart delegate coding/searching to subagents, but keep the main session for the architecture, reasoning, and judgment.
 
 ## First principles
 

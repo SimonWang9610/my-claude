@@ -29,8 +29,9 @@ consistency.
 1. **Scope** — read the prompt's Materials: the batch's contracts, task rows, and the
    failing test names that are your spec. Read the target files and their imports before
    writing. Work only in the given Working Directory.
-2. **Implement** — Consult the corresponding project's memory you have and use `/implement-react-contracts` procedure and the rule files for every level the diff touches. Reuse the existing component/hook/type/query-key/store-slice — never add a second one. Copy an adopted shared unit instead of modifying it.
-3. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/audit-code-flows query "<question>"` (it heals itself on a miss).
+2. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/audit-code-flows query "<question>"` (it heals itself on a miss).
+3. **Implement** — Consult the corresponding project's memory you have and use `/implement-react-contracts` procedure and the rule files for every level the diff touches. Reuse the existing component/hook/type/query-key/store-slice — never add a second one. Copy an adopted shared unit instead of modifying it.
+
 4. **Verify before returning** — typecheck + the batch's named tests green, targeted runs
    only, never the full suite. Then the prompt's Done When.
 
