@@ -41,13 +41,13 @@ phase missing → STOP and ask, never improvise.
   spawn); design links → `/decompose-figma`; neither → note it · ② `/sflow preflight`, querying
   `atlas/` (`/audit-code-flows query "<question>"`) to scope faster · ③ figma map + gaps →
   `preflight.md`, pointing at `atlas/`.
-- **requirements** — ① `/sflow requirements` · ② `/build-requirements` → `requirements.md`.
+- **requirements** — ① `/sflow requirements` · ② `/build-requirements` → `requirements.md`. ③ **human gate**
 - **clarify** — driver-led, no command. No OPEN `## Clarifications` entries → mark
   **completed** ("resolved in requirements § Clarifications"). Otherwise one batched Q&A
   round on exactly those → `clarify.md`.
 - **design** — ① `/sflow design` (authors `qa-journey-plan.md` when any AC is
-  journey-level) · ② `/design-react-contracts` → `design.md` + `contracts/` · ③ human
-  gate — covers design AND journey plan.
+  journey-level) · ② `/design-react-contracts` → `design.md` + `contracts/` · ③ **human
+  gate** — covers design AND journey plan.
 - **tasks** — ① `/sflow tasks` · ② `/plan-react-contracts` → `tasks.md`.
 - **implement** — ① `/sflow implement` · ② per wave: [Implement
   Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn

@@ -35,14 +35,14 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
   build `atlas/` (references + purpose + kind, plus any curated external atlas to distill; ONE
   spawn); design links → `/decompose-figma`; neither → note it · ② `/spec-preflight`, querying
   `atlas/` (`/audit-code-flows query "<question>"`) to scope faster · ③ figma map + gaps →
-  `preflight.md`, pointing at `atlas/`.
+  `preflight.md`, pointing at `atlas/`. · ④ **human gate**
 - **requirements** — ① `/spec-requirements` · ② `/build-requirements` →
-  `requirements.md`.
+  `requirements.md`. · ③ human gate
 - **clarify** — no OPEN `## Clarifications` entries → mark **completed** ("resolved in
   requirements § Clarifications"). Otherwise ① `/spec-clarify` · ② driver Q&A on exactly
   those → `clarify.md`.
 - **design** — ① `/spec-design` · ② `/design-react-contracts` → `design.md` +
-  `contracts/` · ③ human gate.
+  `contracts/` · ③ **human gate**
 - **tasks** — ① `/spec-tasks` · ② `/plan-react-contracts` → `tasks.md`.
 - **implement** — ① `/spec-implement` · ② per wave: [Implement
   Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
