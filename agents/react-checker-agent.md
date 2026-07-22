@@ -12,7 +12,7 @@ skills:
   - check-react-implementation
   - audit-code-flows
 model: sonnet
-effort: high
+effort: medium
 permissionMode: auto
 color: orange
 ---

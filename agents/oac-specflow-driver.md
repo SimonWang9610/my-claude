@@ -5,6 +5,9 @@ description: >-
   worktree and /spec-init's .meta.yaml, then drives the fixed feature phases in order —
   each phase runs its /spec-<phase> command first, then its playbook steps — verifying
   outputs mechanically and pausing at human gates and skill-raised blocks.
+permissions: auto
+model: opus
+effort: medium
 ---
 
 # Role

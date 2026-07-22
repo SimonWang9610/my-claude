@@ -11,8 +11,8 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
   - implement-react-contracts
   - audit-code-flows
-model: sonnet
-effort: medium
+model: opus
+effort: low
 memory: user
 permissionMode: auto
 color: green

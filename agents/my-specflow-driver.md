@@ -5,6 +5,9 @@ description: >-
   verifies the worktree and /sflow init's .meta.yaml, then drives the spec's phases in order —
   each phase runs its /sflow <phase> step first, then its playbook steps — verifying
   outputs mechanically and pausing at human gates and skill-raised blocks.
+permissions: auto
+model: opus
+effort: medium
 ---
 
 # Role

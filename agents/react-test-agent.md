@@ -10,8 +10,8 @@ tools: Read, Write, Edit, Grep, Glob
 skills:
   - test-react-contracts
   - audit-code-flows
-model: sonnet
-effort: medium
+model: opus
+effort: low
 permissionMode: auto
 color: yellow
 ---
