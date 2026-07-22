@@ -19,8 +19,9 @@ needs a blast radius.
 1. **Index the relevant flows** — from `index.md` + the frontmatter scan, pick the flows whose
    `keywords` / `outline` is relevant to the question; open the **body** of the on-purpose ones only.
 2. **Answer** — in ≤ 20 lines from the opened bodies: the fields that answer (fact + `path:symbol`
-   anchor, verbatim); pull the blast radius from `index.md`'s Couples-with when the question asks
-   for it.
+   anchor, verbatim), then a **`Dive:`** line listing the `path:symbol` pointers the caller can
+   grep/read to ground deeper detail; pull the blast radius from `index.md`'s Couples-with when
+   the question asks for it.
 3. **Widen** — not answered → check the frontmatter of the flows you skipped; open any whose
    `keywords` / `outline` now look relevant, and answer from them.
 4. **Heal** — still missing (no matching flow, or the matched body lacks the fact) → declare a

@@ -19,6 +19,12 @@ flows fundamentally require, never from the shape existing code happens to have 
 audit says what exists to wire into, not what the design should look like; structure
 fighting the fundamentals → REPLACE or refactor proposal, never a design bent to fit.
 
+**Query narrows, grep grounds.** Know the exact symbol or string? Grep directly — it's faster.
+Need a _range_ of existing or legacy facts (which flows touch X, who writes a fact, how a flow
+behaves)? `/audit-code-flows query "<question>"` first: it narrows to the relevant flows +
+`Dive:` pointers (`path:symbol`), then you grep _within that range_ for detail if needed — not a blind
+codebase scan. Greenfield (no atlas) → grep.
+
 ## Inputs
 
 - **Requirements & ACs** — observable outcomes; never invent scope beyond them.

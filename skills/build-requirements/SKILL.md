@@ -16,17 +16,22 @@ Turn the caller's request into a testable spec, and burn down ambiguity **now** 
 question resolved here is a clarify phase that never runs. The request is evidence of a
 problem, not the spec — recover the real requirement, don't transcribe the ask.
 
+**Query only to settle an open question.** Requirements usually needs no codebase — you recover
+the problem from the request + first principles. But when an ambiguity turns on how existing or
+legacy code actually behaves, `/audit-code-flows query "<question>"` **before** it becomes a
+question for the user: don't ask what the atlas already answers. Not code-dependent, or no atlas → just ask.
+
 ## Inputs
 
-The raw request/idea · preflight/audit notes when they exist (existing behavior grounds
-the ACs) · caller constraints.
+The raw request/idea · the preflight **atlas** (query it to settle a code-dependent open
+question) · caller constraints.
 
 ## Procedure
 
 1. **First principles** — before any AC: name the problem behind the ask (a requested
    solution is one candidate for its underlying problem, never the requirement — spec
    the problem, note the candidate); list what the request assumes about the system and
-   check each against audit notes and fundamentals — a wrong or unverifiable assumption
+   check each against fundamentals — and, when it turns on existing/legacy behavior, against the atlas (`/audit-code-flows query`) — a wrong or unverifiable assumption
    never enters an AC silently, it becomes a batched question (step 3) with evidence +
    recommended correction. Requirements derive from problem + invariants, not from
    current code shape or user belief.
@@ -35,9 +40,9 @@ the ACs) · caller constraints.
    NFR-<n>. IDs stable and unique; name facts consistently (one glossary term per fact,
    used verbatim everywhere).
 3. **Sweep for ambiguity** — walk every AC and ask: is the trigger, the actor, the
-   observable outcome, and each edge (error · empty · limit · permission) pinned? Each
-   gap — and each step-1 challenged assumption — becomes a numbered question **with a
-   recommended answer**.
+   observable outcome, and each edge (error · empty · limit · permission) pinned? A gap that
+   turns on existing/legacy behavior → query the atlas first; only what it can't settle — plus
+   each step-1 challenged assumption — becomes a numbered question **with a recommended answer**.
 4. **Ask in one batch** — present all questions at once; wait. Never pad the spec with
    guesses; never ask one-at-a-time.
 5. **Incorporate** — fold answers into the ACs; record each Q→A as one line under
@@ -54,16 +59,20 @@ the ACs) · caller constraints.
 # <Feature> — requirements
 
 ## US-1: <user goal>
+
 - AC-1.1: Given <state>, When <action>, Then <observable outcome>
 - AC-1.2: …
 
 ## NFRs
+
 - NFR-1: <constraint> — verified by <measure | config | pattern-ban guard>
 
 ## Glossary
+
 - <fact>: <one-line definition>
 
 ## Clarifications
+
 - Q1 <question> → <answer> (<who>, <when>)
 - Q2 <question> → OPEN
 ```

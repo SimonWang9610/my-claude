@@ -835,3 +835,46 @@ now has zero stack-specific artifact names. (2) my-specflow-driver phase intro n
 explicit invocation **`/sflow <phase> <optional instructions>`** and that the driver hands each
 phase its inputs + optional caller materials (atlas, contracts, design decomposition) as those
 instructions — which is exactly how the "caller-provided materials" reach the stack-neutral phase.
+
+**Follow-up (same session):** steer requirement/design toward `/audit-code-flows query` over
+self-grep (user saw the agent grepping the codebase directly). Root cause: build-requirements had
+NO query directive (atlas was a passive "input"), and design's directive was buried in
+ground-truth.md. Fix — a prominent, positively-framed callout at the point of temptation, added
+to both build-requirements and design-react-contracts SKILL.md (identical, self-contained per the
+duplicate-don't-reference rule): **"Query the atlas, don't grep the code."** Any existing-behavior
+fact → `/audit-code-flows query` first (the preflight atlas answers or heals); grep/read source
+only for units you're authoring or after a query gap it can't heal; greenfield → skip.
+build-requirements Inputs/step-1 reworded from "audit notes" → "the atlas (query it)". Backstop:
+both drivers' "Prior artifacts are authoritative" hard rule gained "**Existing code is reached
+through the atlas** — query it, never a self-grep of the codebase to learn existing behavior"
+(covers every phase). plan/implement already carried query-first directives — left as-is.
+
+**Follow-up (same session):** query-first guidance reframed on two points. (1) **existing OR
+legacy** — the atlas covers both `kind: existing` and `kind: legacy`; callouts + driver rule now
+say "existing or legacy code," not just "existing." (2) **grep is welcome, guided by the query's
+pointers, not a last resort** — the user's correction: a query answers AND returns `Dive:`
+pointers (path:symbol), and following those to grep for depth is the encouraged second step. Both
+skill callouts retitled "Query the atlas first" (positive, non-prohibitive): query first → it
+hands back `Dive:` pointers → grep/read to ground deeper detail along them, never a blind scan.
+Driver rule reworded to match ("its `Dive:` pointers then guide any deeper grep/read"). query.md
+Answer step now formally emits a **`Dive:`** line of path:symbol pointers for grounding detail.
+
+**Follow-up (same session):** query-vs-grep reframed from "query first" to a **tool choice**
+(user: grep directly if it helps more; query first only to locate a *range* of facts, then dive
+into the narrowed range with grep). New shared line **"Query narrows, grep grounds"** in both
+skill callouts + both driver rules: a known symbol/string → grep directly (faster); a range of
+existing/legacy facts (which flows touch X, who writes a fact, how a flow behaves) → query first
+to narrow to the relevant flows + `Dive:` pointers, then grep *within that range* — the anti-
+pattern is only the blind full-codebase scan, not grep itself. Greenfield → grep.
+
+**Follow-up (same session):** requirements-phase query made phase-appropriate. User: requirements
+*typically doesn't query* (it recovers the problem from the request + first principles); query
+helps specifically when an ambiguity/open question turns on existing/legacy behavior — query
+before blindly asking the user, since the atlas may already answer it. build-requirements callout
+reframed "Query narrows, grep grounds" → **"Query only to settle an open question"** (usually no
+codebase; query a code-dependent ambiguity *before* it becomes a user question — don't ask what
+the atlas answers). Step 1 query made conditional ("when it turns on existing/legacy behavior");
+step 3 now queries a code-dependent gap before it becomes a question ("only what it can't settle
+becomes a question"); Inputs atlas note softened to "settle a code-dependent open question".
+design-react-contracts keeps the general "Query narrows, grep grounds" callout — design genuinely
+wires into existing code throughout. Driver backstop unchanged (general principle).
