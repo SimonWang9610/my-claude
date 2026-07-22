@@ -18,7 +18,14 @@ workflow: feature
 created_at: <ISO 8601>
 updated_at: <ISO 8601>
 current_phase: preflight
-phase_status: {preflight: pending, requirements: pending, clarify: pending, design: pending, tasks: pending, implement: pending, spec-qa: pending}
+phase_status: 
+    preflight: pending
+    requirements: pending
+    clarify: pending
+    design: pending
+    tasks: pending
+    implement: pending
+    spec-qa: pending
 design_links: []      # only when captured
 ```
 
