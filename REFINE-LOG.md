@@ -765,3 +765,73 @@ in place** (verify from source, drop the `source: distilled` mark; never duplica
 auditing source for what the external didn't cover. Description/role/report-back reframed from
 "answers questions" to "stands up / initializes the atlas"; build.md Organize gained a
 **Deepen, don't duplicate** rule; README companion bullet reworded (initializer; query inline).
+
+**Follow-up (same session):** driver preflight reordered — **audit first, then the command.**
+Both drivers now: ① spawn `code-auditor-agent` to build `atlas/` for the feature scope (distill
+first if a curated external atlas is provided), ② run `/sf-preflight`|`/spec-preflight`, which
+**queries the atlas** (`/audit-code-flows query`) to scope faster and better, ③ write
+preflight.md. This makes preflight the one exception to the "command runs first" rule (noted
+in each playbook intro: "except preflight, which builds the atlas first so the command can query
+it"), because the command benefits from the atlas rather than the reverse.
+
+---
+
+## sf-* commands consolidated into one `/sflow` skill
+
+User decision: fold the 8 `sf-*` process commands into a single skill invoked `/sflow <phase>`;
+fully replace (no `/sf-*` aliases). **skills/sflow/** now holds `SKILL.md` (dispatcher:
+`argument-hint "<phase> [instructions]"`, phase table → per-phase references, shared conventions
+lifted once — `.meta.yaml` statuses, artifact location, exit-is-a-gate, stack-neutral) +
+`references/{init,preflight,requirements,design,tasks,implement,validate,qa}.md` (the old command
+bodies verbatim, minus per-file frontmatter, `# sf:<phase>` → `# <phase>`, `/sf-*` cross-refs →
+`/sflow`, loaded one-at-a-time). Old `sflow/commands/` deleted; `sflow/README.md` moved to
+`skills/sflow/README.md`.
+
+**Rewired:** my-specflow-driver — every `/sf-<phase>` → `/sflow <phase>`, frontmatter/Setup/intro
+prose, and the hard rule ("`/sf-*` commands only" → "The `/sflow` skill only — its phases: init …
+qa"). oac-specflow-driver untouched (drives external `/spec-*`). **Install simplified:** the
+command pair `link-commands.sh`/`unlink-commands.sh` retired (sflow is a skill, auto-linked by
+link.sh); link.sh/unlink.sh comments + root README (Installing table now one pair, Layout,
+drivers mention, workflow-doc pointer → skills/sflow/README.md) updated.
+
+Rationale for skill-over-command (chose Option B): unifies the bundle (last non-skill layer
+gone), enables progressive disclosure (dispatcher + on-demand phase reference), cleaner namespace.
+Trade noted: skills auto-advertise vs inert commands — mitigated by a description scoping it to
+"driver-sequenced, not auto-selected."
+
+**KNOWN-STALE, deferred:** skills/sflow/README.md (229 lines) still documents the removed
+`workflow.yaml`/`sf-react-workflow` generator system (drivers are `.meta.yaml`-driven now) AND
+the old `/sf-*` commands — needs a dedicated rewrite to match reality, not a mechanical swap.
+
+**Follow-up (same session):** sflow phase files simplified + unified + relocated
+`references/` → **`phases/`**. One template across all 8: `# <phase>` → 1–2-line purpose →
+**Writes** · **Reads** (`/sflow <producer>` if missing) → **Steps** (labelled, terse) → **Exit**
+(the gate). Per-phase repeats of shared conventions (repo-read-only, `.meta.yaml` statuses,
+steering) dropped — they live once in SKILL.md. Sizes: 19–31 lines each (was up to 50); total
+243 → 181. SKILL.md links repointed to `./phases/`, root README layout updated. (Note: the linter
+had deleted the working-tree copy of skills/sflow/README.md mid-session — restored from the index;
+it remains the stale workflow-generator doc, still awaiting a dedicated rewrite.)
+
+**Follow-up (same session):** sflow phases de-coupled from stack-specific artifacts. `contracts/`
+is produced by a language-specific skill (`design-react-contracts`), so the stack-neutral phases
+must not cite it. Generalized: SKILL.md convention now states "a phase names only its own
+stack-neutral artifacts; stack-specific inputs (per-unit contracts, a code atlas, a design
+decomposition) arrive as **optional caller-provided materials**." Phase bodies reworded —
+`contracts/<unit>.md` → "per-unit interfaces / unit interface"; design/tasks/implement `Reads`
+lines list `requirements.md`/`design.md` + "optional caller materials (the per-unit interfaces)";
+design no longer `Writes` `contracts/` (it's the stack skill's output, asserted as an Exit
+outcome). validate's design-consistency check now reads "every provided unit interface traces to
+≥1 AC". The driver's React playbook still binds `/design-react-contracts` → `contracts/` — the
+correct home for the stack artifact. Phases stay ~30 lines (181 total, unchanged).
+
+**Follow-up (same session):** two fixes. (1) `references/design-units.md` — the design
+decomposition (Figma → EXISTING/PARTIAL/NEW unit map) produced by the `decompose-figma` stack
+skill — was the same stack-specific leak as `contracts/`, missed last pass. Generalized:
+preflight no longer *writes* it (the stack decompose skill does, via the driver) and consumes it
+as an optional caller material; preflight dropped its "Decompose" step (folded into Survey:
+"reconcile with a provided design decomposition"); requirements reads "a design decomposition"
+not the path. SKILL.md table cell "per-unit contracts" → "per-unit interfaces". The sflow skill
+now has zero stack-specific artifact names. (2) my-specflow-driver phase intro now states the
+explicit invocation **`/sflow <phase> <optional instructions>`** and that the driver hands each
+phase its inputs + optional caller materials (atlas, contracts, design decomposition) as those
+instructions — which is exactly how the "caller-provided materials" reach the stack-neutral phase.

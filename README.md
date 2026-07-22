@@ -153,8 +153,9 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 ## The drivers — orchestration
 
 Two **driver agents** you launch to run a whole spec: `my-specflow-driver` (drives this bundle's
-`/sf-*` commands) and `oac-specflow-driver` (drives an external **specflow** project's `/spec-*`
-commands). A driver is not tied to one skill — it binds them all.
+`/sflow` skill — one dispatcher with a phase per call, `init … qa`) and `oac-specflow-driver`
+(drives an external **specflow** project's `/spec-*` commands). A driver is not tied to one skill
+— it binds them all.
 
 - **Purpose** — drive one spec through its phases: run each phase's command + playbook, delegate
   heavy work to the worker agents, verify every output mechanically, and pause at human gates.
@@ -222,24 +223,21 @@ correct without heavy oversight.
 
 ## Installing — the scripts
 
-The bundle is flat: `skills/ agents/ rules/` are real directories and the `/sf-*` command files
-live in `sflow/commands/`. Two script pairs relative-symlink them, per entry, into a destination
-`.claude/` — kept separate so the commands never install by accident:
+The bundle is flat — `skills/ agents/ rules/` are real directories. One script pair
+relative-symlinks them, per entry, into a destination `.claude/`:
 
 | Script pair | Source → Destination |
 |-------------|----------------------|
 | `link.sh` / `unlink.sh` | `skills/* agents/* rules/*` → `<dest>/.claude/{skills,agents,rules}/` |
-| `link-commands.sh` / `unlink-commands.sh` | `sflow/commands/*` → `<dest>/.claude/commands/` |
 
-The `/sf-*` commands get their **own** pair because, installed globally, they shadow a project's
-own `/spec-*` set — so link them only where an sflow workflow is actually used. Links are relative;
-an existing correct link is skipped; a foreign real file or an outside-pointing link is never
-clobbered; re-running is safe. `unlink*` removes only symlinks that resolve back into this repo.
+The sflow workflow is just the `skills/sflow/` skill (invoked `/sflow <phase>`), linked like any
+other skill — no separate command step. Links are relative; an existing correct link is skipped;
+a foreign real file or an outside-pointing link is never clobbered; re-running is safe. `unlink`
+removes only symlinks that resolve back into this repo.
 
 ```sh
 ./link.sh --global                        # skills+agents+rules → ~/.claude
 ./link.sh --project ../myapp              # → ../myapp/.claude
-./link-commands.sh --project ../myapp     # add the /sf-* commands to that project only
 ./unlink.sh --project ../myapp            # remove skills+agents+rules
 ./unlink.sh --global --aliases            # remove links + the managed rc block
 ```
@@ -254,19 +252,17 @@ launch a driver by name (`my-specflow-driver "..."`); `--no-aliases` skips the p
 
 ## Layout & editing
 
-Edit `skills/ agents/ rules/` and `sflow/commands/` directly — links are per-entry, so a new
-skill/agent/rule appears after one `./link.sh` (a new command after one `./link-commands.sh`);
-removals need the matching `./unlink*.sh`.
+Edit `skills/ agents/ rules/` directly — links are per-entry, so a new skill/agent/rule appears
+after one `./link.sh`; removals need `./unlink.sh`.
 
 ```
 my-claude/
-├── skills/    the skills above (real dirs)
+├── skills/    the skills above + sflow/ (the /sflow workflow skill: SKILL.md + phases/)
 ├── agents/    2 drivers + 4 companion workers (real files)
 ├── rules/     shared working-discipline rules — preferences.md
-├── sflow/     /sf-* stage commands (sflow/commands/) + the full workflow README
 ├── flutter/   Flutter profile — rules/ (dormant, not linked by default)
-└── *.sh       link/unlink installers (bundle + commands, separate pairs)
+└── *.sh       link/unlink installers
 ```
 
 For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
-**[sflow/README.md](sflow/README.md)**.
+**[skills/sflow/README.md](skills/sflow/README.md)**.

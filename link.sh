@@ -9,8 +9,8 @@
 #     agents/*        -> <dest>/.claude/agents/
 #     rules/*         -> <dest>/.claude/rules/
 #
-# The /sf-* commands (sflow/commands/) are handled SEPARATELY by link-commands.sh — globally
-# they'd shadow a project's own /spec-* set, so linking them is an explicit, standalone step.
+# The sflow workflow is the `skills/sflow/` skill (invoked `/sflow <phase>`), linked like any
+# other skill — there is no separate command install step.
 #
 #     ./link.sh --global                 # into ~/.claude
 #     ./link.sh --project ../myapp       # into ../myapp/.claude
@@ -24,7 +24,7 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-# source dir  ->  dest type under .claude/  (commands are handled by link-commands.sh)
+# source dir  ->  dest type under .claude/
 SRC_MAP="skills:skills agents:agents rules:rules"
 REPLY_LINE=""
 
@@ -45,7 +45,6 @@ read_line() {
 usage() {
   echo "usage: link.sh [--global | --project <dir>] [--aliases | --no-aliases]"
   echo "  per-entry symlinks skills/ agents/ rules/ into <dest>/.claude/"
-  echo "  the /sf-* commands are linked separately — see link-commands.sh"
 }
 
 # --- parse args --------------------------------------------------------------

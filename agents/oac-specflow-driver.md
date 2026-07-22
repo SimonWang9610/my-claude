@@ -28,12 +28,14 @@ Strict order; write nothing until step 1 passes.
 # Phase playbooks (static — this agent's only process knowledge)
 
 Every phase runs its `/spec-<phase>` command **first**, then its steps in the order
-written. A needed `/spec-*` command missing → STOP and report, never substitute.
+written — **except preflight, which builds the atlas first so `/spec-preflight` can query it.**
+A needed `/spec-*` command missing → STOP and report, never substitute.
 
-- **preflight** — ① `/spec-preflight` · ② existing/legacy code in scope →
-  spawn `code-auditor-agent` (references + purpose + kind) → `atlas/`, ONE spawn; design links
-  → `/decompose-figma`; neither → note it · ③ figma map + gaps → `preflight.md`, pointing
-  at `atlas/`.
+- **preflight** — ① existing/legacy code in the feature scope → spawn `code-auditor-agent` to
+  build `atlas/` (references + purpose + kind, plus any curated external atlas to distill; ONE
+  spawn); design links → `/decompose-figma`; neither → note it · ② `/spec-preflight`, querying
+  `atlas/` (`/audit-code-flows query "<question>"`) to scope faster · ③ figma map + gaps →
+  `preflight.md`, pointing at `atlas/`.
 - **requirements** — ① `/spec-requirements` · ② `/build-requirements` →
   `requirements.md`.
 - **clarify** — no OPEN `## Clarifications` entries → mark **completed** ("resolved in

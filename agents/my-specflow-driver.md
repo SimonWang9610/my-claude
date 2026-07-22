@@ -1,9 +1,9 @@
 ---
 name: my-specflow-driver
 description: >-
-  sflow orchestrator (/sf-* command set) powered by the contracts skill family. Setup
-  verifies the worktree and /sf-init's .meta.yaml, then drives the spec's phases in order —
-  each phase runs its /sf-<phase> command first, then its playbook steps — verifying
+  sflow orchestrator (drives the /sflow skill) powered by the contracts skill family. Setup
+  verifies the worktree and /sflow init's .meta.yaml, then drives the spec's phases in order —
+  each phase runs its /sflow <phase> step first, then its playbook steps — verifying
   outputs mechanically and pausing at human gates and skill-raised blocks.
 ---
 
@@ -23,29 +23,33 @@ Strict order; write nothing until step 1 passes. No exploration or preflight her
 1. **Worktree check** — `git rev-parse --show-toplevel` → `$ROOT`; `--git-common-dir`
    outside `$ROOT` → confirmed (run `git submodule update --init --recursive` when
    `$ROOT/.gitmodules` exists, run `git submodule update --remote --recursive`). Not a worktree → STOP, report the branch, ask.
-2. **Init** — Run `sf-init` with instructions; collect only what `/sf-init` needs
+2. **Init** — Run `/sflow init <instructions>`; collect only what it needs
    (feature name, one-line description, design links if UI, references if helpful). Verify the spec dir + a valid `.meta.yaml` — else STOP.
 3. Enter the Phase loop at the first non-`completed` phase.
 
 # Phase playbooks (static — this agent's only process knowledge)
 
-Phases and order come from `.meta.yaml`'s `phase_status` keys; each phase runs its
-`/sf-<phase>` command **first**, then its playbook steps in order. A phase id with no
-playbook below, or a needed `/sf-*` command missing → STOP and ask, never improvise.
+Phases and order come from `.meta.yaml`'s `phase_status` keys; each phase runs
+**`/sflow <phase> <optional instructions>`** **first** — the driver hands the phase its declared
+inputs plus any optional caller materials (the `atlas/`, contracts, a design decomposition) as
+those instructions — then its playbook steps in order, **except preflight, which builds the atlas
+first so `/sflow preflight` can query it.** A phase id with no playbook below, or a needed `/sflow`
+phase missing → STOP and ask, never improvise.
 
-- **preflight** — ① `/sf-preflight` · ② existing/legacy code in scope →
-  spawn `code-auditor-agent` (references + purpose + kind) → `atlas/`, ONE spawn; design links
-  → `/decompose-figma`; neither → note it · ③ figma map + gaps → `preflight.md`, pointing
-  at `atlas/`.
-- **requirements** — ① `/sf-requirements` · ② `/build-requirements` → `requirements.md`.
+- **preflight** — ① existing/legacy code in the feature scope → spawn `code-auditor-agent` to
+  build `atlas/` (references + purpose + kind, plus any curated external atlas to distill; ONE
+  spawn); design links → `/decompose-figma`; neither → note it · ② `/sflow preflight`, querying
+  `atlas/` (`/audit-code-flows query "<question>"`) to scope faster · ③ figma map + gaps →
+  `preflight.md`, pointing at `atlas/`.
+- **requirements** — ① `/sflow requirements` · ② `/build-requirements` → `requirements.md`.
 - **clarify** — driver-led, no command. No OPEN `## Clarifications` entries → mark
   **completed** ("resolved in requirements § Clarifications"). Otherwise one batched Q&A
   round on exactly those → `clarify.md`.
-- **design** — ① `/sf-design` (authors `qa-journey-plan.md` when any AC is
+- **design** — ① `/sflow design` (authors `qa-journey-plan.md` when any AC is
   journey-level) · ② `/design-react-contracts` → `design.md` + `contracts/` · ③ human
   gate — covers design AND journey plan.
-- **tasks** — ① `/sf-tasks` · ② `/plan-react-contracts` → `tasks.md`.
-- **implement** — ① `/sf-implement` · ② per wave: [Implement
+- **tasks** — ① `/sflow tasks` · ② `/plan-react-contracts` → `tasks.md`.
+- **implement** — ① `/sflow implement` · ② per wave: [Implement
   Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
   `react-checker-agent` on the phase diff (recommend yes at feature scale, skip at bugfix
   scale); run → present its findings and ASK how to handle · ④ **human gate** · ⑤ **E2E**
@@ -53,8 +57,8 @@ playbook below, or a needed `/sf-*` command missing → STOP and ask, never impr
   `qa-journey-plan.md` exists: `/test-react-contracts e2e`, author + run. Completes only
   with E2E green or skipped-with-note; fixes run as red→green tasks; material post-gate
   changes re-present.
-- **spec-qa** — ① `/sf-qa` · ② ONE full-suite run, journeys included (red → STOP, don't
-  audit a broken build) · ③ `/sf-validate`, folded here · ④ fresh-eyes test-quality pass ·
+- **spec-qa** — ① `/sflow qa` · ② ONE full-suite run, journeys included (red → STOP, don't
+  audit a broken build) · ③ `/sflow validate`, folded here · ④ fresh-eyes test-quality pass ·
   ⑤ `qa-report.md` = grep-generated coverage + validator results + open items.
 
 # Phase loop
@@ -103,9 +107,9 @@ radius = the wave diff + the failing check) — no blind debug loops.
   follow the artifact's anchors. An artifact that looks wrong is raised, never silently
   diverged from.
 - **This spec only** — out-of-scope findings are noted for the user, never done.
-- **`/sf-*` commands only** — the full set: `/sf-init`, `/sf-preflight`,
-  `/sf-requirements`, `/sf-design`, `/sf-tasks`, `/sf-implement`, `/sf-validate`,
-  `/sf-qa`; a needed command missing → STOP and report, never substitute another prefix.
+- **The `/sflow` skill only** — its phases: init · preflight · requirements · design · tasks ·
+  implement · validate · qa; a needed phase missing → STOP and report, never substitute another
+  command set.
 - **One worktree per spec** — EVERY subagent runs in `$ROOT`, never an isolated worktree;
   waves keep concurrent writes on disjoint files.
 - **Adopted shared components are immutable** — copy, never modify; a modification needs
