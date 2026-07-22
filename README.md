@@ -44,7 +44,7 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 - **Pain** — vague scope; solution-shaped asks that hide the real need; ambiguity discovered late
   during implementation.
 
-### `design-react-contracts`
+### `design-react-contracts` · companion **react-architect-agent**
 
 - **Purpose** — turns ACs into React **contracts** (per-unit API, data flow, state) plus the
   architecture wiring them, as `design.md` + `contracts/`.
@@ -52,6 +52,11 @@ it, and the **pain** it removes; its companion agent (if any) follows.
   cheaper than discovering them mid-implementation; an implementer should build without guessing.
 - **Pain** — "where does this state belong?"; re-litigating boundaries while coding; designs an
   implementer can't act on.
+- **react-architect-agent** — runs the design phase as one bounded, high-judgment audit: queries
+  the atlas for existing-code facts, authors `design.md` + `contracts/` (+ a draft journey plan),
+  and raises refactor proposals for the gate. Keeps a **personal memory** of each codebase's
+  architecture — good practices to reuse and bad ones to steer around (general rules, not feature
+  cases) — to make design tradeoffs faster, never to conform a sound design to existing shape.
 
 ### `plan-react-contracts`
 
@@ -258,7 +263,7 @@ after one `./link.sh`; removals need `./unlink.sh`.
 ```
 my-claude/
 ├── skills/    the skills above + sflow/ (the /sflow workflow skill: SKILL.md + phases/)
-├── agents/    2 drivers + 4 companion workers (real files)
+├── agents/    2 drivers + 5 companion workers (real files)
 ├── rules/     shared working-discipline rules — preferences.md
 ├── flutter/   Flutter profile — rules/ (dormant, not linked by default)
 └── *.sh       link/unlink installers

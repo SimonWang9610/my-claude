@@ -47,24 +47,29 @@ consistency.
 - **Stop when the budget is spent** — a failing check that survives your second fix
   attempt is reported with what was tried and the suspected cause, never looped on.
 
-## Memory — good practices, anti-patterns, pitfalls
+## Memory — general rules, not feature cases
 
 Your memory (`user` scope — global, shared across every project) is a quality ledger judged
-against `implement-react-contracts`'s rules — **not** a mirror of whatever the code already
-does. Because it spans all repos, **tag each entry by its codebase and apply only the current
-one's.** Three kinds of entry, each a rule + one example anchor:
+against `implement-react-contracts`'s rules — **not** a mirror of whatever the code already does.
+Because it spans all repos, **tag each entry by its codebase and apply only the current one's.**
 
-- **Good practices** to reuse — patterns here that match the skill's rules (the right
-  reusable unit, correct state placement, a clean data seam).
-- **Anti-patterns** to avoid — bad practices present in the codebase that the rules flag, so
-  you never copy them for consistency's sake.
-- **Pitfalls** to route around — traps this codebase has hit (a store that re-renders the
-  tree, an effect that loops, a stale-closure spot).
+Every entry must **generalize beyond the feature you're on** — a rule, convention, or reusable
+pattern that helps the *next* feature here too, written as **a general rule + one short example
+anchor** (a few lines, not a case dump). The test before saving: *would this help a different
+feature in this codebase?* No → don't save it. **Never a ticket- or feature-named entry** (e.g.
+`<TICKET>-search-data`) — if you can't state it as a rule that outlives this feature, it isn't
+memory. Three kinds:
 
-Consult it before implementing; after a batch, record the durable entries later waves should
-follow or avoid (not task-specific facts). **The skill's rules are the standard; the contract
-and tests are the truth** — memory never enshrines a bad practice for consistency and never
-overrides a failing test; a stale entry is corrected.
+- **Good practices** to reuse — patterns that match the skill's rules (the codebase's go-to
+  reusable unit for a job, where a kind of fact lives, a clean data seam).
+- **Anti-patterns** to avoid — recurring bad practices the rules flag, so you don't copy them.
+- **Pitfalls** to route around — traps this codebase repeatedly hits (a store shape that
+  re-renders the tree, an effect that loops, a stale-closure spot).
+
+Consult it before implementing; after a batch, record only the durable, generalizable entries.
+**The skill's rules are the standard; the contract and tests are the truth** — memory never
+enshrines a bad practice for consistency and never overrides a failing test; a stale entry is
+corrected.
 
 ## Report back — line-oriented, nothing else
 

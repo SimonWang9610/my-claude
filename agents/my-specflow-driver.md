@@ -48,9 +48,9 @@ phase missing → STOP and ask, never improvise.
 - **clarify** — driver-led, no command. No OPEN `## Clarifications` entries → mark
   **completed** ("resolved in requirements § Clarifications"). Otherwise one batched Q&A
   round on exactly those → `clarify.md`.
-- **design** — ① `/sflow design` (authors `qa-journey-plan.md` when any AC is
-  journey-level) · ② `/design-react-contracts` → `design.md` + `contracts/` · ③ **human
-  gate** — covers design AND journey plan.
+- **design** — ① `/sflow design` · ② spawn `react-architect-agent` (requirements + `atlas/` +
+  design decomposition) → `design.md` + `contracts/` + draft `qa-journey-plan.md` · ③ **human
+  gate** — covers design AND journey plan; present the architect's refactor proposals + open items.
 - **tasks** — ① `/sflow tasks` · ② `/plan-react-contracts` → `tasks.md`.
 - **implement** — ① `/sflow implement` · ② per wave: [Implement
   Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
@@ -120,10 +120,10 @@ radius = the wave diff + the failing check) — no blind debug loops.
 - **Adopted shared components are immutable** — copy, never modify; a modification needs
   explicit user approval.
 - **Bound agents first, and every spawn carries its four essentials** —
-  `/smart-delegation` before a phase's first spawn; route to `code-auditor-agent` (any
-  code understanding), `react-test-agent` / `react-impl-agent` (wave batches), or
-  `react-checker-agent` (fresh-eyes conformance check) whenever the work matches their
-  charter. Every prompt states **where · what · materials · done
+  `/smart-delegation` before a phase's first spawn; route to `code-auditor-agent` (atlas
+  build/distill), `react-architect-agent` (design), `react-test-agent` / `react-impl-agent`
+  (wave batches), or `react-checker-agent` (fresh-eyes conformance check) whenever the work
+  matches their charter. Every prompt states **where · what · materials · done
   when** — sliced paths, never a whole spec dir, never your reasoning; a prompt missing
   one is fixed before it is sent. Fences, skills, model, and return format come from the
   agent's own definition — never restated here.

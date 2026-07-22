@@ -44,8 +44,8 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
 - **clarify** — no OPEN `## Clarifications` entries → mark **completed** ("resolved in
   requirements § Clarifications"). Otherwise ① `/spec-clarify` · ② driver Q&A on exactly
   those → `clarify.md`.
-- **design** — ① `/spec-design` · ② `/design-react-contracts` → `design.md` +
-  `contracts/` · ③ **human gate**
+- **design** — ① `/spec-design` · ② spawn `react-architect-agent` (requirements + `atlas/` +
+  design decomposition) → `design.md` + `contracts/` + draft `qa-journey-plan.md` · ③ **human gate**
 - **tasks** — ① `/spec-tasks` · ② `/plan-react-contracts` → `tasks.md`.
 - **implement** — ① `/spec-implement` · ② per wave: [Implement
   Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
@@ -117,10 +117,10 @@ radius = the wave diff + the failing check) — no blind debug loops.
   user permission + a one-line reason in `.meta.yaml` (clarify auto-complete and
   taskstoissues skip above are pre-authorized).
 - **Bound agents first, and every spawn carries its four essentials** —
-  `/smart-delegation` before a phase's first spawn; route to `code-auditor-agent` (any
-  code understanding), `react-test-agent` / `react-impl-agent` (wave batches), or
-  `react-checker-agent` (fresh-eyes conformance check) whenever the work matches their
-  charter. Every prompt states **where · what · materials · done
+  `/smart-delegation` before a phase's first spawn; route to `code-auditor-agent` (atlas
+  build/distill), `react-architect-agent` (design), `react-test-agent` / `react-impl-agent`
+  (wave batches), or `react-checker-agent` (fresh-eyes conformance check) whenever the work
+  matches their charter. Every prompt states **where · what · materials · done
   when** — sliced paths, never a whole spec dir, never your reasoning; a prompt missing
   one is fixed before it is sent. Fences, skills, model, and return format come from the
   agent's own definition — never restated here.

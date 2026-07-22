@@ -878,3 +878,46 @@ step 3 now queries a code-dependent gap before it becomes a question ("only what
 becomes a question"); Inputs atlas note softened to "settle a code-dependent open question".
 design-react-contracts keeps the general "Query narrows, grep grounds" callout — design genuinely
 wires into existing code throughout. Driver backstop unchanged (general principle).
+
+**Follow-up (same session):** react-impl-agent memory over-saved feature-specific detail (user
+showed the actual store: an 11KB `project_oac_acmt2681_search_data.md` named after a ticket, and a
+5.5KB bloated pitfall — vs two good concise ones: git-stash-in-worktrees, mirror-the-by-id-SDK
+pattern). Guidance sharpened: section retitled "Memory — general rules, not feature cases"; added
+a **generalization test** ("would this help a *different* feature in this codebase? No → don't
+save"), the entry shape "a general rule + one short example anchor (a few lines, not a case dump)",
+and an explicit ban — **never a ticket- or feature-named entry** ("if you can't state it as a rule
+that outlives this feature, it isn't memory"). Closing changed to "record only the durable,
+generalizable entries". Existing bad entries in the user's store flagged for pruning (offered,
+not deleted unprompted).
+
+---
+
+## react-architect-agent — dedicated design-phase agent
+
+User request: a design-phase agent, motivated by memory. Design was the only heavy, high-judgment
+phase with no dedicated agent (ran inline in the driver → couldn't accumulate memory). Built
+**agents/react-architect-agent.md** (thin binding): staff-architect role; skills design-react-
+contracts + audit-code-flows; tools Read/Write/Edit/Grep/Glob/Bash; model sonnet, effort high
+(design is the highest-judgment phase — opus is a one-word bump); memory:user; color blue.
+Procedure: scope → ground truth from the atlas (query narrows, grep grounds) → run
+/design-react-contracts (consult memory first) → self-check once. Rules: design artifacts only
+(never code/tests), derive-from-requirements-not-shape (refactor proposals raised at the gate),
+query-don't-blind-scan, raise-don't-resolve (human gate owns approval). **Memory carries the
+just-sharpened anti-feature-dump discipline** — architectural conventions only (state placement,
+layering, reusable units), general rule + short example, never a ticket/feature-named entry; this
+is the third complementary memory (auditor=where code is, architect=how it's structured,
+impl=how it's built). Wired: both drivers' design step ② now **spawns react-architect-agent**
+(was inline /design-react-contracts) → design.md + contracts/ + draft journey plan; ③ gate presents
+its refactor proposals + open items. Both drivers' bound-agents roster gained it. README: design
+entry gained the companion bullet; worker count 4 → 5.
+
+**Follow-up (same session):** react-architect-agent memory reframed (same fix as impl-agent's).
+User: a codebase may have bad architecture — don't save it as a convention to follow; save it as a
+**bad practice to steer around**. And memory is a **tradeoff accelerator, not a mandate to
+conform** to existing shape. Section retitled "Memory — faster tradeoffs, general not feature
+cases"; now a **decision aid judged against design-react-contracts's rules, not a mirror of how
+the codebase is built** — three kinds: good practices to reuse · bad practices to avoid (steer
+around, never copy for consistency) · recurring tradeoffs (how a repeated decision went, for speed
++ consistency). "consult to move fast, not to conform"; requirements are the standard; a
+bad-practice entry is a warning not a template. Description + procedure step 3 + README bullet
+reworded off "conventions/conform" onto "what works / what to avoid / faster tradeoffs".
