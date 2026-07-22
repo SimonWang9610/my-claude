@@ -11,8 +11,8 @@ tools: Read, Grep, Glob, Bash
 skills:
   - check-react-implementation
   - audit-code-flows
-model: sonnet
-effort: medium
+model: opus
+effort: low
 permissionMode: auto
 color: orange
 ---
