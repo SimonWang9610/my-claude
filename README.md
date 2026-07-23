@@ -67,10 +67,10 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 - **Pain** — unclear task order; serial work that could have run in parallel; re-deriving batches
   mid-flight.
 
-### `test-react-contracts` · companion **react-test-agent**
+### `test-react-contracts` · companions **react-test-agent** + **react-e2e-agent**
 
-- **Purpose** — authors tests that prove contracts (Vitest · RTL · MSW · Playwright), each named
-  for the AC it verifies.
+- **Purpose** — authors unit tests that prove contracts (Vitest · RTL · MSW), each named for the
+  AC it verifies. E2E journey tests are the e2e agent's own charter (its rules live in the agent).
 - **Why** — a test written first, red, by someone other than the implementer proves behavior
   instead of ratifying whatever the code happens to do.
 - **Pain** — tests that pass against a stub; coverage that doesn't map to ACs; author marking
@@ -78,6 +78,10 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 - **react-test-agent** — a test-files-only tool fence (it cannot touch source), so red-first is
   structural, not a promise; remembers each codebase's test-harness conventions and pitfalls
   (custom render wrapper, MSW helpers, flaky traps) so authoring starts warm.
+- **react-e2e-agent** — authors journey tests from the approved `qa-journey-plan.md` after
+  implementation assembles the feature (one test per J-<n>, happy + forced-error, NEW|MODIFY
+  dispositions); carries its own e2e rules — whole-app-slice harness, UI-only driving — and
+  remembers each codebase's app-mount harness.
 
 ### `implement-react-contracts` · companion **react-impl-agent**
 
@@ -158,10 +162,13 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 
 ## The drivers — orchestration
 
-Two **driver agents** you launch to run a whole spec: `my-specflow-driver` (drives this bundle's
-`/sflow` skill — one dispatcher with a phase per call, `init … qa`) and `oac-specflow-driver`
-(drives an external **specflow** project's `/spec-*` commands). A driver is not tied to one skill
-— it binds them all.
+Three **driver agents** you launch to run a whole spec: `my-specflow-driver` (drives this bundle's
+`/sflow` skill — one dispatcher with a phase per call, `init … qa`), `oac-specflow-driver`
+(drives an external **specflow** project's `/spec-*` commands), and `lean-specflow-driver` (the
+command-free A/B twin: same phases, same `.meta.yaml`, same artifacts — but NO process commands
+or `/sflow`; playbooks live in the agent, heavy work in its teammates — measuring whether
+dropping the process shell cuts tokens at equal quality). A driver is not tied to one skill —
+it binds them all.
 
 - **Purpose** — drive one spec through its phases: run each phase's command + playbook, delegate
   heavy work to the worker agents, verify every output mechanically, and pause at human gates.
@@ -177,7 +184,9 @@ claude --agent my-specflow-driver --worktree "add a logout button"    # raw
 
 Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
 (green, test paths byte-unchanged) — then an optional `react-checker-agent` pass before the human
-gate; the driver never advances past an open gate.
+gate; a friction/defect DESIGN GAP routes back to `react-architect-agent` for a fast-path
+contract delta, and `react-e2e-agent` authors the journey tests once the feature assembles. The
+driver never advances past an open gate.
 
 ---
 
@@ -264,7 +273,7 @@ after one `./link.sh`; removals need `./unlink.sh`.
 ```
 my-claude/
 ├── skills/    the skills above + sflow/ (the /sflow workflow skill: SKILL.md + phases/)
-├── agents/    2 drivers + 5 companion workers (real files)
+├── agents/    3 drivers + 6 companion workers (real files)
 ├── rules/     shared working-discipline rules — preferences.md
 ├── flutter/   Flutter profile — rules/ (dormant, not linked by default)
 └── *.sh       link/unlink installers

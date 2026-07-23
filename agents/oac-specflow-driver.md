@@ -54,10 +54,9 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
   Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
   `react-checker-agent` on the phase diff (recommend yes at feature scale, skip at bugfix
   scale); run → present its findings and ASK how to handle · ④ **human gate** · ⑤ **E2E**
-  when
-  `qa-journey-plan.md` exists: `/test-react-contracts e2e`, author + run. Completes only
-  with E2E green or skipped-with-note; fixes run as red→green tasks; material post-gate
-  changes re-present.
+  when `qa-journey-plan.md` exists: spawn `react-e2e-agent` to author per disposition;
+  run the suite yourself. Completes only with E2E green or skipped-with-note; fixes run
+  as red→green tasks; material post-gate changes re-present.
 - **spec-qa** — ① `/spec-qa` · ② ONE full-suite run, journeys included (red → STOP, don't
   audit a broken build) · ③ `/spec-validate`, folded here · ④ fresh-eyes test-quality
   pass · ⑤ `qa-report.md` = grep-generated coverage + validator results + open items.
@@ -96,8 +95,12 @@ byte-unchanged → only the affected task is redone by a fresh single-task pair.
 
 Chunked pairs run concurrently; a wave too big at run time is re-chunked (contracts
 overflow one context — the only trigger) and the re-cut recorded in tasks.md. A DESIGN
-GAP pauses only its task. A red surviving its first fix attempt → `/locate-bug` (blast
-radius = the wave diff + the failing check) — no blind debug loops.
+GAP pauses only its task — *ambiguity*: the impl agent's narrowest-safe + raise stands for
+the gate; *friction/defect*: spawn `react-architect-agent` on the design skill's fast path
+(Materials: the gap block verbatim + the affected contract + `atlas/`) → present the
+contract delta to the human → on approval the affected task re-runs as a fresh test+impl
+pair against the amended contract. A red surviving its first fix attempt → `/locate-bug`
+(blast radius = the wave diff + the failing check) — no blind debug loops.
 
 # Hard rules
 
@@ -121,9 +124,10 @@ radius = the wave diff + the failing check) — no blind debug loops.
   taskstoissues skip above are pre-authorized).
 - **Bound agents first, and every spawn carries its four essentials** —
   `/smart-delegation` before a phase's first spawn; route to `code-auditor-agent` (atlas
-  build/distill), `react-architect-agent` (design), `react-test-agent` / `react-impl-agent`
-  (wave batches), or `react-checker-agent` (fresh-eyes conformance check) whenever the work
-  matches their charter. Every prompt states **where · what · materials · done
+  build/distill), `react-architect-agent` (design, and mid-implement gap repair via the
+  fast path), `react-test-agent` / `react-impl-agent` (wave batches), `react-e2e-agent`
+  (journey tests from the approved plan), or `react-checker-agent` (fresh-eyes conformance
+  check) whenever the work matches their charter. Every prompt states **where · what · materials · done
   when** — sliced paths, never a whole spec dir, never your reasoning; a prompt missing
   one is fixed before it is sent. Fences, skills, model, and return format come from the
   agent's own definition — never restated here.

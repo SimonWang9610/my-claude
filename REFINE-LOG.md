@@ -1023,3 +1023,63 @@ sentence 2 = the one judgment stance · sentence 3 = "Your role: <responsibility
 boundary>". Cut the standalone "Your strengths:" enumerations and secondary flavor lines; no
 strength, stance, or boundary was lost — only prose. Drivers likewise 3 sentences (persona+
 strengths+subagents · where process knowledge lives · Done condition).
+
+---
+
+## E2E split · gap-repair loop · command-free driver A/B (2026-07-23)
+
+Four decisions from the cooperation discussion (user set direction on 1–2; 3–4 from the prior
+recommendation round).
+
+**1. E2E timing settled: plan before, author after.** The design-time journey plan (approved at
+the design gate) is the test-first artifact; e2e tests are its mechanical projection, authored
+after implementation assembles the feature — red-first e2e would sit red all phase giving no
+per-wave signal. Unit tests remain the red-first per-wave signal.
+
+**2. react-e2e-agent built (user override of the one-agent-two-scopes recommendation).**
+`rules/e2e-testing.md` MOVED into the agent body (harness/happy/forced-error/traceability rules +
+examples); test-react-contracts is now **unit-only** (description, no argument-hint, no scope
+section, steps renumbered, e2e rules bullet gone; the unautomatable-journey steer bullet moved
+with the rules). react-test-agent de-scoped to unit (no Playwright, no `<variant>`). New agent:
+tools without Bash (driver runs the suite), skills audit-code-flows, opus/low, `memory: user`
+(app-mount harness conventions + journey-test pitfalls; the plan is the spec — never journey
+specifics), color cyan. **Accepted duplication (recorded):** the label/observable-outcome/
+mutation-litmus/determinism essentials now appear in both test-quality.md and the e2e agent —
+the price of a self-contained agent. Fixed the who-authors gap: both drivers' implement ⑤ now
+spawns react-e2e-agent (was a bare "/test-react-contracts e2e, author + run" with no author).
+
+**3. DESIGN GAP repair loop wired (the missing cooperation edge).** All drivers' Implement
+discipline: *ambiguity* → impl agent's narrowest-safe + raise stands; *friction/defect* → spawn
+react-architect-agent on the design skill's **fast path** (Materials: gap block verbatim +
+affected contract + atlas/) → contract delta presented to the human → on approval the affected
+task re-runs as a fresh test+impl pair. Architect description gained the second trigger; both
+rosters gained e2e + the architect's repair duty. Also decided: test-react-contracts stays a
+skill, NOT folded into agents — `skills:` preload already IS the fold token-wise; folding would
+kill standalone use and rules modularity.
+
+**4. lean-specflow-driver built — the command-free A/B twin.** Hypothesis: the process shell
+(/sflow SKILL + phase files, ~220 lines loaded per spec) restates what teammates' skills own;
+dropping it should cut input tokens at equal quality. Design: same phases, same `.meta.yaml`
+template (spec-qa key kept — user convention) and artifacts, so specs are driver-interchangeable;
+playbooks embedded in the agent (incl. the init scaffold + ledger template — no /sflow init);
+driver authors the thin artifacts itself (preflight.md, qa-report.md, clarify Q&A) and KEEPS the
+domain skills for driver-authored phases (/build-requirements, /plan-react-contracts,
+/decompose-figma) — they're know-how, not process shell; dropping them would change two variables
+at once. New hard rule "No process commands — this driver IS the process". Accepted risk: a third
+playbook copy to reconcile — temporary by design, like prior A/B twins. README: three drivers,
+6 workers, e2e + gap-repair in the implement flow line.
+
+**Follow-up (same session):** lean-specflow-driver artifact location pinned. Init names the
+binding `$SPEC_DIR = .specflow/specs/<name>/`; the playbook intro now enumerates every phase
+artifact as `$SPEC_DIR`-resident and requires every subagent prompt's output destination to be a
+`$SPEC_DIR` path (implement writes source + tests only, never a spec artifact elsewhere);
+auditor/architect spawns name `$SPEC_DIR` outputs explicitly; the Verify step mechanically fails
+an artifact written anywhere else (move in → re-verify).
+
+**Follow-up (same session):** lean-specflow-driver made self-contained (user: isolated, lean,
+focused). Description rewritten off the A/B-twin framing onto what it is (own playbooks over a
+.meta.yaml ledger, teammates for heavy work, thin artifacts authored itself); Role and the
+"No process commands" hard rule dropped every /spec-* and /sflow mention — the rule is now
+"The playbooks ARE the process — never substitute outside workflow commands or skills." The
+agent no longer references any other driver or workflow. (README keeps the experiment context
+for humans.)

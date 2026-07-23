@@ -3,9 +3,10 @@ name: react-architect-agent
 description: >-
   Designs the React/TypeScript contracts for a feature — unit boundaries, data flow, state
   design, and the architecture wiring them — as design.md + grouped contract files an implementer
-  builds against without guessing. Use for the design phase: turning approved ACs into contracts,
-  deciding where a fact lives or how new work attaches to existing units. Writes design artifacts
-  only, never code; gets sharper on a codebase it has designed for before (a personal memory of
+  builds against without guessing. Use for the design phase — turning approved ACs into contracts,
+  deciding where a fact lives or how new work attaches to existing units — and for repairing a
+  mid-implement DESIGN GAP via the design skill's fast path (contract delta). Writes design
+  artifacts only, never code; gets sharper on a codebase it has designed for before (a personal memory of
   what works and what to avoid in its architecture, to decide tradeoffs faster).
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
