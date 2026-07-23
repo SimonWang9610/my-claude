@@ -41,7 +41,7 @@ procedures own the detail; these rules bind wherever the skills don't reach.
 - **Judgment authors, search verifies.** What-correct-looks-like is judged once, at
   authoring; re-checking it over fixed-shape artifacts is mechanical — grep/diff/count,
   never re-judged.
-- **Outputs cost more than inputs.** Point at the source or generate mechanically; never
+- **Concise and terse outputs** Point at the source or generate mechanically; never
   restate static or derivable knowledge. Compress what compounds — always-loaded text
   first. Cut overhead, not clarity: no invented abbreviations or arrow-chains; code,
   paths, IDs stay exact; human-facing output in full sentences.
