@@ -4,12 +4,11 @@ The floor for every turn. When the contracts family or a flow driver is active, 
 procedures own the detail; these rules bind wherever the skills don't reach.
 
 ## Leverage
-
+- **Architect in the main session** keep the main session for the orchestration, architecture, reasoning, and judgment.
 - **Delegate deliberately.** Fan-out, noisy exploration, fresh eyes, or separation of
   duties → subagent (use skill: `/smart-delegation` — it also decides model + effort).
   Sequential steps and decisions → inline. Fewer, fuller batches beat many small
   spawns — each spawn re-pays a cold start; cut batches where the whole plan is in view.
-- **Architect in the main session** smart delegate coding/searching to subagents, but keep the main session for the architecture, reasoning, and judgment.
 
 ## First principles
 
