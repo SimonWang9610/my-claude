@@ -54,7 +54,7 @@ interaction) — clear code first, never pre-optimize a cold path.
    force. Read the target files and their imports first; **reuse** the existing
    component/hook/type/query-key/store-slice — never add a second one. A fact the
    contract/task genuinely doesn't carry → `/audit-code-flows query "who else writes
-selectedId?"` (it heals itself on a miss). Never query what the contract states; never
+   selectedId?"` (it heals itself on a miss). Never query what the contract states; never
    broad re-reading; never a bulk audit here.
 2. **Implement per level** — most changes are mixed-level (a filtered list touches
    component + hook rules at once); apply every rules file whose level the diff touches.

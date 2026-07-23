@@ -52,8 +52,9 @@ Read before authoring that kind of test; cite rules in review notes:
    rows proceed; derived journeys follow the e2e scope rule above.
 2. **Author unit tests** — per [rules/unit-testing.md](./rules/unit-testing.md) and
    [rules/test-quality.md](./rules/test-quality.md), one file per owning unit.
-3. **Author E2E tests** — per [rules/e2e-testing.md](./rules/e2e-testing.md): one test per
-   journey, happy + forced-error paths.
+3. **Author E2E tests** — per [rules/e2e-testing.md](./rules/e2e-testing.md) and
+   [rules/test-quality.md](./rules/test-quality.md): one test per journey, happy +
+   forced-error paths.
 4. **Self-check** — every AC row covered (coverage is a grep for the ID); each new test
    fails when its production condition is inverted (mutation litmus, spot-check the
    critical ones); suite runs deterministically — no sleeps, no order dependence.

@@ -76,7 +76,8 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 - **Pain** — tests that pass against a stub; coverage that doesn't map to ACs; author marking
   their own homework.
 - **react-test-agent** — a test-files-only tool fence (it cannot touch source), so red-first is
-  structural, not a promise.
+  structural, not a promise; remembers each codebase's test-harness conventions and pitfalls
+  (custom render wrapper, MSW helpers, flaky traps) so authoring starts warm.
 
 ### `implement-react-contracts` · companion **react-impl-agent**
 

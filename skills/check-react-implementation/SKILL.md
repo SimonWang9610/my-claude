@@ -2,8 +2,7 @@
 name: check-react-implementation
 description: >
   Checks a React diff with fresh eyes on three axes — does it observably satisfy its ACs
-  and contracts, what will it cost the next change, and what does it cost at runtime —
-  returning severity-classified findings with evidence, never fixes. Use after
+  and contracts, what will it cost the next change, and what does it cost at runtime. Use after
   implementation to verify work against its contracts, or on demand to audit a diff for
   conformance, maintainability, or performance and memory problems. Not for a pre-merge PR
   review that gates the merge (use review-react-changes) or building the atlas (use

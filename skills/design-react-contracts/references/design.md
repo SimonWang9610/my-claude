@@ -1,4 +1,4 @@
-# Design (step 4) and self-check (step 5)
+# Design (step 2) and self-check (step 3)
 
 For every MODIFY/NEW unit in the inventory, according to the user and data flows, decide in
 order — data contract, state design, decomposition — applying the rule files under
@@ -36,7 +36,7 @@ The loosest coupling that carries the interaction:
 | React ↔ imperative resource / continuous stream | a service event, bridged by one hook |
 | Cross-cutting client state with shared invariants | one feature-owned store |
 
-No central manager owning all state and interactions — God-unit coupling renamed.
+Never a central manager owning everything — the God-unit guard: [rules/services-and-boundaries.md](../rules/services-and-boundaries.md).
 
 ## Output layout
 
@@ -220,4 +220,4 @@ re-surface in the post-implement check; spend the advisory pass on multi-group d
 **Budget: ONE check pass.** Its findings drive one re-design of the affected units — no
 re-check loop; anything still open is never silently shipped: **pause and reach the
 caller** — present each item with what was tried, take their decision or steering, and
-resume the affected steps with that input (SKILL.md step 6).
+resume the affected steps with that input (SKILL.md step 4).

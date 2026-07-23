@@ -921,3 +921,105 @@ around, never copy for consistency) · recurring tradeoffs (how a repeated decis
 + consistency). "consult to move fast, not to conform"; requirements are the standard; a
 bad-practice entry is a warning not a template. Description + procedure step 3 + README bullet
 reworded off "conventions/conform" onto "what works / what to avoid / faster tradeoffs".
+
+---
+
+## Full-bundle audit round: self-check dedup · coherence fixes · role-sharpened memories (2026-07-22)
+
+Fresh-eyes audit (refs/rules subagent + best-practices research subagent + inline SKILL/agent
+review). User kept `spec-qa` in the `.meta.yaml` ledger deliberately (project convention) — the
+sflow naming findings were NOT applied.
+
+**1. Self-check dedup — cut from the agents, kept in the skills.** The design check existed 3×
+(skill self-check · architect step 4 · sflow design gate) and test/impl 2× each. Cut landed on
+the agent side because the skill is preloaded anyway (zero context saved by moving it), skills
+stay standalone-invocable, and thin-binding forbids agents restating skill procedure:
+react-architect step 4 → "the preloaded skill's self-check (ONE pass) is your final gate; report
+its verdict"; react-test step 4 → "run the preloaded skill's self-check over the whole batch";
+react-impl step 4 → "the skill's done-condition verify, targeted runs only". The sflow design
+phase's architecture gate stays — stack-neutral *exit criterion* vs the skill's *method* check,
+different layers.
+
+**2. Coherence gap closed — qa-journey-plan.md now has an author on the react path.** The
+architect + both drivers promised a draft journey plan the design skill never produced.
+design-react-contracts Output gained the `qa-journey-plan.md` (draft) bullet (journey-level ACs
+only; J-<n> · covers-ACs · NEW|MODIFY · NOT-automated table; caller's gate approves), step 2 +
+description updated to match.
+
+**3. Stale/garbled fixes.** design SKILL step-mapping ("Steps 1–3/4–5" → "Step 1 / steps 2–3");
+references/design.md title (step 4/5 → 2/3) + "SKILL.md step 6" → step 4; both drivers' garbled
+submodule clause → one clean `--init && --remote` conditional; impl agent step-3 grammar + stray
+blank line; implement SKILL broken quoted-query line.
+
+**4. Within-skill dedups.** e2e-testing Traceability now cites test-quality's label rule instead
+of restating it (test SKILL step 3 now loads test-quality for e2e too); references/design.md's
+God-unit line → a citation of services-and-boundaries; jira-ac-align Rules bullet 1 compressed to
+"Confirm-first, two writes only (steps 5–6)" (procedure owns the detail); check-react-
+implementation description dropped its duplicated findings clause (Output clause keeps it).
+**Accepted duplication (recorded, kept):** design rules ↔ implement rules share ~5 rules at
+different altitudes (boundary decision vs code shape) — deliberate per skill self-containment;
+likewise review-react-changes/quality.md's one-owner-per-fact restatement.
+
+**5. Memories role-sharpened (subagents only, not drivers).** Common shape: scope+tag line →
+role-specific save-list → entry shape + generalization test → an explicit **don't-save pointing
+at the owning artifact** → consult/record moments + standard-of-truth → new "MEMORY.md ≤200-line
+index" cap (only the first 200 lines are injected — from the subagent docs). Role split:
+**auditor** = where code lives (layout conventions, entry-point registration, boundary surfaces;
+never flow facts — atlas owns those) · **architect** = faster tradeoffs (recurring tradeoffs
+first, good practices, bad-practices-as-avoid; never feature designs — design.md/contracts own
+those) · **impl** = quality ledger (good practices, anti-patterns-as-avoid, pitfalls incl.
+test-harness traps; never contract/task facts — contract+tests are the truth).
+
+**6. Best-practices research (source → decision → reason).** Adopted: MEMORY.md 200-line
+injection cap (docs → memory sections) · 1,536-char description listing cap (docs → new
+.claude/CLAUDE.md "Descriptions fit the listing" rule; longest description ~740 chars, safe).
+Noted, no change: skill-listing context budget ~1–2% of window (12 skills ≈ 8k chars, healthy).
+Rejected: `disable-model-invocation` on sflow (the driver IS a model — it would block the
+driver's own `/sflow` calls; known bug also blocks manual invocation) · `mcp__*` tool patterns
+(no need) · dynamic-context `!cmd` injection guidance (not used) · fewer-focused-agents advice
+(already our shape).
+
+**Model note:** user set react-architect-agent to `model: opus, effort: medium` directly
+(aligning with the opus standardization); left as the user set it.
+
+**Follow-up (same session):** two agent refinements. (1) **react-test-agent gains `memory: user`**
+— the harness knowledge (custom render wrapper + provider stack, MSW server/fixture helpers,
+where fixtures live) and harness pitfalls (mock-helper clobber, fake-timer quirks, racing async)
+are durable per-codebase facts that compound across batches; the best pitfall entries in the
+user's existing store were test-harness ones saved by the impl agent — they belong with the test
+author. Same memory shape as the other three (tag-by-codebase · save-list · generalization test ·
+don't-save: contract facts/AC specifics — assertions derive from the contract, never memory ·
+≤200-line index). Description + procedure step 3 (consult before authoring) + README bullet
+updated. **react-checker-agent deliberately stays memory-less** — fresh-eyes + evidence-only is
+its charter; remembered priors are exactly the bias it exists to exclude. (2) **Role openers
+sharpened on one shape** — every agent starts "You are <identity>. Your role: <the one
+responsibility + its hard boundary>" then the judgment flavor; procedures stay in the body. All
+5 workers updated (test: independent proof of contracts, not the implementer · impl: make failing
+tests pass, tests never editable · checker: fresh-eyes verdict, report never fix · auditor:
+initialize the atlas, read never change · architect: own the design phase, artifacts never code);
+both drivers' Role sections now open "You are a pure orchestrator… you decide, verify, and
+record; you never do the heavy work yourself" (the duplicated decides/verifies sentence later in
+the paragraph removed).
+
+**Follow-up (same session):** role openers reframed as role-play priming (user: "you are the
+expert, you are the best at that — keep telling what strengths it is good at"). New shape:
+**elite identity → enumerated strengths ("Your strengths: …", concrete craft abilities that
+activate domain knowledge) → judgment flavor → "Your role:" responsibility + hard boundary
+(moved last as the punchline)**. All 7 agents: auditor "renowned for reading unfamiliar systems
+faster than anyone" (entry-point spotting, graph-walking, rabbit-hole sense, naming the unread) ·
+architect "the one the team brings in when structure is the hard part" (fact placement, boundary
+sense, one-way deps, refactor-vs-bend in one read) · test "elite… Vitest/RTL/MSW/Playwright hold
+no secrets" (the assertion that catches the real bug, stub-smell, seam driving, deterministic
+suites) · impl "at the top of the craft" (state placement, effect loops, stale closures, memo
+boundaries, diffs that read like they were always there) · checker "the reviewer teams request
+when they need the truth" (forbidden deviation, unreachable state, silent catch, dead memo,
+ranking what matters from what itches) · both drivers "master orchestrator — your strength is
+judgment, not labor" (sequencing, precise handoffs, mechanical verification, knowing when to stop
+for a human). Boundaries and procedures unchanged.
+
+**Follow-up (same session):** role openers compressed to 2–3 sentences each (user: keep simple).
+Fixed micro-shape: sentence 1 = elite identity + the strengths list folded in as a colon clause ·
+sentence 2 = the one judgment stance · sentence 3 = "Your role: <responsibility> — <hard
+boundary>". Cut the standalone "Your strengths:" enumerations and secondary flavor lines; no
+strength, stance, or boundary was lost — only prose. Drivers likewise 3 sentences (persona+
+strengths+subagents · where process knowledge lives · Done condition).

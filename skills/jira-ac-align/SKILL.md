@@ -71,10 +71,8 @@ written after approval — plus a short reconciliation summary. Optionally a loc
 
 ## Rules
 
-- **Confirm-first.** Present both proposed outputs (description AC section and alignment-notes
-  comment) and wait for approval before any JIRA write. Exactly two writes: `editJiraIssue`
-  for the description, then `addCommentToJiraIssue` for the notes. Never touch status, labels,
-  or custom fields. The description stays clean — the audit trail belongs in the comment.
+- **Confirm-first, two writes only** (steps 5–6). Never touch status, labels, or custom
+  fields. The description stays clean — the audit trail belongs in the comment.
 - **Preserve non-AC content.** All non-AC content in the original description (background,
   links, context) is carried over verbatim; only the Acceptance Criteria section is replaced.
 - **Do not blindly enshrine drift.** If a Changed or Added delta appears unintentional rather

@@ -7,7 +7,8 @@ description: >
   is written, to decide unit boundaries, where a fact lives, or how new work attaches to
   existing units; a fast path yields a contract delta for bugfix-scale changes. Not for
   understanding existing code (use audit-code-flows query) or ordering the work (use
-  plan-react-contracts). Output: design.md + grouped contract files.
+  plan-react-contracts). Output: design.md + grouped contract files (+ a draft
+  qa-journey-plan.md when any AC is journey-level).
 ---
 
 # design-react-contracts
@@ -44,6 +45,10 @@ To the caller-designated dir; templates in [references/design.md](./references/d
   restates a contract.
 - `contracts/<group>.md` — contracts grouped by relation (units on the same flow/slice
   share a file; each unit in exactly one). Fast path → a single contract delta.
+- `qa-journey-plan.md` (draft) — only when the test strategy classifies any AC
+  journey-level: per journey `J-<n>` (precondition · steps · covers-ACs), happy +
+  error/boundary, each NEW or MODIFY <existing test path>, plus a NOT-automated table.
+  A draft — the caller's design gate approves it.
 
 **Discipline:** terse, goal-accurate — AC/rule IDs, exact identifiers/paths, no filler.
 Decisions, never reasoning ("why" = a one-line rule citation; unresolved → Open items).
@@ -59,10 +64,10 @@ Read the relevant file before deciding; cite it in design notes:
 
 ## Full path (feature-scale)
 
-Steps 1–3 → consultant [references/ground-truth.md](./references/ground-truth.md); Step 4–5 → consultant [references/design.md](./references/design.md).
+Step 1 → consult [references/ground-truth.md](./references/ground-truth.md); steps 2–3 → consult [references/design.md](./references/design.md).
 
 1. **Ground truth** — user & data flows from requirements/ACs alone; scope + blast radius.
-2. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/.
+2. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/ (+ the draft journey plan when the test strategy has journey rows).
 3. **Self-check** — internal, ONE pass; findings → one re-design of the affected units.
 4. **Resolve or finalize** — open items → pause with what was tried, wait for steering, resume; else hand back.
 

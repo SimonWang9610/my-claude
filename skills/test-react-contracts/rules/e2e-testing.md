@@ -44,6 +44,6 @@ test('J-2e · AC-2.4: failed save shows the error and keeps the draft', async ()
 
 ## Traceability
 
-Test names carry the journey id + AC ids verbatim — coverage is a grep, nothing else is
-bookkept. A journey that proves unautomatable goes back to the caller with the reason —
-never silently dropped.
+Journey id + AC ids in the name per test-quality's label rule — coverage is a grep,
+nothing else is bookkept. A journey that proves unautomatable goes back to the caller with
+the reason — never silently dropped.
