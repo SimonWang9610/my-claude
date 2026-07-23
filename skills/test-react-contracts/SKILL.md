@@ -40,7 +40,10 @@ Read before authoring; cite rules in review notes:
 1. **Scope** — walk the Test strategy table's unit-level rows; each uncovered row is a
    work item at its stated location. No table → derive one from ACs + contracts.
 2. **Author unit tests** — per [rules/unit-testing.md](./rules/unit-testing.md) and
-   [rules/test-quality.md](./rules/test-quality.md), one file per owning unit.
+   [rules/test-quality.md](./rules/test-quality.md), one file per owning unit. An
+   `Update:` marker names an existing test asserting superseded behavior — rewrite it to
+   the amended AC (cite it); a `DELETE` disposition removes it; never drop coverage
+   silently.
 3. **Self-check** — every AC row covered (coverage is a grep for the ID); each new test
    fails when its production condition is inverted (mutation litmus, spot-check the
    critical ones); suite runs deterministically — no sleeps, no order dependence.

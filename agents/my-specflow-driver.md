@@ -133,7 +133,9 @@ pair against the amended contract. A red surviving its first fix attempt → `/l
   when** — sliced paths, never a whole spec dir, never your reasoning; a prompt missing
   one is fixed before it is sent. Fences, skills, model, and return format come from the
   agent's own definition — never restated here.
-- **Tests are never edited to make code pass.**
+- **Tests are never edited to make code pass.** The one exception: a design § Blast
+  radius UPDATE/DELETE executed by the test agent pre-red — spec work, planned in
+  tasks.md; ad-hoc edits to green failing code remain forbidden.
 - **Run tests sparingly** — task tests during implement; one full-suite run, at spec-qa.
 - **Iteration budget** declared before any debug loop; spent → stop, surface the failing
   check, what was tried, the suspected cause. Never re-apply a rejected fix.

@@ -41,8 +41,9 @@ codebase scan. Greenfield (no atlas) → grep.
 To the caller-designated dir; templates in [references/design.md](./references/design.md):
 
 - `design.md` — architecture diagram, per-flow unit sequence diagrams + step tables,
-  ownership table, unit index, failure containment, test strategy, open items. Never
-  restates a contract.
+  ownership table, unit index, failure containment, test strategy, blast radius (existing
+  tests of touched units, each KEEP | UPDATE | DELETE), open items. Never restates a
+  contract.
 - `contracts/<group>.md` — contracts grouped by relation (units on the same flow/slice
   share a file; each unit in exactly one). Fast path → a single contract delta.
 - `qa-journey-plan.md` (draft) — only when the test strategy classifies any AC

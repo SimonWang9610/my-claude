@@ -34,6 +34,8 @@ must stay visible.
      empty · boundary) behave as contracted — no silent catch, no masking fallback.
    - Stated constraints (must-nots) hold — verify by grep; MODIFY units' listed importers
      unbroken.
+   - design.md § Blast radius dispositions executed — an UPDATE-flagged existing test
+     still asserting the superseded behavior, or a KEEP test broken, is a finding.
    - A deviation with no recorded DESIGN GAP → **CRITICAL** (dishonest divergence).
 2. **Quality & maintainability** — what does the diff cost the next change?
    - Family rulebooks, citing the rule file in each finding:

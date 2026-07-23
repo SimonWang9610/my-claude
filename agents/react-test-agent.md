@@ -36,7 +36,10 @@ the behavior the implementation must satisfy.
    traps), then use `/test-react-contracts` to author the tests for each task in the
    batch, one task at a time. Each test file: its strategy rows are the work list, each
    contract's test seam is the harness, the states it exposes are the assertion targets,
-   every test name cites its AC ID verbatim. Cover the task's Edge markers.
+   every test name cites its AC ID verbatim. Cover the task's Edge markers, and execute
+   its `Update:` markers — rewrite the named existing tests to the amended ACs (DELETE
+   dispositions remove them), surfacing every material change in your report, never
+   silently.
 
 4. **Self-check before returning** — run the preloaded skill's self-check over the whole
    batch; then the prompt's Done When.

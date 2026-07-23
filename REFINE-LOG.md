@@ -1083,3 +1083,35 @@ focused). Description rewritten off the A/B-twin framing onto what it is (own pl
 "The playbooks ARE the process — never substitute outside workflow commands or skills." The
 agent no longer references any other driver or workflow. (README keeps the experiment context
 for humans.)
+
+---
+
+## Blast-radius test coherence chain (2026-07-23)
+
+User-found gap: features touching existing units forgot that EXISTING tests in the blast radius
+(of the units and their importers) may need updating — they broke or stayed stale until the
+spec-qa full-suite run. Root causes: the sflow design phase *described* a blast-radius section
+but design-react-contracts never authored one (so it never existed under the react path, and
+was fully absent under the lean driver); plan never projected flagged tests into work; the impl
+agent can't touch tests; and the "tests are never edited to make code pass" rule deterred the
+legitimate update. Fix = the same chain as the journey plan's NEW|MODIFY dispositions —
+**design discovers → plan projects → test agent executes → checker verifies**, one owner per
+step:
+
+1. **design-react-contracts** — design.md gains **§ Blast radius**: reverse-import closure of
+   MODIFY/REPLACE units → their existing tests, each dispositioned KEEP (behavior preserved) |
+   UPDATE (asserts superseded behavior — cite the AC) | DELETE (covers removed behavior); may be
+   empty, said so. Self-check "Blast radius closed" now also requires a disposition per listed
+   test; SKILL Output bullet updated.
+2. **plan-react-contracts** step 3 — every UPDATE/DELETE row lands as an
+   `Update: <test path> (AC-x.y)` marker on the owning task (parallel to the Edge marker), so
+   existing-test updates are planned test-batch work, never a QA surprise.
+3. **test-react-contracts** step 2 + **react-test-agent** step 3 — execute Update markers:
+   rewrite the named existing test to the amended AC / remove on DELETE; material changes
+   surfaced in the report, coverage never dropped silently. Runs pre-red, so the byte-unchanged-
+   since-red guarantee is untouched.
+4. **check-react-implementation** behavior axis — new check: dispositions executed (an
+   UPDATE-flagged test still asserting the old behavior, or a broken KEEP test, is a finding).
+5. **All three drivers** — the "Tests are never edited to make code pass" hard rule gains its
+   one exception: a design-flagged blast-radius UPDATE/DELETE executed by the test agent
+   pre-red is spec work; ad-hoc edits to green failing code remain forbidden.

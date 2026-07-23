@@ -107,6 +107,17 @@ sequenceDiagram
 <level = the harness tier from the owning contract's Test seam; test labels cite the AC id
 verbatim so authoring downstream is mechanical>
 
+## Blast radius
+<reverse-import closure of MODIFY/REPLACE units → the EXISTING tests covering them and
+their importers (grep the unit names in test files); may be empty — say so.>
+| Existing test | Covers | Disposition |
+|---------------|--------|-------------|
+| `DeviceTable.test.tsx` | selection rendering | KEEP — behavior preserved |
+| `useFilters.test.ts` | default sort | UPDATE — asserts superseded behavior (AC-2.3) |
+<KEEP = still valid · UPDATE = asserts behavior this spec changes (cite the AC) · DELETE =
+covers removed behavior. UPDATE/DELETE rows are planned work — the plan projects them into
+the owning task's test batch.>
+
 ## Open items
 <unresolved self-check findings and recorded debt — each with what was tried / why deferred>
 ````
@@ -201,7 +212,8 @@ re-design, not a report.
   a named mechanism between hops. An ambiguous handoff (nobody owns the invalidation; two
   units both think they trigger the refetch) fails and names the unit to re-design.
 - **Blast radius closed.** Every MODIFY/REPLACE importer has a decision (kept compatible |
-  migrated in scope); every split/merge passes the right-size test
+  migrated in scope); every existing test in § Blast radius carries a disposition (KEEP |
+  UPDATE + AC | DELETE); every split/merge passes the right-size test
   (rules/decompose-components.md); every REPLACE names its useless-after removal or its
   architecture payoff.
 

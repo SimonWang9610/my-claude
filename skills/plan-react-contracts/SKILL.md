@@ -39,6 +39,9 @@ scanning.
    rows). **Edge completeness check:** per unit walk error · empty · loading · boundary;
    a class the contract's States exposed demands but no AC row asserts gets one
    `Edge: <unit>·<class>` marker on the task — the test skill's rules fix the assertion.
+   **Blast radius projected:** every design § Blast radius UPDATE/DELETE row lands as an
+   `Update: <test path> (AC-x.y)` marker on the task owning that unit — existing-test
+   updates are planned test-batch work, never a surprise at QA.
 4. **Derive waves — dependency order constrains, token economy cuts.** Start from DAG
    levels (wave *n*'s deps all in earlier waves), then MERGE adjacent levels until the
    spec fits **2–4 waves**; a wave is sized by one agent's context (its tasks' combined

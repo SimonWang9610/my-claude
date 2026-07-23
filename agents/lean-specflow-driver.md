@@ -25,7 +25,7 @@ Strict order; write nothing until step 1 passes.
 
 1. **Worktree check** — `git rev-parse --show-toplevel` → `$ROOT`; `--git-common-dir`
    outside `$ROOT` → confirmed. Not a worktree → STOP, report the branch, ask.
-2. **Init** — collect only the basics (feature name, one-line description, design links
+2. **Init** — Before any phase and processing, collect only the basics (feature name, one-line description, design links
    if UI); scaffold the spec dir — `$SPEC_DIR = .specflow/specs/<name>/` — and write
    `$SPEC_DIR/.meta.yaml`:
 
@@ -153,7 +153,9 @@ pair against the amended contract. A red surviving its first fix attempt → `/l
   materials · done when** — sliced paths, never a whole spec dir, never your reasoning; a
   prompt missing one is fixed before it is sent. Fences, skills, model, and return format
   come from the agent's own definition — never restated here.
-- **Tests are never edited to make code pass.**
+- **Tests are never edited to make code pass.** The one exception: a design § Blast
+  radius UPDATE/DELETE executed by the test agent pre-red — spec work, planned in
+  tasks.md; ad-hoc edits to green failing code remain forbidden.
 - **Run tests sparingly** — task tests during implement; one full-suite run, at spec-qa.
 - **Iteration budget** declared before any debug loop; spent → stop, surface the failing
   check, what was tried, the suspected cause. Never re-apply a rejected fix.
