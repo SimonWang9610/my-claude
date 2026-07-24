@@ -1115,3 +1115,55 @@ step:
 5. **All three drivers** — the "Tests are never edited to make code pass" hard rule gains its
    one exception: a design-flagged blast-radius UPDATE/DELETE executed by the test agent
    pre-red is spec work; ad-hoc edits to green failing code remain forbidden.
+
+**Follow-up (same session):** atlas format enforcement (user saw README.md instead of index.md
+and flow notes missing frontmatter). Root cause: templates described the format but nothing
+checked it before returning. Fix on "judgment authors, search verifies":
+- **build.md** — new **File contract** paragraph opening the Artifact section (exact names:
+  `atlas/index.md` never README/SUMMARY + one `<flow-id>.md` per flow) carrying the RUNTIME
+  reason that makes an LLM comply: index.md is the always-loaded routing tier and query greps
+  `^(id|title|keywords|outline):` — a misnamed file is never read, an unfrontmattered note is
+  invisible to every query. New closing **§ Format check** — two mechanical commands (`ls atlas/`
+  + `grep -L '^id: ' atlas/*.md | grep -v index.md` must print nothing) + index-rows ↔ flow-files
+  one-to-one; fix before returning.
+- **query.md** heal + **distill.md** step 3 — writes conform to build.md's templates and finish
+  with its Format check (one clause each).
+- **code-auditor-agent** — new rule "The atlas format is the contract" (fix violations, never
+  report around them) and Report back now REQUIRES `format check: PASS` — a run that can't pass
+  it isn't done, giving the driver a mechanical token to verify against.
+
+**Follow-up (same session):** the format drift's deeper cause reconciled — the flow-note body is
+feature-shaped (GIVEN/WHEN/THEN needs a trigger→outcome), so architectural content (layering,
+routing setup, state-management organization, DI/service mechanisms) fit nowhere and the auditor
+abandoned the whole format, envelope included. Fix: **envelope/body split**. The envelope (file
+naming + YAML frontmatter) is the query-routing contract and never varies; the body now has two
+legitimate shapes — **feature note** `F<n>` (GIVEN/WHEN/THEN/HOW, unchanged) and **architecture
+note** `A<n>` (STRUCTURE — participants + dependency direction · MECHANISM — the generic pathway
+a fact travels, per hop anchored · RULES — invariants + where new work attaches), sharing the
+conditional tail (Dependents/Verdict · Preserve/drop · Self-audit pointers). Organize gained the
+routing rule ("content fitting neither body → split the note, never abandon the envelope");
+index template shows an A-row; SKILL description + build bullet name both shapes; distill
+rephrases into the matching shape; auditor rule routes ill-fitting content to the architecture
+shape instead of a free-form file. Format check unchanged — it validates the envelope, which is
+shape-invariant by design.
+
+**Follow-up (same session):** audit skill reorganized (user: extract format contracts, allow
+nesting, keep procedures concise). (1) **references/formats.md extracted** — all artifact
+contracts in one file: file contract, INDEX.md template, shared frontmatter, both note bodies
+(feature F<n> / architecture A<n>) + shared tail, and the Format check; every writing mode
+(build · distill · query-heal) points here, stated once. (2) **build.md is procedure-only**
+(Locate → Walk → Organize + a formats.md pointer; the duplicated template block and its
+narration removed). (3) **Nested folders allowed inside atlas/** (`flows/`, `arch/`, a domain
+per folder) with **INDEX.md as the single manager**: every note has exactly one Index row
+carrying its relative File path (new File column), no per-folder indexes; query's frontmatter
+scan and the Format check went recursive (`grep -r --include='*.md'`, `find atlas`).
+(4) **index.md renamed INDEX.md** (user: better identification among atlas files) — swept
+across SKILL.md, all references, and the auditor agent; the file contract + auditor rule pin
+the exact name. SKILL build bullet now points at build.md (procedure) · formats.md (contracts).
+
+**Follow-up (same session):** two formats.md refinements. (1) Architecture notes REQUIRE mermaid
+diagrams: STRUCTURE = a `graph` (participants + dependency direction, nodes anchored; prose only
+for what the diagram can't carry), MECHANISM = a `sequenceDiagram` of the generic pathway, per
+hop anchored. (2) INDEX.md's interaction map may split into several diagrams when one would be
+unreadable — by connected component, domain, or around a hub, each titled one line; a note
+appears in every diagram it couples into.

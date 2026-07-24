@@ -1,13 +1,13 @@
-# build — procedure and artifact formats
+# build — Locate → Walk → Organize
 
 Inputs: **entry points** · **purpose** (the caller's questions — gates every read) ·
 **source kind** per entry: **existing** (live code — the note adds Dependents + a
 REUSE/MODIFY/REPLACE proposal) · **legacy** (read-only reference — the note is a
 behavioral spec: preserve vs drop).
 
-Explore the way you would by hand — **Locate → Walk → Organize** — bounding depth *during* the
-walk (jump only where a purpose question is still open), so the off-purpose graph is never
-built and the read can't run away.
+Explore the way you would by hand, bounding depth *during* the walk (jump only where a
+purpose question is still open), so the off-purpose graph is never built and the read
+can't run away.
 
 ## 1. Locate — narrow by keyword
 
@@ -31,23 +31,28 @@ boundary / cap is hit. A branch cut while still on-purpose becomes a **Self-audi
 Read budget ~15 files/flow; spent → stop and report notes + gaps. A gap list is a valid
 result; an overrun is not.
 
-## 3. Organize — the walked hops into flows
+## 3. Organize — the walked hops into notes
 
-Turn the walked hops into each flow's note + the couplings index.
+Turn the walked hops into notes + the couplings index, per the contracts in
+[references/formats.md](./formats.md).
 
 - **Audit flows, not files** — follow each flow end-to-end (entry → handler → state →
   boundary); per hop: WHAT data · WHERE from · WHERE to · HOW (mechanism).
+- **Two note shapes, one envelope** — a coherent user/data flow → a **feature note**
+  (`F<n>`, GIVEN/WHEN/THEN/HOW); a cross-cutting structure or mechanism the purpose needs
+  (layering, routing setup, state-management organization, a DI/service pattern) → an
+  **architecture note** (`A<n>`, STRUCTURE/MECHANISM/RULES). Content fitting neither body
+  is a signal to split the note — never to abandon the envelope.
 - **Record boundaries, not implementations** — name the exact surface (method + path +
   params + body/response shape · DB table · topic · storage key) and stop; never descend
   into the client/SDK/framework plumbing behind it.
-- **Indirection: annotate the hops the purpose needs; box the rest.** Name the chain —
-  config origin → interpreter → collector (+ data model) → submission. An opened hop is
+- **Indirection: annotate the hops the purpose needs; box the rest.** An opened hop is
   traced and anchored; a boxed hop records in/out shapes + a Self-audit pointer. The chain
   stays continuous — never collapsed to the mechanism's name.
-- **Couplings live in `index.md`** — the walk's fact-touch-points already found the sites;
-  write each into `index.md`'s Couples-with cell (direction + shared fact) and map the
-  moment the second flow hits it. Never in flow notes, never a second scan.
-- **Deepen, don't duplicate** — a flow already in the atlas (e.g. a distilled one) is updated
+- **Couplings live in `INDEX.md`** — the walk's fact-touch-points already found the sites;
+  write each into the Couples-with cell (direction + shared fact) and map the moment the
+  second flow hits it. Never in note bodies, never a second scan.
+- **Deepen, don't duplicate** — a note already in the atlas (e.g. a distilled one) is updated
   in place; verifying a `source: distilled` field from source drops that mark. Never a second
   note for the same flow.
 - **Tag what you didn't read directly** — untagged = read from source · `(inferred)` =
@@ -55,58 +60,6 @@ Turn the walked hops into each flow's note + the couplings index.
 - **Scan wide; note narrow** — facts, anchors, surfaces, shapes; no narration, nothing
   that doesn't affect a downstream decision.
 
-## Artifact — `atlas/` in the caller-designated directory
-
 The walk fills the mechanical parts (units, call edges, `path:symbol` anchors); organizing
-fills the frontmatter `outline` + GIVEN/WHEN/THEN/HOW — judgment authors, search verifies.
-
-`index.md` — the always-loaded tier:
-
-````markdown
-# Atlas
-<scope>
-<purpose — one or two lines>
-
-## Index
-| Flow | Kind | Entry anchor | Units touched | Couples with |
-|------|------|--------------|---------------|--------------|
-| F1 <name> | existing | `path:symbol` | <units> | → F3 (invalidates <fact>) |
-
-## interaction map
-<mermaid: nodes = flows, labeled edges = coupling + direction; hub units several flows
-couple through flagged — widest change radius. Omit under 2 interacting flows.>
-
-## Gaps
-<what wasn't audited, and why, each one line; e.g. "F2: no entry found", "F4: out of scope,
-only a legacy reference">
-````
-
-`<flow-id>.md` — one per flow; frontmatter routes the query, body carries the facts (omit an
-inapplicable section; bodies are facts in the fewest lines that carry them):
-
-````markdown
----
-id: F<n>
-title: F<n> <flow>
-keywords: <query keywords, 2-3 words each, comma-separated>
-outline: <what it solves + solution shape, when it is useful, what it is not, 1-3 sentences>
-source: <omit if audited from source; `distilled from <path>` if from an external atlas>
----
-
-## GIVEN
-per fact: origin (surface + shape) · preconditions (auth · flag · prior flow) · initial state
-## WHEN
-trigger (user action · timer · external event · state change) + guards
-## THEN
-per case (happy · error · empty · race · permission): outcome · state changed + where · propagation
-## HOW
-transforms per hop · side effects (exact surface: method+path+body · storage key · event) ·
-mechanism per hop; for indirection, name the full chain (config origin → interpreter →
-collector → submission), each hop anchored, opened or boxed
-## Dependents / Verdict       <!-- existing only -->
-external importers · REUSE | MODIFY | REPLACE — one-line reason (a proposal; the caller confirms)
-## Preserve / drop            <!-- legacy only -->
-behaviors kept vs deliberately dropped
-## Self-audit pointers
-`path:symbol` — what deeper detail lives there + which decision needs it
-````
+fills the frontmatter `outline` + the body sections — judgment authors, search verifies.
+Finish with formats.md's **Format check**.

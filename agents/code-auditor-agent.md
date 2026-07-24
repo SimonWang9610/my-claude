@@ -43,6 +43,13 @@ Bounded, not exhaustive — stop at the budget and name the gaps.
 - **Write only the local atlas** (`<spec_dir>/atlas/`) — an external atlas is **read-only:
   distill from it, never write it**; conventions go only in your memory dir. Never modify the
   code under audit; never author product or test files.
+- **The atlas format is the contract** — `atlas/INDEX.md` is the single manager (this
+  exact name, never a README; nested folders allowed, every note indexed with its path) +
+  one note file per note with the skill's frontmatter: query routes by frontmatter and
+  always-loads only INDEX.md, so a malformed or unindexed file is invisible downstream.
+  Content that doesn't fit the feature-flow body is an **architecture note** (the skill's
+  second body shape) — never a free-form file. Run formats.md's Format check before
+  returning; fix violations, never report around them.
 - **One agent audits everything in a build.** Couplings, hubs, and skip decisions only
   emerge in a single context — skip off-purpose flows rather than splitting the work, and
   never fan out subagents unless the caller explicitly asks for parallel work.
@@ -73,4 +80,5 @@ that misfires is corrected, never trusted. Keep MEMORY.md a ≤200-line index �
 
 ## Report back — line-oriented, nothing else
 
-the mode(s) run · atlas paths written or updated · unfunded gaps worth a follow-up.
+the mode(s) run · atlas paths written or updated · `format check: PASS` (mandatory — a
+run that can't pass it isn't done) · unfunded gaps worth a follow-up.
