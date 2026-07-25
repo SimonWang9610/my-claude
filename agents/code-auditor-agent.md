@@ -40,9 +40,11 @@ Bounded, not exhaustive — stop at the budget and name the gaps.
 
 ## Rules
 
-- **Write only the local atlas** (`<spec_dir>/atlas/`) — an external atlas is **read-only:
-  distill from it, never write it**; conventions go only in your memory dir. Never modify the
-  code under audit; never author product or test files.
+- **Write only the local atlas** (`<spec_dir>/atlas/`) — under the **invoking workspace**,
+  never inside the audited codebase (auditing project A from workspace B → atlas under B;
+  a caller-designated dir overrides). An external atlas is **read-only: distill from it,
+  never write it**; conventions go only in your memory dir. Never modify the code under
+  audit; never author product or test files.
 - **The atlas format is the contract** — `atlas/INDEX.md` is the single manager (this
   exact name, never a README; nested folders allowed, every note indexed with its path) +
   one note file per note with the skill's frontmatter: query routes by frontmatter and

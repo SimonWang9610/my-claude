@@ -1167,3 +1167,15 @@ for what the diagram can't carry), MECHANISM = a `sequenceDiagram` of the generi
 hop anchored. (2) INDEX.md's interaction map may split into several diagrams when one would be
 unreadable — by connected component, domain, or around a hub, each titled one line; a note
 appears in every diagram it couples into.
+
+**Follow-up (same session):** atlas write-location rule pinned — `atlas/` lives under the
+**invoking project** (current workspace), even when the audited code is elsewhere (auditing
+project A from workspace B → atlas under B); a caller-designated dir overrides; anchors keep
+pointing at the audited source wherever it lives; never write into the audited codebase. Stated
+in formats.md § Files (Location paragraph) and folded into the auditor's write rule. Drivers
+already comply structurally via `$SPEC_DIR` under their own worktree.
+
+**Follow-up (same session):** note file naming — `<id>-<short-name>.md` (id + meaningful kebab
+name: `F3-device-selection.md`, `A1-state-management.md`) replacing bare `F3.md`/`A1.md`;
+formats.md § Files + INDEX template examples updated. Format check unaffected (recursive greps
+match any *.md).

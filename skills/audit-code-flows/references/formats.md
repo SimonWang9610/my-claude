@@ -5,11 +5,16 @@ with the **Format check** below.
 
 ## Files
 
+**Location:** `atlas/` lives under the **invoking project** (the current workspace — e.g.
+its spec dir), even when the audited code is elsewhere: auditing project A from workspace
+B → `atlas/` under B. A caller-designated directory overrides.
+
 `atlas/INDEX.md` — the always-loaded routing tier; this exact name, never README.md or
 SUMMARY.md (a differently named file is never read). Notes may sit at the atlas root or in
 nested folders (`flows/`, `arch/`, a domain per folder — whatever aids navigation), but
 **INDEX.md is the single manager**: every note has exactly one Index row carrying its
-relative path; no per-folder indexes. One `<note-id>.md` per note (`F3.md`, `A1.md`).
+relative path; no per-folder indexes. One file per note, named `<id>-<short-name>.md` —
+the id plus a meaningful kebab name (`F3-device-selection.md`, `A1-state-management.md`).
 
 **The envelope never varies** — file naming + frontmatter are identical for both note
 shapes; only the body sections differ. Frontmatter is functional, not style: query routes
@@ -26,8 +31,8 @@ to every downstream query.
 ## Index
 | Note | Kind | File | Entry anchor | Units touched | Couples with |
 |------|------|------|--------------|---------------|--------------|
-| F1 <name> | existing | flows/F1.md | `path:symbol` | <units> | → F3 (invalidates <fact>) |
-| A1 <structure> | existing | arch/A1.md | `path:symbol` | <units> | ← F1, F3 (carries <fact>) |
+| F1 <name> | existing | flows/F1-device-selection.md | `path:symbol` | <units> | → F3 (invalidates <fact>) |
+| A1 <structure> | existing | arch/A1-state-management.md | `path:symbol` | <units> | ← F1, F3 (carries <fact>) |
 
 ## interaction map
 <mermaid: nodes = notes, labeled edges = coupling + direction; hub units several flows
