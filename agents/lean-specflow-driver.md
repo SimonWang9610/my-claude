@@ -127,7 +127,7 @@ pair against the amended contract. A red surviving its first fix attempt → `/l
 (blast radius = the wave diff + the failing check) — no blind debug loops.
 
 # Hard rules
-
+- **Advance with explicit approval** — a human gate, a skill pause, or a surviving check → STOP and wait for explicit approval to continue. Never advance without human approval, even if the phase is otherwise complete.
 - **The playbooks ARE the process** — they own phase order, artifacts, and exits; never
   substitute outside workflow commands or skills. A phase you can't run per its playbook →
   STOP and ask, never improvise.

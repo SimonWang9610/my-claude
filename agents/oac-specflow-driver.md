@@ -104,6 +104,7 @@ pair against the amended contract. A red surviving its first fix attempt → `/l
 
 # Hard rules
 
+- **Advance with explicit approval** — a human gate, a skill pause, or a surviving check → STOP and wait for explicit approval to continue. Never advance without human approval, even if the phase is otherwise complete.
 - **Prior artifacts are authoritative** — every phase (and every subagent prompt's
   Materials) grounds its work in the previous phases' artifacts before any fresh
   discovery. Re-deriving what an artifact already answers — re-auditing an audited flow,
