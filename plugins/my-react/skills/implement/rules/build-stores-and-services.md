@@ -17,6 +17,14 @@ create<DeviceState>()((set) => ({
 }))
 ```
 
+## Selectors return stable references
+
+A selector minting a fresh object/array per call — `useStore(s => ({ a: s.a, b: s.b }))`,
+`s => s.items.filter(...)` — is an infinite loop in Zustand v5 ("Maximum update depth
+exceeded"): `useSyncExternalStore` sees a new snapshot every read, and v5 applies no
+default equality. Wrap with `useShallow`, or select primitives one per call. A selector
+returning a stored reference (`s => s.filters`) is already stable — don't flag.
+
 ## No server data in the store
 
 The store holds keys/ids; entities resolve from the query cache at read time. An entity
@@ -38,7 +46,8 @@ A high-frequency fact consumed imperatively (canvas, video overlay) uses
 `store.subscribe` in an effect/service — a selector hook renders per tick.
 
 ```ts
-useEffect(() => useDeviceStore.subscribe(s => s.positionMs, draw), [draw])
+// vanilla subscribe(listener); the returned unsubscribe is the effect cleanup
+useEffect(() => useDeviceStore.subscribe(s => draw(s.positionMs)), [draw])
 ```
 
 ## Service lifecycle is idempotent; errors are typed

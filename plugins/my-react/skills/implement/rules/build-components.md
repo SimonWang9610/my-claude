@@ -2,20 +2,8 @@
 
 ## Implement exactly the contract's surface
 
-Props name-for-name, type-for-type; no undeclared props, no widened optionals; every state
-in "States exposed" rendered with its observable signal. A case the contract missed is a
-**design gap** (raise it), not a new prop.
-
-```tsx
-// contract: DeviceTile({ device }) · states: unknown | online | offline
-// ✗ undeclared `showLabel`; promised 'unknown' state never rendered
-function DeviceTile({ device, showLabel = true }) { return <Tile>{device.name}</Tile> }
-// ✓
-function DeviceTile({ device }: DeviceTileProps) {
-  if (device.status === 'unknown') return <UnavailableTile />
-  return <Tile status={device.status}>{device.name}</Tile>
-}
-```
+A case the contract missed is a **design gap** — raise it; never absorb it as a new prop
+or a widened optional.
 
 ## Render every data state
 
@@ -43,6 +31,11 @@ type State =
   | { status: 'ready'; devices: Device[] }
 ```
 
+A `switch` over the union exhausts every variant — a silent `default` fallback lets a
+newly added member compile and misrender at runtime; make the default unreachable
+(`state satisfies never`). A default over a genuinely open input (an unparsed server
+string) is boundary parsing, not this.
+
 ## Never define a component inside a component
 
 An inline definition is a new type every render — the subtree unmounts and remounts,
@@ -65,6 +58,19 @@ implementation breaks the Test seam.
 // ✓ <button onClick={save} disabled={isPending}>Save</button>
 // ✓ error state: <p role="alert">{error.message}</p>
 ```
+
+Every input has a programmatic label — `<label htmlFor>`, a wrapping `<label>`, or
+`aria-label`; a placeholder is not one (it vanishes on first keystroke, and
+`getByLabelText` finds nothing).
+
+## Handler and async errors land in state — boundaries can't catch them
+
+Error boundaries catch render/lifecycle throws only — never event handlers or async
+callbacks. A handler `try/catch` that only logs (or a floating promise) under an
+`<ErrorBoundary>` fails invisibly: no boundary triggers, no contracted error state
+renders. Route the failure into state (`mutation.isError`, an error `useState`) or
+rethrow during render. Query errors routed via `throwOnError` do throw in render and
+reach the boundary — that path is fine.
 
 ## Stable keys
 

@@ -57,9 +57,5 @@ in a ref or stays in its service — `setState` per frame renders per frame.
 
 ## Deliberate staleTime
 
-The default `staleTime: 0` refetches on every mount and refocus — a storm across shared
-keys. Set an app-wide default and tune per query per the contract.
-
-```ts
-new QueryClient({ defaultOptions: { queries: { staleTime: 30_000 } } })
-```
+Tune `staleTime` per hot query per its contract — a shared key refetching on every mount
+and refocus is a storm; the app-wide default is a design decision, not set here.

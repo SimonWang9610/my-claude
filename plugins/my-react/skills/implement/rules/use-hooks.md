@@ -27,6 +27,19 @@ useEffect(() => setFullName(`${first} ${last}`), [first, last])
 const fullName = `${first} ${last}`
 ```
 
+## Notify the parent from the handler, never an effect
+
+An effect whose only job is calling a parent callback with own state lets React commit
+and paint, then triggers the parent's setState — a second full render pass per change,
+cascading if the parent syncs back. Call `onChange` in the same handler that set the
+state; React batches both into one pass. An effect relaying an **external** event inward
+(`player.on('ended', onEnded)`) is subscription, not state relay — keep it.
+
+```tsx
+// ✗ useEffect(() => onChange(isOn), [isOn, onChange])
+// ✓ const toggle = () => { setIsOn(next); onChange(next) }
+```
+
 ## Never seed state from a prop
 
 `useState(props.x)` freezes the mount-time value. Read the prop directly; for an editable
@@ -125,7 +138,9 @@ useEffect(() => {
 Effect-fetching races on fast param changes, re-implements caching badly, and traps data in
 one consumer. Keys come from the domain's typed factory — never inline literals — or
 invalidation silently misses entries. No `onSuccess`/`onError` on `useQuery` (removed in
-v5); side-effects on data go in an effect on `data`/`error`.
+v5); side-effects on data go in an effect on `data`/`error`. An imperative fetch inside an
+**event handler** (export, submit) is not effect-fetching — don't flag it; without TanStack
+Query in the codebase this card never applies.
 
 ```tsx
 // ✗ races on id change; no cache; stringly key
@@ -138,8 +153,8 @@ useQuery({ queryKey: deviceKeys.detail(id), queryFn: () => api.getDevice(id) })
 
 A write is a `useMutation` that settles the keys the contract's invalidation graph names;
 errors surface via `mutation.isError`, never a swallowed catch. When the contract promises
-optimistic behaviour: snapshot in `onMutate`, roll back in `onError`, re-sync in `onSettled`
-— without the pair, a failed write leaves phantom data on screen.
+optimistic behaviour: cancel + snapshot in `onMutate`, roll back in `onError`, re-sync in
+`onSettled` — without the pair, a failed write leaves phantom data on screen.
 
 ```tsx
 // ✗ cache never settles (stale list); failure invisible to the UI
@@ -147,4 +162,20 @@ const onAdd = async () => { try { await api.addDevice(input) } catch (e) { conso
 // ✓
 useMutation({ mutationFn: api.addDevice,
   onSuccess: () => queryClient.invalidateQueries({ queryKey: deviceKeys.lists() }) })
+```
+
+## Optimistic writes cancel in-flight reads first
+
+`onMutate` must `await queryClient.cancelQueries({ queryKey })` **before** writing the
+cache — a refetch already in flight for that key resolves after the optimistic write and
+overwrites it with pre-mutation data: the UI visibly reverts, then snaps forward on settle.
+Invalidate-and-refetch mutations write no optimistic state — nothing to cancel.
+
+```ts
+onMutate: async (next) => {
+  await queryClient.cancelQueries({ queryKey: deviceKeys.detail(id) })
+  const prev = queryClient.getQueryData(deviceKeys.detail(id))
+  queryClient.setQueryData(deviceKeys.detail(id), next)
+  return { prev }
+}
 ```

@@ -18,7 +18,8 @@ return <TileLayout stream={stream} {...ptz.handlers} />
 
 3+ structural boolean props → recompose into parts the caller orders; separate variant
 components instead of a `mode` prop; children for composition — a render callback only when
-the parent injects data the caller lacks.
+the parent injects data the caller lacks. Independent *state* booleans (`disabled`,
+`loading`, `readOnly`) are not structural toggles — don't recompose for those.
 
 ```tsx
 // ✗ toggle soup — 2⁵ configurations nobody can verify
@@ -27,11 +28,24 @@ the parent injects data the caller lacks.
 <Tile><Tile.Surface /><Tile.Timestamp />{cam.ptz && <Tile.PtzOverlay />}</Tile>
 ```
 
+## Minimum props — contract the fields consumed
+
+A unit consuming ≤2 fields of an entity takes those fields, not the whole object (nor a
+call-site-built config object). `memo` and the compiler compare props by `Object.is` — a
+parent-built object is a fresh reference every render, so the boundary never bails — and
+the unit re-couples to every future field of the type. Passing the entity to a unit that
+renders most of it, or forwarding an id to children, is fine.
+
+```tsx
+// ✗ <DeviceBadge device={device} />        // reads only name + status
+// ✓ <DeviceBadge name={device.name} status={device.status} />
+```
+
 ## Independently verifiable
 
-Every unit must be exercisable via its own surface — a component via props/providers, a
-hook via controlled inputs, a service via its interface — never by standing up its host. A
-behaviour reachable only through its host has a missing seam: extract it into a named unit.
+A unit is exercisable via its own surface — a component via props/providers, a hook via
+controlled inputs, a service via its interface; a behaviour reachable only through its
+host has a missing seam: extract it into a named unit.
 
 ```ts
 // ✗ the behaviour under test lives inside a mock — nothing is exercised
@@ -48,9 +62,9 @@ blindly. Before any cut:
 - **Name the payoff** — which rule it satisfies or which AC it isolates. No payoff, no cut.
 - **Count the importers forced to change.** A split that ripples through N callers, or a
   merge that couples unrelated responsibilities, is worse than the smell it fixes — keep
-  the seam and record the debt instead.
-- **Keep the cut inside the current scope** — one unit or one interface. A cut that leaks
-  beyond it is an Open item for the caller, not a silent refactor.
+  the seam.
+- **Keep the cut inside the current scope** — one unit or one interface; never a silent
+  wider refactor.
 
 Soft ceilings (~400-line component, ~300-line hook) are signals to evaluate, not triggers
 to cut.

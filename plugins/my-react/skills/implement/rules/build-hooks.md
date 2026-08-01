@@ -16,12 +16,13 @@ function useDeviceFilters(devices: Device[], query: string): Device[] { /* deriv
 
 ## Stable returns
 
-Callbacks in the return are `useCallback` with functional updates (dependency-free where
-possible); derived objects/arrays are `useMemo`. An unstable return is not a style issue —
-it's a **latent correctness bug**: harmless while nothing watches its identity, then the
-first consumer that puts it in an effect's dep array loops ("Maximum update depth
-exceeded") and every memo downstream is silently defeated. Stability is part of the
-hook's contract, not an optimization.
+Identity stability is part of the hook's contract, not an optimization. An unstable
+return is a **latent correctness bug**: harmless while nothing watches its identity, then
+the first consumer that puts it in an effect's dep array loops ("Maximum update depth
+exceeded") and every memo downstream is silently defeated. Without react-compiler,
+deliver it manually — callbacks via `useCallback` with functional updates
+(dependency-free where possible), derived objects/arrays via `useMemo`; with the compiler
+configured, it memoizes these automatically and the manual wrappers are noise.
 
 ```ts
 // ✗ fresh object + fresh callback every render
@@ -55,9 +56,8 @@ const positionMs = useSyncExternalStore(engine.subscribe, engine.getPosition)
 
 ## Exercisable in isolation
 
-The hook must run under `renderHook` with controlled inputs and asserted returns — the
-contract's Test seam. Needing its host component to stand up means the surface is wrong:
-lift the dependency into a parameter.
+Runs under `renderHook` with controlled inputs and asserted returns — needing its host
+component to stand up means the surface is wrong: lift the dependency into a parameter.
 
 ```ts
 renderHook(() => useDeviceFilters({ devices: fixture, query: 'door' }))

@@ -1,7 +1,9 @@
 # Optimize components — hot paths only
 
 Optimize when the path is hot (per-frame, large list, main interaction). Clear code first.
-**With `babel-plugin-react-compiler` configured, skip all manual memoization below.**
+**With `babel-plugin-react-compiler` configured, skip the manual `memo`/`useCallback`
+mechanics in the first section — the remaining sections are not memoization and still
+apply.**
 
 ## memo at expensive boundaries, with stable props
 

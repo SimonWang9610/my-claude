@@ -58,6 +58,15 @@ useEffect(() => {
 }, [query])
 ```
 
+## Independent queries start in parallel — no nested waterfalls
+
+A child that mounts only after its parent's query resolves, running a query whose inputs
+(route param, id) already existed at parent mount, serializes roundtrips — each nesting
+level adds a full network latency before first paint. Hoist the query to the parent,
+prefetch at the route, or batch with `useSuspenseQueries`. A genuinely dependent query —
+its input exists only in the parent's response (`enabled: !!parent.data?.id`) — is not a
+waterfall to flag.
+
 ## Contain failures deliberately
 
 Decide per surface where error/suspense boundaries sit — which subtree fails or suspends

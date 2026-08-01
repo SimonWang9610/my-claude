@@ -33,13 +33,8 @@ useEffect(() => setOnlineCount(devices.filter(d => d.online).length), [devices])
 const onlineCount = devices.filter(d => d.online).length
 ```
 
-Never seed local state from a prop snapshot — it silently ignores later parent updates:
-
-```tsx
-// ✗ const [name, setName] = useState(device.name)
-// ✓ read the prop; for an editable draft, reset by identity
-<DeviceEditForm key={device.id} device={device} />
-```
+For an editable draft of an owned fact, remount per entity —
+`<DeviceEditForm key={device.id} device={device} />` — never a state copy seeded from the prop.
 
 ## Server facts → server cache
 
@@ -63,10 +58,16 @@ ambiguous:
 - **Concurrent writes** to the same entity: name the policy — last-write-wins, disable
   while pending, or server version check surfaced as a conflict error.
 
+**The app-wide `staleTime` default is a design decision** — the default `0` refetches on
+every mount and refocus, a storm across shared keys. Set one default on the `QueryClient`
+(e.g. `staleTime: 30_000`) and tune per query in its contract.
+
 ```ts
-// optimistic contract = update + rollback + settle, declared together
+// optimistic contract = cancel + update + rollback + settle, declared together
 useMutation({ mutationFn: api.renameDevice,
-  onMutate: async (next) => { /* snapshot + optimistic cache write */ },
+  onMutate: async (next) => {
+    await queryClient.cancelQueries({ queryKey: deviceKeys.detail(id) })   // an in-flight refetch would overwrite the optimistic write
+    /* snapshot + optimistic cache write */ },
   onError: (_e, _v, ctx) => queryClient.setQueryData(deviceKeys.detail(id), ctx.prev),
   onSettled: () => queryClient.invalidateQueries({ queryKey: deviceKeys.detail(id) }) })
 ```
@@ -90,11 +91,12 @@ tell `useState` from a store behind the interface, so the design can change with
 const FiltersCtx = createContext<{ state: Filters; actions: FilterActions } | null>(null)
 ```
 
-A listenable service emits outside React; one hook bridges it in:
+A listenable service emits outside React; one hook bridges its **discrete** facts in —
+per-frame values stay in the service or a ref, never React state:
 
 ```ts
-const engine = createPlayerEngine({ onPosition: ms => emitter.emit('position', ms) })
-const positionMs = useSyncExternalStore(subscribeToPosition, getPosition)
+const engine = createPlayerEngine({ onStateChange: s => emitter.emit('playState', s) })
+const playState = useSyncExternalStore(subscribeToPlayState, getPlayState)
 ```
 
 Store slices hold discrete, UI-free facts with intent-named actions — never raw setters,

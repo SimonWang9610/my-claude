@@ -1292,3 +1292,18 @@ Fresh-eyes iterations: round 1 = 17 findings (evaluator can't write its own repo
 ledger/Verified columns missing from templates; a1 unexecutable; oac driver unmirrored;
 c5/v3 double-cover; double-ask ceremony) — all applied; round 2 verified.
 **Round 3 residuals (4):** a1 unverifiable fallback · oac prior-ledger Materials · multi-mode single-verdict shape · evaluate step 5 return-vs-write — applied.
+
+**2026-08-01 — rule-corpus challenge (research → 19 changes, net +69 lines):**
+Adopted 8 gap cards (source → card): react.dev effect taxonomy → notify-parent-from-handler
+(use-hooks); TanStack waterfalls guide → parallel-queries/no-nested-waterfalls
+(services-and-boundaries); Zustand v5 migration → stable-selector-references
+(build-stores-and-services); TanStack optimistic guide → cancel-in-flight-reads-first
+(use-hooks); react.dev memo → minimum-props (decompose-components, authoring side of
+rubric s7); react.dev Component → handler/async-errors-land-in-state (build-components);
+WebAIM Million → programmatic-label (build-components); TS handbook → exhaustive-switch
+(build-components). Fixed 8 weak rules (self-contradicting uSES example; both optimistic
+examples taught the G4 bug; compiler-stale stable-returns; broken subscribe example;
+missing not-flags ×2; seed-from-prop dedupe; over-broad compiler-skip). 3 misplacements
+(process prose cut from cards; app-wide staleTime → state-ownership; rubric-restating
+surface card compressed). Dropped: prop-drilling and state-duplication cards (existing
+coverage confirmed).
