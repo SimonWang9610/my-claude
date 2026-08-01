@@ -40,6 +40,7 @@ failure cites its rule card (`skills/design/rules/`), the mechanism picker
 | s4 | core | each flow declares where an error stops propagating (failure containment) | trace |
 | s5 | core | every NEW unit's responsibility is absent from existing units (else it re-tags REUSE/MODIFY; a fact-owning duplicate fails s1 instead) | grep |
 | s6 | core | the structure absorbs the spec's named growth — more rows, more consumers, the next feature on the flow — without redrawing boundaries | trace |
+| s7 | core | each contract surface accepts only the facts it consumes — an object parameter narrows to the fields used; no fact is duplicated across surfaces | read + cite |
 
 ## T — Tradeoffs: choices and inherited debt are recorded decisions
 

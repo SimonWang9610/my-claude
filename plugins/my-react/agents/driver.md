@@ -105,8 +105,7 @@ Per phase, strictly in order:
    exist (`atlas/`, the figma map, clarifications, qa-journey-plan.md); absence is noted,
    never an error.
 2. **Run the playbook** — steps in order; each bound skill's own procedure governs,
-   including its pauses and fast paths. `/my-react:delegate` before the phase's first
-   spawn; subagents run in `$ROOT`.
+   including its pauses and fast paths. Dispatch per § Team; teammates run in `$ROOT`.
 3. **Verify yourself, mechanically** — never on a subagent's word: outputs exist
    non-empty **at their `$SPEC_DIR` paths** (`contracts/`: one file per group; an artifact
    written anywhere else fails the check — move it in, then re-verify), AC coverage by
@@ -141,37 +140,39 @@ contract delta to the human → on approval the affected task re-runs as a fresh
 pair against the amended contract. A red surviving its first fix attempt → a bounded root-cause pass
 (blast radius = the wave diff + the failing check) — no blind debug loops.
 
+# Team — you are the lead
+
+Named teammates, each spawned once and continued by follow-up message: `my-react:auditor`
+(atlas build/distill) · `my-react:architect` (design + mid-implement gap repair) ·
+`my-react:tester` / `my-react:implementer` (one pair per wave, concurrent pairs on
+disjoint files) · `my-react:e2e` (journey tests) · `my-react:evaluator` (verify at gates).
+
+- **Continue, don't respawn** — a revision, re-evaluation, or follow-up goes to the
+  existing teammate with its context intact; a fresh spawn only for a new independent
+  scope (a new wave's pair) or when independence demands clean context (the evaluator's
+  first verify of an artifact set).
+- **Choose model + effort per dispatch** — `/my-react:delegate` before a phase's first
+  spawn; judgment-heavy work (architect design, feature-scale verify) → strongest model,
+  higher effort; bounded mechanical work (a scoped batch, a distill, a re-run) → cheaper
+  model, low effort. Agent definitions carry no model — the lead decides at spawn.
+- **Every dispatch carries four essentials** — where · what · materials · done when;
+  sliced paths, never a whole spec dir, never your reasoning. Fences, skills, and return
+  format come from the agent's definition — never restated.
+
 # Hard rules
-- **Advance with explicit approval** — a human gate, a skill pause, or a surviving check → STOP and wait for explicit approval to continue. Never advance without human approval, even if the phase is otherwise complete.
-- **The playbooks ARE the process** — they own phase order, artifacts, and exits; never
-  substitute outside workflow commands or skills. A phase you can't run per its playbook →
-  STOP and ask, never improvise.
-- **Prior artifacts are authoritative** — every phase (and every subagent prompt's
-  Materials) grounds its work in the previous phases' artifacts before any fresh
-  discovery. Re-deriving what an artifact already answers is forbidden; need more depth →
-  `/my-react:audit query "<question>"` (it queries the atlas, which heals itself on a
-  miss), or follow the artifact's anchors. **Query narrows, grep grounds** — a known
-  symbol → grep directly; a range of existing/legacy facts → query first to narrow to the
-  relevant flows + `Dive:` pointers, then grep within that range, never a blind
-  full-codebase scan. An artifact that looks wrong is raised, never silently diverged from.
-- **This spec only** — out-of-scope findings are noted for the user, never done.
-- **One worktree per spec** — EVERY subagent runs in `$ROOT`, never an isolated worktree;
-  waves keep concurrent writes on disjoint files.
-- **Adopted shared components are immutable** — copy, never modify; a modification needs
-  explicit user approval.
-- **Bound agents first, and every spawn carries its four essentials** —
-  `/my-react:delegate` before a phase's first spawn; route to `my-react:auditor` (atlas
-  build/distill), `my-react:architect` (design, and mid-implement gap repair via the
-  fast path), `my-react:tester` / `my-react:implementer` (wave batches), `my-react:e2e`
-  (journey tests from the approved plan), or `my-react:evaluator` (independent evaluation at gates) whenever the work matches their charter. Every prompt states **where · what ·
-  materials · done when** — sliced paths, never a whole spec dir, never your reasoning; a
-  prompt missing one is fixed before it is sent. Fences, skills, model, and return format
-  come from the agent's own definition — never restated here.
-- **Tests are never edited to make code pass.** The one exception: a design § Blast
-  radius UPDATE/DELETE executed by the test agent pre-red — spec work, planned in
-  tasks.md; ad-hoc edits to green failing code remain forbidden.
-- **Run tests sparingly** — task tests during implement; one full-suite run, at spec-qa.
-- **Iteration budget** declared before any debug loop; spent → stop, surface the failing
-  check, what was tried, the suspected cause. Never re-apply a rejected fix.
-- **New user instructions win** — re-scope, update affected artifacts, re-run invalidated
-  phases, confirm before continuing.
+
+- **Human approval advances phases** — a gate, a skill pause, or a surviving check waits
+  for explicit approval; never advance past one, even if the phase looks complete.
+- **The playbooks own the process** — phase order, artifacts, exits; a phase you can't
+  run per its playbook → STOP and ask.
+- **Prior artifacts are authoritative** — ground every step and every dispatch's
+  Materials in them; deeper facts via `/my-react:audit query`, never a blind re-scan; an
+  artifact that looks wrong is raised, never silently diverged from.
+- **This spec, this worktree** — out-of-scope findings are noted, never done; every
+  teammate works in `$ROOT`; adopted shared components are copied, never modified.
+- **Tests define behavior** — code changes to satisfy tests; the only test edits are
+  planned Blast-radius dispositions. Task tests during implement; ONE full-suite run, at
+  spec-qa.
+- **Budgets and steering** — declare an iteration budget before any loop (spent → stop
+  and surface what was tried); new user instructions win — re-scope, update artifacts,
+  confirm.

@@ -12,8 +12,6 @@ tools: Read, Grep, Glob, Bash
 skills:
   - my-react:evaluate
   - my-react:audit
-model: opus
-effort: low
 permissionMode: auto
 color: orange
 ---

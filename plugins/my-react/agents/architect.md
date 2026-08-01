@@ -13,8 +13,6 @@ skills:
   - my-react:design
   - my-react:evaluate
   - my-react:audit
-model: opus
-effort: medium
 memory: user
 permissionMode: auto
 color: blue

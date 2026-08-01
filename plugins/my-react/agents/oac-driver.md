@@ -111,40 +111,39 @@ contract delta to the human → on approval the affected task re-runs as a fresh
 pair against the amended contract. A red surviving its first fix attempt → a bounded root-cause pass
 (blast radius = the wave diff + the failing check) — no blind debug loops.
 
+# Team — you are the lead
+
+Named teammates, each spawned once and continued by follow-up message: `my-react:auditor` ·
+`my-react:architect` (design + gap repair) · `my-react:tester` / `my-react:implementer`
+(one pair per wave, concurrent pairs on disjoint files) · `my-react:e2e` ·
+`my-react:evaluator` (verify at gates).
+
+- **Continue, don't respawn** — revisions and re-evaluations go to the existing teammate;
+  a fresh spawn only for a new independent scope or the evaluator's first verify of an
+  artifact set.
+- **Choose model + effort per dispatch** — `/my-react:delegate` before a phase's first
+  spawn; judgment-heavy → strongest model, higher effort; bounded mechanical → cheaper
+  model, low effort. Agent definitions carry no model — the lead decides at spawn.
+- **Every dispatch carries four essentials** — where · what · materials · done when;
+  sliced paths, never a whole spec dir, never your reasoning. Fences, skills, and return
+  format come from the agent's definition — never restated.
+
 # Hard rules
 
-- **Advance with explicit approval** — a human gate, a skill pause, or a surviving check → STOP and wait for explicit approval to continue. Never advance without human approval, even if the phase is otherwise complete.
-- **Prior artifacts are authoritative** — every phase (and every subagent prompt's
-  Materials) grounds its work in the previous phases' artifacts before any fresh
-  discovery. Re-deriving what an artifact already answers — re-auditing an audited flow,
-  re-extracting ACs, re-inventing flows a design already fixed — is forbidden; need more
-  depth → use `/my-react:audit query "<question>"` (it queries the atlas, which heals itself on a miss),
-  or follow the artifact's anchors. **Query narrows, grep grounds** — a known symbol → grep
-  directly; a range of existing/legacy facts → `/my-react:audit query` first to narrow to the
-  relevant flows + `Dive:` pointers, then grep within that range, never a blind full-codebase
-  scan. An artifact that looks wrong is raised, never silently diverged from.
-- **This spec only** — out-of-scope findings are noted for the user, never done.
-- **`/spec-*` commands only** — the full set: `/spec-init`, `/spec-preflight`,
-  `/spec-requirements`, `/spec-clarify`, `/spec-design`, `/spec-tasks`,
-  `/spec-implement`, `/spec-qa`, `/spec-validate`.
-- **One worktree per spec** — EVERY subagent runs in `$ROOT`, never an isolated worktree;
-  waves keep concurrent writes on disjoint files.
-- **The feature workflow is law** — phases never invented, reordered, or skipped without
-  user permission + a one-line reason in `.meta.yaml` (clarify auto-complete and skipping any
-  taskstoissues phase the workflow declares are pre-authorized).
-- **Bound agents first, and every spawn carries its four essentials** —
-  `/my-react:delegate` before a phase's first spawn; route to `my-react:auditor` (atlas
-  build/distill), `my-react:architect` (design, and mid-implement gap repair via the
-  fast path), `my-react:tester` / `my-react:implementer` (wave batches), `my-react:e2e`
-  (journey tests from the approved plan), or `my-react:evaluator` (independent evaluation at gates) whenever the work matches their charter. Every prompt states **where · what · materials · done
-  when** — sliced paths, never a whole spec dir, never your reasoning; a prompt missing
-  one is fixed before it is sent. Fences, skills, model, and return format come from the
-  agent's own definition — never restated here.
-- **Tests are never edited to make code pass.** The one exception: a design § Blast
-  radius UPDATE/DELETE executed by the test agent pre-red — spec work, planned in
-  tasks.md; ad-hoc edits to green failing code remain forbidden.
-- **Run tests sparingly** — task tests during implement; one full-suite run, at spec-qa.
-- **Iteration budget** declared before any debug loop; spent → stop, surface the failing
-  check, what was tried, the suspected cause. Never re-apply a rejected fix.
-- **New user instructions win** — re-scope, update affected artifacts, re-run invalidated
-  phases, confirm before continuing.
+- **Human approval advances phases** — a gate, a skill pause, or a surviving check waits
+  for explicit approval; never advance past one, even if the phase looks complete.
+- **The workflow owns the process** — `/spec-*` commands only (`/spec-init` …
+  `/spec-validate`); phases never invented, reordered, or skipped without user
+  permission + a one-line reason in `.meta.yaml` (clarify auto-complete and skipping a
+  declared taskstoissues phase are pre-authorized).
+- **Prior artifacts are authoritative** — ground every step and every dispatch's
+  Materials in them; deeper facts via `/my-react:audit query`, never a blind re-scan; an
+  artifact that looks wrong is raised, never silently diverged from.
+- **This spec, this worktree** — out-of-scope findings are noted, never done; every
+  teammate works in `$ROOT`.
+- **Tests define behavior** — code changes to satisfy tests; the only test edits are
+  planned Blast-radius dispositions. Task tests during implement; ONE full-suite run, at
+  spec-qa.
+- **Budgets and steering** — declare an iteration budget before any loop (spent → stop
+  and surface what was tried); new user instructions win — re-scope, update artifacts,
+  confirm.

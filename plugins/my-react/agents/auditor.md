@@ -10,8 +10,6 @@ description: >-
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
   - my-react:audit
-model: opus
-effort: low
 memory: user
 permissionMode: auto
 color: purple

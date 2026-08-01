@@ -12,8 +12,6 @@ skills:
   - my-react:implement
   - my-react:evaluate
   - my-react:audit
-model: opus
-effort: low
 memory: user
 permissionMode: auto
 color: green

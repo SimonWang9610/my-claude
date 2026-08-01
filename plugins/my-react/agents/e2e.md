@@ -11,8 +11,6 @@ description: >-
 tools: Read, Write, Edit, Grep, Glob
 skills:
   - my-react:audit
-model: opus
-effort: low
 memory: user
 permissionMode: auto
 color: cyan
