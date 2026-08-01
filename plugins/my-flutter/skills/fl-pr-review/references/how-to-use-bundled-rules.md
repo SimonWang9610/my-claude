@@ -1,1 +1,0 @@
-../../fl-architecture-design/references/how-to-use-bundled-rules.md

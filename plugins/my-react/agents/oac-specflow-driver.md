@@ -39,17 +39,17 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
 
 - **preflight** — ① existing/legacy code in the feature scope → spawn `my-react:code-auditor-agent` to
   build `atlas/` (references + purpose + kind, plus any curated external atlas to distill; ONE
-  spawn); design links → `/my-react:decompose-figma`; neither → note it · ② `/spec-preflight`, querying
-  `atlas/` (`/my-react:audit-code-flows query "<question>"`) to scope faster · ③ figma map + gaps →
+  spawn); design links → `/my-react:figma`; neither → note it · ② `/spec-preflight`, querying
+  `atlas/` (`/my-react:audit query "<question>"`) to scope faster · ③ figma map + gaps →
   `preflight.md`, pointing at `atlas/`. · ④ **human gate**
-- **requirements** — ① `/spec-requirements` · ② `/my-react:build-requirements` →
+- **requirements** — ① `/spec-requirements` · ② `/my-react:requirements` →
   `requirements.md`. · ③ human gate
 - **clarify** — no OPEN `## Clarifications` entries → mark **completed** ("resolved in
   requirements § Clarifications"). Otherwise ① `/spec-clarify` · ② driver Q&A on exactly
   those → `clarify.md`.
 - **design** — ① `/spec-design` · ② spawn `my-react:react-architect-agent` (requirements + `atlas/` +
   design decomposition) → `design.md` + `contracts/` + draft `qa-journey-plan.md` · ③ **human gate**
-- **tasks** — ① `/spec-tasks` · ② `/my-react:plan-react-contracts` → `tasks.md`.
+- **tasks** — ① `/spec-tasks` · ② `/my-react:plan` → `tasks.md`.
 - **implement** — ① `/spec-implement` · ② per wave: [Implement
   Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
   `my-react:react-checker-agent` on the phase diff (recommend yes at feature scale, skip at bugfix
@@ -70,7 +70,7 @@ Per phase, strictly in the template's order:
    exist (`atlas/`, the figma map, clarifications, qa-journey-plan.md) — each changes what
    a skill does, so absence is noted, never an error.
 2. **Run the playbook** — steps in order; each bound skill's own procedure governs,
-   including its pauses and fast paths. `/my-react:smart-delegation` before the phase's first
+   including its pauses and fast paths. `/my-react:delegate` before the phase's first
    spawn; subagents run in `$ROOT`.
 3. **Verify yourself, mechanically** — never on a subagent's word: outputs exist
    non-empty (`contracts/`: one file per group), AC coverage by grep, named tests green,
@@ -109,9 +109,9 @@ pair against the amended contract. A red surviving its first fix attempt → a b
   Materials) grounds its work in the previous phases' artifacts before any fresh
   discovery. Re-deriving what an artifact already answers — re-auditing an audited flow,
   re-extracting ACs, re-inventing flows a design already fixed — is forbidden; need more
-  depth → use `/my-react:audit-code-flows query "<question>"` (it queries the atlas, which heals itself on a miss),
+  depth → use `/my-react:audit query "<question>"` (it queries the atlas, which heals itself on a miss),
   or follow the artifact's anchors. **Query narrows, grep grounds** — a known symbol → grep
-  directly; a range of existing/legacy facts → `/my-react:audit-code-flows query` first to narrow to the
+  directly; a range of existing/legacy facts → `/my-react:audit query` first to narrow to the
   relevant flows + `Dive:` pointers, then grep within that range, never a blind full-codebase
   scan. An artifact that looks wrong is raised, never silently diverged from.
 - **This spec only** — out-of-scope findings are noted for the user, never done.
@@ -124,7 +124,7 @@ pair against the amended contract. A red surviving its first fix attempt → a b
   user permission + a one-line reason in `.meta.yaml` (clarify auto-complete and skipping any
   taskstoissues phase the workflow declares are pre-authorized).
 - **Bound agents first, and every spawn carries its four essentials** —
-  `/my-react:smart-delegation` before a phase's first spawn; route to `my-react:code-auditor-agent` (atlas
+  `/my-react:delegate` before a phase's first spawn; route to `my-react:code-auditor-agent` (atlas
   build/distill), `my-react:react-architect-agent` (design, and mid-implement gap repair via the
   fast path), `my-react:react-test-agent` / `my-react:react-impl-agent` (wave batches), `my-react:react-e2e-agent`
   (journey tests from the approved plan), or `my-react:react-checker-agent` (fresh-eyes conformance

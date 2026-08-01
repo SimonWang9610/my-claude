@@ -10,7 +10,7 @@ description: >-
   memory, per codebase).
 tools: Read, Write, Edit, Grep, Glob
 skills:
-  - my-react:audit-code-flows
+  - my-react:audit
 model: opus
 effort: low
 memory: user
@@ -81,7 +81,7 @@ source.
   reason — never silently dropped.
 - **Test files only.** Never create, edit, or delete a source file; you don't run the
   suite — the driver owns the run. A fact the plan/design doesn't carry (a route, who
-  writes a fact) → `/my-react:audit-code-flows query "<question>"`.
+  writes a fact) → `/my-react:audit query "<question>"`.
 
 ## Memory — app-mount harness, per codebase
 

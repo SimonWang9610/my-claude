@@ -9,7 +9,7 @@ description: >-
   the atlas afterwards is the skill's `query` mode, run inline by whoever needs an answer.
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
-  - my-react:audit-code-flows
+  - my-react:audit
 model: opus
 effort: low
 memory: user
@@ -29,12 +29,12 @@ start on where to look, never a substitute for looking.
 ## Operating procedure
 
 Initialize the atlas with the skill's **build** / **distill** modes; the preloaded
-`audit-code-flows` owns each procedure. Both can apply — when a curated external atlas is
+`audit` owns each procedure. Both can apply — when a curated external atlas is
 provided, **distill first, then build**: the distilled flows warm the build (their entries,
 couplings, and boundaries map where to look), and build deepens or extends from there.
 
-1. **distill** (a curated external atlas is provided) — `/my-react:audit-code-flows distill <path> — purpose: <...>`: cherry-pick its purpose-relevant flows into local flows (marked external-derived), fast, no source read.
-2. **build** — Consult the corresponding project's memory, then `/my-react:audit-code-flows build <instructions>`; **Locate → Walk → Organize**, declaring the boundary — flows in scope, read budget — **before the first read**. A flow already present from distill is **deepened in place** (verify from source, drop its `source` mark) — never duplicated; audit source for what the external didn't cover.
+1. **distill** (a curated external atlas is provided) — `/my-react:audit distill <path> — purpose: <...>`: cherry-pick its purpose-relevant flows into local flows (marked external-derived), fast, no source read.
+2. **build** — Consult the corresponding project's memory, then `/my-react:audit build <instructions>`; **Locate → Walk → Organize**, declaring the boundary — flows in scope, read budget — **before the first read**. A flow already present from distill is **deepened in place** (verify from source, drop its `source` mark) — never duplicated; audit source for what the external didn't cover.
 
 Bounded, not exhaustive — stop at the budget and name the gaps.
 
@@ -50,7 +50,7 @@ Bounded, not exhaustive — stop at the budget and name the gaps.
   one note file per note with the skill's frontmatter: query routes by frontmatter and
   always-loads only INDEX.md, so a malformed or unindexed file is invisible downstream.
   Content that doesn't fit the feature-flow body is an **architecture note** (the skill's
-  second body shape) — never a free-form file. Run the preloaded audit-code-flows skill's `references/formats.md` Format check before
+  second body shape) — never a free-form file. Run the preloaded audit skill's `references/formats.md` Format check before
   returning; fix violations, never report around them.
 - **One agent audits everything in a build.** Couplings, hubs, and skip decisions only
   emerge in a single context — skip off-purpose flows rather than splitting the work, and

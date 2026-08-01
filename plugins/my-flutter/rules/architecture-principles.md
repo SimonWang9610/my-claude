@@ -40,7 +40,7 @@ Service Layer   data sources: REST ApiClient and other raw sources; raw payloads
   State holders receive repositories by constructor injection, expose observable state + named commands,
   and own one fact each (derive, don't duplicate). Whether the holder is a Riverpod `Notifier`, a Bloc/
   Cubit, or a `ChangeNotifier`, the UI sees only "observable state + commands" — package idioms stay in
-  the package's own skill (e.g. `fl-riverpod`). Prevents God-notifiers and couples-the-whole-tree-to-one-package.
+  the package's own skill (e.g. `riverpod`). Prevents God-notifiers and couples-the-whole-tree-to-one-package.
   Ref: https://docs.flutter.dev/app-architecture/guide
 - **P5 — Place state at the right level: local `setState` → `InheritedWidget` scope → provider.**
   Single-widget, never-persisted, no sibling reads → `StatefulWidget`/local controller. Shared by a
@@ -74,4 +74,4 @@ Service Layer   data sources: REST ApiClient and other raw sources; raw payloads
   Ref: https://docs.flutter.dev/app-architecture/case-study/testing
 
 Worked right/wrong examples and per-principle checks: see
-../skills/fl-architecture-design/references/principle-examples.md and principle-checks.md.
+../skills/design/references/principle-examples.md and principle-checks.md.

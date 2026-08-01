@@ -58,10 +58,10 @@ and tests only — never a spec artifact outside `$SPEC_DIR`.
 
 - **preflight** — ① existing/legacy code in the feature scope → spawn `my-react:code-auditor-agent`
   to build `$SPEC_DIR/atlas/` (plus any curated external atlas to distill; ONE spawn); design links
-  → `/my-react:decompose-figma` · ② author `preflight.md` yourself: reusable/legacy surfaces,
+  → `/my-react:figma` · ② author `preflight.md` yourself: reusable/legacy surfaces,
   shared-unit impact (Reuse as-is · Copy and customize · Modify unadopted · No
   interaction), gaps — grounded by `atlas/` queries and pointing at it, never restating it.
-- **requirements** — `/my-react:build-requirements` → `requirements.md` · **human gate**.
+- **requirements** — `/my-react:requirements` → `requirements.md` · **human gate**.
 - **clarify** — no OPEN `## Clarifications` entries → mark **completed** ("resolved in
   requirements § Clarifications"). Else ONE batched Q&A round on exactly those →
   `clarify.md`.
@@ -69,7 +69,7 @@ and tests only — never a spec artifact outside `$SPEC_DIR`.
   decomposition; outputs into `$SPEC_DIR`) → `design.md` + `contracts/` + draft `qa-journey-plan.md` · **human
   gate** — covers design AND journey plan; present the architect's refactor proposals +
   open items.
-- **tasks** — `/my-react:plan-react-contracts` → `tasks.md`.
+- **tasks** — `/my-react:plan` → `tasks.md`.
 - **implement** — per wave: [Implement discipline](#implement-discipline) · **check
   gate** — ask whether to spawn `my-react:react-checker-agent` on the phase diff (recommend yes at
   feature scale, skip at bugfix scale); run → present its findings and ASK how to handle ·
@@ -91,7 +91,7 @@ Per phase, strictly in order:
    exist (`atlas/`, the figma map, clarifications, qa-journey-plan.md); absence is noted,
    never an error.
 2. **Run the playbook** — steps in order; each bound skill's own procedure governs,
-   including its pauses and fast paths. `/my-react:smart-delegation` before the phase's first
+   including its pauses and fast paths. `/my-react:delegate` before the phase's first
    spawn; subagents run in `$ROOT`.
 3. **Verify yourself, mechanically** — never on a subagent's word: outputs exist
    non-empty **at their `$SPEC_DIR` paths** (`contracts/`: one file per group; an artifact
@@ -134,7 +134,7 @@ pair against the amended contract. A red surviving its first fix attempt → a b
 - **Prior artifacts are authoritative** — every phase (and every subagent prompt's
   Materials) grounds its work in the previous phases' artifacts before any fresh
   discovery. Re-deriving what an artifact already answers is forbidden; need more depth →
-  `/my-react:audit-code-flows query "<question>"` (it queries the atlas, which heals itself on a
+  `/my-react:audit query "<question>"` (it queries the atlas, which heals itself on a
   miss), or follow the artifact's anchors. **Query narrows, grep grounds** — a known
   symbol → grep directly; a range of existing/legacy facts → query first to narrow to the
   relevant flows + `Dive:` pointers, then grep within that range, never a blind
@@ -145,7 +145,7 @@ pair against the amended contract. A red surviving its first fix attempt → a b
 - **Adopted shared components are immutable** — copy, never modify; a modification needs
   explicit user approval.
 - **Bound agents first, and every spawn carries its four essentials** —
-  `/my-react:smart-delegation` before a phase's first spawn; route to `my-react:code-auditor-agent` (atlas
+  `/my-react:delegate` before a phase's first spawn; route to `my-react:code-auditor-agent` (atlas
   build/distill), `my-react:react-architect-agent` (design, and mid-implement gap repair via the
   fast path), `my-react:react-test-agent` / `my-react:react-impl-agent` (wave batches), `my-react:react-e2e-agent`
   (journey tests from the approved plan), or `my-react:react-checker-agent` (fresh-eyes conformance

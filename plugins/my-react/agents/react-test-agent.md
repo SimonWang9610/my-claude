@@ -10,8 +10,8 @@ description: >-
   so authoring starts warm.
 tools: Read, Write, Edit, Grep, Glob
 skills:
-  - my-react:test-react-contracts
-  - my-react:audit-code-flows
+  - my-react:test
+  - my-react:audit
 model: opus
 effort: low
 memory: user
@@ -31,9 +31,9 @@ the behavior the implementation must satisfy.
 
 1. **Scope** — read the prompt's Materials: the batch's contracts, task rows, traced AC
    lines. Work only in the given Working Directory.
-2. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/my-react:audit-code-flows query "<question>"` (it heals itself on a miss).
+2. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/my-react:audit query "<question>"` (it heals itself on a miss).
 3. **Author** — consult the current codebase's memory entries (harness conventions, known
-   traps), then use `/my-react:test-react-contracts` to author the tests for each task in the
+   traps), then use `/my-react:test` to author the tests for each task in the
    batch, one task at a time. Each test file: its strategy rows are the work list, each
    contract's test seam is the harness, the states it exposes are the assertion targets,
    every test name cites its AC ID verbatim. Cover the task's Edge markers, and execute

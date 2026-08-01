@@ -42,15 +42,15 @@ Researched juliusbrussee/caveman. Its own honest numbers show output-style compr
 wrong lever for input-dominated agentic sessions (the style skill costs ~1–1.5k input/turn and
 nets only 14–21%, sometimes negative). Absorbed the input-side, compounding levers instead:
 
-1. **Subagent return contracts** — `smart-delegation` "Demand compact structured returns" bullet
+1. **Subagent return contracts** — `delegate` "Demand compact structured returns" bullet
    now fixes a rigid line-oriented format with a hard item cap (`<path:line> — <symbol> — <≤6-word
    note>`); facts exact, everything else dropped, never abbreviated. Covers both drivers via the
    shared template.
 2. **Terse persisted artifacts** — one short rule per artifact-producing skill (duplicated per
    profile, per profile independence): build-acceptance-criteria (hard rule),
    design-react-architecture (**Write terse**), plan-react-tasks (step 6), analyze-react
-   (**Style** line), scan-resource (principle), fl-acceptance-criteria (step 10),
-   fl-architecture-design (intro), fl-task-design (output format). Common core: terse prose,
+   (**Style** line), scan-resource (principle), acceptance-criteria (step 10),
+   design (intro), tasks (output format). Common core: terse prose,
    reference IDs instead of restating, technical facts exact, no invented abbreviations.
 3. **Tokenizer-realism authoring rule** — new `rules/token-discipline.md` (distributed per-project
    by link.sh like the other rules; NOT in CLAUDE.md, which is symlinked as the global
@@ -63,7 +63,7 @@ Rejected: caveman-speak output style, per-turn style skills (net-negative here).
 
 Follow-up (same session) — trimmed the two remaining inter-phase/agent flows:
 
-5. **Slice-scoped delegation inputs** — `smart-delegation` `Materials:` line now demands the
+5. **Slice-scoped delegation inputs** — `delegate` `Materials:` line now demands the
    task's slice (unit's own contract, its task rows, traced AC lines), never a whole spec dir;
    slicing follows existing boundaries only (cross-unit reviewers still get all changed files +
    every contract's must-nots).
@@ -81,7 +81,7 @@ Follow-up (same session) — trimmed the two remaining inter-phase/agent flows:
 
 ## React skill-family optimization round (2026-07-19)
 
-1. **audit-code-flows** — note format restructured into one fixed thinking chain per flow:
+1. **audit** — note format restructured into one fixed thinking chain per flow:
    entry/exit → GIVEN (origins, preconditions, initial state) → WHEN (trigger + guards) →
    THEN (per-case outcome + state change + propagation) → HOW (transforms, side-effect
    surfaces, mechanisms) → Interacts-with (coupling + direction per related flow). Old
@@ -89,12 +89,12 @@ Follow-up (same session) — trimmed the two remaining inter-phase/agent flows:
    field lost, none duplicated. New output artifact: **flow interaction map** (mermaid or
    table) assembled from the Interacts-with lines; cross-flow touch points recorded
    during tracing, never via a second scan.
-2. **build-requirements** — new step 1 **First principles**: recover the problem behind
+2. **requirements** — new step 1 **First principles**: recover the problem behind
    the ask (a requested solution is a candidate, not the requirement), surface and check
    the request's assumptions against audit notes/system fundamentals (wrong ones become
    batched questions with evidence + recommended correction), derive requirements from
    problem + invariants, never from current code shape or user belief.
-3. **design-react-contracts** — first-principles rule in SKILL.md (units derive from what
+3. **design** — first-principles rule in SKILL.md (units derive from what
    flows require; audit says what exists, never what the design should look like);
    Output discipline gains **no reasoning in artifacts** (decisions only; one-line rule
    citations are the only "why"; unresolved reasoning → Open items) + **fixed shape**
@@ -103,11 +103,11 @@ Follow-up (same session) — trimmed the two remaining inter-phase/agent flows:
    sequenceDiagram between units (messages labeled `mechanism: fact`, NEW marked, ACs
    cited) + the ground-truth step table. Reconcile step 1 consumes the interaction map
    for blast radius.
-4. **plan-react-contracts** — new step 5: every wave pre-split into a **test batch**
+4. **plan** — new step 5: every wave pre-split into a **test batch**
    (one TestAgent) + **impl batch** (one WorkAgent); oversized waves (~4 tasks / context
    bloat) chunked at planning time with named reason; count-check extended (every task in
    exactly one chunk's batches). tasks.md § Waves shape added.
-5. **check-react-implementation** — checks restructured into three axes: **behavior &
+5. **check** — checks restructured into three axes: **behavior &
    outcomes** (AC tests assert the outcome not a proxy, states reachable, unhappy paths
    fail loudly, must-nots, importers), **quality & maintainability** (rulebooks + reuse
    honored, seams intact, scope surgical), **performance & memory** (unchanged
@@ -124,24 +124,24 @@ templates implement it structurally).
 Follow-up (same session, user feedback): audit note fields became `####` subheadings
 (conditional fields marked by comment, e.g. `<!-- existing only -->`) with terse
 fact-only bodies ("no narration, no restating the field name's meaning"); trimmed the
-verbosity the round introduced — build-requirements step 1 collapsed to one bullet,
-design-react-contracts first-principles/output-discipline paragraphs and the Flows
-template annotation shortened, plan-react-contracts step 5 tightened,
-check-react-implementation's axis preamble folded into the Checks intro.
+verbosity the round introduced — requirements step 1 collapsed to one bullet,
+design first-principles/output-discipline paragraphs and the Flows
+template annotation shortened, plan step 5 tightened,
+check's axis preamble folded into the Checks intro.
 
-Follow-up 2 (same session): design-react-contracts SKILL.md rewritten to exactly 70
+Follow-up 2 (same session): design SKILL.md rewritten to exactly 70
 lines (inputs merged, one-line rule bullets and full-path steps, references hoisted to a
 section preamble). Language-agnostic rules escalated to rules/preferences.md — new
 sections **First principles** (requests are evidence not specs; derive don't copy) and
 **Artifacts** (decisions never reasoning; fixed shapes), new bullets **Cut batches at
 planning time** (Leverage) and **Judge behavior first** (Code); Tokens' "rows are facts"
 folded into Artifacts to remove the overlap. Skills stay self-contained (rules
-duplicated, never referenced). Consistency audit fixes: test-react-contracts scopes now
+duplicated, never referenced). Consistency audit fixes: test scopes now
 "unit — skip step 3 / e2e — skip step 2" (self-check + steer always run); ground-truth.md
 stale "§ Propose refactors deliberately" → "§ Refactor proposals" and a redundant
-coverage-guard sentence cut; plan-react-contracts count-check corrected to "tasks =
+coverage-guard sentence cut; plan count-check corrected to "tasks =
 contract groups ± recorded re-cuts" and "every task in exactly one batch pair".
-decompose-figma, smart-delegation, jira-ac-align, implement/review skills audited — no
+figma, delegate, jira-align, implement/review skills audited — no
 changes needed.
 
 ---
@@ -151,16 +151,16 @@ changes needed.
 Swept the drivers + bound skills for heavy outputs and agent-to-agent intermediates:
 
 1. **Post-implement check user-gated** — both drivers' implement ③ is now a **check
-   gate**: ask the user whether to run `/check-react-implementation` (recommend yes for
+   gate**: ask the user whether to run `/check` (recommend yes for
    feature-scale waves, skip for bugfix scale; decision recorded), instead of always-on.
 2. **Design self-check scaled** — design.md § Self-check gains a Scale rule:
    single-group designs run blocking checks only (advisory classes re-surface in the
    post-implement check); kept blocking always — it catches design flaws before code
    exists, which no later check can. Drivers' Fresh-eyes rule scoped to feature-scale;
    fast-path/bugfix self-checks run inline, no subagent spawn.
-3. **Terse inter-agent prompts** — smart-delegation gains "Prompts are pointers, not
+3. **Terse inter-agent prompts** — delegate gains "Prompts are pointers, not
    prose": paths/IDs/rules/deliverable only, never background narration or reasoning.
-4. **Effort routing on dispatch** — smart-delegation gains "Route effort by task"
+4. **Effort routing on dispatch** — delegate gains "Route effort by task"
    (medium: mechanical contract-scoped work; high: judgment — design, forensics, review
    verdicts); preferences.md "Route models by fit" extended with the effort clause.
 
@@ -170,7 +170,7 @@ never artifact re-dumps), qa-report (grep-generated), tasks.md (pointer rows).
 
 Follow-up: design self-check budget cut from 2 loops to **ONE pass** — findings drive one
 re-design of the affected units, no re-check; still-open items pause to the caller
-(SKILL.md step 5 + design.md § Self-check reworded). smart-delegation template made
+(SKILL.md step 5 + design.md § Self-check reworded). delegate template made
 terse: pointer/constraint placeholders only, new `Effort: <medium | high>` field; the
 "pointers, not prose" bullet became the template's preamble sentence (stated once).
 
@@ -182,7 +182,7 @@ All 12 `/sf-*` commands rewritten 398 → 271 lines on a fixed shape: one-paragr
 artifacts, **Method** (embedded stack-agnostic skill, or "the flow's bound skill owns the
 procedure"), **Exit** gate. Commands stay language-agnostic; new rule (README updated in 3
 spots): commands may embed **stack-agnostic skills only** — sf-preflight embeds
-`/audit-code-flows`, sf-requirements embeds `/build-requirements`; stack skills remain
+`/audit`, sf-requirements embeds `/requirements`; stack skills remain
 generator/driver-bound, never named in commands.
 
 Cut as duplication or conflict:
@@ -191,9 +191,9 @@ Cut as duplication or conflict:
 - **`phases.md`** (sf-implement) — duplicated tasks.md § Waves batch pairs; one producer
   per fact.
 - **EARS notation + Example Mapping** (sf-requirements, sf-clarify, sf-validate check 2) —
-  conflicted with build-requirements' method and requirements.md shape; check 2 is now
+  conflicted with requirements' method and requirements.md shape; check 2 is now
   "AC shape" (stable ID + observable GWT). sf-clarify's "up to 5, one at a time" →
-  ONE batched round (aligned with build-requirements).
+  ONE batched round (aligned with requirements).
 - **Test-first ideology** (sf-implement) — replaced by the evidence contract: author ≠
   implementer, tests derive from contracts never from code, red-before-impl collected by
   the driver as mechanical evidence, green + byte-unchanged, review pass clean. The
@@ -210,7 +210,7 @@ the dir — no change needed.
 
 Follow-up 2: commands reshaped as **standalone procedure guides** on one uniform format
 (intro+artifacts · Steps · Exit): no driver knowledge (user-invocable one by one), no
-embedded skill names (reverted the /audit-code-flows and /build-requirements embeds — both
+embedded skill names (reverted the /audit and /requirements embeds — both
 drivers share the same procedure via their own command set to compare performance/quality;
 README's command rule updated in 3 spots). sf-init folds the **feature** `.meta.yaml`
 template in directly (feature-only, no template lookup, taskstoissues dropped; driver's
@@ -262,7 +262,7 @@ classifies any AC journey-level".
 
 ---
 
-## graphify research → audit-code-flows adoptions (2026-07-19)
+## graphify research → audit adoptions (2026-07-19)
 
 Reviewed /Users/simonwang/projects/tmp/graphify (codebase → knowledge graph skill:
 tree-sitter extraction, EXTRACTED/INFERRED/AMBIGUOUS edges, god nodes, Leiden communities,
@@ -284,9 +284,9 @@ forbid re-audit via prior-artifacts rule), HTML/Obsidian/Neo4j exports and bench
 (no consumer). Consumers reconciled: both drivers persist "flow index + notes +
 interaction map"; ground-truth § Audit locates notes via the index.
 
-Follow-up (A/B verdict): both skills produced same-quality output → audit-code-flows kept,
+Follow-up (A/B verdict): both skills produced same-quality output → audit kept,
 **flow-atlas deleted**, and its structure folded in via a cohesive rewrite (not a patch):
-audit-code-flows now has three modes — **build** (default; boundary + trace rules + tag
+audit now has three modes — **build** (default; boundary + trace rules + tag
 discipline unchanged in substance), **query** (≤20-line answers from the audit: index rows
 + note fields + `Dive:` pointers; never scans source), **extend** (the only post-build
 source-reader; folds facts back in, refreshes the index row, reports delta only). Artifact
@@ -295,7 +295,7 @@ Dependents/Verdict merged to one field). Consumers switched from receive-notes t
 invoke-the-skill: drivers' preflight runs `build` → `audits/` (preflight.md carries only
 figma map + gaps), carry-forwards + prior-artifacts rule name `audits/` and query/extend;
 ground-truth § Audit is now query → build → extend; design SKILL input renamed "Prior
-audits"; implement-react-contracts step 1 queries `audits/` for surrounding-flow context
+audits"; implement step 1 queries `audits/` for surrounding-flow context
 instead of broad re-reading.
 
 Follow-up: extend restated as its two real cases — (1) **new flow** (query miss, no
@@ -316,7 +316,7 @@ pattern (query → unanswered → extend): ground-truth § Audit is now 2 steps 
 examples; implement step 1 likewise. Explicit build remains the drivers' preflight bulk
 entry.
 
-Follow-up: audit-code-flows split for mode-scoped loading — SKILL.md is 44 lines (modes +
+Follow-up: audit split for mode-scoped loading — SKILL.md is 44 lines (modes +
 query + extend; what a querying subagent actually needs), the build procedure + artifact
 formats moved to references/build.md (103 lines, loaded only on build mode). Artifact dir
 renamed `audits/` → **`atlas/`** everywhere (skill, both drivers, design/implement
@@ -325,7 +325,7 @@ ground-truth § Audit shows real build/query/extend invocations; implement step 
 query example.
 
 Original twin (superseded by the fold above): **flow-atlas** created as an experimental
-A/B twin of audit-code-flows
+A/B twin of audit
 (skills/flow-atlas/SKILL.md, explicitly-invoked, NOT wired into drivers). Same note chain
 and trace discipline (condensed, self-contained duplicate for the experiment); structural
 differences: tiered artifact (`atlas/index.md` always-loaded tier over `flows/F<n>.md`
@@ -335,13 +335,13 @@ Interacts-with/HOW; never invents a hop), extend (the only source-reader: funds 
 Self-audit pointer and folds the facts back in — persistent deepening). Comparison
 protocol: run both on the same references; compare tokens loaded by design/implement,
 answer quality on identical questions, artifact size; winner's structure folds back into
-audit-code-flows and the twin is deleted (duplicate build rules are temporary by design).
+audit and the twin is deleted (duplicate build rules are temporary by design).
 
 ---
 
 ## react-doctor research (2026-07-20) — proposals implemented, then REVERTED on review
 
-Audited /Users/simonwang/projects/tmp/react-doctor via /audit-code-flows (atlas in session
+Audited /Users/simonwang/projects/tmp/react-doctor via /audit (atlas in session
 scratchpad): fully deterministic scanner — AST rules + project scans under one rule
 contract, one compiled noise filter, capability-gated enablement, LLM only at rule
 authoring time.
@@ -356,13 +356,13 @@ no assets remain in the tree.
 
 Follow-up: after discussion, the four research conclusions were folded back cohesively —
 each in its one home, family vocabulary, no scripts:
-1. **Capability gating** — implement-react-contracts leads its Rules priority with
+1. **Capability gating** — implement leads its Rules priority with
    "Capabilities first" (package.json once; a rule never decides its own applicability);
-   check-react-implementation mirrors it ("Capabilities gate citations").
+   check mirrors it ("Capabilities gate citations").
 2. **Rule cards carry the why** — .claude/CLAUDE.md Rules: code shape + runtime reason
    (what lets an LLM generalize without over-flagging) + ≥1 valid look-alike never
    flagged; false positive = correctness bug; narrow beats broad.
-3. **Suppression accounting** — check-react-implementation Output adds a drop tally
+3. **Suppression accounting** — check Output adds a drop tally
    (`suppressed: <n> (advisory cap · caller scope · capability gate)`) so a clean report
    means clean, never quietly filtered.
 4. **Judgment authors, search verifies** — preferences.md § Artifacts: correctness is
@@ -376,11 +376,11 @@ each in its one home, family vocabulary, no scripts:
 
 Two issues from real driver runs:
 
-1. **audit-code-flows fanned out subagents during build** — whole-flow sense (couplings,
+1. **audit fanned out subagents during build** — whole-flow sense (couplings,
    hubs, skip-decisions) fragments across contexts. Build mode now states: **ONE agent
    audits everything**; skip off-purpose flows instead of splitting; parallel subagents
    only on explicit caller designation.
-2. **Model routing too abstract** — smart-delegation's routing bullet is now a concrete
+2. **Model routing too abstract** — delegate's routing bullet is now a concrete
    mapping: test/impl from contracts → Sonnet (medium when the contract pins the work,
    high when multi-unit/heavy context) · search/explore → Haiku, escalated to Sonnet when
    the goal needs synthesis not locating · judgment (design, forensics, review verdicts)
@@ -390,14 +390,14 @@ Two issues from real driver runs:
 Follow-up: (a) `Model · Effort:` REMOVED from the delegation template — model/effort are
 spawn *parameters* the spawning session sets, never prompt content (routing bullet reworded
 to say so). (b) Companion-skill steadiness: invocation pinned to a moment ("invoke
-/smart-delegation BEFORE the phase's first spawn", phase-loop step 2, both drivers) + new
+/delegate BEFORE the phase's first spawn", phase-loop step 2, both drivers) + new
 hard rule **Every spawn is templated** — every subagent prompt carries the template's
 field labels; mechanically checkable (a prompt missing a label is not sent). Prose
 references get skipped; a checkable artifact shape doesn't.
 
 Follow-up: **wave economics rebalanced** (user observed heavy subagent token cost). Waves
 were DAG-level-driven and the "~4 tasks → chunk" trigger multiplied pairs — both push
-toward many small spawns, each re-paying a cold start. New strategy: plan-react-contracts
+toward many small spawns, each re-paying a cold start. New strategy: plan
 step 4 merges adjacent DAG levels until the spec fits **2–4 waves** (a wave sized by one
 agent's context — its tasks' combined contracts — never task count; more waves only when
 deps force them); step 5 = ONE test+impl pair per wave; chunking's only trigger is
@@ -410,16 +410,16 @@ Follow-up: **react-checker-agent built** — the one role where a subagent is st
 required, not just cheaper: the check skill's fresh-eyes premise maps to exactly one route
 (a subagent that can't inherit the author's reasoning; a fork would defeat it), and
 **read-only tools** (`Read, Grep, Glob, Bash` — no Write/Edit) make "findings never fixes"
-unbreakable. Binds `check-react-implementation` + `audit-code-flows` (queries the atlas to
+unbreakable. Binds `check` + `audit` (queries the atlas to
 verify conformance, never re-scans), `model: sonnet`, `effort: high`; expert-reviewer role,
 three-axis procedure ending in per-finding evidence verification, severity-ranked
 line-oriented return. Both drivers' implement check-gate now spawns it instead of running
-`/check-react-implementation` ad-hoc; bound-agents hard rule + README (three→four workers)
-updated. review-react-changes left a standalone skill (user-triggered, verdict-producing).
+`/check` ad-hoc; bound-agents hard rule + README (three→four workers)
+updated. review left a standalone skill (user-triggered, verdict-producing).
 
 Follow-up (fork docs read — a fork shares the parent's prompt cache because system
 prompt + tools are identical, so it is CHEAPER than a fresh subagent when the work needs
-existing context): **smart-delegation rewritten** — Decide step 1 is now a three-row
+existing context): **delegate rewritten** — Decide step 1 is now a three-row
 route table (inline · fork · subagent) keyed on what each *gets* vs *costs*, with "fork
 is the default when context is the payload" and the two things a fork can't give (fresh
 eyes, a narrower tool fence); step 2 bound-agent-or-ad-hoc; step 3 **the 7-field template
@@ -439,15 +439,15 @@ conditions) → **Report back**. User's frontmatter choices preserved (opus/low 
 auditor, memory: user for impl, permissionMode, colors).
 
 **Skill descriptions rewritten** on the "what it does + when to use it" formula — all 9
-skills (audit-code-flows, build-requirements, design/plan/implement/test-react-contracts,
-check-react-implementation, review-react-changes, decompose-figma, smart-delegation):
+skills (audit, requirements, design/plan/implement/test,
+check, review, figma, delegate):
 each now leads with the capability in plain terms, then names the concrete situations
 that should trigger it.
 
 Follow-up: **all three workers are stack-neutral roles** — `test-agent` / `impl-agent`
 (renamed from react-*) carry only fences + return contract; the language specifics come
 from the `skills:` frontmatter, which a profile swaps (react bundle preloads
-test-react-contracts / implement-react-contracts). Both gained **audit-code-flows** in
+test / implement). Both gained **audit** in
 their skills list + a query/extend clause for behavior their contract doesn't carry
 (never bulk audit, never broad re-reading). design SKILL.md now shows the usage inline
 (step 2: `query "<what the decision needs>"` → miss → `extend <pointer>`; Inputs bullet
@@ -460,10 +460,10 @@ oac 143→126.
 Follow-up: auditor renamed **code-auditor-agent** (language-agnostic — its skill always
 was; body now says "language- and stack-agnostic" explicitly; drivers + README updated).
 Layering restored: **domain skills name skills, never agents** — design/plan/implement
-reference `/audit-code-flows` directly and are **limited to query + extend** (bulk build
+reference `/audit` directly and are **limited to query + extend** (bulk build
 belongs to the caller's preflight): ground-truth § Audit back to the 2-step
 query→extend form with "Design queries and extends only"; implement step 1 "never a bulk
-audit here"; plan-react-contracts Inputs gained the same clause for facts design.md
+audit here"; plan Inputs gained the same clause for facts design.md
 doesn't carry; design SKILL step 2 reworded ("the atlas first; query/extend for what it
 lacks"). Only the drivers name agents.
 
@@ -473,14 +473,14 @@ three rebuilt on documented frontmatter: `skills:` **preloads the bound skill's 
 content at startup** (binding is now structural, not an instruction — the steadiness fix),
 plus `model: sonnet`, `effort: medium`, scoped `tools:`, `color:`. Bodies carry only
 fences + mode/procedure pointers + return contract (thin-binding rule holds). Auditor owns
-audit-code-flows end-to-end (build/query/extend selection, one-agent-per-build fence,
+audit end-to-end (build/query/extend selection, one-agent-per-build fence,
 atlas-only writes), so drivers stopped hardcoding audit modes: preflight ② spawns it,
 prior-artifacts rule asks it, ground-truth § Audit + implement step 1 ask it (standalone
-skill invocation kept as fallback). smart-delegation Decide restructured again:
+skill invocation kept as fallback). delegate Decide restructured again:
 1. delegate at all? · 2. **bound agent or ad-hoc?** (bound preferred — definition pins
 fences/skill/model/effort/return) · 3. model+effort+skills+materials for ad-hoc only;
 template gains "bound agents shrink this to four fields". Both drivers' hard rule now
-reads "Bound agents first"; plan-react-contracts + README de-branded (TestAgent/WorkAgent
+reads "Bound agents first"; plan + README de-branded (TestAgent/WorkAgent
 → test/impl agent).
 
 Superseded first cut: **dedicated batch agents built** — agents/oac-test-agent.md +
@@ -492,12 +492,12 @@ agent keeps Bash for typecheck + targeted runs), line-oriented Report back, DESI
 per the skill's format (thin-binding rule: agents never restate skill content). Drivers'
 Implement discipline is imperative ("Spawn oac-test-agent…"); spawn prompts shrink to
 Working Directory · Materials · Responsibilities · Done When; "Every spawn is templated"
-hard rule + smart-delegation gained the dedicated-agents-embody-the-template carve-out;
+hard rule + delegate gained the dedicated-agents-embody-the-template carve-out;
 README ORCHESTRATORS layer notes the pair.
 
 Follow-up: **preferences.md trimmed for focus** (user: more rules = less focus) — 84 → 48
 lines, 13 bullets → 7, four sections. Merged: Orchestrate + Route models + Cut batches →
-one Delegate bullet (smart-delegation owns the detail); Read-before-write → Simplicity-
+one Delegate bullet (delegate owns the detail); Read-before-write → Simplicity-
 first; Judge-behavior-first → Goal-driven; Refactor-to-unblock section → one clause on
 Derive-don't-copy; Artifacts + Tokens → one section (Decisions-never-reasoning + Fixed
 shapes merged). Dropped: Convention-beats-novelty (covered by derive-don't-copy + reuse).
@@ -505,7 +505,7 @@ Kept whole: the compounding gains — first principles, iteration budgets, judgm
 search-verifies, token economy. Folding into root CLAUDE.md offered but not done (root
 CLAUDE.md is empty + symlinked as global; load-path unknown → risk of double-loading).
 
-Follow-up: smart-delegation's Decide restructured as **three ordered calls** — 1. delegate
+Follow-up: delegate's Decide restructured as **three ordered calls** — 1. delegate
 at all? (delegate/inline/fork criteria) · 2. choose model + effort (spawn parameters) ·
 3. bind skills + slice materials (fills the template's Skills/Materials fields verbatim;
 slicing rule now stated once here, template fields point at it). Delegate section = prompt
@@ -546,10 +546,10 @@ fallback tagged `(grep)`. SKILL.md build bullet names the skeleton-first flow. c
 -agent already has Bash + binds the skill, so it inherits this at build time — no agent edit.
 
 **Description formula applied to all 12 skills** — appended `Not for <X> (use <alt>).
-Output: <shape>.` to each; tightened the two verbose trigger-lists (fl-pr-review,
-jira-ac-align) in the same pass. Near-twin routing now explicit in-description:
-check-react-implementation (no verdict) ↔ review-react-changes (gates merge) ↔
-audit-code-flows (builds atlas).
+Output: <shape>.` to each; tightened the two verbose trigger-lists (review,
+jira-align) in the same pass. Near-twin routing now explicit in-description:
+check (no verdict) ↔ review (gates merge) ↔
+audit (builds atlas).
 
 **Follow-up (same session):** three tightenings of the skeleton work —
 - **Language-agnostic** — recipes dropped the hardcoded `--lang tsx`; `--lang <L>` is picked
@@ -578,7 +578,7 @@ audit-code-flows (builds atlas).
 
 ## query+extend merged into self-healing query; build reframed Locate→Walk→Organize
 
-Two user-driven changes to audit-code-flows, applied together.
+Two user-driven changes to audit, applied together.
 
 **Modes 3→2 (build + query); extend folded into query.** A query answers from the atlas
 and, on a **scoped miss**, heals itself: declare a **reveal budget** (default 3
@@ -652,7 +652,7 @@ overrides the contract or a failing test** — those are the spec; a stale idiom
 not trusted. Description gained a matching clause. (`memory: project` was already set.)
 
 **Follow-up (same session):** react-impl-agent memory reframed from "mirror the codebase's
-idioms" to a **quality ledger judged against implement-react-contracts's rules** — the user's
+idioms" to a **quality ledger judged against implement's rules** — the user's
 concern that mirroring would enshrine project-wide bad practices. Now three entry kinds: (1)
 good practices to reuse (match the skill's rules), (2) anti-patterns to avoid (bad practices
 the rules flag — never copied for consistency), (3) pitfalls to route around (store re-render,
@@ -670,7 +670,7 @@ standard) still hold. Descriptions + README bullets reworded "project-scoped" �
 memory, per codebase". (`local` scope — project-specific + git-ignored — was offered as the
 alternative that fits "not committed" without the cross-project bleed; user chose user-level.)
 
-**Follow-up (same session):** audit-code-flows + code-auditor-agent support a read-only
+**Follow-up (same session):** audit + code-auditor-agent support a read-only
 **external atlas** (a curated atlas outside the spec dir, for shared/stable code). Design:
 self-describing — the **local** `atlas/index.md` declares its external baselines on an
 *External atlases:* line, so any query auto-discovers them with no per-call path plumbing.
@@ -722,7 +722,7 @@ build.md (Distill step + references/ artifact entry), agent build step, README b
 
 ---
 
-## audit-code-flows: frontmatter-routed query · ast-grep removed · distill mode
+## audit: frontmatter-routed query · ast-grep removed · distill mode
 
 Three simplifications, plus adopting the user's new atlas templates.
 
@@ -769,7 +769,7 @@ auditing source for what the external didn't cover. Description/role/report-back
 **Follow-up (same session):** driver preflight reordered — **audit first, then the command.**
 Both drivers now: ① spawn `code-auditor-agent` to build `atlas/` for the feature scope (distill
 first if a curated external atlas is provided), ② run `/sf-preflight`|`/spec-preflight`, which
-**queries the atlas** (`/audit-code-flows query`) to scope faster and better, ③ write
+**queries the atlas** (`/audit query`) to scope faster and better, ③ write
 preflight.md. This makes preflight the one exception to the "command runs first" rule (noted
 in each playbook intro: "except preflight, which builds the atlas first so the command can query
 it"), because the command benefits from the atlas rather than the reverse.
@@ -813,7 +813,7 @@ had deleted the working-tree copy of skills/specflow/README.md mid-session — r
 it remains the stale workflow-generator doc, still awaiting a dedicated rewrite.)
 
 **Follow-up (same session):** specflow phases de-coupled from stack-specific artifacts. `contracts/`
-is produced by a language-specific skill (`design-react-contracts`), so the stack-neutral phases
+is produced by a language-specific skill (`design`), so the stack-neutral phases
 must not cite it. Generalized: SKILL.md convention now states "a phase names only its own
 stack-neutral artifacts; stack-specific inputs (per-unit contracts, a code atlas, a design
 decomposition) arrive as **optional caller-provided materials**." Phase bodies reworded —
@@ -821,11 +821,11 @@ decomposition) arrive as **optional caller-provided materials**." Phase bodies r
 lines list `requirements.md`/`design.md` + "optional caller materials (the per-unit interfaces)";
 design no longer `Writes` `contracts/` (it's the stack skill's output, asserted as an Exit
 outcome). validate's design-consistency check now reads "every provided unit interface traces to
-≥1 AC". The driver's React playbook still binds `/design-react-contracts` → `contracts/` — the
+≥1 AC". The driver's React playbook still binds `/design` → `contracts/` — the
 correct home for the stack artifact. Phases stay ~30 lines (181 total, unchanged).
 
 **Follow-up (same session):** two fixes. (1) `references/design-units.md` — the design
-decomposition (Figma → EXISTING/PARTIAL/NEW unit map) produced by the `decompose-figma` stack
+decomposition (Figma → EXISTING/PARTIAL/NEW unit map) produced by the `figma` stack
 skill — was the same stack-specific leak as `contracts/`, missed last pass. Generalized:
 preflight no longer *writes* it (the stack decompose skill does, via the driver) and consumes it
 as an optional caller material; preflight dropped its "Decompose" step (folded into Survey:
@@ -836,15 +836,15 @@ explicit invocation **`/specflow <phase> <optional instructions>`** and that the
 phase its inputs + optional caller materials (atlas, contracts, design decomposition) as those
 instructions — which is exactly how the "caller-provided materials" reach the stack-neutral phase.
 
-**Follow-up (same session):** steer requirement/design toward `/audit-code-flows query` over
-self-grep (user saw the agent grepping the codebase directly). Root cause: build-requirements had
+**Follow-up (same session):** steer requirement/design toward `/audit query` over
+self-grep (user saw the agent grepping the codebase directly). Root cause: requirements had
 NO query directive (atlas was a passive "input"), and design's directive was buried in
 ground-truth.md. Fix — a prominent, positively-framed callout at the point of temptation, added
-to both build-requirements and design-react-contracts SKILL.md (identical, self-contained per the
+to both requirements and design SKILL.md (identical, self-contained per the
 duplicate-don't-reference rule): **"Query the atlas, don't grep the code."** Any existing-behavior
-fact → `/audit-code-flows query` first (the preflight atlas answers or heals); grep/read source
+fact → `/audit query` first (the preflight atlas answers or heals); grep/read source
 only for units you're authoring or after a query gap it can't heal; greenfield → skip.
-build-requirements Inputs/step-1 reworded from "audit notes" → "the atlas (query it)". Backstop:
+requirements Inputs/step-1 reworded from "audit notes" → "the atlas (query it)". Backstop:
 both drivers' "Prior artifacts are authoritative" hard rule gained "**Existing code is reached
 through the atlas** — query it, never a self-grep of the codebase to learn existing behavior"
 (covers every phase). plan/implement already carried query-first directives — left as-is.
@@ -870,13 +870,13 @@ pattern is only the blind full-codebase scan, not grep itself. Greenfield → gr
 **Follow-up (same session):** requirements-phase query made phase-appropriate. User: requirements
 *typically doesn't query* (it recovers the problem from the request + first principles); query
 helps specifically when an ambiguity/open question turns on existing/legacy behavior — query
-before blindly asking the user, since the atlas may already answer it. build-requirements callout
+before blindly asking the user, since the atlas may already answer it. requirements callout
 reframed "Query narrows, grep grounds" → **"Query only to settle an open question"** (usually no
 codebase; query a code-dependent ambiguity *before* it becomes a user question — don't ask what
 the atlas answers). Step 1 query made conditional ("when it turns on existing/legacy behavior");
 step 3 now queries a code-dependent gap before it becomes a question ("only what it can't settle
 becomes a question"); Inputs atlas note softened to "settle a code-dependent open question".
-design-react-contracts keeps the general "Query narrows, grep grounds" callout — design genuinely
+design keeps the general "Query narrows, grep grounds" callout — design genuinely
 wires into existing code throughout. Driver backstop unchanged (general principle).
 
 **Follow-up (same session):** react-impl-agent memory over-saved feature-specific detail (user
@@ -897,17 +897,17 @@ not deleted unprompted).
 User request: a design-phase agent, motivated by memory. Design was the only heavy, high-judgment
 phase with no dedicated agent (ran inline in the driver → couldn't accumulate memory). Built
 **agents/react-architect-agent.md** (thin binding): staff-architect role; skills design-react-
-contracts + audit-code-flows; tools Read/Write/Edit/Grep/Glob/Bash; model sonnet, effort high
+contracts + audit; tools Read/Write/Edit/Grep/Glob/Bash; model sonnet, effort high
 (design is the highest-judgment phase — opus is a one-word bump); memory:user; color blue.
 Procedure: scope → ground truth from the atlas (query narrows, grep grounds) → run
-/design-react-contracts (consult memory first) → self-check once. Rules: design artifacts only
+/design (consult memory first) → self-check once. Rules: design artifacts only
 (never code/tests), derive-from-requirements-not-shape (refactor proposals raised at the gate),
 query-don't-blind-scan, raise-don't-resolve (human gate owns approval). **Memory carries the
 just-sharpened anti-feature-dump discipline** — architectural conventions only (state placement,
 layering, reusable units), general rule + short example, never a ticket/feature-named entry; this
 is the third complementary memory (auditor=where code is, architect=how it's structured,
 impl=how it's built). Wired: both drivers' design step ② now **spawns react-architect-agent**
-(was inline /design-react-contracts) → design.md + contracts/ + draft journey plan; ③ gate presents
+(was inline /design) → design.md + contracts/ + draft journey plan; ③ gate presents
 its refactor proposals + open items. Both drivers' bound-agents roster gained it. README: design
 entry gained the companion bullet; worker count 4 → 5.
 
@@ -915,7 +915,7 @@ entry gained the companion bullet; worker count 4 → 5.
 User: a codebase may have bad architecture — don't save it as a convention to follow; save it as a
 **bad practice to steer around**. And memory is a **tradeoff accelerator, not a mandate to
 conform** to existing shape. Section retitled "Memory — faster tradeoffs, general not feature
-cases"; now a **decision aid judged against design-react-contracts's rules, not a mirror of how
+cases"; now a **decision aid judged against design's rules, not a mirror of how
 the codebase is built** — three kinds: good practices to reuse · bad practices to avoid (steer
 around, never copy for consistency) · recurring tradeoffs (how a repeated decision went, for speed
 + consistency). "consult to move fast, not to conform"; requirements are the standard; a
@@ -942,7 +942,7 @@ different layers.
 
 **2. Coherence gap closed — qa-journey-plan.md now has an author on the react path.** The
 architect + both drivers promised a draft journey plan the design skill never produced.
-design-react-contracts Output gained the `qa-journey-plan.md` (draft) bullet (journey-level ACs
+design Output gained the `qa-journey-plan.md` (draft) bullet (journey-level ACs
 only; J-<n> · covers-ACs · NEW|MODIFY · NOT-automated table; caller's gate approves), step 2 +
 description updated to match.
 
@@ -953,12 +953,12 @@ blank line; implement SKILL broken quoted-query line.
 
 **4. Within-skill dedups.** e2e-testing Traceability now cites test-quality's label rule instead
 of restating it (test SKILL step 3 now loads test-quality for e2e too); references/design.md's
-God-unit line → a citation of services-and-boundaries; jira-ac-align Rules bullet 1 compressed to
+God-unit line → a citation of services-and-boundaries; jira-align Rules bullet 1 compressed to
 "Confirm-first, two writes only (steps 5–6)" (procedure owns the detail); check-react-
 implementation description dropped its duplicated findings clause (Output clause keeps it).
 **Accepted duplication (recorded, kept):** design rules ↔ implement rules share ~5 rules at
 different altitudes (boundary decision vs code shape) — deliberate per skill self-containment;
-likewise review-react-changes/quality.md's one-owner-per-fact restatement.
+likewise review/quality.md's one-owner-per-fact restatement.
 
 **5. Memories role-sharpened (subagents only, not drivers).** Common shape: scope+tag line →
 role-specific save-list → entry shape + generalization test → an explicit **don't-save pointing
@@ -1038,22 +1038,22 @@ per-wave signal. Unit tests remain the red-first per-wave signal.
 
 **2. react-e2e-agent built (user override of the one-agent-two-scopes recommendation).**
 `rules/e2e-testing.md` MOVED into the agent body (harness/happy/forced-error/traceability rules +
-examples); test-react-contracts is now **unit-only** (description, no argument-hint, no scope
+examples); test is now **unit-only** (description, no argument-hint, no scope
 section, steps renumbered, e2e rules bullet gone; the unautomatable-journey steer bullet moved
 with the rules). react-test-agent de-scoped to unit (no Playwright, no `<variant>`). New agent:
-tools without Bash (driver runs the suite), skills audit-code-flows, opus/low, `memory: user`
+tools without Bash (driver runs the suite), skills audit, opus/low, `memory: user`
 (app-mount harness conventions + journey-test pitfalls; the plan is the spec — never journey
 specifics), color cyan. **Accepted duplication (recorded):** the label/observable-outcome/
 mutation-litmus/determinism essentials now appear in both test-quality.md and the e2e agent —
 the price of a self-contained agent. Fixed the who-authors gap: both drivers' implement ⑤ now
-spawns react-e2e-agent (was a bare "/test-react-contracts e2e, author + run" with no author).
+spawns react-e2e-agent (was a bare "/test e2e, author + run" with no author).
 
 **3. DESIGN GAP repair loop wired (the missing cooperation edge).** All drivers' Implement
 discipline: *ambiguity* → impl agent's narrowest-safe + raise stands; *friction/defect* → spawn
 react-architect-agent on the design skill's **fast path** (Materials: gap block verbatim +
 affected contract + atlas/) → contract delta presented to the human → on approval the affected
 task re-runs as a fresh test+impl pair. Architect description gained the second trigger; both
-rosters gained e2e + the architect's repair duty. Also decided: test-react-contracts stays a
+rosters gained e2e + the architect's repair duty. Also decided: test stays a
 skill, NOT folded into agents — `skills:` preload already IS the fold token-wise; folding would
 kill standalone use and rules modularity.
 
@@ -1063,8 +1063,8 @@ dropping it should cut input tokens at equal quality. Design: same phases, same 
 template (spec-qa key kept — user convention) and artifacts, so specs are driver-interchangeable;
 playbooks embedded in the agent (incl. the init scaffold + ledger template — no /specflow init);
 driver authors the thin artifacts itself (preflight.md, qa-report.md, clarify Q&A) and KEEPS the
-domain skills for driver-authored phases (/build-requirements, /plan-react-contracts,
-/decompose-figma) — they're know-how, not process shell; dropping them would change two variables
+domain skills for driver-authored phases (/requirements, /plan,
+/figma) — they're know-how, not process shell; dropping them would change two variables
 at once. New hard rule "No process commands — this driver IS the process". Accepted risk: a third
 playbook copy to reconcile — temporary by design, like prior A/B twins. README: three drivers,
 6 workers, e2e + gap-repair in the implement flow line.
@@ -1091,26 +1091,26 @@ for humans.)
 User-found gap: features touching existing units forgot that EXISTING tests in the blast radius
 (of the units and their importers) may need updating — they broke or stayed stale until the
 spec-qa full-suite run. Root causes: the specflow design phase *described* a blast-radius section
-but design-react-contracts never authored one (so it never existed under the react path, and
+but design never authored one (so it never existed under the react path, and
 was fully absent under the lean driver); plan never projected flagged tests into work; the impl
 agent can't touch tests; and the "tests are never edited to make code pass" rule deterred the
 legitimate update. Fix = the same chain as the journey plan's NEW|MODIFY dispositions —
 **design discovers → plan projects → test agent executes → checker verifies**, one owner per
 step:
 
-1. **design-react-contracts** — design.md gains **§ Blast radius**: reverse-import closure of
+1. **design** — design.md gains **§ Blast radius**: reverse-import closure of
    MODIFY/REPLACE units → their existing tests, each dispositioned KEEP (behavior preserved) |
    UPDATE (asserts superseded behavior — cite the AC) | DELETE (covers removed behavior); may be
    empty, said so. Self-check "Blast radius closed" now also requires a disposition per listed
    test; SKILL Output bullet updated.
-2. **plan-react-contracts** step 3 — every UPDATE/DELETE row lands as an
+2. **plan** step 3 — every UPDATE/DELETE row lands as an
    `Update: <test path> (AC-x.y)` marker on the owning task (parallel to the Edge marker), so
    existing-test updates are planned test-batch work, never a QA surprise.
-3. **test-react-contracts** step 2 + **react-test-agent** step 3 — execute Update markers:
+3. **test** step 2 + **react-test-agent** step 3 — execute Update markers:
    rewrite the named existing test to the amended AC / remove on DELETE; material changes
    surfaced in the report, coverage never dropped silently. Runs pre-red, so the byte-unchanged-
    since-red guarantee is untouched.
-4. **check-react-implementation** behavior axis — new check: dispositions executed (an
+4. **check** behavior axis — new check: dispositions executed (an
    UPDATE-flagged test still asserting the old behavior, or a broken KEEP test, is a finding).
 5. **All three drivers** — the "Tests are never edited to make code pass" hard rule gains its
    one exception: a design-flagged blast-radius UPDATE/DELETE executed by the test agent
@@ -1202,16 +1202,22 @@ in-plugin `rules/`). Decisions:
 
 **2026-08-01 (later):** plugins renamed `my-react` / `my-flutter`; skill `sflow` → `specflow`;
 install.sh added (claude plugin CLI). Reconciliation audit: dead `/locate-bug` → inline bounded
-root-cause pass (3 drivers); oac dangling "taskstoissues skip above" reworded; fl-pr-review
+root-cause pass (3 drivers); oac dangling "taskstoissues skip above" reworded; review
 `conditional/performance/` → `performance/`, "13 core" → 11, `core/widget-{theming,build-discipline}.md`
-→ `performance/` (files live in fl-implementation, symlinked); `engineering-discipline` rule cites →
+→ `performance/` (files live in implement, symlinked); `engineering-discipline` rule cites →
 `review-procedure.md § Pass 3h` (file no longer exists); flutter load directives + router
 descriptions namespaced; cross-skill rule paths anchored to ${CLAUDE_PLUGIN_ROOT}. Rejected
 (verified valid): specflow ledger keys clarify/spec-qa (driver-led phases, by design);
-fl-pr-review references/{core,forensics,performance,...} (intra-plugin symlinks resolve).
+review references/{core,forensics,performance,...} (intra-plugin symlinks resolve).
 
 **2026-08-01 (later still):** removed `my-specflow-driver` + the `specflow` phase skill — the
 lean driver (self-contained playbooks) and oac driver (external /spec-* commands) are the two
-drivers; the process shell proved redundant. `review-react-changes/references/specflow.md` kept
+drivers; the process shell proved redundant. `review/references/specflow.md` kept
 (local axis file, not the skill). install.sh → install.py (same flags, argparse).
 **2026-08-01: plugins renamed `my-react` / `my-flutter` (distinguish from project-owned plugins); all namespaced refs updated.**
+
+**2026-08-01: skill names shortened** — the plugin namespace carries the tech, so
+`my-react:design` replaces `design-react-contracts`, etc. my-react: audit · requirements ·
+design · plan · test · implement · check · review · figma · delegate · jira-align.
+my-flutter (fl- prefix dropped): acceptance-criteria · design · implement · review · riverpod ·
+tasks · test-contract · test-forensics. my-flutter/review reference symlinks re-pointed.

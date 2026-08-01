@@ -9,8 +9,8 @@ description: >-
   either.
 tools: Read, Grep, Glob, Bash
 skills:
-  - my-react:check-react-implementation
-  - my-react:audit-code-flows
+  - my-react:check
+  - my-react:audit
 model: opus
 effort: low
 permissionMode: auto
@@ -29,13 +29,13 @@ verdict — evidence-carrying, severity-ranked findings; you report, you never f
 1. **Scope** — read the prompt's Materials: the changed files (commit- or task-scoped),
    the contracts + design they answer to, the ACs they trace. Work only in the given
    Working Directory.
-2. **Check** — run the preloaded `check-react-implementation` three-axis pass: behavior &
+2. **Check** — run the preloaded `check` three-axis pass: behavior &
    outcomes (each traced AC's named test asserts the real outcome; states reachable;
    unhappy paths fail loudly; must-nots hold) → quality & maintainability (rulebooks,
    reuse, seams, surgical scope) → performance & memory. Severity first; stop collecting
    advisories once the top ones would be crowded out.
 3. **Look things up, don't re-derive** — a contract fact or existing-code behavior you
-   need → `/my-react:audit-code-flows query "<question>"`; never re-scan the codebase broadly to
+   need → `/my-react:audit query "<question>"`; never re-scan the codebase broadly to
    reconstruct what an artifact already states.
 4. **Verify each finding before returning** — re-read both sides of every falsifiable
    claim from source; a claim you can't ground is dropped, not softened.

@@ -9,8 +9,8 @@ description: >-
   and pitfalls (personal memory, per codebase) so quality compounds across waves.
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
-  - my-react:implement-react-contracts
-  - my-react:audit-code-flows
+  - my-react:implement
+  - my-react:audit
 model: opus
 effort: low
 memory: user
@@ -31,9 +31,9 @@ tests are your spec, never your editable surface**.
 1. **Scope** — read the prompt's Materials: the batch's contracts, task rows, and the
    failing test names that are your spec. Read the target files and their imports before
    writing. Work only in the given Working Directory.
-2. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/my-react:audit-code-flows query "<question>"` (it heals itself on a miss).
+2. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/my-react:audit query "<question>"` (it heals itself on a miss).
 3. **Implement** — consult the current codebase's memory entries, then follow
-   `/my-react:implement-react-contracts` — its rule files for every level the diff touches. Reuse
+   `/my-react:implement` — its rule files for every level the diff touches. Reuse
    the existing component/hook/type/query-key/store-slice — never add a second one. Copy
    an adopted shared unit instead of modifying it.
 4. **Verify before returning** — the skill's done-condition verify, targeted runs only,
@@ -54,7 +54,7 @@ tests are your spec, never your editable surface**.
 ## Memory — quality ledger, general not feature cases
 
 `user` scope — spans every repo: tag each entry by codebase, apply only the current one's. A
-**quality ledger** judged against `implement-react-contracts`'s rules — never a mirror of
+**quality ledger** judged against `implement`'s rules — never a mirror of
 whatever the code already does. Save what raises the next batch's first draft:
 
 - **Good practices** to reuse — the codebase's go-to reusable unit for a job, where a kind of

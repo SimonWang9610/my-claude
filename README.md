@@ -48,7 +48,7 @@ claude --plugin-dir ./plugins/my-react --plugin-dir ./plugins/my-flutter
 ```
 
 Everything a plugin ships is **namespaced**: skills invoke as `/my-react:<skill>`
-(e.g. `/my-react:build-requirements`, `/my-react:design-react-contracts`), agents address as
+(e.g. `/my-react:requirements`, `/my-react:design`), agents address as
 `my-react:<agent>`. Namespacing is what keeps the bundle from colliding with global or
 project skills — the reason plugins replaced the old symlink installer.
 
@@ -69,8 +69,8 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
 2. Remove the managed `# >>> my-claude workflow agents >>>` block from your shell rc if you
    installed aliases.
 3. Install the plugins as above.
-4. Rename invocations: `/build-requirements` → `/my-react:build-requirements`, driver agent
-   → `my-react:lean-specflow-driver`, `/fl-pr-review` → `/my-flutter:fl-pr-review`, etc.
+4. Rename invocations: `/requirements` → `/my-react:requirements`, driver agent
+   → `my-react:lean-specflow-driver`, `/review` → `/my-flutter:review`, etc.
    The `/sflow` phase skill and `my-specflow-driver` are removed — the lean driver embeds the
    phase playbooks.
 5. Re-link `rules/preferences.md` (see above) — it is no longer installed for you.
@@ -84,7 +84,7 @@ removes; its companion agent (if any) follows.
 
 ## Understand code you didn't write
 
-### `audit-code-flows` · companion **code-auditor-agent**
+### `audit` · companion **code-auditor-agent**
 
 - **Purpose** — reverse-engineers existing/legacy code into a queryable **atlas** (a flow index
   over per-flow GIVEN/WHEN/THEN/HOW notes), then answers questions from it and heals itself on a
@@ -104,7 +104,7 @@ removes; its companion agent (if any) follows.
 
 ## The contract flow — spec to shipped code
 
-### `build-requirements`
+### `requirements`
 
 - **Purpose** — turns a request or idea into `requirements.md`: user stories with stable AC/NFR
   ids phrased as observable Given/When/Then outcomes.
@@ -113,7 +113,7 @@ removes; its companion agent (if any) follows.
 - **Pain** — vague scope; solution-shaped asks that hide the real need; ambiguity discovered late
   during implementation.
 
-### `design-react-contracts` · companion **react-architect-agent**
+### `design` · companion **react-architect-agent**
 
 - **Purpose** — turns ACs into React **contracts** (per-unit API, data flow, state) plus the
   architecture wiring them, as `design.md` + `contracts/`.
@@ -127,7 +127,7 @@ removes; its companion agent (if any) follows.
   architecture — good practices to reuse and bad ones to steer around (general rules, not feature
   cases) — to make design tradeoffs faster, never to conform a sound design to existing shape.
 
-### `plan-react-contracts`
+### `plan`
 
 - **Purpose** — projects an approved design into `tasks.md`: dependency-ordered tasks in 2–4
   waves, each pre-split into a test batch and an impl batch.
@@ -136,7 +136,7 @@ removes; its companion agent (if any) follows.
 - **Pain** — unclear task order; serial work that could have run in parallel; re-deriving batches
   mid-flight.
 
-### `test-react-contracts` · companions **react-test-agent** + **react-e2e-agent**
+### `test` · companions **react-test-agent** + **react-e2e-agent**
 
 - **Purpose** — authors unit tests that prove contracts (Vitest · RTL · MSW), each named for the
   AC it verifies. E2E journey tests are the e2e agent's own charter (its rules live in the agent).
@@ -152,7 +152,7 @@ removes; its companion agent (if any) follows.
   dispositions); carries its own e2e rules — whole-app-slice harness, UI-only driving — and
   remembers each codebase's app-mount harness.
 
-### `implement-react-contracts` · companion **react-impl-agent**
+### `implement` · companion **react-impl-agent**
 
 - **Purpose** — writes React/TS source against a contract until the batch's failing tests pass,
   raising DESIGN GAPs instead of silently deviating.
@@ -164,7 +164,7 @@ removes; its companion agent (if any) follows.
   each codebase's good practices, anti-patterns, and pitfalls (judged against the skill's rules)
   so quality compounds across waves.
 
-### `check-react-implementation` · companion **react-checker-agent**
+### `check` · companion **react-checker-agent**
 
 - **Purpose** — a fresh-eyes conformance check of a diff on three axes — behavior/ACs,
   maintainability, performance & memory — returning severity-classified findings, never fixes.
@@ -175,7 +175,7 @@ removes; its companion agent (if any) follows.
 - **react-checker-agent** — a read-only tool fence (no Write/Edit), so "findings, never fixes" is
   unbreakable by construction.
 
-### `review-react-changes`
+### `review`
 
 - **Purpose** — reviews a PR/branch/diff on three axes (spec ↔ code honesty, behavior, quality)
   and returns severity findings + a block/pass merge verdict.
@@ -188,7 +188,7 @@ removes; its companion agent (if any) follows.
 
 ## Supporting skills
 
-### `decompose-figma`
+### `figma`
 
 - **Purpose** — turns a Figma screen into a component map (EXISTING / PARTIAL / NEW), extracting
   specs only for what's genuinely new.
@@ -197,7 +197,7 @@ removes; its companion agent (if any) follows.
 - **Pain** — rebuilding components that already exist; design handoffs that don't say what to
   actually build.
 
-### `smart-delegation`
+### `delegate`
 
 - **Purpose** — routes a piece of work to the cheapest execution that does it well: inline, a
   fork, or a subagent (bound or ad-hoc), and fixes what the spawn must carry back.
@@ -206,7 +206,7 @@ removes; its companion agent (if any) follows.
 - **Pain** — token-wasteful over-delegation; context floods from noisy exploration; a reviewer
   seeing the reasoning that produced the work.
 
-### `jira-ac-align`
+### `jira-align`
 
 - **Purpose** — a three-way reconcile of a JIRA ticket's AC against the spec and the shipped code,
   updating the ticket and posting one alignment comment.
@@ -218,7 +218,7 @@ removes; its companion agent (if any) follows.
 
 ## Flutter
 
-### `fl-pr-review`
+### `review`
 
 - **Purpose** — reviews a Flutter/Dart PR against the architecture rules (P1–P8), Riverpod code-gen
   idioms, Dart 3 patterns, and test-quality rules → a rule-cited severity report.
@@ -263,7 +263,7 @@ correct without heavy oversight.
 
 **Efficiency — fewer tokens, less re-work**
 
-- **Queryable, self-healing atlas** — `audit-code-flows` banks understanding once; later phases
+- **Queryable, self-healing atlas** — `audit` banks understanding once; later phases
   *query* it instead of re-scanning, and a query heals itself on a miss (a bounded reveal budget)
   rather than dead-ending. Understanding compounds instead of evaporating each phase.
 - **Bounded exploration** — the audit walks the definition graph on-purpose, one hop at a time,
@@ -271,7 +271,7 @@ correct without heavy oversight.
   built and a read can't run away.
 - **grep + glob to locate and walk** — keyword search narrows to the candidate entries, then the
   walk follows definitions hop by hop by grepping symbols and reading — no heavier tooling needed.
-- **Route to the cheapest execution** — `smart-delegation` picks inline / fork / subagent and the
+- **Route to the cheapest execution** — `delegate` picks inline / fork / subagent and the
   model + effort by task complexity, batching work to avoid re-paying a subagent's cold start.
 - **Progressive disclosure + terse prompts** — SKILL.md stays lean; heavy procedure lives in
   lazy-loaded `references/` (opened only in the mode that needs it); inter-agent prompts carry

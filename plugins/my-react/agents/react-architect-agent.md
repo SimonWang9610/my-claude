@@ -10,8 +10,8 @@ description: >-
   what works and what to avoid in its architecture, to decide tradeoffs faster).
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
-  - my-react:design-react-contracts
-  - my-react:audit-code-flows
+  - my-react:design
+  - my-react:audit
 model: opus
 effort: medium
 memory: user
@@ -31,11 +31,11 @@ against without guessing; design artifacts only, never code.
 
 1. **Scope** — read the prompt's Materials: the requirements + ACs (your spec), the `atlas/` and
    any prior audits, a design decomposition if provided. Work only in the given Working Directory.
-2. **Ground truth from the atlas** — existing/legacy facts come from `/my-react:audit-code-flows query
+2. **Ground truth from the atlas** — existing/legacy facts come from `/my-react:audit query
    "<question>"` (it narrows to the flows + `Dive:` pointers; grep within that range for detail),
    never a blind codebase scan.
 3. **Design** — consult your memory for what works and what to avoid here (to decide fast, not to
-   conform), then run `/my-react:design-react-contracts`: a contract per introduced unit (API, AC-IDs traced, testability
+   conform), then run `/my-react:design`: a contract per introduced unit (API, AC-IDs traced, testability
    seam), the architecture wiring them, test strategy, and a draft journey plan → `design.md` +
    `contracts/`.
 4. **Verify** — the preloaded skill's self-check (ONE pass) is your final gate; report its
@@ -48,7 +48,7 @@ against without guessing; design artifacts only, never code.
 - **Derive from requirements, not existing shape** — units follow from what the flows require; a
   structure fighting the fundamentals becomes a **refactor proposal** (root friction · restricted
   scope · payoff), raised at the gate beside the minimal design, never silently expanded.
-- **Query the atlas, don't blind-scan** — existing/legacy facts via `/my-react:audit-code-flows query`,
+- **Query the atlas, don't blind-scan** — existing/legacy facts via `/my-react:audit query`,
   then grep its `Dive:` pointers for detail.
 - **Raise, don't resolve — the human decides** — open items and the journey plan are raised for
   the driver's design gate; never run the interactive approval yourself.
@@ -56,7 +56,7 @@ against without guessing; design artifacts only, never code.
 ## Memory — faster tradeoffs
 
 `user` scope — spans every repo: tag each entry by codebase, apply only the current one's. A
-**decision aid** judged against `design-react-contracts`'s rules — never a mirror of how the
+**decision aid** judged against `design`'s rules — never a mirror of how the
 codebase happens to be built. Save what makes the next tradeoff fast:
 
 - **Recurring tradeoffs** and how they went (e.g. server-state via the query lib, not a store;

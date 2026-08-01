@@ -5,13 +5,13 @@ plugin. Installs independently of `my-react`.
 
 **Stack:** Flutter/Dart. State-management-package agnostic — core rules cover four-layer
 architecture, SSOT, sealed async, and disposal; Riverpod idioms live in the dedicated
-`fl-riverpod` skill.
+`riverpod` skill.
 
 ## Contents
 
-- `skills/` — `fl-acceptance-criteria`, `fl-architecture-design` (owns the rule corpus + the
-  verifiable-unit gate), `fl-implementation`, `fl-pr-review`, `fl-riverpod`, `fl-task-design`,
-  `fl-test-contract`, `fl-test-forensics`. Invoke as `/my-flutter:<skill>`.
+- `skills/` — `acceptance-criteria`, `design` (owns the rule corpus + the
+  verifiable-unit gate), `implement`, `review`, `riverpod`, `tasks`,
+  `test-contract`, `test-forensics`. Invoke as `/my-flutter:<skill>`.
 - `rules/` — `architecture-principles.md` (P1–P8, four-layer model) and `test-quality.md`.
   These ship inside the plugin; skills that need the rule text Read them from
   `${CLAUDE_PLUGIN_ROOT}/rules/`.
