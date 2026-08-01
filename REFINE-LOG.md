@@ -1179,3 +1179,23 @@ already comply structurally via `$SPEC_DIR` under their own worktree.
 name: `F3-device-selection.md`, `A1-state-management.md`) replacing bare `F3.md`/`A1.md`;
 formats.md § Files + INDEX template examples updated. Format check unaffected (recursive greps
 match any *.md).
+
+---
+
+## 2026-08-01 — Plugin packaging (breaking)
+
+Repo restructured from symlink-installed bundle → **Claude Code plugin marketplace**
+(`.claude-plugin/marketplace.json`) with two independent plugins: `plugins/sflow-react/`
+(all React/TS skills + 3 drivers + 6 workers) and `plugins/sflow-flutter/` (fl-* skills +
+in-plugin `rules/`). Decisions:
+
+- docs plugins.md/plugins-reference → adopted marketplace + per-plugin `.claude-plugin/plugin.json`;
+  namespacing (`/sflow-react:<skill>`, `sflow-react:<agent>`) is the conflict fix that motivated
+  the change → all cross-references (agent `skills:` preloads, `/sflow` invocations, worker spawn
+  names) rewritten to namespaced form, since preloading draws from the same name set as the
+  Skill tool.
+- plugins-reference "CLAUDE.md at plugin root is not loaded" → rejected shipping
+  `rules/preferences.md` in a plugin; it stays a user-level file, manual symlink documented.
+- flutter rules "linked into .claude/rules/" wording → replaced with in-plugin
+  `${CLAUDE_PLUGIN_ROOT}/rules/` reads (plugins can't install ambient rules).
+- link.sh/unlink.sh removed; migration guide in README (old unlink retrievable from git history).

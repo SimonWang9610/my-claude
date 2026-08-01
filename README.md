@@ -156,7 +156,7 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 - **Why** — architectural rules only hold if something checks them on every PR; humans miss them
   under delivery pressure.
 - **Pain** — architecture erosion; Riverpod/Dart-3 anti-patterns; tests that don't actually
-  assert. (Flutter rules live in `flutter/rules/`, dormant — not linked by default.)
+  assert. (Flutter rules ship inside the `sflow-flutter` plugin at `rules/`.)
 
 ---
 
@@ -178,8 +178,7 @@ it binds them all.
   verifying; a whole process crammed into one unmaintainable prompt.
 
 ```sh
-my-specflow-driver "add a logout button"                              # if aliases were installed
-claude --agent my-specflow-driver --worktree "add a logout button"    # raw
+claude --agent sflow-react:my-specflow-driver --worktree "add a logout button"
 ```
 
 Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
@@ -236,48 +235,80 @@ correct without heavy oversight.
 
 ---
 
-## Installing — the scripts
+## Installing — plugins
 
-The bundle is flat — `skills/ agents/ rules/` are real directories. One script pair
-relative-symlinks them, per entry, into a destination `.claude/`:
+The repo is a **Claude Code plugin marketplace** carrying two self-contained plugins that
+install independently:
 
-| Script pair | Source → Destination |
-|-------------|----------------------|
-| `link.sh` / `unlink.sh` | `skills/* agents/* rules/*` → `<dest>/.claude/{skills,agents,rules}/` |
-
-The sflow workflow is just the `skills/sflow/` skill (invoked `/sflow <phase>`), linked like any
-other skill — no separate command step. Links are relative; an existing correct link is skipped;
-a foreign real file or an outside-pointing link is never clobbered; re-running is safe. `unlink`
-removes only symlinks that resolve back into this repo.
+| Plugin | Contents |
+|--------|----------|
+| `sflow-react` | all React/TS skills (incl. the `/sflow-react:sflow` workflow skill) + the 3 drivers and 6 worker agents |
+| `sflow-flutter` | the `fl-*` skills + the Flutter rule files (shipped in-plugin, read via `${CLAUDE_PLUGIN_ROOT}/rules/`) |
 
 ```sh
-./link.sh --global                        # skills+agents+rules → ~/.claude
-./link.sh --project ../myapp              # → ../myapp/.claude
-./unlink.sh --project ../myapp            # remove skills+agents+rules
-./unlink.sh --global --aliases            # remove links + the managed rc block
+claude  # then, inside the session:
 ```
 
-`link.sh --aliases` also writes a **shell function per driver** into your rc file, so you can
-launch a driver by name (`my-specflow-driver "..."`); `--no-aliases` skips the prompt.
+```
+/plugin marketplace add SimonWang9610/my-claude
+/plugin install sflow-react@my-claude
+/plugin install sflow-flutter@my-claude     # optional, independent
+```
 
-> **Windows:** in-repo symlinks need `core.symlinks=true` (enable Developer Mode, then
-> `git checkout -- .`). **Submodules** are synced by the driver's Setup on session start.
+For local development, load straight from the working copy — no install step:
+
+```sh
+claude --plugin-dir ./plugins/sflow-react --plugin-dir ./plugins/sflow-flutter
+```
+
+Everything a plugin ships is **namespaced**: skills invoke as `/sflow-react:<skill>`
+(e.g. `/sflow-react:sflow design`, `/sflow-react:build-requirements`), agents address as
+`sflow-react:<agent>`. Namespacing is what keeps the bundle from colliding with global or
+project skills — the reason this replaced the symlink installer.
+
+`rules/preferences.md` is the one asset a plugin **cannot** carry: plugins do not inject
+always-on context (a plugin CLAUDE.md is ignored). It stays a user-level file — copy or
+symlink it yourself if you want it ambient:
+
+```sh
+ln -s "$(pwd)/rules/preferences.md" ~/.claude/rules/preferences.md
+```
+
+### Migrating from the symlink install (breaking change)
+
+The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
+
+1. Remove old links: delete the symlinks in `<dest>/.claude/{skills,agents,rules}` that point
+   into this repo (the old `unlink.sh` from git history still works: `git show HEAD~1:unlink.sh | bash -s -- --global`).
+2. Remove the managed `# >>> my-claude workflow agents >>>` block from your shell rc if you
+   installed aliases.
+3. Install the plugins as above.
+4. Rename invocations: `/sflow …` → `/sflow-react:sflow …`, `/build-requirements` →
+   `/sflow-react:build-requirements`, agent `my-specflow-driver` →
+   `sflow-react:my-specflow-driver`, `/fl-pr-review` → `/sflow-flutter:fl-pr-review`, etc.
+5. Re-link `rules/preferences.md` manually (see above) — it is no longer installed for you.
 
 ---
 
 ## Layout & editing
 
-Edit `skills/ agents/ rules/` directly — links are per-entry, so a new skill/agent/rule appears
-after one `./link.sh`; removals need `./unlink.sh`.
+Edit under `plugins/` directly; `/reload-plugins` (or restart) picks up changes when loaded
+via `--plugin-dir` or a local marketplace add.
 
 ```
 my-claude/
-├── skills/    the skills above + sflow/ (the /sflow workflow skill: SKILL.md + phases/)
-├── agents/    3 drivers + 6 companion workers (real files)
-├── rules/     shared working-discipline rules — preferences.md
-├── flutter/   Flutter profile — rules/ (dormant, not linked by default)
-└── *.sh       link/unlink installers
+├── .claude-plugin/marketplace.json    the marketplace registry
+├── plugins/
+│   ├── sflow-react/
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── skills/    the skills above + sflow/ (SKILL.md + phases/)
+│   │   └── agents/    3 drivers + 6 companion workers
+│   └── sflow-flutter/
+│       ├── .claude-plugin/plugin.json
+│       ├── skills/    fl-* skills
+│       └── rules/     architecture-principles.md · test-quality.md
+└── rules/             user-level working discipline — preferences.md (not plugin-shipped)
 ```
 
 For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
-**[skills/sflow/README.md](skills/sflow/README.md)**.
+**[plugins/sflow-react/skills/sflow/SKILL.md](plugins/sflow-react/skills/sflow/SKILL.md)** and its `phases/`.
