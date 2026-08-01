@@ -49,7 +49,7 @@ checked: <n> units × <m> checks · suppressed: <n>
 ```
 
 No findings and nothing suppressed → the header + axis table + closing line only.
-Multiple modes in one invocation → one file: the header lists the modes, ONE verdict =
+Multiple modes in one invocation → one report: the header lists the modes, ONE verdict =
 minima over all modes' axes, one axis table per mode, a single severity-ranked findings
 list, one closing line.
 

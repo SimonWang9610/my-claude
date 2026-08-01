@@ -4,7 +4,7 @@
 
 A [Claude Code](https://claude.com/claude-code) **plugin marketplace** carrying two
 self-contained plugins that drive a structured, spec-driven workflow —
-`preflight → requirements → design → tasks → implement → evaluate → qa` — from a request
+`preflight → requirements → clarify → design → tasks → implement → spec-qa` — from a request
 to shipped, evaluated code:
 
 | Plugin | Contents | Status |
@@ -297,8 +297,8 @@ them all.
   verifying; a whole process crammed into one unmaintainable prompt.
 
 Implement runs red→green per wave — spawn `tester` (RED) → spawn `implementer`
-(green, test paths byte-unchanged) — then an optional `evaluator` pass before the human
-gate; a friction/defect DESIGN GAP routes back to `architect` for a fast-path
+(green, test paths byte-unchanged) — then ONE independent `evaluator` verify of the whole implement diff before the human
+gate (bugfix scale skips it); a friction/defect DESIGN GAP routes back to `architect` for a fast-path
 contract delta, and `e2e` authors the journey tests once the feature assembles. The
 driver never advances past an open gate.
 

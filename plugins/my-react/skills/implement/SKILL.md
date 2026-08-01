@@ -60,9 +60,8 @@ interaction) — clear code first, never pre-optimize a cold path.
    component + hook rules at once); apply every rules file whose level the diff touches.
 3. **Verify the done-condition** — the task's gate when one exists; otherwise typecheck
    + the relevant tests. Tests define behaviour — make the code satisfy them; a failing
-   test is fixed in the code, never in the test. Evaluation runs next as its own step
-   (`/my-react:evaluate implementation`) — conform while writing; leave the deep pass
-   to it.
+   test is fixed in the code, never in the test. Evaluation runs once, independently, after all
+   implementation tasks complete — conform while writing; leave the deep pass to it.
 4. **Steer the design** — when a governing decision is ambiguous, missing a case, or
    provably wrong, raise it; never silently deviate, never blindly implement a defect:
 

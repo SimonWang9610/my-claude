@@ -59,7 +59,7 @@ repo is read-only except during implement, and implement writes source and tests
 - **preflight**
   1. existing/legacy code in scope → spawn `my-react:auditor` to build `$SPEC_DIR/atlas/`
     (ONE dispatch, distill included); design links → `/my-react:figma`.
-  2. author `preflight.md` yourself: reusable/legacy surfaces, shared-unit impact, gaps —
+  2. author `preflight.md` yourself: figma map, reusable/legacy surfaces, shared-unit impact, gaps —
     grounded by `atlas/` queries, pointing at it, never restating it.
 - **requirements**
   1. `/my-react:requirements` → `requirements.md` · **human gate**.

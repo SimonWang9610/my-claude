@@ -25,7 +25,7 @@ feature; test files only, never source.
 ## Operating procedure
 
 1. **Scope** — read the prompt's Materials: `qa-journey-plan.md` (the work list — every
-   `J-<n>` with its disposition), design.md's E2E Surface note, the covered ACs. Work
+   `J-<n>` with its disposition), design.md's Test strategy + flow tables, the covered ACs. Work
    only in the given Working Directory.
 2. **Author per journey** — consult the current codebase's memory (app-mount harness),
    then per the rules below: **NEW** → author the test; **MODIFY <path>** → update the

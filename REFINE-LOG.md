@@ -1316,3 +1316,4 @@ routing relaxed: related work → the teammate who did it while context <~75%, e
 teammate; evaluator's first verify stays clean-context. Phase playbooks reformatted to
 terse sub-bullets (both drivers). Role paragraphs compressed across all six workers
 (789→ from 804 lines).
+**Final coherence review (fresh eyes):** 12 defects found and fixed — Update/Delete markers split in plan; e2e Materials repointed to real design sections; tests-mode inputs completed (red ref, Blast radius); oac red-ref dispatch; three stale phase lists aligned (plugin.json, README ×2); design-evaluation-of-record wording unified (design SKILL, evaluate description, implement SKILL); figma map homed in preflight.md; 'one file' → 'one report'. Verified coherent: red-ref chain, foundation-signal flow, team/model rules, fences, name resolution.

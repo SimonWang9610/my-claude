@@ -50,8 +50,8 @@ To the caller-designated dir; templates in [references/design.md](./references/d
   journey-level: per journey `J-<n>` (precondition · steps · covers-ACs), happy +
   error/boundary, each NEW or MODIFY <existing test path>, plus a NOT-automated table.
   A draft — the caller's design gate approves it.
-Evaluation is a separate step: after authoring, run `/my-react:evaluate design`
-(yourself to improve; independently to verify for the gate).
+Evaluation is a separate step: after authoring, run `/my-react:evaluate design` on your
+own output — the improve run is the design evaluation of record at the gate.
 
 **Discipline:** terse, goal-accurate — AC/rule IDs, exact identifiers/paths, no filler.
 Decisions, never reasoning ("why" = a one-line rule citation; unresolved → Open items).

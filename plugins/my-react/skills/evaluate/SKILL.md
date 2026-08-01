@@ -4,9 +4,10 @@ description: >
   Evaluates a React design, implementation diff, or test suite against its binary
   evidence-typed rubric — per-axis scores derived from countable checks, severity-ranked
   findings, a mechanical verdict (PASS / CONDITIONAL / BLOCK), and, for designs, a
-  foundation signal saying when refactoring the blast radius is worth it. Run with fresh
-  eyes after the authoring step: "evaluate design" after design, "evaluate implementation"
-  and "evaluate tests" after an implement phase. Not for the pre-merge verdict
+  foundation signal saying when refactoring the blast radius is worth it. The architect
+  runs "evaluate design" on its own output as the design evaluation of record; the
+  independent evaluator runs "evaluate implementation" + "evaluate tests" once, after
+  all implementation tasks complete (fresh-eyes design re-check on demand). Not for the pre-merge verdict
   (use my-react:review) or building the atlas (use my-react:audit). Output: one
   evaluation report per mode.
 ---
@@ -40,7 +41,7 @@ one pass per invocation (re-evaluation is the caller's next spawn).
 |------|-----------|--------|--------|
 | `design` | design.md + contracts/ (+ ledgers) | requirements/ACs, atlas | [references/rubric-design.md](./references/rubric-design.md) |
 | `implementation` | the diff (task, wave, or phase scope) | contracts, ACs, red baseline ref | [references/rubric-implementation.md](./references/rubric-implementation.md) |
-| `tests` | the test files in scope | contracts (Test seams, States), ACs | [references/rubric-tests.md](./references/rubric-tests.md) |
+| `tests` | the test files in scope | contracts (Test seams, States), ACs, red baseline ref, design.md § Blast radius | [references/rubric-tests.md](./references/rubric-tests.md) |
 
 Scale, verdict mapping, report template, and the foundation signal live once in
 [references/framework.md](./references/framework.md). The caller names the mode(s) and

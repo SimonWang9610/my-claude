@@ -104,7 +104,7 @@ irreversible (commit, push, PR).
 
 tasks.md § Waves is the assignment sheet — batches are never re-derived here. Per batch
 pair: **spawn `my-react:tester`** (test batch) → **run RED per task** (failing on behaviour,
-not setup; record the ref) → **spawn `my-react:implementer`** (impl batch + the failing test names)
+not setup; record the ref) → **spawn `my-react:implementer`** (impl batch + the failing test names + the red ref — recorded for the phase-end evaluation's c2 check)
 → **run green per task AND `git diff` the test paths since red**. Test paths not
 byte-unchanged → only the affected task is redone by a fresh single-task pair.
 
