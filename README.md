@@ -16,17 +16,17 @@ Two self-contained plugins that install independently:
 
 | Plugin | Contents |
 |--------|----------|
-| `spec-react` | all React/TS skills (incl. the `/spec-react:specflow` workflow skill) + the 3 drivers and 6 worker agents |
-| `spec-flutter` | the `fl-*` skills + the Flutter rule files (shipped in-plugin, read via `${CLAUDE_PLUGIN_ROOT}/rules/`) |
+| `react-spec` | all React/TS skills (incl. the `/react-spec:specflow` workflow skill) + the 3 drivers and 6 worker agents |
+| `flutter-spec` | the `fl-*` skills + the Flutter rule files (shipped in-plugin, read via `${CLAUDE_PLUGIN_ROOT}/rules/`) |
 
 The install script registers the marketplace and installs the plugins via the `claude plugin` CLI:
 
 ```bash
-./install.sh                 # spec-react from GitHub marketplace
+./install.sh                 # react-spec from GitHub marketplace
 ```
 
 ```bash
-./install.sh --flutter --rules   # + spec-flutter, + symlink rules/preferences.md into ~/.claude/rules/
+./install.sh --flutter --rules   # + flutter-spec, + symlink rules/preferences.md into ~/.claude/rules/
 ```
 
 ```bash
@@ -37,19 +37,19 @@ Or manually, inside a `claude` session:
 
 ```
 /plugin marketplace add SimonWang9610/my-claude
-/plugin install spec-react@my-claude
-/plugin install spec-flutter@my-claude     # optional, independent
+/plugin install react-spec@my-claude
+/plugin install flutter-spec@my-claude     # optional, independent
 ```
 
 For one-off local testing without any install:
 
 ```bash
-claude --plugin-dir ./plugins/spec-react --plugin-dir ./plugins/spec-flutter
+claude --plugin-dir ./plugins/react-spec --plugin-dir ./plugins/flutter-spec
 ```
 
-Everything a plugin ships is **namespaced**: skills invoke as `/spec-react:<skill>`
-(e.g. `/spec-react:specflow design`, `/spec-react:build-requirements`), agents address as
-`spec-react:<agent>`. Namespacing is what keeps the bundle from colliding with global or
+Everything a plugin ships is **namespaced**: skills invoke as `/react-spec:<skill>`
+(e.g. `/react-spec:specflow design`, `/react-spec:build-requirements`), agents address as
+`react-spec:<agent>`. Namespacing is what keeps the bundle from colliding with global or
 project skills — the reason plugins replaced the old symlink installer.
 
 `rules/preferences.md` is the one asset a plugin **cannot** carry: plugins do not inject
@@ -69,9 +69,9 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
 2. Remove the managed `# >>> my-claude workflow agents >>>` block from your shell rc if you
    installed aliases.
 3. Install the plugins as above.
-4. Rename invocations: `/sflow …` → `/spec-react:specflow …`, `/build-requirements` →
-   `/spec-react:build-requirements`, agent `my-specflow-driver` →
-   `spec-react:my-specflow-driver`, `/fl-pr-review` → `/spec-flutter:fl-pr-review`, etc.
+4. Rename invocations: `/sflow …` → `/react-spec:specflow …`, `/build-requirements` →
+   `/react-spec:build-requirements`, agent `my-specflow-driver` →
+   `react-spec:my-specflow-driver`, `/fl-pr-review` → `/flutter-spec:fl-pr-review`, etc.
 5. Re-link `rules/preferences.md` (see above) — it is no longer installed for you.
 
 ---
@@ -224,7 +224,7 @@ removes; its companion agent (if any) follows.
 - **Why** — architectural rules only hold if something checks them on every PR; humans miss them
   under delivery pressure.
 - **Pain** — architecture erosion; Riverpod/Dart-3 anti-patterns; tests that don't actually
-  assert. (Flutter rules ship inside the `spec-flutter` plugin at `rules/`.)
+  assert. (Flutter rules ship inside the `flutter-spec` plugin at `rules/`.)
 
 ---
 
@@ -246,7 +246,7 @@ it binds them all.
   verifying; a whole process crammed into one unmaintainable prompt.
 
 ```sh
-claude --agent spec-react:my-specflow-driver --worktree "add a logout button"
+claude --agent react-spec:my-specflow-driver --worktree "add a logout button"
 ```
 
 Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
@@ -312,11 +312,11 @@ via `--plugin-dir` or a local marketplace add.
 my-claude/
 ├── .claude-plugin/marketplace.json    the marketplace registry
 ├── plugins/
-│   ├── spec-react/
+│   ├── react-spec/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/    the skills above + specflow/ (SKILL.md + phases/)
 │   │   └── agents/    3 drivers + 6 companion workers
-│   └── spec-flutter/
+│   └── flutter-spec/
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/    fl-* skills
 │       └── rules/     architecture-principles.md · test-quality.md
@@ -324,4 +324,4 @@ my-claude/
 ```
 
 For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
-**[plugins/spec-react/skills/specflow/SKILL.md](plugins/spec-react/skills/specflow/SKILL.md)** and its `phases/`.
+**[plugins/react-spec/skills/specflow/SKILL.md](plugins/react-spec/skills/specflow/SKILL.md)** and its `phases/`.

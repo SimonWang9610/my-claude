@@ -3,8 +3,8 @@
 # install.sh — register the my-claude plugin marketplace and install its plugins
 # via the `claude plugin` CLI.
 #
-#   ./install.sh                    # marketplace (GitHub) + spec-react
-#   ./install.sh --flutter          # also install spec-flutter
+#   ./install.sh                    # marketplace (GitHub) + react-spec
+#   ./install.sh --flutter          # also install flutter-spec
 #   ./install.sh --local            # register THIS checkout as the marketplace (development)
 #   ./install.sh --rules            # also symlink rules/preferences.md -> ~/.claude/rules/
 #   ./install.sh --uninstall        # remove plugins + marketplace + rules symlink
@@ -35,8 +35,8 @@ command -v claude >/dev/null || { echo "claude CLI not found — install Claude 
 RULES_LINK="$HOME/.claude/rules/preferences.md"
 
 if [ "$UNINSTALL" = yes ]; then
-  claude plugin uninstall "spec-react@$MARKETPLACE_NAME"   2>/dev/null || true
-  claude plugin uninstall "spec-flutter@$MARKETPLACE_NAME" 2>/dev/null || true
+  claude plugin uninstall "react-spec@$MARKETPLACE_NAME"   2>/dev/null || true
+  claude plugin uninstall "flutter-spec@$MARKETPLACE_NAME" 2>/dev/null || true
   claude plugin marketplace remove "$MARKETPLACE_NAME"     2>/dev/null || true
   if [ -L "$RULES_LINK" ] && [ "$(readlink "$RULES_LINK")" = "$REPO/rules/preferences.md" ]; then
     rm "$RULES_LINK" && echo "Removed rules symlink."
@@ -50,8 +50,8 @@ SOURCE="$GITHUB_SOURCE"
 echo "Registering marketplace '$MARKETPLACE_NAME' from $SOURCE"
 claude plugin marketplace add "$SOURCE" 2>/dev/null || claude plugin marketplace update "$MARKETPLACE_NAME"
 
-claude plugin install "spec-react@$MARKETPLACE_NAME"
-[ "$FLUTTER" = yes ] && claude plugin install "spec-flutter@$MARKETPLACE_NAME"
+claude plugin install "react-spec@$MARKETPLACE_NAME"
+[ "$FLUTTER" = yes ] && claude plugin install "flutter-spec@$MARKETPLACE_NAME"
 
 if [ "$RULES" = yes ]; then
   mkdir -p "$HOME/.claude/rules"
@@ -63,4 +63,4 @@ if [ "$RULES" = yes ]; then
   fi
 fi
 
-echo "Done. Try: /spec-react:specflow init  ·  claude --agent spec-react:my-specflow-driver"
+echo "Done. Try: /react-spec:specflow init  ·  claude --agent react-spec:my-specflow-driver"

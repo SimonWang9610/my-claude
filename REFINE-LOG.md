@@ -1185,12 +1185,12 @@ match any *.md).
 ## 2026-08-01 — Plugin packaging (breaking)
 
 Repo restructured from symlink-installed bundle → **Claude Code plugin marketplace**
-(`.claude-plugin/marketplace.json`) with two independent plugins: `plugins/spec-react/`
-(all React/TS skills + 3 drivers + 6 workers) and `plugins/spec-flutter/` (fl-* skills +
+(`.claude-plugin/marketplace.json`) with two independent plugins: `plugins/react-spec/`
+(all React/TS skills + 3 drivers + 6 workers) and `plugins/flutter-spec/` (fl-* skills +
 in-plugin `rules/`). Decisions:
 
 - docs plugins.md/plugins-reference → adopted marketplace + per-plugin `.claude-plugin/plugin.json`;
-  namespacing (`/spec-react:<skill>`, `spec-react:<agent>`) is the conflict fix that motivated
+  namespacing (`/react-spec:<skill>`, `react-spec:<agent>`) is the conflict fix that motivated
   the change → all cross-references (agent `skills:` preloads, `/specflow` invocations, worker spawn
   names) rewritten to namespaced form, since preloading draws from the same name set as the
   Skill tool.
@@ -1199,3 +1199,13 @@ in-plugin `rules/`). Decisions:
 - flutter rules "linked into .claude/rules/" wording → replaced with in-plugin
   `${CLAUDE_PLUGIN_ROOT}/rules/` reads (plugins can't install ambient rules).
 - link.sh/unlink.sh removed; migration guide in README (old unlink retrievable from git history).
+
+**2026-08-01 (later):** plugins renamed `react-spec` / `flutter-spec`; skill `sflow` → `specflow`;
+install.sh added (claude plugin CLI). Reconciliation audit: dead `/locate-bug` → inline bounded
+root-cause pass (3 drivers); oac dangling "taskstoissues skip above" reworded; fl-pr-review
+`conditional/performance/` → `performance/`, "13 core" → 11, `core/widget-{theming,build-discipline}.md`
+→ `performance/` (files live in fl-implementation, symlinked); `engineering-discipline` rule cites →
+`review-procedure.md § Pass 3h` (file no longer exists); flutter load directives + router
+descriptions namespaced; cross-skill rule paths anchored to ${CLAUDE_PLUGIN_ROOT}. Rejected
+(verified valid): specflow ledger keys clarify/spec-qa (driver-led phases, by design);
+fl-pr-review references/{core,forensics,performance,...} (intra-plugin symlinks resolve).
