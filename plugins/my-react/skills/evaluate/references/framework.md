@@ -32,7 +32,7 @@ Severity: cliff → CRITICAL · core → HIGH (MEDIUM when contained to one unit
 polish → LOW. Cap LOW findings so the top severities stay visible; tally what the cap
 drops (`suppressed: <n>`).
 
-## Report template — `evaluation-<mode>.md`
+## Report template — returned to the caller, never persisted
 
 ```markdown
 # Evaluation — <mode> · <spec/scope> · <verdict>

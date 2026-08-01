@@ -52,49 +52,49 @@ Strict order; write nothing until step 1 passes.
 
 **Every phase artifact lives under `$SPEC_DIR`** — `atlas/`, `preflight.md`,
 `requirements.md`, `clarify.md`, `design.md`, `contracts/`, `qa-journey-plan.md`,
-`tasks.md`, `evaluations/*.md`, `qa-report.md`; every subagent prompt's output
-destination is a `$SPEC_DIR` path. The target repo is read-only except during implement,
-and implement writes source and tests only — never a spec artifact outside `$SPEC_DIR`.
+`tasks.md`, `qa-report.md`; every dispatch's output destination is a `$SPEC_DIR` path.
+Evaluation reports are intermediate — presented at gates, never persisted. The target
+repo is read-only except during implement, and implement writes source and tests only.
 
-- **preflight** — ① existing/legacy code in the feature scope → spawn `my-react:auditor`
-  to build `$SPEC_DIR/atlas/` (plus any curated external atlas to distill; ONE spawn); design links
-  → `/my-react:figma` · ② author `preflight.md` yourself: reusable/legacy surfaces,
-  shared-unit impact (Reuse as-is · Copy and customize · Modify unadopted · No
-  interaction), gaps — grounded by `atlas/` queries and pointing at it, never restating it.
-- **requirements** — `/my-react:requirements` → `requirements.md` · **human gate**.
-- **clarify** — no OPEN `## Clarifications` entries → mark **completed** ("resolved in
-  requirements § Clarifications"). Else ONE batched Q&A round on exactly those →
-  `clarify.md`.
-- **design** — spawn `my-react:architect` (requirements + `atlas/` + design
-  decomposition; outputs into `$SPEC_DIR`) → `design.md` + `contracts/` + draft
-  `qa-journey-plan.md` (fast path: a contract delta instead — verify its template
-  fields, no evaluation) · spawn `my-react:evaluator` — mode `design`,
-  Materials: the design artifacts + requirements + `atlas/` + earlier specs'
-  `design.md § Inherited defects` when any exist, NEVER the architect's report; it
-  returns the report — write it to `$SPEC_DIR/evaluations/design.md` yourself, then
-  verify mechanically (axis table + verdict present, a finding per non-LOW failed
-  check, suppressed tally when findings were capped). BLOCK → route the findings to the
-  architect for ONE revision, re-evaluate once; still BLOCK → the human gate decides
-  re-spawn vs descope ·
-  **human gate** — covers design AND journey plan; present the evaluation (verdict ·
-  axis table · findings · foundation signal), the architect's refactor proposals + open
-  items.
-- **tasks** — `/my-react:plan` → `tasks.md`.
-- **implement** — per wave: [Implement discipline](#implement-discipline) ·
-  **evaluation** — at feature scale spawn `my-react:evaluator` on the phase
-  diff, modes `implementation` + `tests` (bugfix scale: skip, note it in `.meta.yaml`;
-  Materials: the diff + contracts + ACs + `design.md § Blast radius` + red refs, never
-  the authors' reports); it returns the report — write it to
-  `$SPEC_DIR/evaluations/implement-<phase>.md` yourself ·
-  **human gate** — present verdict + findings with the phase summary; the gate absorbs
-  the how-to-handle decision · **E2E** when `qa-journey-plan.md` exists: spawn `my-react:e2e` to
-  author per disposition; run the suite yourself. Completes only with E2E green or
-  skipped-with-note; fixes run as red→green tasks; material post-gate changes re-present.
-- **spec-qa** — ① unfinished scoped test work → STOP back to implement, never a finding ·
-  ② ONE full-suite run, journeys included (red → STOP, don't audit a broken build) ·
-  ③ author `qa-report.md` yourself: grep-generated AC/journey → test coverage matrix
-  (hollow = a test a stub passes), failure classification (test-bug vs real defect —
-  report, never fix), open items.
+- **preflight**
+  - existing/legacy code in scope → `my-react:auditor` builds `$SPEC_DIR/atlas/` (ONE
+    dispatch, distill included); design links → `/my-react:figma`.
+  - author `preflight.md` yourself: reusable/legacy surfaces, shared-unit impact, gaps —
+    grounded by `atlas/` queries, pointing at it, never restating it.
+- **requirements**
+  - `/my-react:requirements` → `requirements.md` · **human gate**.
+- **clarify**
+  - no OPEN `## Clarifications` → mark completed ("resolved in requirements").
+  - else ONE batched Q&A round on exactly those → `clarify.md`.
+- **design**
+  - `my-react:architect` (requirements + `atlas/` + decomposition) → `design.md` +
+    `contracts/` + draft `qa-journey-plan.md`. Fast path: a contract delta — verify its
+    fields, no evaluation.
+  - `my-react:evaluator`, mode `design` — Materials: design artifacts + requirements +
+    `atlas/` + earlier specs' `design.md § Inherited defects` if any; never the
+    architect's report.
+  - BLOCK → findings to the architect, ONE revision, re-evaluate once; still BLOCK →
+    the gate decides re-spawn vs descope.
+  - **human gate** — design AND journey plan: present the evaluation (verdict · axes ·
+    findings · foundation signal) + refactor proposals + open items.
+- **tasks**
+  - `/my-react:plan` → `tasks.md`.
+- **implement**
+  - per wave: [Implement discipline](#implement-discipline).
+  - after ALL waves complete, feature scale: `my-react:evaluator` on the whole implement
+    diff, modes `implementation` + `tests` — Materials: diff + contracts + ACs +
+    `design.md § Blast radius` + red refs; never the authors' reports. Bugfix scale:
+    skip, note it in `.meta.yaml`.
+  - **human gate** — verdict + findings with the phase summary.
+  - **E2E** when `qa-journey-plan.md` exists: `my-react:e2e` authors per disposition;
+    run the suite yourself. Complete only with E2E green or skipped-with-note; fixes
+    run as red→green tasks; material post-gate changes re-present.
+- **spec-qa**
+  - unfinished scoped test work → STOP back to implement, never a finding.
+  - ONE full-suite run, journeys included (red → STOP, don't audit a broken build).
+  - author `qa-report.md` yourself: AC/journey→test matrix by grep (hollow = a test a
+    stub passes), failure classification (test-bug vs real defect — report, never fix),
+    open items.
 
 # Phase loop
 
@@ -127,7 +127,7 @@ irreversible (commit, push, PR).
 tasks.md § Waves is the assignment sheet — batches are never re-derived here. Per batch
 pair: **spawn `my-react:tester`** (test batch) → **run RED per task** (failing on
 behaviour, not setup; record the ref) → **spawn `my-react:implementer`** (impl batch + the
-failing test names + the red ref, evidence for the rubric's c2 check) → **run green per
+failing test names + the red ref — recorded for the phase-end evaluation's c2 check) → **run green per
 task AND `git diff` the test paths since red**. Test paths not byte-unchanged → only the
 affected task is redone by a fresh single-task pair.
 
@@ -147,10 +147,10 @@ Named teammates, each spawned once and continued by follow-up message: `my-react
 `my-react:tester` / `my-react:implementer` (one pair per wave, concurrent pairs on
 disjoint files) · `my-react:e2e` (journey tests) · `my-react:evaluator` (verify at gates).
 
-- **Continue, don't respawn** — a revision, re-evaluation, or follow-up goes to the
-  existing teammate with its context intact; a fresh spawn only for a new independent
-  scope (a new wave's pair) or when independence demands clean context (the evaluator's
-  first verify of an artifact set).
+- **Route to the teammate who knows the work** — a task related to what a teammate
+  already did goes to that teammate while its context stays reasonable (below ~75%);
+  overloaded or unrelated → a new teammate is fine. Exception: the evaluator's first
+  verify of an artifact set needs clean context.
 - **Choose model + effort per dispatch** — `/my-react:delegate` before a phase's first
   spawn; judgment-heavy work (architect design, feature-scale verify) → strongest model,
   higher effort; bounded mechanical work (a scoped batch, a distill, a re-run) → cheaper

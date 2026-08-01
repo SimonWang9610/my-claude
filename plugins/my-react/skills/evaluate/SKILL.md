@@ -20,9 +20,10 @@ you run checks and collect evidence; arithmetic does the rest.
 Two uses of the same rubric:
 
 - **Improve** (author, right after authoring) — run the checks on your own output, fix
-  what any axis ≤2 reveals, ONE bounded loop; internal working process, no report
-  artifact. Mechanical evidence keeps self-evaluation honest — judgment-only
-  self-review is worth less than nothing.
+  what any axis ≤2 reveals, ONE bounded loop; internal working process, no report.
+  Mechanical evidence keeps self-evaluation honest — judgment-only self-review is worth
+  less than nothing. Design-scale work only; implementation and tests are evaluated
+  once, after all implementation tasks complete, not per batch.
 - **Verify** (independent, at a gate) — evaluate work you did not author, from its
   artifacts alone; keep your context free of the author's reasoning. Produces the
   evaluation report; findings only — leave every file untouched, fixing belongs to the
@@ -56,10 +57,9 @@ the scope; implementation + tests usually run together on a phase diff.
 4. **Derive** — axis scores and verdict from check outcomes per framework.md; failed
    checks become findings, severity-ranked; design mode additionally derives the
    foundation signal from the ledgers.
-5. **Report** — the framework's report template. Verify use returns it — the caller
-   persists it to its designated path; inline use writes it there directly. Compact:
-   findings carry facts, the verdict carries the decision, nothing restates artifact
-   content.
+5. **Report** — the framework's report template, returned to the caller. The report is
+   an intermediate artifact — consumed at the gate, never persisted. Compact: findings
+   carry facts, the verdict carries the decision, nothing restates artifact content.
 
 ## Routing failed checks
 

@@ -171,8 +171,9 @@ removes; its companion agent (if any) follows.
   PASS / CONDITIONAL / BLOCK verdict, and for designs a foundation signal on when
   refactoring the blast radius pays.
 - **Why** — evaluation separated from authoring is what makes a verdict trustworthy:
-  authors run the same rubric to *improve* (mechanical checks keep self-evaluation
-  honest), the independent evaluator runs it to *verify* with fresh eyes.
+  the architect runs the same rubric to *improve* its design (mechanical checks keep
+  self-evaluation honest); the independent evaluator runs it to *verify* with fresh eyes
+  — once per design, and once over the whole diff after implementation completes.
 - **Pain** — bugs that "look correct"; unfounded quality claims; not knowing whether
   fixing inherited debt is worth it before building on top of it.
 - **evaluator** — a read-only tool fence (no Write/Edit), zero author
@@ -262,8 +263,10 @@ driver never advances past an open gate.
 ## The evaluation framework — one rubric system, evaluation as its own step
 
 All evaluation lives in the `evaluate` skill (`skills/evaluate/references/` — one
-framework file + three rubrics), applied at two moments: authors run it to **improve**
-right after authoring, the evaluator agent runs it to **verify** at gates.
+framework file + three rubrics), applied at two moments: the architect runs it to **improve** its design, and the
+evaluator agent runs it to **verify** at gates — design first, then implementation +
+tests once after all implementation tasks complete. Reports are intermediate, presented
+at gates and never persisted.
 
 - **Binary evidence-typed checks, grouped into axes** — design: Grounding · Fit ·
   Structure (maintainability, scalability) · Tradeoffs · Buildability; implementation:

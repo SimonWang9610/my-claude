@@ -1307,3 +1307,12 @@ missing not-flags ×2; seed-from-prop dedupe; over-broad compiler-skip). 3 mispl
 (process prose cut from cards; app-wide staleTime → state-ownership; rubric-restating
 surface card compressed). Dropped: prop-drilling and state-duplication cards (existing
 coverage confirmed).
+
+**2026-08-01 — evaluation cadence + team ergonomics:** per-batch improve loops removed
+from implementer/tester (evaluate preloads dropped) — implementation + tests are evaluated
+ONCE after all implement tasks complete; design keeps its improve loop. Evaluation reports
+are intermediate (presented at gates, never persisted — evaluations/ dir dropped). Team
+routing relaxed: related work → the teammate who did it while context <~75%, else a new
+teammate; evaluator's first verify stays clean-context. Phase playbooks reformatted to
+terse sub-bullets (both drivers). Role paragraphs compressed across all six workers
+(789→ from 804 lines).

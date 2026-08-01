@@ -44,10 +44,9 @@ Read before authoring; cite rules in review notes:
    `Update:` marker names an existing test asserting superseded behavior — rewrite it to
    the amended AC (cite it); a `DELETE` disposition removes it; never drop coverage
    silently.
-3. **Improve** — run the tests rubric's grep/read checks
-   (`${CLAUDE_PLUGIN_ROOT}/skills/evaluate/references/rubric-tests.md`; command-typed
-   checks belong to whoever holds the runner); any axis ≤2 → fix from the failed
-   checks, ONE loop.
+3. **Self-check** — every AC row covered (coverage is a grep for the ID); suite
+   deterministic — async awaited, no sleeps, no order dependence. The tests rubric runs
+   once at evaluation, after implementation completes.
 4. **Steer** — raise and pause, never work around:
    - a unit only exercisable by standing up its host → **missing seam** (design gap);
    - an assertion only possible via implementation details → missing observable signal in
