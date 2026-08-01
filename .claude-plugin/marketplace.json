@@ -8,7 +8,7 @@
     {
       "name": "react-spec",
       "source": "./plugins/react-spec",
-      "description": "React/TS spec-driven workflow: specflow phases, contract skills, atlas auditor, driver + worker agents."
+      "description": "React/TS spec-driven workflow: driver-embedded phase process, contract skills, atlas auditor, driver + worker agents."
     },
     {
       "name": "flutter-spec",

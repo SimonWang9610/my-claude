@@ -1209,3 +1209,8 @@ root-cause pass (3 drivers); oac dangling "taskstoissues skip above" reworded; f
 descriptions namespaced; cross-skill rule paths anchored to ${CLAUDE_PLUGIN_ROOT}. Rejected
 (verified valid): specflow ledger keys clarify/spec-qa (driver-led phases, by design);
 fl-pr-review references/{core,forensics,performance,...} (intra-plugin symlinks resolve).
+
+**2026-08-01 (later still):** removed `my-specflow-driver` + the `specflow` phase skill — the
+lean driver (self-contained playbooks) and oac driver (external /spec-* commands) are the two
+drivers; the process shell proved redundant. `review-react-changes/references/specflow.md` kept
+(local axis file, not the skill). install.sh → install.py (same flags, argparse).

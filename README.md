@@ -4,8 +4,8 @@ A [Claude Code](https://claude.com/claude-code) **plugin marketplace** that driv
 spec-driven workflow — `preflight → requirements → design → tasks → implement → validate → qa` —
 for **React/TypeScript** and **Flutter/Dart** projects.
 
-It is built on one idea: **skills carry the judgment, agents carry the execution, the specflow
-skill carries the process, plugins package it.** A skill is a self-contained procedure Claude
+It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
+agents carry the process, plugins package it.** A skill is a self-contained procedure Claude
 loads on demand; some skills have a **companion agent** — an expert with a narrow tool fence and
 the skill preloaded — that runs the skill under separation-of-duties or fresh-eyes constraints
 the skill alone can't enforce.
@@ -16,21 +16,21 @@ Two self-contained plugins that install independently:
 
 | Plugin | Contents |
 |--------|----------|
-| `react-spec` | all React/TS skills (incl. the `/react-spec:specflow` workflow skill) + the 3 drivers and 6 worker agents |
+| `react-spec` | all React/TS contract skills + the 2 drivers and 6 worker agents |
 | `flutter-spec` | the `fl-*` skills + the Flutter rule files (shipped in-plugin, read via `${CLAUDE_PLUGIN_ROOT}/rules/`) |
 
 The install script registers the marketplace and installs the plugins via the `claude plugin` CLI:
 
 ```bash
-./install.sh                 # react-spec from GitHub marketplace
+python3 install.py                 # react-spec from GitHub marketplace
 ```
 
 ```bash
-./install.sh --flutter --rules   # + flutter-spec, + symlink rules/preferences.md into ~/.claude/rules/
+python3 install.py --flutter --rules   # + flutter-spec, + symlink rules/preferences.md into ~/.claude/rules/
 ```
 
 ```bash
-./install.sh --local             # register THIS checkout as the marketplace (for development)
+python3 install.py --local             # register THIS checkout as the marketplace (for development)
 ```
 
 Or manually, inside a `claude` session:
@@ -48,7 +48,7 @@ claude --plugin-dir ./plugins/react-spec --plugin-dir ./plugins/flutter-spec
 ```
 
 Everything a plugin ships is **namespaced**: skills invoke as `/react-spec:<skill>`
-(e.g. `/react-spec:specflow design`, `/react-spec:build-requirements`), agents address as
+(e.g. `/react-spec:build-requirements`, `/react-spec:design-react-contracts`), agents address as
 `react-spec:<agent>`. Namespacing is what keeps the bundle from colliding with global or
 project skills — the reason plugins replaced the old symlink installer.
 
@@ -69,9 +69,10 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
 2. Remove the managed `# >>> my-claude workflow agents >>>` block from your shell rc if you
    installed aliases.
 3. Install the plugins as above.
-4. Rename invocations: `/sflow …` → `/react-spec:specflow …`, `/build-requirements` →
-   `/react-spec:build-requirements`, agent `my-specflow-driver` →
-   `react-spec:my-specflow-driver`, `/fl-pr-review` → `/flutter-spec:fl-pr-review`, etc.
+4. Rename invocations: `/build-requirements` → `/react-spec:build-requirements`, driver agent
+   → `react-spec:lean-specflow-driver`, `/fl-pr-review` → `/flutter-spec:fl-pr-review`, etc.
+   The `/sflow` phase skill and `my-specflow-driver` are removed — the lean driver embeds the
+   phase playbooks.
 5. Re-link `rules/preferences.md` (see above) — it is no longer installed for you.
 
 ---
@@ -230,15 +231,13 @@ removes; its companion agent (if any) follows.
 
 ## The drivers — orchestration
 
-Three **driver agents** you launch to run a whole spec: `my-specflow-driver` (drives this bundle's
-`/specflow` skill — one dispatcher with a phase per call, `init … qa`), `oac-specflow-driver`
-(drives an external **specflow** project's `/spec-*` commands), and `lean-specflow-driver` (the
-command-free A/B twin: same phases, same `.meta.yaml`, same artifacts — but NO process commands
-or `/specflow`; playbooks live in the agent, heavy work in its teammates — measuring whether
-dropping the process shell cuts tokens at equal quality). A driver is not tied to one skill —
-it binds them all.
+Two **driver agents** you launch to run a whole spec: `lean-specflow-driver` (self-contained —
+the phase playbooks live in the agent itself over a `.meta.yaml` ledger, no process commands;
+heavy work runs in its teammate agents) and `oac-specflow-driver` (drives an external
+**specflow** project's `/spec-*` commands). A driver is not tied to one skill — it binds
+them all.
 
-- **Purpose** — drive one spec through its phases: run each phase's command + playbook, delegate
+- **Purpose** — drive one spec through its phases: run each phase's playbook, delegate
   heavy work to the worker agents, verify every output mechanically, and pause at human gates.
 - **Why** — separating orchestration (decide, verify, record) from execution (skills + workers)
   keeps each simple; the driver holds no stack know-how and never does heavy work itself.
@@ -246,7 +245,7 @@ it binds them all.
   verifying; a whole process crammed into one unmaintainable prompt.
 
 ```sh
-claude --agent react-spec:my-specflow-driver --worktree "add a logout button"
+claude --agent react-spec:lean-specflow-driver --worktree "add a logout button"
 ```
 
 Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
@@ -314,8 +313,8 @@ my-claude/
 ├── plugins/
 │   ├── react-spec/
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/    the skills above + specflow/ (SKILL.md + phases/)
-│   │   └── agents/    3 drivers + 6 companion workers
+│   │   ├── skills/    the contract skills above
+│   │   └── agents/    2 drivers + 6 companion workers
 │   └── flutter-spec/
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/    fl-* skills
@@ -324,4 +323,4 @@ my-claude/
 ```
 
 For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
-**[plugins/react-spec/skills/specflow/SKILL.md](plugins/react-spec/skills/specflow/SKILL.md)** and its `phases/`.
+**[plugins/react-spec/agents/lean-specflow-driver.md](plugins/react-spec/agents/lean-specflow-driver.md)**.
