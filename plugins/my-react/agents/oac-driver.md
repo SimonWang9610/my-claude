@@ -38,40 +38,40 @@ written — **except preflight, which builds the atlas first so `/spec-preflight
 A needed `/spec-*` command missing → STOP and report, never substitute.
 
 - **preflight**
-  - existing/legacy code in scope → `my-react:auditor` builds `atlas/` (ONE dispatch,
+  1. existing/legacy code in scope → `my-react:auditor` builds `atlas/` (ONE dispatch,
     distill included); design links → `/my-react:figma`; neither → note it.
-  - `/spec-preflight`, querying `atlas/` to scope faster.
-  - figma map + gaps → `preflight.md`, pointing at `atlas/` · **human gate**.
+  2. `/spec-preflight`, querying `atlas/` to scope faster.
+  3. figma map + gaps → `preflight.md`, pointing at `atlas/` · **human gate**.
 - **requirements**
-  - `/spec-requirements` · `/my-react:requirements` → `requirements.md` · **human gate**.
+  1. `/spec-requirements` · `/my-react:requirements` → `requirements.md` · **human gate**.
 - **clarify**
-  - no OPEN `## Clarifications` → mark completed ("resolved in requirements").
-  - else `/spec-clarify` · ONE batched Q&A round on exactly those → `clarify.md`.
+  1. no OPEN `## Clarifications` → mark completed ("resolved in requirements").
+  2. else `/spec-clarify` · ONE batched Q&A round on exactly those → `clarify.md`.
 - **design**
-  - `/spec-design` · `my-react:architect` (requirements + `atlas/` + decomposition) →
+  1. `/spec-design` · `my-react:architect` (requirements + `atlas/` + decomposition) →
     `design.md` + `contracts/` + draft `qa-journey-plan.md`.
-  - `my-react:evaluator`, mode `design` — Materials: design artifacts + requirements +
+  2. `my-react:evaluator`, mode `design` — Materials: design artifacts + requirements +
     `atlas/` + earlier specs' `design.md § Inherited defects` if any; never the
     architect's report. BLOCK → ONE architect revision + re-evaluate, then the gate
     decides.
-  - **human gate** — present verdict · findings · foundation signal beside the design.
+  3. **human gate** — present verdict · findings · foundation signal beside the design.
 - **tasks**
-  - `/spec-tasks` · `/my-react:plan` → `tasks.md`.
+  1. `/spec-tasks` · `/my-react:plan` → `tasks.md`.
 - **implement**
-  - `/spec-implement` · per wave: [Implement Discipline](#implement-discipline).
-  - after ALL waves complete, feature scale: `my-react:evaluator` on the whole implement
+  1. `/spec-implement` · per wave: [Implement Discipline](#implement-discipline).
+  2. after ALL waves complete, feature scale: `my-react:evaluator` on the whole implement
     diff, modes `implementation` + `tests` — Materials: diff + contracts + ACs +
     `design.md § Blast radius` + red refs; never the authors' reports. Bugfix scale:
     skip, note it.
-  - **human gate** — verdict + findings with the phase summary.
-  - **E2E** when `qa-journey-plan.md` exists: `my-react:e2e` authors per disposition;
+  3. **human gate** — verdict + findings with the phase summary.
+  4. **E2E** when `qa-journey-plan.md` exists: `my-react:e2e` authors per disposition;
     run the suite yourself. Complete only with E2E green or skipped-with-note; fixes
     run as red→green tasks; material post-gate changes re-present.
 - **spec-qa**
-  - `/spec-qa` · ONE full-suite run, journeys included (red → STOP, don't audit a
+  1. `/spec-qa` · ONE full-suite run, journeys included (red → STOP, don't audit a
     broken build).
-  - `/spec-validate`, folded here · fresh-eyes test-quality pass.
-  - `qa-report.md` = grep-generated coverage + validator results + open items.
+  2. `/spec-validate`, folded here · fresh-eyes test-quality pass.
+  3. `qa-report.md` = grep-generated coverage + validator results + open items.
 
 Evaluation reports are intermediate — presented at gates, never persisted.
 

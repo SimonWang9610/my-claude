@@ -57,42 +57,42 @@ Evaluation reports are intermediate — presented at gates, never persisted. The
 repo is read-only except during implement, and implement writes source and tests only.
 
 - **preflight**
-  - existing/legacy code in scope → `my-react:auditor` builds `$SPEC_DIR/atlas/` (ONE
+  1. existing/legacy code in scope → `my-react:auditor` builds `$SPEC_DIR/atlas/` (ONE
     dispatch, distill included); design links → `/my-react:figma`.
-  - author `preflight.md` yourself: reusable/legacy surfaces, shared-unit impact, gaps —
+  2. author `preflight.md` yourself: reusable/legacy surfaces, shared-unit impact, gaps —
     grounded by `atlas/` queries, pointing at it, never restating it.
 - **requirements**
-  - `/my-react:requirements` → `requirements.md` · **human gate**.
+  1. `/my-react:requirements` → `requirements.md` · **human gate**.
 - **clarify**
-  - no OPEN `## Clarifications` → mark completed ("resolved in requirements").
-  - else ONE batched Q&A round on exactly those → `clarify.md`.
+  1. no OPEN `## Clarifications` → mark completed ("resolved in requirements").
+  2. else ONE batched Q&A round on exactly those → `clarify.md`.
 - **design**
-  - `my-react:architect` (requirements + `atlas/` + decomposition) → `design.md` +
+  1. `my-react:architect` (requirements + `atlas/` + decomposition) → `design.md` +
     `contracts/` + draft `qa-journey-plan.md`. Fast path: a contract delta — verify its
     fields, no evaluation.
-  - `my-react:evaluator`, mode `design` — Materials: design artifacts + requirements +
+  2. `my-react:evaluator`, mode `design` — Materials: design artifacts + requirements +
     `atlas/` + earlier specs' `design.md § Inherited defects` if any; never the
     architect's report.
-  - BLOCK → findings to the architect, ONE revision, re-evaluate once; still BLOCK →
+  3. BLOCK → findings to the architect, ONE revision, re-evaluate once; still BLOCK →
     the gate decides re-spawn vs descope.
-  - **human gate** — design AND journey plan: present the evaluation (verdict · axes ·
+  4. **human gate** — design AND journey plan: present the evaluation (verdict · axes ·
     findings · foundation signal) + refactor proposals + open items.
 - **tasks**
-  - `/my-react:plan` → `tasks.md`.
+  1. `/my-react:plan` → `tasks.md`.
 - **implement**
-  - per wave: [Implement discipline](#implement-discipline).
-  - after ALL waves complete, feature scale: `my-react:evaluator` on the whole implement
+  1. per wave: [Implement discipline](#implement-discipline).
+  2. after ALL waves complete, feature scale: `my-react:evaluator` on the whole implement
     diff, modes `implementation` + `tests` — Materials: diff + contracts + ACs +
     `design.md § Blast radius` + red refs; never the authors' reports. Bugfix scale:
     skip, note it in `.meta.yaml`.
-  - **human gate** — verdict + findings with the phase summary.
-  - **E2E** when `qa-journey-plan.md` exists: `my-react:e2e` authors per disposition;
+  3. **human gate** — verdict + findings with the phase summary.
+  4. **E2E** when `qa-journey-plan.md` exists: `my-react:e2e` authors per disposition;
     run the suite yourself. Complete only with E2E green or skipped-with-note; fixes
     run as red→green tasks; material post-gate changes re-present.
 - **spec-qa**
-  - unfinished scoped test work → STOP back to implement, never a finding.
-  - ONE full-suite run, journeys included (red → STOP, don't audit a broken build).
-  - author `qa-report.md` yourself: AC/journey→test matrix by grep (hollow = a test a
+  1. unfinished scoped test work → STOP back to implement, never a finding.
+  2. ONE full-suite run, journeys included (red → STOP, don't audit a broken build).
+  3. author `qa-report.md` yourself: AC/journey→test matrix by grep (hollow = a test a
     stub passes), failure classification (test-bug vs real defect — report, never fix),
     open items.
 

@@ -1,23 +1,26 @@
 # my-claude — spec-driven-development plugins for Claude Code
 
-A [Claude Code](https://claude.com/claude-code) **plugin marketplace** that drives a structured,
-spec-driven workflow — `preflight → requirements → design → tasks → implement → validate → qa` —
-for **React/TypeScript** and **Flutter/Dart** projects.
+## 1 · What is this
+
+A [Claude Code](https://claude.com/claude-code) **plugin marketplace** carrying two
+self-contained plugins that drive a structured, spec-driven workflow —
+`preflight → requirements → design → tasks → implement → evaluate → qa` — from a request
+to shipped, evaluated code:
+
+| Plugin | Contents | Status |
+|--------|----------|--------|
+| `my-react` | 11 React/TS contract skills + 2 driver agents + 6 worker agents + the evaluation framework | stable |
+| `my-flutter` | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`) | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
 
 It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
 agents carry the process, plugins package it.** A skill is a self-contained procedure Claude
 loads on demand; some skills have a **companion agent** — an expert with a narrow tool fence and
 the skill preloaded — that runs the skill under separation-of-duties or fresh-eyes constraints
-the skill alone can't enforce.
+the skill alone can't enforce. Everything a plugin ships is **namespaced**
+(`/my-react:<skill>`, `my-react:<agent>`), so it never collides with your global or
+project configuration.
 
-## Install
-
-Two self-contained plugins that install independently:
-
-| Plugin | Contents |
-|--------|----------|
-| `my-react` | all React/TS contract skills + the 2 drivers and 6 worker agents |
-| `my-flutter` | the `fl-*` skills + the Flutter rule files (shipped in-plugin, read via `${CLAUDE_PLUGIN_ROOT}/rules/`) |
+## 2 · Install & update
 
 The install script registers the marketplace and installs the plugins via the `claude plugin` CLI:
 
@@ -47,10 +50,23 @@ For one-off local testing without any install:
 claude --plugin-dir ./plugins/my-react --plugin-dir ./plugins/my-flutter
 ```
 
-Everything a plugin ships is **namespaced**: skills invoke as `/my-react:<skill>`
-(e.g. `/my-react:requirements`, `/my-react:design`), agents address as
-`my-react:<agent>`. Namespacing is what keeps the bundle from colliding with global or
-project skills — the reason plugins replaced the old symlink installer.
+### Updating to a new version
+
+Plugin versions are pinned in each `.claude-plugin/plugin.json`; you receive updates when
+that version bumps. To upgrade an installed plugin:
+
+```bash
+claude plugin marketplace update my-claude
+```
+
+```bash
+claude plugin update my-react@my-claude
+```
+
+then restart Claude Code (or `/reload-plugins`) to apply. Local `--plugin-dir` checkouts
+need no update step — edit and `/reload-plugins`. Breaking renames between versions are
+listed in this README's migration notes; skill/agent names are the stable API, so a
+version that renames them will always say so here.
 
 `rules/preferences.md` is the one asset a plugin **cannot** carry: plugins do not inject
 always-on context (a plugin CLAUDE.md is ignored). It stays a user-level file — `--rules`
@@ -77,12 +93,35 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
 
 ---
 
+## 3 · Using the skills and agents individually
+
+Every piece works standalone — invoke a skill in any session, or address an agent
+directly. The quick map (my-react):
+
+| I want to… | Invoke |
+|------------|--------|
+| understand unfamiliar/legacy code (build or query the atlas) | `/my-react:audit` · agent `my-react:auditor` |
+| turn a request into a testable spec | `/my-react:requirements` |
+| break a Figma screen into buildable components | `/my-react:figma` |
+| design contracts for approved ACs | `/my-react:design` · agent `my-react:architect` |
+| evaluate a design / a diff / a test suite | `/my-react:evaluate <mode>` · agent `my-react:evaluator` |
+| turn an approved design into ordered tasks | `/my-react:plan` |
+| author unit tests against contracts | `/my-react:test` · agent `my-react:tester` (E2E: agent `my-react:e2e`) |
+| implement against contracts / fix a bug | `/my-react:implement` · agent `my-react:implementer` |
+| review a PR before merge | `/my-react:review` |
+| route work to the cheapest execution | `/my-react:delegate` |
+| reconcile a JIRA ticket with reality | `/my-react:jira-align` |
+
+Agents run via the Agent tool or `claude --agent my-react:<name>`; each carries its own
+tool fence, preloaded skills, and report format — your prompt only needs where · what ·
+materials · done-when.
+
 Below, each skill is described by its **purpose**, the **why** behind it, and the **pain** it
 removes; its companion agent (if any) follows.
 
 ---
 
-## Understand code you didn't write
+### Understand code you did not write
 
 ### `audit` · companion **auditor**
 
@@ -102,7 +141,7 @@ removes; its companion agent (if any) follows.
 
 ---
 
-## The contract flow — spec to shipped code
+### The contract flow — spec to shipped code
 
 ### `requirements`
 
@@ -190,7 +229,7 @@ removes; its companion agent (if any) follows.
 
 ---
 
-## Supporting skills
+### Supporting skills
 
 ### `figma`
 
@@ -220,7 +259,7 @@ removes; its companion agent (if any) follows.
 
 ---
 
-## Flutter
+### Flutter (`my-flutter` — ⚠️ work in progress, incomplete)
 
 ### `review`
 
@@ -233,7 +272,15 @@ removes; its companion agent (if any) follows.
 
 ---
 
-## The drivers — orchestration
+## 4 · The whole workflow — drivers orchestrate everything
+
+One command runs the entire pipeline — audit → requirements → design (+ independent
+evaluation) → tasks → red→green waves → one implementation+tests evaluation → E2E → QA —
+with a human gate at every consequential boundary:
+
+```bash
+claude --agent my-react:driver --worktree "add a logout button"
+```
 
 Two **driver agents** you launch to run a whole spec: `driver` (self-contained —
 the phase playbooks live in the agent itself over a `.meta.yaml` ledger, no process commands;
@@ -248,10 +295,6 @@ them all.
 - **Pain** — half-run phases; advancing past an open gate; trusting a subagent's word instead of
   verifying; a whole process crammed into one unmaintainable prompt.
 
-```sh
-claude --agent my-react:driver --worktree "add a logout button"
-```
-
 Implement runs red→green per wave — spawn `tester` (RED) → spawn `implementer`
 (green, test paths byte-unchanged) — then an optional `evaluator` pass before the human
 gate; a friction/defect DESIGN GAP routes back to `architect` for a fast-path
@@ -260,7 +303,7 @@ driver never advances past an open gate.
 
 ---
 
-## The evaluation framework — one rubric system, evaluation as its own step
+### The evaluation framework — one rubric system, evaluation as its own step
 
 All evaluation lives in the `evaluate` skill (`skills/evaluate/references/` — one
 framework file + three rubrics), applied at two moments: the architect runs it to **improve** its design, and the
@@ -286,7 +329,7 @@ at gates and never persisted.
 
 ---
 
-## How these are optimized — the mechanisms
+### How these are optimized — the mechanisms
 
 Cross-cutting techniques the skills and agents share, developed to keep them cheap to run and
 correct without heavy oversight.
@@ -332,7 +375,7 @@ correct without heavy oversight.
 
 ---
 
-## Layout & editing
+## 5 · Layout & editing
 
 Edit under `plugins/` directly; `/reload-plugins` (or restart) picks up changes when loaded
 via `--plugin-dir` or a local marketplace add.

@@ -1,4 +1,4 @@
-# my-flutter — Flutter/Dart spec-driven skills
+# my-flutter — Flutter/Dart spec-driven skills (⚠️ work in progress — incomplete)
 
 The **Flutter profile** of the my-claude marketplace, packaged as a self-contained Claude Code
 plugin. Installs independently of `my-react`.
