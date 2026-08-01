@@ -1,15 +1,83 @@
-# my-claude — a spec-driven-development bundle for Claude Code
+# my-claude — spec-driven-development plugins for Claude Code
 
-A reusable [Claude Code](https://claude.com/claude-code) bundle that drives a structured,
+A [Claude Code](https://claude.com/claude-code) **plugin marketplace** that drives a structured,
 spec-driven workflow — `preflight → requirements → design → tasks → implement → validate → qa` —
 for **React/TypeScript** and **Flutter/Dart** projects.
 
-It is built on one idea: **skills carry the judgment, agents carry the execution, commands
-carry the process, scripts install it.** A skill is a self-contained procedure Claude loads on
-demand; some skills have a **companion agent** — an expert with a narrow tool fence and the
-skill preloaded — that runs the skill under separation-of-duties or fresh-eyes constraints the
-skill alone can't enforce. Below, each skill is described by its **purpose**, the **why** behind
-it, and the **pain** it removes; its companion agent (if any) follows.
+It is built on one idea: **skills carry the judgment, agents carry the execution, the specflow
+skill carries the process, plugins package it.** A skill is a self-contained procedure Claude
+loads on demand; some skills have a **companion agent** — an expert with a narrow tool fence and
+the skill preloaded — that runs the skill under separation-of-duties or fresh-eyes constraints
+the skill alone can't enforce.
+
+## Install
+
+Two self-contained plugins that install independently:
+
+| Plugin | Contents |
+|--------|----------|
+| `spec-react` | all React/TS skills (incl. the `/spec-react:specflow` workflow skill) + the 3 drivers and 6 worker agents |
+| `spec-flutter` | the `fl-*` skills + the Flutter rule files (shipped in-plugin, read via `${CLAUDE_PLUGIN_ROOT}/rules/`) |
+
+The install script registers the marketplace and installs the plugins via the `claude plugin` CLI:
+
+```bash
+./install.sh                 # spec-react from GitHub marketplace
+```
+
+```bash
+./install.sh --flutter --rules   # + spec-flutter, + symlink rules/preferences.md into ~/.claude/rules/
+```
+
+```bash
+./install.sh --local             # register THIS checkout as the marketplace (for development)
+```
+
+Or manually, inside a `claude` session:
+
+```
+/plugin marketplace add SimonWang9610/my-claude
+/plugin install spec-react@my-claude
+/plugin install spec-flutter@my-claude     # optional, independent
+```
+
+For one-off local testing without any install:
+
+```bash
+claude --plugin-dir ./plugins/spec-react --plugin-dir ./plugins/spec-flutter
+```
+
+Everything a plugin ships is **namespaced**: skills invoke as `/spec-react:<skill>`
+(e.g. `/spec-react:specflow design`, `/spec-react:build-requirements`), agents address as
+`spec-react:<agent>`. Namespacing is what keeps the bundle from colliding with global or
+project skills — the reason plugins replaced the old symlink installer.
+
+`rules/preferences.md` is the one asset a plugin **cannot** carry: plugins do not inject
+always-on context (a plugin CLAUDE.md is ignored). It stays a user-level file — `--rules`
+symlinks it for you, or do it yourself:
+
+```bash
+ln -s "$(pwd)/rules/preferences.md" ~/.claude/rules/preferences.md
+```
+
+### Migrating from the symlink install (breaking change)
+
+The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
+
+1. Remove old links: delete the symlinks in `<dest>/.claude/{skills,agents,rules}` that point
+   into this repo (the historical `unlink.sh` still works: `git show <pre-plugin-sha>:unlink.sh | bash -s -- --global`).
+2. Remove the managed `# >>> my-claude workflow agents >>>` block from your shell rc if you
+   installed aliases.
+3. Install the plugins as above.
+4. Rename invocations: `/sflow …` → `/spec-react:specflow …`, `/build-requirements` →
+   `/spec-react:build-requirements`, agent `my-specflow-driver` →
+   `spec-react:my-specflow-driver`, `/fl-pr-review` → `/spec-flutter:fl-pr-review`, etc.
+5. Re-link `rules/preferences.md` (see above) — it is no longer installed for you.
+
+---
+
+Below, each skill is described by its **purpose**, the **why** behind it, and the **pain** it
+removes; its companion agent (if any) follows.
 
 ---
 
@@ -156,17 +224,17 @@ it, and the **pain** it removes; its companion agent (if any) follows.
 - **Why** — architectural rules only hold if something checks them on every PR; humans miss them
   under delivery pressure.
 - **Pain** — architecture erosion; Riverpod/Dart-3 anti-patterns; tests that don't actually
-  assert. (Flutter rules ship inside the `sflow-flutter` plugin at `rules/`.)
+  assert. (Flutter rules ship inside the `spec-flutter` plugin at `rules/`.)
 
 ---
 
 ## The drivers — orchestration
 
 Three **driver agents** you launch to run a whole spec: `my-specflow-driver` (drives this bundle's
-`/sflow` skill — one dispatcher with a phase per call, `init … qa`), `oac-specflow-driver`
+`/specflow` skill — one dispatcher with a phase per call, `init … qa`), `oac-specflow-driver`
 (drives an external **specflow** project's `/spec-*` commands), and `lean-specflow-driver` (the
 command-free A/B twin: same phases, same `.meta.yaml`, same artifacts — but NO process commands
-or `/sflow`; playbooks live in the agent, heavy work in its teammates — measuring whether
+or `/specflow`; playbooks live in the agent, heavy work in its teammates — measuring whether
 dropping the process shell cuts tokens at equal quality). A driver is not tied to one skill —
 it binds them all.
 
@@ -178,7 +246,7 @@ it binds them all.
   verifying; a whole process crammed into one unmaintainable prompt.
 
 ```sh
-claude --agent sflow-react:my-specflow-driver --worktree "add a logout button"
+claude --agent spec-react:my-specflow-driver --worktree "add a logout button"
 ```
 
 Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
@@ -235,61 +303,6 @@ correct without heavy oversight.
 
 ---
 
-## Installing — plugins
-
-The repo is a **Claude Code plugin marketplace** carrying two self-contained plugins that
-install independently:
-
-| Plugin | Contents |
-|--------|----------|
-| `sflow-react` | all React/TS skills (incl. the `/sflow-react:sflow` workflow skill) + the 3 drivers and 6 worker agents |
-| `sflow-flutter` | the `fl-*` skills + the Flutter rule files (shipped in-plugin, read via `${CLAUDE_PLUGIN_ROOT}/rules/`) |
-
-```sh
-claude  # then, inside the session:
-```
-
-```
-/plugin marketplace add SimonWang9610/my-claude
-/plugin install sflow-react@my-claude
-/plugin install sflow-flutter@my-claude     # optional, independent
-```
-
-For local development, load straight from the working copy — no install step:
-
-```sh
-claude --plugin-dir ./plugins/sflow-react --plugin-dir ./plugins/sflow-flutter
-```
-
-Everything a plugin ships is **namespaced**: skills invoke as `/sflow-react:<skill>`
-(e.g. `/sflow-react:sflow design`, `/sflow-react:build-requirements`), agents address as
-`sflow-react:<agent>`. Namespacing is what keeps the bundle from colliding with global or
-project skills — the reason this replaced the symlink installer.
-
-`rules/preferences.md` is the one asset a plugin **cannot** carry: plugins do not inject
-always-on context (a plugin CLAUDE.md is ignored). It stays a user-level file — copy or
-symlink it yourself if you want it ambient:
-
-```sh
-ln -s "$(pwd)/rules/preferences.md" ~/.claude/rules/preferences.md
-```
-
-### Migrating from the symlink install (breaking change)
-
-The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
-
-1. Remove old links: delete the symlinks in `<dest>/.claude/{skills,agents,rules}` that point
-   into this repo (the old `unlink.sh` from git history still works: `git show HEAD~1:unlink.sh | bash -s -- --global`).
-2. Remove the managed `# >>> my-claude workflow agents >>>` block from your shell rc if you
-   installed aliases.
-3. Install the plugins as above.
-4. Rename invocations: `/sflow …` → `/sflow-react:sflow …`, `/build-requirements` →
-   `/sflow-react:build-requirements`, agent `my-specflow-driver` →
-   `sflow-react:my-specflow-driver`, `/fl-pr-review` → `/sflow-flutter:fl-pr-review`, etc.
-5. Re-link `rules/preferences.md` manually (see above) — it is no longer installed for you.
-
----
-
 ## Layout & editing
 
 Edit under `plugins/` directly; `/reload-plugins` (or restart) picks up changes when loaded
@@ -299,11 +312,11 @@ via `--plugin-dir` or a local marketplace add.
 my-claude/
 ├── .claude-plugin/marketplace.json    the marketplace registry
 ├── plugins/
-│   ├── sflow-react/
+│   ├── spec-react/
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/    the skills above + sflow/ (SKILL.md + phases/)
+│   │   ├── skills/    the skills above + specflow/ (SKILL.md + phases/)
 │   │   └── agents/    3 drivers + 6 companion workers
-│   └── sflow-flutter/
+│   └── spec-flutter/
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/    fl-* skills
 │       └── rules/     architecture-principles.md · test-quality.md
@@ -311,4 +324,4 @@ my-claude/
 ```
 
 For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
-**[plugins/sflow-react/skills/sflow/SKILL.md](plugins/sflow-react/skills/sflow/SKILL.md)** and its `phases/`.
+**[plugins/spec-react/skills/specflow/SKILL.md](plugins/spec-react/skills/specflow/SKILL.md)** and its `phases/`.

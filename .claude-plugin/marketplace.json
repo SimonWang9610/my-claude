@@ -2,17 +2,17 @@
   "name": "my-claude",
   "owner": { "name": "SimonWang9610" },
   "metadata": {
-    "description": "Spec-driven-development plugins for Claude Code: sflow-react (React/TS contract flow + driver agents) and sflow-flutter (Flutter/Dart rules + skills). Profiles install independently."
+    "description": "Spec-driven-development plugins for Claude Code: spec-react (React/TS contract flow + driver agents) and spec-flutter (Flutter/Dart rules + skills). Profiles install independently."
   },
   "plugins": [
     {
-      "name": "sflow-react",
-      "source": "./plugins/sflow-react",
-      "description": "React/TS spec-driven workflow: sflow phases, contract skills, atlas auditor, driver + worker agents."
+      "name": "spec-react",
+      "source": "./plugins/spec-react",
+      "description": "React/TS spec-driven workflow: specflow phases, contract skills, atlas auditor, driver + worker agents."
     },
     {
-      "name": "sflow-flutter",
-      "source": "./plugins/sflow-flutter",
+      "name": "spec-flutter",
+      "source": "./plugins/spec-flutter",
       "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1–P8), Riverpod, test quality, PR review."
     }
   ]

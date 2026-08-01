@@ -1,0 +1,7 @@
+{
+  "name": "spec-flutter",
+  "description": "Spec-driven development for Flutter/Dart: acceptance-criteria authoring, architecture design (P1–P8 rule corpus), Riverpod idioms, task design, test contract/forensics, implementation, and PR review skills. Architecture and test-quality rule files ship inside the plugin.",
+  "version": "1.0.0",
+  "author": { "name": "SimonWang9610" },
+  "keywords": ["flutter", "dart", "riverpod", "spec-driven", "pr-review"]
+}

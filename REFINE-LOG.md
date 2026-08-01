@@ -30,7 +30,7 @@ Both drivers edited identically (modulo `/spec-` vs `/sf-`); verified consistent
 - Both phase-maps' `design` exitWhen now reads "a `contracts/<unit>.md` for every unit named in design.md".
 - Drivers' Drive-Loop **Verify** step now confirms "every declared `outputs` artifact exists and is non-empty (a collection like `contracts/` needs one file per unit)".
 
-**3. Each driver locked to its own command set.** New Hard Rule: specflow-driver **`/spec-*` only** (never `/sf-*`); sflow-driver **`/sf-*` only** (never `/spec-*`); a missing command → STOP, never substitute the other prefix.
+**3. Each driver locked to its own command set.** New Hard Rule: specflow-driver **`/spec-*` only** (never `/sf-*`); specflow-driver **`/sf-*` only** (never `/spec-*`); a missing command → STOP, never substitute the other prefix.
 
 Both drivers verified consistent (modulo prefix + intentional description lines).
 
@@ -176,7 +176,7 @@ terse: pointer/constraint placeholders only, new `Effort: <medium | high>` field
 
 ---
 
-## sflow commands rewritten lean (2026-07-19)
+## specflow commands rewritten lean (2026-07-19)
 
 All 12 `/sf-*` commands rewritten 398 → 271 lines on a fixed shape: one-paragraph role +
 artifacts, **Method** (embedded stack-agnostic skill, or "the flow's bound skill owns the
@@ -248,8 +248,8 @@ gained spec-qa's scoped-work pre-check (unfinished scoped test → STOP back to 
 never a finding), test-bug vs real-defect failure classification (report, never fix), and
 the coverage-matrix format (AC/journey | test | strength | status, hollow = stub passes).
 Deliberately NOT adopted (human-mixed or divergent by design): spec-init branch creation
-(sflow is worktree-driven), trace-viewer/builder-checkpoint ceremony, GPG commit gates,
-Jira transitions, scoped test runs at QA (sflow keeps ONE full-suite run per driver rule),
+(specflow is worktree-driven), trace-viewer/builder-checkpoint ceremony, GPG commit gates,
+Jira transitions, scoped test runs at QA (specflow keeps ONE full-suite run per driver rule),
 EARS. Every sf-* command verified free of "You are…" role prose and human narration.
 
 Follow-up 6: journey plan made requirement-driven. sf-design step 5 keys off the test
@@ -347,7 +347,7 @@ contract, one compiled noise filter, capability-gated enablement, LLM only at ru
 authoring time.
 
 Three adoptions were implemented and reverted at user request pending a decision on the
-script-vs-LLM split: P1 sflow/scripts/sflow-check.mjs (5 deterministic gates over spec
+script-vs-LLM split: P1 specflow/scripts/specflow-check.mjs (5 deterministic gates over spec
 artifacts — verified against planted-defect fixtures) + sf-validate/driver wiring; P2
 capability gating in implement/check skills; P3 rule-card quality bar in .claude/CLAUDE.md.
 The research conclusions stand (hybrid tiering: artifact predicates → scripts · code
@@ -776,43 +776,43 @@ it"), because the command benefits from the atlas rather than the reverse.
 
 ---
 
-## sf-* commands consolidated into one `/sflow` skill
+## sf-* commands consolidated into one `/specflow` skill
 
-User decision: fold the 8 `sf-*` process commands into a single skill invoked `/sflow <phase>`;
-fully replace (no `/sf-*` aliases). **skills/sflow/** now holds `SKILL.md` (dispatcher:
+User decision: fold the 8 `sf-*` process commands into a single skill invoked `/specflow <phase>`;
+fully replace (no `/sf-*` aliases). **skills/specflow/** now holds `SKILL.md` (dispatcher:
 `argument-hint "<phase> [instructions]"`, phase table → per-phase references, shared conventions
 lifted once — `.meta.yaml` statuses, artifact location, exit-is-a-gate, stack-neutral) +
 `references/{init,preflight,requirements,design,tasks,implement,validate,qa}.md` (the old command
 bodies verbatim, minus per-file frontmatter, `# sf:<phase>` → `# <phase>`, `/sf-*` cross-refs →
-`/sflow`, loaded one-at-a-time). Old `sflow/commands/` deleted; `sflow/README.md` moved to
-`skills/sflow/README.md`.
+`/specflow`, loaded one-at-a-time). Old `specflow/commands/` deleted; `specflow/README.md` moved to
+`skills/specflow/README.md`.
 
-**Rewired:** my-specflow-driver — every `/sf-<phase>` → `/sflow <phase>`, frontmatter/Setup/intro
-prose, and the hard rule ("`/sf-*` commands only" → "The `/sflow` skill only — its phases: init …
+**Rewired:** my-specflow-driver — every `/sf-<phase>` → `/specflow <phase>`, frontmatter/Setup/intro
+prose, and the hard rule ("`/sf-*` commands only" → "The `/specflow` skill only — its phases: init …
 qa"). oac-specflow-driver untouched (drives external `/spec-*`). **Install simplified:** the
-command pair `link-commands.sh`/`unlink-commands.sh` retired (sflow is a skill, auto-linked by
+command pair `link-commands.sh`/`unlink-commands.sh` retired (specflow is a skill, auto-linked by
 link.sh); link.sh/unlink.sh comments + root README (Installing table now one pair, Layout,
-drivers mention, workflow-doc pointer → skills/sflow/README.md) updated.
+drivers mention, workflow-doc pointer → skills/specflow/README.md) updated.
 
 Rationale for skill-over-command (chose Option B): unifies the bundle (last non-skill layer
 gone), enables progressive disclosure (dispatcher + on-demand phase reference), cleaner namespace.
 Trade noted: skills auto-advertise vs inert commands — mitigated by a description scoping it to
 "driver-sequenced, not auto-selected."
 
-**KNOWN-STALE, deferred:** skills/sflow/README.md (229 lines) still documents the removed
+**KNOWN-STALE, deferred:** skills/specflow/README.md (229 lines) still documents the removed
 `workflow.yaml`/`sf-react-workflow` generator system (drivers are `.meta.yaml`-driven now) AND
 the old `/sf-*` commands — needs a dedicated rewrite to match reality, not a mechanical swap.
 
-**Follow-up (same session):** sflow phase files simplified + unified + relocated
+**Follow-up (same session):** specflow phase files simplified + unified + relocated
 `references/` → **`phases/`**. One template across all 8: `# <phase>` → 1–2-line purpose →
-**Writes** · **Reads** (`/sflow <producer>` if missing) → **Steps** (labelled, terse) → **Exit**
+**Writes** · **Reads** (`/specflow <producer>` if missing) → **Steps** (labelled, terse) → **Exit**
 (the gate). Per-phase repeats of shared conventions (repo-read-only, `.meta.yaml` statuses,
 steering) dropped — they live once in SKILL.md. Sizes: 19–31 lines each (was up to 50); total
 243 → 181. SKILL.md links repointed to `./phases/`, root README layout updated. (Note: the linter
-had deleted the working-tree copy of skills/sflow/README.md mid-session — restored from the index;
+had deleted the working-tree copy of skills/specflow/README.md mid-session — restored from the index;
 it remains the stale workflow-generator doc, still awaiting a dedicated rewrite.)
 
-**Follow-up (same session):** sflow phases de-coupled from stack-specific artifacts. `contracts/`
+**Follow-up (same session):** specflow phases de-coupled from stack-specific artifacts. `contracts/`
 is produced by a language-specific skill (`design-react-contracts`), so the stack-neutral phases
 must not cite it. Generalized: SKILL.md convention now states "a phase names only its own
 stack-neutral artifacts; stack-specific inputs (per-unit contracts, a code atlas, a design
@@ -830,9 +830,9 @@ skill — was the same stack-specific leak as `contracts/`, missed last pass. Ge
 preflight no longer *writes* it (the stack decompose skill does, via the driver) and consumes it
 as an optional caller material; preflight dropped its "Decompose" step (folded into Survey:
 "reconcile with a provided design decomposition"); requirements reads "a design decomposition"
-not the path. SKILL.md table cell "per-unit contracts" → "per-unit interfaces". The sflow skill
+not the path. SKILL.md table cell "per-unit contracts" → "per-unit interfaces". The specflow skill
 now has zero stack-specific artifact names. (2) my-specflow-driver phase intro now states the
-explicit invocation **`/sflow <phase> <optional instructions>`** and that the driver hands each
+explicit invocation **`/specflow <phase> <optional instructions>`** and that the driver hands each
 phase its inputs + optional caller materials (atlas, contracts, design decomposition) as those
 instructions — which is exactly how the "caller-provided materials" reach the stack-neutral phase.
 
@@ -928,15 +928,15 @@ reworded off "conventions/conform" onto "what works / what to avoid / faster tra
 
 Fresh-eyes audit (refs/rules subagent + best-practices research subagent + inline SKILL/agent
 review). User kept `spec-qa` in the `.meta.yaml` ledger deliberately (project convention) — the
-sflow naming findings were NOT applied.
+specflow naming findings were NOT applied.
 
 **1. Self-check dedup — cut from the agents, kept in the skills.** The design check existed 3×
-(skill self-check · architect step 4 · sflow design gate) and test/impl 2× each. Cut landed on
+(skill self-check · architect step 4 · specflow design gate) and test/impl 2× each. Cut landed on
 the agent side because the skill is preloaded anyway (zero context saved by moving it), skills
 stay standalone-invocable, and thin-binding forbids agents restating skill procedure:
 react-architect step 4 → "the preloaded skill's self-check (ONE pass) is your final gate; report
 its verdict"; react-test step 4 → "run the preloaded skill's self-check over the whole batch";
-react-impl step 4 → "the skill's done-condition verify, targeted runs only". The sflow design
+react-impl step 4 → "the skill's done-condition verify, targeted runs only". The specflow design
 phase's architecture gate stays — stack-neutral *exit criterion* vs the skill's *method* check,
 different layers.
 
@@ -974,8 +974,8 @@ test-harness traps; never contract/task facts — contract+tests are the truth).
 injection cap (docs → memory sections) · 1,536-char description listing cap (docs → new
 .claude/CLAUDE.md "Descriptions fit the listing" rule; longest description ~740 chars, safe).
 Noted, no change: skill-listing context budget ~1–2% of window (12 skills ≈ 8k chars, healthy).
-Rejected: `disable-model-invocation` on sflow (the driver IS a model — it would block the
-driver's own `/sflow` calls; known bug also blocks manual invocation) · `mcp__*` tool patterns
+Rejected: `disable-model-invocation` on specflow (the driver IS a model — it would block the
+driver's own `/specflow` calls; known bug also blocks manual invocation) · `mcp__*` tool patterns
 (no need) · dynamic-context `!cmd` injection guidance (not used) · fewer-focused-agents advice
 (already our shape).
 
@@ -1058,10 +1058,10 @@ skill, NOT folded into agents — `skills:` preload already IS the fold token-wi
 kill standalone use and rules modularity.
 
 **4. lean-specflow-driver built — the command-free A/B twin.** Hypothesis: the process shell
-(/sflow SKILL + phase files, ~220 lines loaded per spec) restates what teammates' skills own;
+(/specflow SKILL + phase files, ~220 lines loaded per spec) restates what teammates' skills own;
 dropping it should cut input tokens at equal quality. Design: same phases, same `.meta.yaml`
 template (spec-qa key kept — user convention) and artifacts, so specs are driver-interchangeable;
-playbooks embedded in the agent (incl. the init scaffold + ledger template — no /sflow init);
+playbooks embedded in the agent (incl. the init scaffold + ledger template — no /specflow init);
 driver authors the thin artifacts itself (preflight.md, qa-report.md, clarify Q&A) and KEEPS the
 domain skills for driver-authored phases (/build-requirements, /plan-react-contracts,
 /decompose-figma) — they're know-how, not process shell; dropping them would change two variables
@@ -1079,7 +1079,7 @@ an artifact written anywhere else (move in → re-verify).
 **Follow-up (same session):** lean-specflow-driver made self-contained (user: isolated, lean,
 focused). Description rewritten off the A/B-twin framing onto what it is (own playbooks over a
 .meta.yaml ledger, teammates for heavy work, thin artifacts authored itself); Role and the
-"No process commands" hard rule dropped every /spec-* and /sflow mention — the rule is now
+"No process commands" hard rule dropped every /spec-* and /specflow mention — the rule is now
 "The playbooks ARE the process — never substitute outside workflow commands or skills." The
 agent no longer references any other driver or workflow. (README keeps the experiment context
 for humans.)
@@ -1090,7 +1090,7 @@ for humans.)
 
 User-found gap: features touching existing units forgot that EXISTING tests in the blast radius
 (of the units and their importers) may need updating — they broke or stayed stale until the
-spec-qa full-suite run. Root causes: the sflow design phase *described* a blast-radius section
+spec-qa full-suite run. Root causes: the specflow design phase *described* a blast-radius section
 but design-react-contracts never authored one (so it never existed under the react path, and
 was fully absent under the lean driver); plan never projected flagged tests into work; the impl
 agent can't touch tests; and the "tests are never edited to make code pass" rule deterred the
@@ -1185,13 +1185,13 @@ match any *.md).
 ## 2026-08-01 — Plugin packaging (breaking)
 
 Repo restructured from symlink-installed bundle → **Claude Code plugin marketplace**
-(`.claude-plugin/marketplace.json`) with two independent plugins: `plugins/sflow-react/`
-(all React/TS skills + 3 drivers + 6 workers) and `plugins/sflow-flutter/` (fl-* skills +
+(`.claude-plugin/marketplace.json`) with two independent plugins: `plugins/spec-react/`
+(all React/TS skills + 3 drivers + 6 workers) and `plugins/spec-flutter/` (fl-* skills +
 in-plugin `rules/`). Decisions:
 
 - docs plugins.md/plugins-reference → adopted marketplace + per-plugin `.claude-plugin/plugin.json`;
-  namespacing (`/sflow-react:<skill>`, `sflow-react:<agent>`) is the conflict fix that motivated
-  the change → all cross-references (agent `skills:` preloads, `/sflow` invocations, worker spawn
+  namespacing (`/spec-react:<skill>`, `spec-react:<agent>`) is the conflict fix that motivated
+  the change → all cross-references (agent `skills:` preloads, `/specflow` invocations, worker spawn
   names) rewritten to namespaced form, since preloading draws from the same name set as the
   Skill tool.
 - plugins-reference "CLAUDE.md at plugin root is not loaded" → rejected shipping
