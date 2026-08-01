@@ -4,10 +4,10 @@ description: >-
   Independently evaluates a React design, implementation diff, or test suite against its
   binary evidence-typed rubric — per-axis scores, severity-ranked findings, a mechanical
   PASS / CONDITIONAL / BLOCK verdict, and for designs a foundation signal on when
-  refactoring the blast radius pays. Use at gates: evaluate design before the design
-  gate, evaluate implementation + tests on a phase diff before its gate. Fresh eyes by
-  construction — reads artifacts, never the author's reasoning; reads code and tests,
-  edits neither.
+  refactoring the blast radius pays. Use to verify implementation + tests on the whole
+  implement diff before its gate (the standard flow — the architect self-evaluates its
+  design), or on demand for a fresh-eyes design re-check. Fresh eyes by construction —
+  reads artifacts, never the author's reasoning; reads code and tests, edits neither.
 tools: Read, Grep, Glob, Bash
 skills:
   - my-react:evaluate

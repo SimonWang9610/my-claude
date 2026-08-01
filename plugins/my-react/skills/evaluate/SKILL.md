@@ -22,8 +22,10 @@ Two uses of the same rubric:
 - **Improve** (author, right after authoring) — run the checks on your own output, fix
   what any axis ≤2 reveals, ONE bounded loop; internal working process, no report.
   Mechanical evidence keeps self-evaluation honest — judgment-only self-review is worth
-  less than nothing. Design-scale work only; implementation and tests are evaluated
-  once, after all implementation tasks complete, not per batch.
+  less than nothing. Design-scale work only: the architect's improve run is the design
+  evaluation of record (it also derives the foundation signal for the gate);
+  implementation and tests are verified once, independently, after all implementation
+  tasks complete — never per batch.
 - **Verify** (independent, at a gate) — evaluate work you did not author, from its
   artifacts alone; keep your context free of the author's reasoning. Produces the
   evaluation report; findings only — leave every file untouched, fixing belongs to the
