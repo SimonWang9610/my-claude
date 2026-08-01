@@ -70,12 +70,9 @@ repo is read-only except during implement, and implement writes source and tests
   1. spawn `my-react:architect` to design — (requirements + `atlas/` + decomposition) → `design.md` +
     `contracts/` + draft `qa-journey-plan.md`. Fast path: a contract delta — verify its
     fields, no evaluation.
-  2. spawn `my-react:evaluator` to verify the design — mode `design`, Materials: design artifacts + requirements +
-    `atlas/` + earlier specs' `design.md § Inherited defects` if any; never the
-    architect's report.
-  3. BLOCK → findings to the architect, ONE revision, re-evaluate once; still BLOCK →
+  2. BLOCK → findings to the architect, ONE revision, re-evaluate once; still BLOCK →
     the gate decides re-spawn vs descope.
-  4. **human gate** — design AND journey plan: present the evaluation (verdict · axes ·
+  3. **human gate** — design AND journey plan: present the evaluation (verdict · axes ·
     findings · foundation signal) + refactor proposals + open items.
 - **tasks**
   1. `/my-react:plan` → `tasks.md`.

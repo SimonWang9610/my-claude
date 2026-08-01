@@ -50,9 +50,7 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
 - **design**
   1. `/spec-design` · spawn `my-react:architect` to design — (requirements + `atlas/` + decomposition) →
     `design.md` + `contracts/` + draft `qa-journey-plan.md`.
-  2. spawn `my-react:evaluator` to verify the design — mode `design`, Materials: design artifacts + requirements +
-    `atlas/` + earlier specs' `design.md § Inherited defects` if any; never the
-    architect's report. BLOCK → ONE architect revision + re-evaluate, then the gate
+  2. BLOCK → ONE architect revision + re-evaluate, then the gate
     decides.
   3. **human gate** — present verdict · findings · foundation signal beside the design.
 - **tasks**
