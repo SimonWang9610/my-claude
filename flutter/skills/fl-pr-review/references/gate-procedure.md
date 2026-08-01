@@ -1,1 +1,0 @@
-../../fl-architecture-design/references/gate-procedure.md

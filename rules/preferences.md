@@ -1,47 +1,44 @@
 # Working discipline
 
-The floor for every turn. When the contracts family or a flow driver is active, their
-procedures own the detail; these rules bind wherever the skills don't reach.
+The floor for every turn. Where an active skill or driver owns the detail, its procedure
+governs; these rules bind everywhere else.
 
 ## Leverage
-- **Architect in the main session** keep the main session for the orchestration, architecture, reasoning, and judgment.
-- **Delegate deliberately.** Fan-out, noisy exploration, fresh eyes, or separation of
-  duties → subagent (use skill: `/smart-delegation` — it also decides model + effort).
-  Sequential steps and decisions → inline. Fewer, fuller batches beat many small
-  spawns — each spawn re-pays a cold start; cut batches where the whole plan is in view.
+
+- **Judge in the main session; delegate the labor.** Keep orchestration, architecture,
+  and decisions where the context is; fan-out, noisy exploration, and fresh-eyes checks
+  run in subagents (a delegation skill, where installed, picks execution + model + effort).
+- **Batch every interaction.** Turns between agents, and between agent and human, are the
+  scarcest resource: one round of questions instead of one-by-one, one dispatch carrying
+  the full task instead of drip-fed follow-ups, one report carrying all findings instead
+  of piecemeal updates. Fewer, fuller batches beat many small exchanges.
 
 ## First principles
 
-- **Requests are evidence, not specs.** Recover the problem behind the ask; check its
-  assumptions against the system's fundamentals — a wrong or unverifiable one becomes a
-  question with a recommended answer, never a silent adoption.
-- **Derive, don't copy.** Solutions follow from the problem plus the system's
-  invariants — never from existing shape or stated belief. Structure fighting the
-  fundamentals is a replace/refactor candidate: name root friction · restricted scope ·
-  payoff, and propose — never silently expand scope.
+- **Requests are evidence, not specs.** Recover the problem behind the ask; a wrong or
+  unverifiable assumption becomes a question with a recommended answer, never a silent
+  adoption.
+- **Derive, don't copy.** Solutions follow from the problem and the system's invariants,
+  never from existing shape or stated belief; structure fighting the fundamentals becomes
+  a scoped replace/refactor proposal, never a silent expansion.
 
 ## Code
 
-- **Simplicity-first.** Only the in-hand AC's behavior; a diff large for its AC gets
-  rewritten smaller. Read the target and its imports first; reuse the existing
-  unit/type/constant over adding a second.
-- **Goal-driven.** A named test asserting the AC's outcome defines done; a bugfix starts
-  with its failing reproduction. Judge by observable outcomes against the spec — code
-  that merely looks correct passes nothing.
-- **Iteration budgets.** Declare the stopping point before any loop; spent → stop and
-  surface (failing check · what was tried · suspected cause). Never re-apply a rejected
+- **Simplicity-first.** Build only the acceptance criteria in hand; read the target and
+  its imports before writing; reuse the existing unit/type/constant over adding a second.
+- **Goal-driven.** Done = a named check asserting the outcome (a bugfix starts from its
+  failing reproduction); judge by observable outcomes — code that merely looks correct
+  passes nothing.
+- **Budgeted loops.** Declare the stopping point before any loop; spent → stop and
+  surface (failing check · what was tried · suspected cause); never re-apply a rejected
   fix.
 
-## Artifacts & tokens
+## Artifacts & outputs
 
-- **Concise and accurate beats comprehensiveness: solid input, solid output**
-- **Decisions, never reasoning — in fixed shapes.** Artifacts carry the decision in
-  their declared template: exact IDs/paths/surfaces, facts not narration; a one-line
-  citation is the only "why"; unresolved reasoning is a named open item.
-- **Judgment authors, search verifies.** What-correct-looks-like is judged once, at
-  authoring; re-checking it over fixed-shape artifacts is mechanical — grep/diff/count,
-  never re-judged.
-- **Concise and terse outputs** Point at the source or generate mechanically; never
-  restate static or derivable knowledge. Compress what compounds — always-loaded text
-  first. Cut overhead, not clarity: no invented abbreviations or arrow-chains; code,
-  paths, IDs stay exact; human-facing output in full sentences.
+- **Decisions in fixed shapes.** Artifacts carry decisions — exact IDs/paths, facts not
+  narration; "why" is a one-line citation; unresolved reasoning is a named open item.
+- **Author with judgment, verify with search.** Correctness is judged once, at authoring;
+  re-checking fixed-shape artifacts is mechanical (grep/diff/count), never re-judged.
+- **Compact beats comprehensive.** Point at sources instead of restating them; keep
+  code, paths, and IDs exact; human-facing output in full sentences — cut overhead,
+  never clarity.
