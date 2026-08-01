@@ -22,7 +22,7 @@ GITHUB_SOURCE = "SimonWang9610/my-claude"
 PLUGINS = ["my-react", "my-flutter"]
 RULES_SRC = REPO / "rules" / "preferences.md"
 RULES_LINK = Path.home() / ".claude" / "rules" / "preferences.md"
-DRIVER_ALIASES = {"my-react-driver": "my-react:driver", "my-react-oac-driver": "my-react:oac-driver"}
+DRIVER_ALIASES = {"my-react-driver": "my-react:driver", "oac-driver": "my-react:oac-driver"}
 ALIAS_BEGIN = "# >>> my-claude driver aliases >>>"
 ALIAS_END = "# <<< my-claude driver aliases <<<"
 
