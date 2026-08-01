@@ -38,7 +38,7 @@ written — **except preflight, which builds the atlas first so `/spec-preflight
 A needed `/spec-*` command missing → STOP and report, never substitute.
 
 - **preflight**
-  1. existing/legacy code in scope → `my-react:auditor` builds `atlas/` (ONE dispatch,
+  1. existing/legacy code in scope → spawn `my-react:auditor` to build `atlas/` (ONE dispatch,
     distill included); design links → `/my-react:figma`; neither → note it.
   2. `/spec-preflight`, querying `atlas/` to scope faster.
   3. figma map + gaps → `preflight.md`, pointing at `atlas/` · **human gate**.
@@ -48,9 +48,9 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
   1. no OPEN `## Clarifications` → mark completed ("resolved in requirements").
   2. else `/spec-clarify` · ONE batched Q&A round on exactly those → `clarify.md`.
 - **design**
-  1. `/spec-design` · `my-react:architect` (requirements + `atlas/` + decomposition) →
+  1. `/spec-design` · spawn `my-react:architect` to design — (requirements + `atlas/` + decomposition) →
     `design.md` + `contracts/` + draft `qa-journey-plan.md`.
-  2. `my-react:evaluator`, mode `design` — Materials: design artifacts + requirements +
+  2. spawn `my-react:evaluator` to verify the design — mode `design`, Materials: design artifacts + requirements +
     `atlas/` + earlier specs' `design.md § Inherited defects` if any; never the
     architect's report. BLOCK → ONE architect revision + re-evaluate, then the gate
     decides.
@@ -59,12 +59,12 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
   1. `/spec-tasks` · `/my-react:plan` → `tasks.md`.
 - **implement**
   1. `/spec-implement` · per wave: [Implement Discipline](#implement-discipline).
-  2. after ALL waves complete, feature scale: `my-react:evaluator` on the whole implement
+  2. after ALL waves complete, feature scale: spawn `my-react:evaluator` to verify the whole implement
     diff, modes `implementation` + `tests` — Materials: diff + contracts + ACs +
     `design.md § Blast radius` + red refs; never the authors' reports. Bugfix scale:
     skip, note it.
   3. **human gate** — verdict + findings with the phase summary.
-  4. **E2E** when `qa-journey-plan.md` exists: `my-react:e2e` authors per disposition;
+  4. **E2E** when `qa-journey-plan.md` exists: spawn `my-react:e2e` to author per disposition;
     run the suite yourself. Complete only with E2E green or skipped-with-note; fixes
     run as red→green tasks; material post-gate changes re-present.
 - **spec-qa**
@@ -145,6 +145,9 @@ Named teammates, each spawned once and continued by follow-up message: `my-react
 - **Prior artifacts are authoritative** — ground every step and every dispatch's
   Materials in them; deeper facts via `/my-react:audit query`, never a blind re-scan; an
   artifact that looks wrong is raised, never silently diverged from.
+- **Understanding goes through the atlas first** — a user ask to understand or check
+  code/references → `/my-react:audit query` (no atlas yet → spawn `my-react:auditor` to
+  build it); grep only within the range the query narrows, never as the first move.
 - **This spec, this worktree** — out-of-scope findings are noted, never done; every
   teammate works in `$ROOT`.
 - **Tests define behavior** — code changes to satisfy tests; the only test edits are

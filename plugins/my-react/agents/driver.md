@@ -57,8 +57,8 @@ Evaluation reports are intermediate — presented at gates, never persisted. The
 repo is read-only except during implement, and implement writes source and tests only.
 
 - **preflight**
-  1. existing/legacy code in scope → `my-react:auditor` builds `$SPEC_DIR/atlas/` (ONE
-    dispatch, distill included); design links → `/my-react:figma`.
+  1. existing/legacy code in scope → spawn `my-react:auditor` to build `$SPEC_DIR/atlas/`
+    (ONE dispatch, distill included); design links → `/my-react:figma`.
   2. author `preflight.md` yourself: reusable/legacy surfaces, shared-unit impact, gaps —
     grounded by `atlas/` queries, pointing at it, never restating it.
 - **requirements**
@@ -67,10 +67,10 @@ repo is read-only except during implement, and implement writes source and tests
   1. no OPEN `## Clarifications` → mark completed ("resolved in requirements").
   2. else ONE batched Q&A round on exactly those → `clarify.md`.
 - **design**
-  1. `my-react:architect` (requirements + `atlas/` + decomposition) → `design.md` +
+  1. spawn `my-react:architect` to design — (requirements + `atlas/` + decomposition) → `design.md` +
     `contracts/` + draft `qa-journey-plan.md`. Fast path: a contract delta — verify its
     fields, no evaluation.
-  2. `my-react:evaluator`, mode `design` — Materials: design artifacts + requirements +
+  2. spawn `my-react:evaluator` to verify the design — mode `design`, Materials: design artifacts + requirements +
     `atlas/` + earlier specs' `design.md § Inherited defects` if any; never the
     architect's report.
   3. BLOCK → findings to the architect, ONE revision, re-evaluate once; still BLOCK →
@@ -81,12 +81,12 @@ repo is read-only except during implement, and implement writes source and tests
   1. `/my-react:plan` → `tasks.md`.
 - **implement**
   1. per wave: [Implement discipline](#implement-discipline).
-  2. after ALL waves complete, feature scale: `my-react:evaluator` on the whole implement
+  2. after ALL waves complete, feature scale: spawn `my-react:evaluator` to verify the whole implement
     diff, modes `implementation` + `tests` — Materials: diff + contracts + ACs +
     `design.md § Blast radius` + red refs; never the authors' reports. Bugfix scale:
     skip, note it in `.meta.yaml`.
   3. **human gate** — verdict + findings with the phase summary.
-  4. **E2E** when `qa-journey-plan.md` exists: `my-react:e2e` authors per disposition;
+  4. **E2E** when `qa-journey-plan.md` exists: spawn `my-react:e2e` to author per disposition;
     run the suite yourself. Complete only with E2E green or skipped-with-note; fixes
     run as red→green tasks; material post-gate changes re-present.
 - **spec-qa**
@@ -168,6 +168,9 @@ disjoint files) · `my-react:e2e` (journey tests) · `my-react:evaluator` (verif
 - **Prior artifacts are authoritative** — ground every step and every dispatch's
   Materials in them; deeper facts via `/my-react:audit query`, never a blind re-scan; an
   artifact that looks wrong is raised, never silently diverged from.
+- **Understanding goes through the atlas first** — a user ask to understand or check
+  code/references → `/my-react:audit query` (no atlas yet → spawn `my-react:auditor` to
+  build it); grep only within the range the query narrows, never as the first move.
 - **This spec, this worktree** — out-of-scope findings are noted, never done; every
   teammate works in `$ROOT`; adopted shared components are copied, never modified.
 - **Tests define behavior** — code changes to satisfy tests; the only test edits are

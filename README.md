@@ -29,7 +29,7 @@ python3 install.py                 # my-react from GitHub marketplace
 ```
 
 ```bash
-python3 install.py --flutter --rules   # + my-flutter, + symlink rules/preferences.md into ~/.claude/rules/
+python3 install.py --flutter --rules --aliases   # + my-flutter, + rules symlink, + driver shell aliases
 ```
 
 ```bash
