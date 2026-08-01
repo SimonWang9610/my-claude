@@ -1185,12 +1185,12 @@ match any *.md).
 ## 2026-08-01 — Plugin packaging (breaking)
 
 Repo restructured from symlink-installed bundle → **Claude Code plugin marketplace**
-(`.claude-plugin/marketplace.json`) with two independent plugins: `plugins/react-spec/`
-(all React/TS skills + 3 drivers + 6 workers) and `plugins/flutter-spec/` (fl-* skills +
+(`.claude-plugin/marketplace.json`) with two independent plugins: `plugins/my-react/`
+(all React/TS skills + 3 drivers + 6 workers) and `plugins/my-flutter/` (fl-* skills +
 in-plugin `rules/`). Decisions:
 
 - docs plugins.md/plugins-reference → adopted marketplace + per-plugin `.claude-plugin/plugin.json`;
-  namespacing (`/react-spec:<skill>`, `react-spec:<agent>`) is the conflict fix that motivated
+  namespacing (`/my-react:<skill>`, `my-react:<agent>`) is the conflict fix that motivated
   the change → all cross-references (agent `skills:` preloads, `/specflow` invocations, worker spawn
   names) rewritten to namespaced form, since preloading draws from the same name set as the
   Skill tool.
@@ -1200,7 +1200,7 @@ in-plugin `rules/`). Decisions:
   `${CLAUDE_PLUGIN_ROOT}/rules/` reads (plugins can't install ambient rules).
 - link.sh/unlink.sh removed; migration guide in README (old unlink retrievable from git history).
 
-**2026-08-01 (later):** plugins renamed `react-spec` / `flutter-spec`; skill `sflow` → `specflow`;
+**2026-08-01 (later):** plugins renamed `my-react` / `my-flutter`; skill `sflow` → `specflow`;
 install.sh added (claude plugin CLI). Reconciliation audit: dead `/locate-bug` → inline bounded
 root-cause pass (3 drivers); oac dangling "taskstoissues skip above" reworded; fl-pr-review
 `conditional/performance/` → `performance/`, "13 core" → 11, `core/widget-{theming,build-discipline}.md`
@@ -1214,3 +1214,4 @@ fl-pr-review references/{core,forensics,performance,...} (intra-plugin symlinks 
 lean driver (self-contained playbooks) and oac driver (external /spec-* commands) are the two
 drivers; the process shell proved redundant. `review-react-changes/references/specflow.md` kept
 (local axis file, not the skill). install.sh → install.py (same flags, argparse).
+**2026-08-01: plugins renamed `my-react` / `my-flutter` (distinguish from project-owned plugins); all namespaced refs updated.**

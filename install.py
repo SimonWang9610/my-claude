@@ -2,8 +2,8 @@
 """install.py — register the my-claude plugin marketplace and install its plugins
 via the `claude plugin` CLI.
 
-  python3 install.py                # marketplace (GitHub) + react-spec
-  python3 install.py --flutter     # also install flutter-spec
+  python3 install.py                # marketplace (GitHub) + my-react
+  python3 install.py --flutter     # also install my-flutter
   python3 install.py --local       # register THIS checkout as the marketplace (development)
   python3 install.py --rules      # also symlink rules/preferences.md -> ~/.claude/rules/
   python3 install.py --uninstall  # remove plugins + marketplace + rules symlink
@@ -18,7 +18,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent
 MARKETPLACE = "my-claude"
 GITHUB_SOURCE = "SimonWang9610/my-claude"
-PLUGINS = ["react-spec", "flutter-spec"]
+PLUGINS = ["my-react", "my-flutter"]
 RULES_SRC = REPO / "rules" / "preferences.md"
 RULES_LINK = Path.home() / ".claude" / "rules" / "preferences.md"
 
@@ -54,7 +54,7 @@ def link_rules() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--flutter", action="store_true", help="also install flutter-spec")
+    parser.add_argument("--flutter", action="store_true", help="also install my-flutter")
     parser.add_argument("--local", action="store_true", help="register this checkout as the marketplace")
     parser.add_argument("--rules", action="store_true", help="symlink rules/preferences.md into ~/.claude/rules/")
     parser.add_argument("--uninstall", action="store_true", help="remove plugins, marketplace, and rules symlink")
@@ -72,14 +72,14 @@ def main() -> None:
     if not claude("plugin", "marketplace", "add", source, check=False):
         claude("plugin", "marketplace", "update", MARKETPLACE)
 
-    claude("plugin", "install", f"react-spec@{MARKETPLACE}")
+    claude("plugin", "install", f"my-react@{MARKETPLACE}")
     if args.flutter:
-        claude("plugin", "install", f"flutter-spec@{MARKETPLACE}")
+        claude("plugin", "install", f"my-flutter@{MARKETPLACE}")
 
     if args.rules:
         link_rules()
 
-    print("Done. Try: claude --agent react-spec:lean-specflow-driver --worktree \"<your feature>\"")
+    print("Done. Try: claude --agent my-react:lean-specflow-driver --worktree \"<your feature>\"")
 
 
 if __name__ == "__main__":
