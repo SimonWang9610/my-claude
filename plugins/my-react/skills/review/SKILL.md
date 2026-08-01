@@ -7,7 +7,7 @@ description: >
   gates block. Use to review a pull request or working diff before merge, to re-verify
   claimed fixes, or to audit whether the code still matches its spec. Not for
   post-implementation conformance checking without a merge verdict (use
-  my-react:check). Output: severity findings + a block/pass verdict.
+  my-react:evaluate). Output: severity findings + a block/pass verdict.
 ---
 
 # review

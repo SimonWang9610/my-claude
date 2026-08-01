@@ -52,7 +52,7 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
 - **tasks** — ① `/spec-tasks` · ② `/my-react:plan` → `tasks.md`.
 - **implement** — ① `/spec-implement` · ② per wave: [Implement
   Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
-  `my-react:react-checker-agent` on the phase diff (recommend yes at feature scale, skip at bugfix
+  `my-react:react-evaluator-agent` on the phase diff (recommend yes at feature scale, skip at bugfix
   scale); run → present its findings and ASK how to handle · ④ **human gate** · ⑤ **E2E**
   when `qa-journey-plan.md` exists: spawn `my-react:react-e2e-agent` to author per disposition;
   run the suite yourself. Completes only with E2E green or skipped-with-note; fixes run
@@ -127,8 +127,7 @@ pair against the amended contract. A red surviving its first fix attempt → a b
   `/my-react:delegate` before a phase's first spawn; route to `my-react:code-auditor-agent` (atlas
   build/distill), `my-react:react-architect-agent` (design, and mid-implement gap repair via the
   fast path), `my-react:react-test-agent` / `my-react:react-impl-agent` (wave batches), `my-react:react-e2e-agent`
-  (journey tests from the approved plan), or `my-react:react-checker-agent` (fresh-eyes conformance
-  check) whenever the work matches their charter. Every prompt states **where · what · materials · done
+  (journey tests from the approved plan), or `my-react:react-evaluator-agent` (independent evaluation at gates) whenever the work matches their charter. Every prompt states **where · what · materials · done
   when** — sliced paths, never a whole spec dir, never your reasoning; a prompt missing
   one is fixed before it is sent. Fences, skills, model, and return format come from the
   agent's own definition — never restated here.

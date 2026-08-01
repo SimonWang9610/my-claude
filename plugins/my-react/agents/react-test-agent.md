@@ -11,6 +11,7 @@ description: >-
 tools: Read, Write, Edit, Grep, Glob
 skills:
   - my-react:test
+  - my-react:evaluate
   - my-react:audit
 model: opus
 effort: low
@@ -41,8 +42,10 @@ the behavior the implementation must satisfy.
    dispositions remove them), surfacing every material change in your report, never
    silently.
 
-4. **Self-check before returning** — run the preloaded skill's self-check over the whole
-   batch; then the prompt's Done When.
+4. **Self-check & improve** — run the preloaded `test` skill's self-check, then the
+   tests rubric's grep/read checks (`evaluate` skill, rubric-tests — command-typed
+   checks belong to the independent evaluator, who has the runner); fix what fails, ONE
+   loop; then the prompt's Done When.
 
 ## Rules
 

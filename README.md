@@ -164,16 +164,19 @@ removes; its companion agent (if any) follows.
   each codebase's good practices, anti-patterns, and pitfalls (judged against the skill's rules)
   so quality compounds across waves.
 
-### `check` · companion **react-checker-agent**
+### `evaluate` · companion **react-evaluator-agent**
 
-- **Purpose** — a fresh-eyes conformance check of a diff on three axes — behavior/ACs,
-  maintainability, performance & memory — returning severity-classified findings, never fixes.
-- **Why** — the author is the worst judge of their own work; a checker given the artifacts but
-  not the reasoning catches what the author rationalized away.
-- **Pain** — bugs that "look correct"; self-review blind spots; findings quietly "fixed" instead
-  of surfaced.
-- **react-checker-agent** — a read-only tool fence (no Write/Edit), so "findings, never fixes" is
-  unbreakable by construction.
+- **Purpose** — evaluates a design, an implementation diff, or a test suite against its
+  binary evidence-typed rubric: per-axis scores, severity-ranked findings, a mechanical
+  PASS / CONDITIONAL / BLOCK verdict, and for designs a foundation signal on when
+  refactoring the blast radius pays.
+- **Why** — evaluation separated from authoring is what makes a verdict trustworthy:
+  authors run the same rubric to *improve* (mechanical checks keep self-evaluation
+  honest), the independent evaluator runs it to *verify* with fresh eyes.
+- **Pain** — bugs that "look correct"; unfounded quality claims; not knowing whether
+  fixing inherited debt is worth it before building on top of it.
+- **react-evaluator-agent** — a read-only tool fence (no Write/Edit), zero author
+  context by construction; its report is what the gate reads.
 
 ### `review`
 
@@ -249,32 +252,34 @@ claude --agent my-react:lean-specflow-driver --worktree "add a logout button"
 ```
 
 Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
-(green, test paths byte-unchanged) — then an optional `react-checker-agent` pass before the human
+(green, test paths byte-unchanged) — then an optional `react-evaluator-agent` pass before the human
 gate; a friction/defect DESIGN GAP routes back to `react-architect-agent` for a fast-path
 contract delta, and `react-e2e-agent` authors the journey tests once the feature assembles. The
 driver never advances past an open gate.
 
 ---
 
-## The evaluation framework — scored, evidence-gated quality
+## The evaluation framework — one rubric system, evaluation as its own step
 
-The design/implement/check family shares one scoring discipline (specs:
-`skills/design/references/scorecard.md`, `skills/implement/references/scorecard.md`):
+All evaluation lives in the `evaluate` skill (`skills/evaluate/references/` — one
+framework file + three rubrics), applied at two moments: authors run it to **improve**
+right after authoring, the evaluator agent runs it to **verify** at gates.
 
-- **Anchored axes, 0–4, never interpolated** — design scores Grounding · Fit · Structure ·
-  Tradeoffs · Buildability; implementation scores Conformance · Simplicity · Runtime ·
-  Honesty. Verdict comes from axis minima (PASS all ≥3 · CONDITIONAL a 2 · BLOCK any ≤1) —
-  no totals, so a strong axis can never hide a broken one.
-- **A score is a claim** — every point below 4 is a DEDUCT line with evidence
-  (path:line + rule/AC cite); disclosure is never penalized (a routed ASSUMED mark or a
-  ledgered inherited defect is the compliant behavior).
-- **Grounding and inherited debt are scored** — contracts must name grep-verified symbols,
-  and every existing-scope rule violation on the blast radius gets an INHERIT / FIX-NOW /
-  QUARANTINE verdict — a design can no longer silently build on a bad practice.
-- **The checker is a constrained verifier** — it re-derives the same anchors with fresh
-  eyes (in design mode even before code exists); a delta that crosses a verdict boundary
-  is a mandatory finding, and evidence the author couldn't have had reports as an
-  informational evidence-shift, not a miscalibration.
+- **Binary evidence-typed checks, grouped into axes** — design: Grounding · Fit ·
+  Structure (maintainability, scalability) · Tradeoffs · Buildability; implementation:
+  Conformance · Simplicity & readability · Runtime · Honesty; tests: Coverage ·
+  Assertion strength · Discipline. Each check names its evidence form (grep · command ·
+  trace · read); executed evidence outranks prose judgment.
+- **Scores and verdicts are derived, never judged** — axis = 4 minus failures by class
+  (cliff / core / polish); verdict from axis minima (PASS all ≥3 · CONDITIONAL a 2 ·
+  BLOCK any ≤1). Disclosure scores clean: checks fail on the silent version only.
+- **The foundation signal says when refactoring pays** — every inherited defect on the
+  blast radius gets an INHERIT / FIX-NOW / QUARANTINE verdict at design time, and the
+  evaluation marks it REFACTOR NOW when it sits on ≥2 flows, caps an axis, or recurs
+  across specs — solidify the foundation before building on it, consciously.
+- **Evaluation outcomes feed agent memory** — a failed check is already a generalized
+  pattern (saved as *avoid*); a pass earned by a codebase pattern saves as the practice
+  that earned it.
 
 ---
 
@@ -305,7 +310,7 @@ correct without heavy oversight.
 **Correctness — by construction, not by instruction**
 
 - **Narrow tool fences** — the test agent writes tests only, the impl agent source only, the
-  checker reads only. Red-first, author ≠ implementer, and findings-never-fixes become
+  evaluator reads only. Red-first, author ≠ implementer, and findings-never-fixes become
   *structural*, not a promise that can slip.
 - **Judgment authors, search verifies** — mechanical facts (call edges, anchors, couplings) come
   from tools; judgment fills only what tools can't (a flow's GIVEN/WHEN/THEN/HOW), so what's

@@ -10,6 +10,7 @@ description: >-
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
   - my-react:implement
+  - my-react:evaluate
   - my-react:audit
 model: opus
 effort: low
@@ -29,16 +30,19 @@ tests are your spec, never your editable surface**.
 ## Operating procedure
 
 1. **Scope** — read the prompt's Materials: the batch's contracts, task rows, the
-   failing test names that are your spec, and the red baseline ref (feeds the
-   scorecard's c2 anchor). Read the target files and their imports before
+   failing test names that are your spec, and the red baseline ref (evidence for the
+   rubric's c2 check). Read the target files and their imports before
    writing. Work only in the given Working Directory.
 2. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/my-react:audit query "<question>"` (it heals itself on a miss).
 3. **Implement** — consult the current codebase's memory entries, then follow
    `/my-react:implement` — its rule files for every level the diff touches. Reuse
    the existing component/hook/type/query-key/store-slice — never add a second one. Copy
    an adopted shared unit instead of modifying it.
-4. **Verify before returning** — the skill's done-condition verify, targeted runs only,
-   never the full suite; then the prompt's Done When.
+4. **Verify** — the skill's done-condition verify, targeted runs only, never the full
+   suite.
+5. **Evaluate & improve** — run `/my-react:evaluate implementation` on the batch diff
+   (the improve use); any axis ≤2 → fix from the failed checks, re-run those checks;
+   ONE loop. Still ≤2 → report the failing checks. Then the prompt's Done When.
 
 ## Rules
 
@@ -70,12 +74,15 @@ here?* No → don't save); never a ticket- or feature-named entry (e.g. `<TICKET
 overrides a failing test.
 
 Consult before implementing; after a batch record only the durable entries and correct the
-stale ones. Keep MEMORY.md a ≤200-line index — only its first 200 lines are injected.
+stale ones. **The improve loop's check outcomes are your best candidates** — a failed
+check is already a generalized pattern (save as *avoid* with its check id); a pass earned
+by reusing a codebase pattern saves as the good practice that earned it. Keep MEMORY.md a
+≤200-line index — only its first 200 lines are injected.
 
 ## Report back — line-oriented, nothing else
 
 - per task: `T<n> — done — <files touched> — <named tests green>`
-- per batch: the scorecard block (axes · verdict · DEDUCT lines) — the caller persists
-  it; a claim the checker re-derives, so evidence over optimism
+- improve loop: one line per fix (`<check id> → <what changed>`) and any check still
+  failing — the independent evaluation re-runs the rubric, so evidence over optimism
 - per gap: the DESIGN GAP block verbatim
 - per failure: `FAILED T<n> — <failing check> — <what was tried> — <suspected cause>`

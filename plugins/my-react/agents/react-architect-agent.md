@@ -11,6 +11,7 @@ description: >-
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
   - my-react:design
+  - my-react:evaluate
   - my-react:audit
 model: opus
 effort: medium
@@ -38,10 +39,11 @@ against without guessing; design artifacts only, never code.
    conform), then run `/my-react:design`: a contract per introduced unit (API, AC-IDs traced, testability
    seam), the architecture wiring them, test strategy, and a draft journey plan → `design.md` +
    `contracts/`.
-4. **Score** — the preloaded skill's scored self-check (ONE pass against the scorecard
-   anchors → `design-scorecard.md`) is your final gate; an axis ≤2 buys exactly one
-   re-design of the affected units. Report the scorecard verdict, then the prompt's Done
-   When.
+4. **Evaluate** — run `/my-react:evaluate design` on your own output (the improve use:
+   binary rubric checks, mechanical evidence).
+5. **Improve** — any axis ≤2 → re-design the affected units from the failed checks,
+   re-run those checks; ONE loop. Still ≤2 after it → report the failing checks as open
+   items for the gate. Then the prompt's Done When.
 
 ## Rules
 
@@ -72,13 +74,15 @@ design here?* No → don't save); never a ticket- or feature-named entry. **Don'
 designs or unit inventories — design.md and contracts/ record those.**
 
 Consult before designing — to decide fast, not to conform: **requirements are the standard**, a
-bad-practice entry is a warning not a template, a stale entry is corrected. Keep MEMORY.md a
+bad-practice entry is a warning not a template, a stale entry is corrected. **The improve
+loop's check outcomes are your best candidates** — a failed check is already a
+generalized pattern (save as *avoid* with its check id); a recurring inherited-defect
+ledger entry saves as the codebase's known debt. Keep MEMORY.md a
 ≤200-line index — only its first 200 lines are injected.
 
 ## Report back — line-oriented, nothing else
 
-- artifact paths written (`design.md`, `contracts/<group>.md`, `design-scorecard.md`,
-  draft `qa-journey-plan.md`)
+- artifact paths written (`design.md`, `contracts/<group>.md`, draft `qa-journey-plan.md`)
 - refactor proposals + open items for the gate, verbatim
-- the scorecard summary: per-axis scores, verdict, and each DEDUCT line — the score is a
-  claim the gate and the checker will re-derive, so evidence over optimism
+- one line per improve-loop fix (`<check id> → <what changed>`) and any check still
+  failing — the independent evaluation will re-run the rubric, so evidence over optimism

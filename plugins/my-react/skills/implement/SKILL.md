@@ -6,7 +6,7 @@ description: >
   its own done-condition and raising DESIGN GAPs instead of silently deviating. Use when
   building or changing React units: implementing a contract, making failing tests pass,
   fixing a bug, or optimizing a hot path. Not for authoring the tests (use
-  my-react:test) or checking the result (use my-react:check). Output:
+  my-react:test) or checking the result (use my-react:evaluate). Output:
   source that passes the batch's tests.
 ---
 
@@ -58,14 +58,11 @@ interaction) — clear code first, never pre-optimize a cold path.
    broad re-reading; never a bulk audit here.
 2. **Implement per level** — most changes are mixed-level (a filtered list touches
    component + hook rules at once); apply every rules file whose level the diff touches.
-3. **Verify the done-condition, then self-score** — the task's gate when one exists;
-   otherwise typecheck + the relevant tests. Tests define behaviour — make the code
-   satisfy them; NEVER rewrite a test to make failing code pass. Then run the anchor
-   checks in [references/scorecard.md](./references/scorecard.md) (Conformance ·
-   Simplicity · Runtime · Honesty) and return the batch's scorecard block in your
-   report — the caller persists it; you never write spec artifacts. The scorecard is a
-   scoped claim the checker re-derives — deep re-review of your own diff is still
-   `check`'s job, not yours.
+3. **Verify the done-condition** — the task's gate when one exists; otherwise typecheck
+   + the relevant tests. Tests define behaviour — make the code satisfy them; a failing
+   test is fixed in the code, never in the test. Evaluation runs next as its own step
+   (`/my-react:evaluate implementation`) — conform while writing; leave the deep pass
+   to it.
 4. **Steer the design** — when a governing decision is ambiguous, missing a case, or
    provably wrong, raise it; never silently deviate, never blindly implement a defect:
 

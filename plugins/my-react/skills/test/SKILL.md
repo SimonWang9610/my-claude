@@ -5,7 +5,7 @@ description: >
   through its test seam, asserting the states its contract exposes, and naming every test
   for the AC it verifies. Use when writing unit tests for new or changed React code or
   hardening weak coverage. Not for implementing the code under test (use
-  my-react:implement), checking coverage after (use my-react:check),
+  my-react:implement), checking coverage after (use my-react:evaluate),
   or E2E journey tests (the dedicated e2e agent owns those). Output: test files, each
   named for the AC it proves.
 ---

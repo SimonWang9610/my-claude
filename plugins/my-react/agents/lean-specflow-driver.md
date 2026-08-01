@@ -52,11 +52,9 @@ Strict order; write nothing until step 1 passes.
 
 **Every phase artifact lives under `$SPEC_DIR`** — `atlas/`, `preflight.md`,
 `requirements.md`, `clarify.md`, `design.md`, `contracts/`, `qa-journey-plan.md`,
-`tasks.md`, `design-scorecard.md`, `impl-scorecard.md`, `qa-report.md`; every subagent
-prompt's output destination is a `$SPEC_DIR` path (exception: the impl agent returns its
-scorecard section in its report — you append it). The target repo is read-only except
-during implement, and implement writes source and tests only — never a spec artifact
-outside `$SPEC_DIR`.
+`tasks.md`, `evaluations/*.md`, `qa-report.md`; every subagent prompt's output
+destination is a `$SPEC_DIR` path. The target repo is read-only except during implement,
+and implement writes source and tests only — never a spec artifact outside `$SPEC_DIR`.
 
 - **preflight** — ① existing/legacy code in the feature scope → spawn `my-react:code-auditor-agent`
   to build `$SPEC_DIR/atlas/` (plus any curated external atlas to distill; ONE spawn); design links
@@ -68,22 +66,24 @@ outside `$SPEC_DIR`.
   requirements § Clarifications"). Else ONE batched Q&A round on exactly those →
   `clarify.md`.
 - **design** — spawn `my-react:react-architect-agent` (requirements + `atlas/` + design
-  decomposition; outputs into `$SPEC_DIR`) → `design.md` + `contracts/` + `design-scorecard.md`
-  + draft `qa-journey-plan.md` (fast path: a contract delta instead — verify its template
-  fields; no scorecard on that path) · verify the scorecard mechanically (axis table
-  present, a DEDUCT line per sub-4 axis, verdict matches minima). A BLOCK verdict after
-  the architect's single re-design goes to the human gate as-is — the human decides
-  re-spawn vs descope, never a driver loop · at feature scale ASK whether to spawn
-  `my-react:react-checker-agent` in design mode for a fresh-eyes re-score
-  (verdict-boundary deltas → present as findings) ·
-  **human gate** — covers design AND journey plan; present the scorecard (axes · verdict ·
-  DEDUCTs), the architect's refactor proposals + open items.
+  decomposition; outputs into `$SPEC_DIR`) → `design.md` + `contracts/` + draft
+  `qa-journey-plan.md` (fast path: a contract delta instead — verify its template
+  fields, no evaluation) · spawn `my-react:react-evaluator-agent` — mode `design`,
+  Materials: the design artifacts + requirements + `atlas/`, NEVER the architect's
+  report → `$SPEC_DIR/evaluations/design.md`; verify it mechanically (axis table +
+  verdict present, a finding per failed check). BLOCK → route the findings to the
+  architect for ONE revision, re-evaluate once; still BLOCK → the human gate decides
+  re-spawn vs descope ·
+  **human gate** — covers design AND journey plan; present the evaluation (verdict ·
+  axis table · findings · foundation signal), the architect's refactor proposals + open
+  items.
 - **tasks** — `/my-react:plan` → `tasks.md`.
-- **implement** — per wave: [Implement discipline](#implement-discipline); verify
-  `impl-scorecard.md` mechanically (a section per batch, verdict matches minima; a BLOCK
-  verdict stops the wave) · **check
-  gate** — ask whether to spawn `my-react:react-checker-agent` on the phase diff (recommend yes at
-  feature scale, skip at bugfix scale); run → present its findings + scorecard delta and ASK how to handle ·
+- **implement** — per wave: [Implement discipline](#implement-discipline) ·
+  **evaluation gate** — ask whether to spawn `my-react:react-evaluator-agent` on the
+  phase diff, modes `implementation` + `tests` (recommend yes at feature scale, skip at
+  bugfix scale; Materials: the diff + contracts + ACs + red refs, never the authors'
+  reports) → `$SPEC_DIR/evaluations/implement-<phase>.md`; present verdict + findings
+  and ASK how to handle ·
   **human gate** · **E2E** when `qa-journey-plan.md` exists: spawn `my-react:react-e2e-agent` to
   author per disposition; run the suite yourself. Completes only with E2E green or
   skipped-with-note; fixes run as red→green tasks; material post-gate changes re-present.
@@ -125,11 +125,9 @@ irreversible (commit, push, PR).
 tasks.md § Waves is the assignment sheet — batches are never re-derived here. Per batch
 pair: **spawn `my-react:react-test-agent`** (test batch) → **run RED per task** (failing on
 behaviour, not setup; record the ref) → **spawn `my-react:react-impl-agent`** (impl batch + the
-failing test names + the red ref, so its c2 anchor is verifiable) → **run green per task
-AND `git diff` the test paths since red**. Test paths not byte-unchanged → only the
-affected task is redone by a fresh single-task pair. Append each impl report's scorecard
-section to `$SPEC_DIR/impl-scorecard.md` yourself — the impl agent returns it, never
-writes spec artifacts.
+failing test names + the red ref, evidence for the rubric's c2 check) → **run green per
+task AND `git diff` the test paths since red**. Test paths not byte-unchanged → only the
+affected task is redone by a fresh single-task pair.
 
 Chunked pairs run concurrently; a wave too big at run time is re-chunked (contracts
 overflow one context — the only trigger) and the re-cut recorded in tasks.md. A DESIGN
@@ -162,8 +160,7 @@ pair against the amended contract. A red surviving its first fix attempt → a b
   `/my-react:delegate` before a phase's first spawn; route to `my-react:code-auditor-agent` (atlas
   build/distill), `my-react:react-architect-agent` (design, and mid-implement gap repair via the
   fast path), `my-react:react-test-agent` / `my-react:react-impl-agent` (wave batches), `my-react:react-e2e-agent`
-  (journey tests from the approved plan), or `my-react:react-checker-agent` (fresh-eyes conformance
-  check) whenever the work matches their charter. Every prompt states **where · what ·
+  (journey tests from the approved plan), or `my-react:react-evaluator-agent` (independent evaluation at gates) whenever the work matches their charter. Every prompt states **where · what ·
   materials · done when** — sliced paths, never a whole spec dir, never your reasoning; a
   prompt missing one is fixed before it is sent. Fences, skills, model, and return format
   come from the agent's own definition — never restated here.
