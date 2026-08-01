@@ -2,11 +2,13 @@
 name: check
 description: >
   Checks a React diff with fresh eyes on three axes — does it observably satisfy its ACs
-  and contracts, what will it cost the next change, and what does it cost at runtime. Use after
-  implementation to verify work against its contracts, or on demand to audit a diff for
-  conformance, maintainability, or performance and memory problems. Not for a pre-merge PR
+  and contracts, what will it cost the next change, and what does it cost at runtime — and
+  re-derives the author's scorecard as a constrained verifier (a delta that crosses a
+  verdict boundary is a finding). A design mode re-scores design.md + contracts before any code exists. Use after
+  implementation to verify work against its contracts, before the design gate for a
+  fresh-eyes design re-score, or on demand to audit a diff. Not for a pre-merge PR
   review that gates the merge (use my-react:review) or building the atlas (use
-  my-react:audit). Output: severity-classified findings with evidence, never fixes.
+  my-react:audit). Output: severity-classified findings + a scorecard delta, never fixes.
 ---
 
 # check
@@ -15,10 +17,18 @@ Findings, not fixes. The checker reads the diff with fresh eyes — never the au
 context — and returns evidence-carrying findings; fixing belongs to the implementer,
 re-checking to the caller. One pass per invocation: bounded, never a standing loop.
 
+Two modes: **diff mode** (default — the three axes below, then the scorecard re-score)
+and **design mode** (no code yet — re-score `design.md` + `contracts/` +
+`design-scorecard.md` per § Scorecard re-score alone; a fresh-eyes pass before the
+design gate).
+
 ## Inputs
 
 - **Diff scope** — the changed files (task, wave, or phase), commit-scoped by the caller.
+  Absent → design mode.
 - **Contracts + design.md + traced ACs** — the authority the diff is checked against.
+- **Scorecards** — `design-scorecard.md` / `impl-scorecard.md` when they exist; the
+  author's claims to verify. Missing scorecard → re-score from scratch and say so.
 
 ## Checks — three axes, in order, severity first
 
@@ -54,6 +64,16 @@ must stay visible.
    → a finding with its fix direction; design-level → a DESIGN GAP finding with the
    measurement as evidence.
 
+## Scorecard re-score — constrained verifier, same pass
+
+Re-derive the author's scorecard per the **re-score protocol** in
+`${CLAUDE_PLUGIN_ROOT}/skills/design/references/scorecard.md` (design axes G·F·S·T·B;
+impl axes C·S·R·H in `${CLAUDE_PLUGIN_ROOT}/skills/implement/references/scorecard.md`).
+Not a second sweep: each checklist outcome above doubles as its matching anchor's
+outcome (axis 1 ≈ C anchors, axis 2 ≈ S/H, axis 3 ≈ R) — one derivation over the whole
+diff scope feeds findings and axis scores alike. The protocol owns the delta rules
+(verdict-boundary crossings, evidence-shift, cap exemption).
+
 ## Finding format
 
 ```markdown
@@ -64,7 +84,9 @@ Fix direction: <one line — direction, never a patch>
 
 ## Output
 
-Findings most-severe first, then one line: `checked <n> units × <checks run>`, plus a
-tally for anything dropped — `suppressed: <n> (<source: advisory cap · caller scope ·
-capability gate>)` — so a clean report means clean, never quietly filtered. No findings
-and no drops → the one line alone. Never edit files; never restate unchanged code.
+Findings most-severe first, then the scorecard delta table (`axis · author · re-score ·
+evidence` — only rows that moved; none moved → `scorecard: concur <verdict>`), then one
+line: `checked <n> units × <checks run>`, plus a tally for anything dropped —
+`suppressed: <n> (<source: advisory cap · caller scope · capability gate>)` — so a clean
+report means clean, never quietly filtered. No findings and no drops → the closing lines
+alone. Never edit files; never restate unchanged code.

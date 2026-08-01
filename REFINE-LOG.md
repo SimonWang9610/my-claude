@@ -1221,3 +1221,37 @@ drivers; the process shell proved redundant. `review/references/specflow.md` kep
 design · plan · test · implement · check · review · figma · delegate · jira-align.
 my-flutter (fl- prefix dropped): acceptance-criteria · design · implement · review · riverpod ·
 tasks · test-contract · test-forensics. my-flutter/review reference symlinks re-pointed.
+
+---
+
+## 2026-08-01 — Evaluation framework (Goal 2)
+
+Score-based evaluation for the my-react design/implement/check family: anchored 0–4 axes,
+DEDUCT-with-evidence, verdict from axis minima, author self-score re-derived by the checker
+as a constrained verifier. Research adoptions (source → decision → reason):
+
+- SEI ATAM (risks · sensitivity points · tradeoff analysis) → adopted as the T axis
+  (t1 decision entries, t2 sensitivity points, t3 inherited-defect ledger) → tradeoffs are
+  the architect's core art; a ledger makes building-on-bad-practice a conscious decision.
+- ADR practice (context · decision · consequence) → adopted as t1's one-line entry shape →
+  cheapest recorded-alternative form.
+- LLM-judge calibration literature (coarse anchored scales; criterion + reasoning structure
+  + deterministic mapping; scores drift without anchors) → adopted 0–4 anchored bands, no
+  totals, verdict from minima → fine-grained totals are noise an LLM can't calibrate and a
+  weighted sum hides a broken axis.
+- SAST false-positive research (LLM as constrained verifier over candidates ≈ 88% FP cut vs
+  free-hunting) → adopted the re-score protocol: checker verifies anchors + author DEDUCTs,
+  never free-hunts the scorecard → FP is a correctness bug here.
+- React pain-point survey (global-state overuse, unclear data flow, over-abstraction) →
+  already carried by design/rules; adopted only the grounding gap as the G axis (verified
+  symbol marks, importer decisions, ASSUMED routing) → the named architect failure was
+  ignoring existing-project reality.
+- Rejected: weighted /100 totals (miscalibration + axis-hiding); judge ensembles/panels
+  (cost; single constrained verifier + human gate suffices); scoring the fast path
+  (bugfix-scale ceremony).
+
+Fresh-eyes iteration: reviewer round 1 returned 16 findings (old self-check still live;
+BLOCK loop unterminated; disclosure penalized by G/S bands; delta rule keyed to magnitude
+not verdict boundary; impl scorecard concurrency/fence conflict; 5× delta-rule duplication;
+unverifiable anchors; b3 plan-phase leak; dead Total lines; unfalsifiable "significant") —
+all 16 applied; round 2 verified.

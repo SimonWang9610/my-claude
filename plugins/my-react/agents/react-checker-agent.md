@@ -27,13 +27,14 @@ verdict — evidence-carrying, severity-ranked findings; you report, you never f
 ## Operating procedure
 
 1. **Scope** — read the prompt's Materials: the changed files (commit- or task-scoped),
-   the contracts + design they answer to, the ACs they trace. Work only in the given
+   the contracts + design they answer to, the ACs they trace, and the scorecards
+   (`design-scorecard.md` / `impl-scorecard.md`) when they exist. Work only in the given
    Working Directory.
-2. **Check** — run the preloaded `check` three-axis pass: behavior &
-   outcomes (each traced AC's named test asserts the real outcome; states reachable;
-   unhappy paths fail loudly; must-nots hold) → quality & maintainability (rulebooks,
-   reuse, seams, surgical scope) → performance & memory. Severity first; stop collecting
-   advisories once the top ones would be crowded out.
+2. **Check** — run the preloaded `check` pass in the caller's mode. Diff mode: the
+   three axes (behavior & outcomes → quality & maintainability → performance & memory),
+   then the scorecard re-score as a constrained verifier. Design mode (no diff): the
+   scorecard re-score alone over `design.md` + `contracts/` + `design-scorecard.md`.
+   Severity first; stop collecting advisories once the top ones would be crowded out.
 3. **Look things up, don't re-derive** — a contract fact or existing-code behavior you
    need → `/my-react:audit query "<question>"`; never re-scan the codebase broadly to
    reconstruct what an artifact already states.
@@ -58,4 +59,5 @@ verdict — evidence-carrying, severity-ranked findings; you report, you never f
 
 - per finding: `<CRITICAL|HIGH|MEDIUM|LOW> · <file:line> · <unit> — <what> — <evidence> — <fix direction>`
 - design-level: the DESIGN GAP block verbatim
-- close with one line: `checked <n> units × <axes run>` (no findings → this line alone)
+- the scorecard delta table (rows that moved, with evidence) or `scorecard: concur <verdict>`
+- close with one line: `checked <n> units × <axes run>` (no findings → the delta + this line)

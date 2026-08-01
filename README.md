@@ -256,6 +256,28 @@ driver never advances past an open gate.
 
 ---
 
+## The evaluation framework — scored, evidence-gated quality
+
+The design/implement/check family shares one scoring discipline (specs:
+`skills/design/references/scorecard.md`, `skills/implement/references/scorecard.md`):
+
+- **Anchored axes, 0–4, never interpolated** — design scores Grounding · Fit · Structure ·
+  Tradeoffs · Buildability; implementation scores Conformance · Simplicity · Runtime ·
+  Honesty. Verdict comes from axis minima (PASS all ≥3 · CONDITIONAL a 2 · BLOCK any ≤1) —
+  no totals, so a strong axis can never hide a broken one.
+- **A score is a claim** — every point below 4 is a DEDUCT line with evidence
+  (path:line + rule/AC cite); disclosure is never penalized (a routed ASSUMED mark or a
+  ledgered inherited defect is the compliant behavior).
+- **Grounding and inherited debt are scored** — contracts must name grep-verified symbols,
+  and every existing-scope rule violation on the blast radius gets an INHERIT / FIX-NOW /
+  QUARANTINE verdict — a design can no longer silently build on a bad practice.
+- **The checker is a constrained verifier** — it re-derives the same anchors with fresh
+  eyes (in design mode even before code exists); a delta that crosses a verdict boundary
+  is a mandatory finding, and evidence the author couldn't have had reports as an
+  informational evidence-shift, not a miscalibration.
+
+---
+
 ## How these are optimized — the mechanisms
 
 Cross-cutting techniques the skills and agents share, developed to keep them cheap to run and

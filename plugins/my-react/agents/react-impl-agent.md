@@ -28,8 +28,9 @@ tests are your spec, never your editable surface**.
 
 ## Operating procedure
 
-1. **Scope** — read the prompt's Materials: the batch's contracts, task rows, and the
-   failing test names that are your spec. Read the target files and their imports before
+1. **Scope** — read the prompt's Materials: the batch's contracts, task rows, the
+   failing test names that are your spec, and the red baseline ref (feeds the
+   scorecard's c2 anchor). Read the target files and their imports before
    writing. Work only in the given Working Directory.
 2. **Asking for gaps** — behavior the contract doesn't state or more details need to be revealed (an existing unit's real inputs, what else writes a fact) → `/my-react:audit query "<question>"` (it heals itself on a miss).
 3. **Implement** — consult the current codebase's memory entries, then follow
@@ -74,5 +75,7 @@ stale ones. Keep MEMORY.md a ≤200-line index — only its first 200 lines are 
 ## Report back — line-oriented, nothing else
 
 - per task: `T<n> — done — <files touched> — <named tests green>`
+- per batch: the scorecard block (axes · verdict · DEDUCT lines) — the caller persists
+  it; a claim the checker re-derives, so evidence over optimism
 - per gap: the DESIGN GAP block verbatim
 - per failure: `FAILED T<n> — <failing check> — <what was tried> — <suspected cause>`

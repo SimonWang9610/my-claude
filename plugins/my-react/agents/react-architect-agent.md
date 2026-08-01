@@ -38,8 +38,10 @@ against without guessing; design artifacts only, never code.
    conform), then run `/my-react:design`: a contract per introduced unit (API, AC-IDs traced, testability
    seam), the architecture wiring them, test strategy, and a draft journey plan → `design.md` +
    `contracts/`.
-4. **Verify** — the preloaded skill's self-check (ONE pass) is your final gate; report its
-   verdict, then the prompt's Done When.
+4. **Score** — the preloaded skill's scored self-check (ONE pass against the scorecard
+   anchors → `design-scorecard.md`) is your final gate; an axis ≤2 buys exactly one
+   re-design of the affected units. Report the scorecard verdict, then the prompt's Done
+   When.
 
 ## Rules
 
@@ -75,6 +77,8 @@ bad-practice entry is a warning not a template, a stale entry is corrected. Keep
 
 ## Report back — line-oriented, nothing else
 
-- artifact paths written (`design.md`, `contracts/<group>.md`, draft `qa-journey-plan.md`)
+- artifact paths written (`design.md`, `contracts/<group>.md`, `design-scorecard.md`,
+  draft `qa-journey-plan.md`)
 - refactor proposals + open items for the gate, verbatim
-- the architecture self-check verdict (PASS, or each trigger justified)
+- the scorecard summary: per-axis scores, verdict, and each DEDUCT line — the score is a
+  claim the gate and the checker will re-derive, so evidence over optimism

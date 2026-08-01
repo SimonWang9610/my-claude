@@ -1,10 +1,10 @@
-# Ground truth — flows, audit, reconcile (steps 1–3)
+# Ground truth (step 1) — construct · audit · reconcile
 
 The flows are the ground truth every later decision is checked against: contracts realize
 them, the self-check walks them. Build them from requirements/ACs — the audit
 refines them, never originates them.
 
-## Construct (step 1)
+## Construct (1a)
 
 **User flows** — one per story/journey: trigger → interaction steps → observable outcome.
 Each step cites the AC it realizes. Give mermaid diagrams and a table:
@@ -25,7 +25,7 @@ unit on a flow path (the audit entry points).
 **Coverage guard (blocking):** every AC appears on at least one flow; a flow step citing no
 AC is invented scope — cut it or flag it to the caller.
 
-## Audit (step 2)
+## Audit (1b)
 
 Goal: understand the business logic the sources carry so the design can reuse or wire into
 it. Two source kinds, used differently:
@@ -44,7 +44,7 @@ caller's preflight:
   reads exactly the missing spot (one flow at a time) and folds it back, never re-auditing
   a flow the atlas already answers.
 
-## Reconcile (step 3 — after the audit)
+## Reconcile (1c — after the audit)
 
 Refine the flows with the audit notes, in order:
 
@@ -68,6 +68,16 @@ Refine the flows with the audit notes, in order:
    store selector, context, service event, callback), per the picker in
    [design.md](./design.md).
 
+5. **VERIFY every named symbol** — each existing unit/symbol the design will reference
+   gets `verified <path:line>` (a grep/read hit) in the unit inventory; behavior relied
+   on but not read is marked `ASSUMED` and routed to Open items. This feeds the
+   scorecard's G axis — a remembered symbol is not a grounded one.
+6. **LEDGER the inherited defects** — every existing-scope violation of `rules/` on the
+   blast radius (dual writer, cycle, God unit…) gets a verdict: `INHERIT <cost>` ·
+   `FIX-NOW <refactor proposal>` · `QUARANTINE <containment boundary>`. Feeds the
+   scorecard's T axis; a FIX-NOW becomes a gate proposal (SKILL.md § Refactor proposals).
+
 **Output:** updated flow diagrams and tables (segments tagged NEW/existing) + a unit inventory — every
-unit tagged REUSE / MODIFY / REPLACE / NEW. Contracts are written for MODIFY and NEW only;
-a REPLACE pairs a NEW contract with the old unit's migration note.
+unit tagged REUSE / MODIFY / REPLACE / NEW with its `verified` marks + the inherited-defect
+ledger. Contracts are written for MODIFY and NEW only; a REPLACE pairs a NEW contract with
+the old unit's migration note.

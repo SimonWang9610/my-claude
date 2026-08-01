@@ -1,4 +1,4 @@
-# Design (step 2) and self-check (step 3)
+# Design (step 2)
 
 For every MODIFY/NEW unit in the inventory, according to the user and data flows, decide in
 order — data contract, state design, decomposition — applying the rule files under
@@ -195,41 +195,3 @@ the behaviour importers rely on
 all unaffected | <named migrations>
 ````
 
-## Self-check (step 5 — internal self-correction only)
-
-Adversarially re-read the draft — try to break it, don't defend it. Findings drive
-re-design, not a report.
-
-**Blocking — the one re-design pass must make these hold:**
-
-- **One owner per fact.** No dual owners, no client copies of server facts, no stored
-  derivations. (rules/state-ownership.md)
-- **Every AC traced to exactly one contract, with a test-strategy row.** Unowned AC =
-  missing unit; dual-owned = ambiguous split. An AC resting on a fact the unit doesn't own
-  is derived — the unit consumes the owner's interface instead. An AC missing from the
-  Test strategy table, or whose owning contract lacks a workable Test seam, fails.
-- **Every flow walks end-to-end.** Origin → transforms → sinks, a named unit at every hop,
-  a named mechanism between hops. An ambiguous handoff (nobody owns the invalidation; two
-  units both think they trigger the refetch) fails and names the unit to re-design.
-- **Blast radius closed.** Every MODIFY/REPLACE importer has a decision (kept compatible |
-  migrated in scope); every existing test in § Blast radius carries a disposition (KEEP |
-  UPDATE + AC | DELETE); every split/merge passes the right-size test
-  (rules/decompose-components.md); every REPLACE names its useless-after removal or its
-  architecture payoff.
-
-**Advisory — fix if the fix is bounded, otherwise record under Open items:**
-
-- **Reuse before create.** A NEW unit whose responsibility an existing unit already owns
-  re-tags to REUSE/MODIFY — blocking if the duplicate owns a fact.
-- **Loosest coupling per interaction** (mechanism picker). A store where props suffice,
-  prop-drilling where a shared query key serves — downgrade it.
-- **Contract minimalism.** Anything not demanded by an AC or a wired flow is invented
-  scope — cut it.
-
-**Scale:** single-group designs run the blocking checks only — the advisory classes
-re-surface in the post-implement check; spend the advisory pass on multi-group designs.
-
-**Budget: ONE check pass.** Its findings drive one re-design of the affected units — no
-re-check loop; anything still open is never silently shipped: **pause and reach the
-caller** — present each item with what was tried, take their decision or steering, and
-resume the affected steps with that input (SKILL.md step 4).

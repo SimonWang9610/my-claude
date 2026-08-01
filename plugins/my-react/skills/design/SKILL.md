@@ -50,6 +50,10 @@ To the caller-designated dir; templates in [references/design.md](./references/d
   journey-level: per journey `J-<n>` (precondition · steps · covers-ACs), happy +
   error/boundary, each NEW or MODIFY <existing test path>, plus a NOT-automated table.
   A draft — the caller's design gate approves it.
+- `design-scorecard.md` — the scored self-evaluation per
+  [references/scorecard.md](./references/scorecard.md): five axes (Grounding · Fit ·
+  Structure · Tradeoffs · Buildability) 0–4 against anchors, DEDUCT lines with evidence,
+  verdict from axis minima. The gate reads the scorecard, not a prose summary.
 
 **Discipline:** terse, goal-accurate — AC/rule IDs, exact identifiers/paths, no filler.
 Decisions, never reasoning ("why" = a one-line rule citation; unresolved → Open items).
@@ -65,12 +69,17 @@ Read the relevant file before deciding; cite it in design notes:
 
 ## Full path (feature-scale)
 
-Step 1 → consult [references/ground-truth.md](./references/ground-truth.md); steps 2–3 → consult [references/design.md](./references/design.md).
+Step 1 → consult [references/ground-truth.md](./references/ground-truth.md); step 2 → [references/design.md](./references/design.md); step 3 → [references/scorecard.md](./references/scorecard.md).
 
 1. **Ground truth** — user & data flows from requirements/ACs alone; scope + blast radius.
+   Reconcile verifies, not recalls: every existing symbol the design will name gets a
+   `verified <path:line>` mark; existing-scope rule violations enter the inherited-defect
+   ledger with a verdict (INHERIT · FIX-NOW · QUARANTINE) — never silently built upon.
 2. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/ (+ the draft journey plan when the test strategy has journey rows).
-3. **Self-check** — internal, ONE pass; findings → one re-design of the affected units.
-4. **Resolve or finalize** — open items → pause with what was tried, wait for steering, resume; else hand back.
+3. **Scored self-check** — ONE pass: run the anchor checks in
+   [references/scorecard.md](./references/scorecard.md) → `design-scorecard.md`; any axis
+   ≤2 → one re-design of the affected units, then re-score once.
+4. **Resolve or finalize** — open items → pause with what was tried, wait for steering, resume; else hand back with the scorecard verdict.
 
 **Refactor proposals:** touched code fighting the requirements → name root friction,
 restricted scope, payoff, cost delta; present at the gate beside the minimal design — the
@@ -80,4 +89,5 @@ caller chooses. Never silently expand scope; never withhold a clearly valuable r
 
 1. Locate the owning unit(s); trace only the affected fact/case.
 2. **Contract delta** (template in design.md): case, surface change, must-not-change, importers.
-3. Self-check: one owner per fact + blast radius closed. Anything more → full path.
+3. Self-check: one owner per fact + blast radius closed. No scorecard on this path.
+   Anything more → full path.
