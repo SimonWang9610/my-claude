@@ -91,10 +91,12 @@ sequenceDiagram
 | selected id | useDeviceSelection | store slice | AC-2.1 |
 
 ## Units
-| Unit | Tag | Kind / layer | Depends on | Importers (MODIFY) | Contract |
-|------|-----|--------------|------------|--------------------|----------|
-| useDevices | NEW | hook | devicesApi | — | [device-list](./contracts/device-list.md) |
-<REUSE units get a row, no contract; depends-on encodes build order leaf-first>
+| Unit | Tag | Kind / layer | Depends on | Importers (MODIFY) | Verified | Contract |
+|------|-----|--------------|------------|--------------------|----------|----------|
+| useDevices | NEW | hook | devicesApi | — | n/a (NEW) | [device-list](./contracts/device-list.md) |
+| DeviceTable | MODIFY | component | useDevices | AlarmsPage, DevicesPage | src/DeviceTable.tsx:18 | [device-list](./contracts/device-list.md) |
+<REUSE units get a row, no contract; depends-on encodes build order leaf-first; Verified =
+the grep/read hit for every existing unit, `ASSUMED` marks routed to Open items>
 
 ## Failure containment
 <error/suspense boundary placement per surface — see rules/services-and-boundaries.md>
@@ -118,8 +120,15 @@ their importers (grep the unit names in test files); may be empty — say so.>
 covers removed behavior. UPDATE/DELETE rows are planned work — the plan projects them into
 the owning task's test batch.>
 
+## Inherited defects
+| Existing defect (rule cite) | Evidence | Verdict |
+|-----------------------------|----------|---------|
+| dual writer for `selection` (state-ownership.md) | src/DeviceTable.tsx:41 | INHERIT — fix costs a 4-unit refactor; proposal at gate |
+<every existing-scope rule violation on the blast radius; verdict = INHERIT <cost> ·
+FIX-NOW <proposal> · QUARANTINE <boundary>; may be empty — say so>
+
 ## Open items
-<unresolved self-check findings and recorded debt — each with what was tried / why deferred>
+<unresolved findings and recorded debt — each with what was tried / why deferred>
 ````
 
 ## `contracts/<group>.md` template

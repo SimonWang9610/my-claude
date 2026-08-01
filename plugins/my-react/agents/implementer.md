@@ -1,5 +1,5 @@
 ---
-name: react-impl-agent
+name: implementer
 description: >-
   Implements React/TypeScript units against their contracts until the batch's failing
   tests pass — hooks, components, stores, services. Use when contract-scoped

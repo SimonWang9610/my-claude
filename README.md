@@ -70,7 +70,7 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
    installed aliases.
 3. Install the plugins as above.
 4. Rename invocations: `/requirements` → `/my-react:requirements`, driver agent
-   → `my-react:lean-specflow-driver`, `/review` → `/my-flutter:review`, etc.
+   → `my-react:driver`, `/review` → `/my-flutter:review`, etc.
    The `/sflow` phase skill and `my-specflow-driver` are removed — the lean driver embeds the
    phase playbooks.
 5. Re-link `rules/preferences.md` (see above) — it is no longer installed for you.
@@ -84,7 +84,7 @@ removes; its companion agent (if any) follows.
 
 ## Understand code you didn't write
 
-### `audit` · companion **code-auditor-agent**
+### `audit` · companion **auditor**
 
 - **Purpose** — reverse-engineers existing/legacy code into a queryable **atlas** (a flow index
   over per-flow GIVEN/WHEN/THEN/HOW notes), then answers questions from it and heals itself on a
@@ -94,7 +94,7 @@ removes; its companion agent (if any) follows.
   re-derived every phase.
 - **Pain** — re-reading the same unfamiliar code each phase; blast-radius guesswork ("what else
   writes this fact?"); audits that read too deep because nothing bounds them.
-- **code-auditor-agent** — *initializes* the atlas as one bounded, single-context audit: **build**
+- **auditor** — *initializes* the atlas as one bounded, single-context audit: **build**
   from source, and a fast **distill** of any curated external atlas (distill first, then build
   deepens from that map). Writes only its own `atlas/`; querying it afterwards is the skill's
   `query` mode, run inline by whoever needs an answer. Keeps a **personal memory** of each
@@ -113,7 +113,7 @@ removes; its companion agent (if any) follows.
 - **Pain** — vague scope; solution-shaped asks that hide the real need; ambiguity discovered late
   during implementation.
 
-### `design` · companion **react-architect-agent**
+### `design` · companion **architect**
 
 - **Purpose** — turns ACs into React **contracts** (per-unit API, data flow, state) plus the
   architecture wiring them, as `design.md` + `contracts/`.
@@ -121,7 +121,7 @@ removes; its companion agent (if any) follows.
   cheaper than discovering them mid-implementation; an implementer should build without guessing.
 - **Pain** — "where does this state belong?"; re-litigating boundaries while coding; designs an
   implementer can't act on.
-- **react-architect-agent** — runs the design phase as one bounded, high-judgment audit: queries
+- **architect** — runs the design phase as one bounded, high-judgment audit: queries
   the atlas for existing-code facts, authors `design.md` + `contracts/` (+ a draft journey plan),
   and raises refactor proposals for the gate. Keeps a **personal memory** of each codebase's
   architecture — good practices to reuse and bad ones to steer around (general rules, not feature
@@ -136,7 +136,7 @@ removes; its companion agent (if any) follows.
 - **Pain** — unclear task order; serial work that could have run in parallel; re-deriving batches
   mid-flight.
 
-### `test` · companions **react-test-agent** + **react-e2e-agent**
+### `test` · companions **tester** + **e2e**
 
 - **Purpose** — authors unit tests that prove contracts (Vitest · RTL · MSW), each named for the
   AC it verifies. E2E journey tests are the e2e agent's own charter (its rules live in the agent).
@@ -144,15 +144,15 @@ removes; its companion agent (if any) follows.
   instead of ratifying whatever the code happens to do.
 - **Pain** — tests that pass against a stub; coverage that doesn't map to ACs; author marking
   their own homework.
-- **react-test-agent** — a test-files-only tool fence (it cannot touch source), so red-first is
+- **tester** — a test-files-only tool fence (it cannot touch source), so red-first is
   structural, not a promise; remembers each codebase's test-harness conventions and pitfalls
   (custom render wrapper, MSW helpers, flaky traps) so authoring starts warm.
-- **react-e2e-agent** — authors journey tests from the approved `qa-journey-plan.md` after
+- **e2e** — authors journey tests from the approved `qa-journey-plan.md` after
   implementation assembles the feature (one test per J-<n>, happy + forced-error, NEW|MODIFY
   dispositions); carries its own e2e rules — whole-app-slice harness, UI-only driving — and
   remembers each codebase's app-mount harness.
 
-### `implement` · companion **react-impl-agent**
+### `implement` · companion **implementer**
 
 - **Purpose** — writes React/TS source against a contract until the batch's failing tests pass,
   raising DESIGN GAPs instead of silently deviating.
@@ -160,11 +160,11 @@ removes; its companion agent (if any) follows.
   hooks, components, stores, and services keep the *how* correct.
 - **Pain** — silent deviation from the design; stale-closure, effect-loop, and needless-re-render
   bugs; reinventing a unit that already exists.
-- **react-impl-agent** — a source-only fence (never edits a test) + a **personal memory** of
+- **implementer** — a source-only fence (never edits a test) + a **personal memory** of
   each codebase's good practices, anti-patterns, and pitfalls (judged against the skill's rules)
   so quality compounds across waves.
 
-### `evaluate` · companion **react-evaluator-agent**
+### `evaluate` · companion **evaluator**
 
 - **Purpose** — evaluates a design, an implementation diff, or a test suite against its
   binary evidence-typed rubric: per-axis scores, severity-ranked findings, a mechanical
@@ -175,7 +175,7 @@ removes; its companion agent (if any) follows.
   honest), the independent evaluator runs it to *verify* with fresh eyes.
 - **Pain** — bugs that "look correct"; unfounded quality claims; not knowing whether
   fixing inherited debt is worth it before building on top of it.
-- **react-evaluator-agent** — a read-only tool fence (no Write/Edit), zero author
+- **evaluator** — a read-only tool fence (no Write/Edit), zero author
   context by construction; its report is what the gate reads.
 
 ### `review`
@@ -234,9 +234,9 @@ removes; its companion agent (if any) follows.
 
 ## The drivers — orchestration
 
-Two **driver agents** you launch to run a whole spec: `lean-specflow-driver` (self-contained —
+Two **driver agents** you launch to run a whole spec: `driver` (self-contained —
 the phase playbooks live in the agent itself over a `.meta.yaml` ledger, no process commands;
-heavy work runs in its teammate agents) and `oac-specflow-driver` (drives an external
+heavy work runs in its teammate agents) and `oac-driver` (drives an external
 **specflow** project's `/spec-*` commands). A driver is not tied to one skill — it binds
 them all.
 
@@ -248,13 +248,13 @@ them all.
   verifying; a whole process crammed into one unmaintainable prompt.
 
 ```sh
-claude --agent my-react:lean-specflow-driver --worktree "add a logout button"
+claude --agent my-react:driver --worktree "add a logout button"
 ```
 
-Implement runs red→green per wave — spawn `react-test-agent` (RED) → spawn `react-impl-agent`
-(green, test paths byte-unchanged) — then an optional `react-evaluator-agent` pass before the human
-gate; a friction/defect DESIGN GAP routes back to `react-architect-agent` for a fast-path
-contract delta, and `react-e2e-agent` authors the journey tests once the feature assembles. The
+Implement runs red→green per wave — spawn `tester` (RED) → spawn `implementer`
+(green, test paths byte-unchanged) — then an optional `evaluator` pass before the human
+gate; a friction/defect DESIGN GAP routes back to `architect` for a fast-path
+contract delta, and `e2e` authors the journey tests once the feature assembles. The
 driver never advances past an open gate.
 
 ---
@@ -270,9 +270,9 @@ right after authoring, the evaluator agent runs it to **verify** at gates.
   Conformance · Simplicity & readability · Runtime · Honesty; tests: Coverage ·
   Assertion strength · Discipline. Each check names its evidence form (grep · command ·
   trace · read); executed evidence outranks prose judgment.
-- **Scores and verdicts are derived, never judged** — axis = 4 minus failures by class
-  (cliff / core / polish); verdict from axis minima (PASS all ≥3 · CONDITIONAL a 2 ·
-  BLOCK any ≤1). Disclosure scores clean: checks fail on the silent version only.
+- **Scores and verdicts are derived, never judged** — axis bands by failure class (all
+  pass = 4 · polish-only = 3 · one core = 2 · two+ core = 1 · any cliff = 0); verdict
+  from axis minima (PASS all ≥3 · CONDITIONAL a 2 · BLOCK any ≤1). Disclosure scores clean: checks fail on the silent version only.
 - **The foundation signal says when refactoring pays** — every inherited defect on the
   blast radius gets an INHERIT / FIX-NOW / QUARANTINE verdict at design time, and the
   evaluation marks it REFACTOR NOW when it sits on ≥2 flows, caps an axis, or recurs
@@ -350,4 +350,4 @@ my-claude/
 ```
 
 For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
-**[plugins/my-react/agents/lean-specflow-driver.md](plugins/my-react/agents/lean-specflow-driver.md)**.
+**[plugins/my-react/agents/driver.md](plugins/my-react/agents/driver.md)**.

@@ -1,11 +1,11 @@
 ---
-name: react-test-agent
+name: tester
 description: >-
   Authors React/TypeScript unit tests (Vitest · RTL · MSW) for a batch of tasks against
   their contracts, with every test named for the AC it proves. Use when unit tests must
   be authored by someone other than the implementer — a flow driver's test batch, a
   red-first pass, or hardening coverage on a contract. Not for E2E journey tests (use
-  my-react:react-e2e-agent). Writes test files only; never source, never runs the suite; remembers
+  my-react:e2e). Writes test files only; never source, never runs the suite; remembers
   each codebase's test-harness conventions and pitfalls (personal memory, per codebase)
   so authoring starts warm.
 tools: Read, Write, Edit, Grep, Glob
@@ -42,10 +42,10 @@ the behavior the implementation must satisfy.
    dispositions remove them), surfacing every material change in your report, never
    silently.
 
-4. **Self-check & improve** — run the preloaded `test` skill's self-check, then the
-   tests rubric's grep/read checks (`evaluate` skill, rubric-tests — command-typed
-   checks belong to the independent evaluator, who has the runner); fix what fails, ONE
-   loop; then the prompt's Done When.
+4. **Improve** — run the tests rubric's grep/read checks (`evaluate` skill,
+   rubric-tests — command-typed checks belong to the independent evaluator, who has the
+   runner); any axis ≤2 → fix from the failed checks, ONE loop; then the prompt's Done
+   When.
 
 ## Rules
 

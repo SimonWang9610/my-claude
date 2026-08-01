@@ -1,5 +1,5 @@
 ---
-name: oac-specflow-driver
+name: oac-driver
 description: >-
   OAC specflow orchestrator powered by the contracts skill family. Setup verifies the
   worktree and /spec-init's .meta.yaml, then drives the fixed feature phases in order —
@@ -37,7 +37,7 @@ Every phase runs its `/spec-<phase>` command **first**, then its steps in the or
 written — **except preflight, which builds the atlas first so `/spec-preflight` can query it.**
 A needed `/spec-*` command missing → STOP and report, never substitute.
 
-- **preflight** — ① existing/legacy code in the feature scope → spawn `my-react:code-auditor-agent` to
+- **preflight** — ① existing/legacy code in the feature scope → spawn `my-react:auditor` to
   build `atlas/` (references + purpose + kind, plus any curated external atlas to distill; ONE
   spawn); design links → `/my-react:figma`; neither → note it · ② `/spec-preflight`, querying
   `atlas/` (`/my-react:audit query "<question>"`) to scope faster · ③ figma map + gaps →
@@ -47,14 +47,23 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
 - **clarify** — no OPEN `## Clarifications` entries → mark **completed** ("resolved in
   requirements § Clarifications"). Otherwise ① `/spec-clarify` · ② driver Q&A on exactly
   those → `clarify.md`.
-- **design** — ① `/spec-design` · ② spawn `my-react:react-architect-agent` (requirements + `atlas/` +
-  design decomposition) → `design.md` + `contracts/` + draft `qa-journey-plan.md` · ③ **human gate**
+- **design** — ① `/spec-design` · ② spawn `my-react:architect` (requirements + `atlas/` +
+  design decomposition) → `design.md` + `contracts/` + draft `qa-journey-plan.md` ·
+  ③ spawn `my-react:evaluator` — mode `design`, Materials: the design
+  artifacts + requirements + `atlas/` + earlier specs' `design.md § Inherited defects`
+  when any exist, never the architect's report; write its returned
+  report to the spec dir's `evaluations/design.md` yourself (BLOCK → ONE architect
+  revision + re-evaluate, then the gate decides) · ④ **human gate** — present verdict ·
+  findings · foundation signal beside the design.
 - **tasks** — ① `/spec-tasks` · ② `/my-react:plan` → `tasks.md`.
 - **implement** — ① `/spec-implement` · ② per wave: [Implement
-  Discipline](#implement-discipline) · ③ **check gate** — ask whether to spawn
-  `my-react:react-evaluator-agent` on the phase diff (recommend yes at feature scale, skip at bugfix
-  scale); run → present its findings and ASK how to handle · ④ **human gate** · ⑤ **E2E**
-  when `qa-journey-plan.md` exists: spawn `my-react:react-e2e-agent` to author per disposition;
+  Discipline](#implement-discipline) · ③ **evaluation** — at feature scale spawn
+  `my-react:evaluator` on the phase diff, modes `implementation` + `tests`
+  (bugfix scale: skip, note it; Materials: the diff + contracts + ACs +
+  `design.md § Blast radius` + red refs, never the authors' reports); write its returned
+  report to the spec dir's `evaluations/implement-<phase>.md` yourself · ④ **human
+  gate** — present verdict + findings with the phase summary · ⑤ **E2E**
+  when `qa-journey-plan.md` exists: spawn `my-react:e2e` to author per disposition;
   run the suite yourself. Completes only with E2E green or skipped-with-note; fixes run
   as red→green tasks; material post-gate changes re-present.
 - **spec-qa** — ① `/spec-qa` · ② ONE full-suite run, journeys included (red → STOP, don't
@@ -88,15 +97,15 @@ irreversible (commit, push, PR).
 # Implement discipline
 
 tasks.md § Waves is the assignment sheet — batches are never re-derived here. Per batch
-pair: **spawn `my-react:react-test-agent`** (test batch) → **run RED per task** (failing on behaviour,
-not setup; record the ref) → **spawn `my-react:react-impl-agent`** (impl batch + the failing test names)
+pair: **spawn `my-react:tester`** (test batch) → **run RED per task** (failing on behaviour,
+not setup; record the ref) → **spawn `my-react:implementer`** (impl batch + the failing test names)
 → **run green per task AND `git diff` the test paths since red**. Test paths not
 byte-unchanged → only the affected task is redone by a fresh single-task pair.
 
 Chunked pairs run concurrently; a wave too big at run time is re-chunked (contracts
 overflow one context — the only trigger) and the re-cut recorded in tasks.md. A DESIGN
 GAP pauses only its task — *ambiguity*: the impl agent's narrowest-safe + raise stands for
-the gate; *friction/defect*: spawn `my-react:react-architect-agent` on the design skill's fast path
+the gate; *friction/defect*: spawn `my-react:architect` on the design skill's fast path
 (Materials: the gap block verbatim + the affected contract + `atlas/`) → present the
 contract delta to the human → on approval the affected task re-runs as a fresh test+impl
 pair against the amended contract. A red surviving its first fix attempt → a bounded root-cause pass
@@ -124,10 +133,10 @@ pair against the amended contract. A red surviving its first fix attempt → a b
   user permission + a one-line reason in `.meta.yaml` (clarify auto-complete and skipping any
   taskstoissues phase the workflow declares are pre-authorized).
 - **Bound agents first, and every spawn carries its four essentials** —
-  `/my-react:delegate` before a phase's first spawn; route to `my-react:code-auditor-agent` (atlas
-  build/distill), `my-react:react-architect-agent` (design, and mid-implement gap repair via the
-  fast path), `my-react:react-test-agent` / `my-react:react-impl-agent` (wave batches), `my-react:react-e2e-agent`
-  (journey tests from the approved plan), or `my-react:react-evaluator-agent` (independent evaluation at gates) whenever the work matches their charter. Every prompt states **where · what · materials · done
+  `/my-react:delegate` before a phase's first spawn; route to `my-react:auditor` (atlas
+  build/distill), `my-react:architect` (design, and mid-implement gap repair via the
+  fast path), `my-react:tester` / `my-react:implementer` (wave batches), `my-react:e2e`
+  (journey tests from the approved plan), or `my-react:evaluator` (independent evaluation at gates) whenever the work matches their charter. Every prompt states **where · what · materials · done
   when** — sliced paths, never a whole spec dir, never your reasoning; a prompt missing
   one is fixed before it is sent. Fences, skills, model, and return format come from the
   agent's own definition — never restated here.

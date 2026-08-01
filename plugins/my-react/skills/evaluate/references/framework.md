@@ -49,6 +49,9 @@ checked: <n> units × <m> checks · suppressed: <n>
 ```
 
 No findings and nothing suppressed → the header + axis table + closing line only.
+Multiple modes in one invocation → one file: the header lists the modes, ONE verdict =
+minima over all modes' axes, one axis table per mode, a single severity-ranked findings
+list, one closing line.
 
 ## Foundation signal — when refactoring the blast radius is worth it
 
@@ -57,7 +60,8 @@ Design mode reads the inherited-defect ledger and marks each defect:
 **REFACTOR NOW** when any of:
 - it sits on ≥2 of this design's flows (its cost recurs with every feature touching them);
 - it forces any axis of this evaluation to 2 or below (the foundation caps the design);
-- the same defect was ledgered in a prior spec (recurring INHERIT = compounding interest).
+- a prior spec's ledger (passed in Materials when one exists) records the same defect
+  (recurring INHERIT = compounding interest).
 
 **CARRY** otherwise — one line: the defect, its INHERIT cost, what would change the call.
 

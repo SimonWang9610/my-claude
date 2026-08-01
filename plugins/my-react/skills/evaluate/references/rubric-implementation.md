@@ -14,7 +14,6 @@ library or the wrong react/compiler setup never cites. Rule cards:
 | c2 | cliff | the batch's named tests are green with test paths byte-unchanged vs the red baseline ref (no ref provided → outcome `unverifiable`, reported) | command |
 | c3 | core | stated must-nots hold; MODIFY units' listed importers compile and pass their KEEP tests | grep + command |
 | c4 | core | every promised state is reachable through the public surface | trace |
-| c5 | core | design.md § Blast radius dispositions executed — UPDATE tests assert the amended AC, KEEP tests still pass | command |
 
 ## S — Simplicity & readability: the diff is proportional to its AC and reads clean
 

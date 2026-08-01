@@ -1,5 +1,5 @@
 ---
-name: react-e2e-agent
+name: e2e
 description: >-
   Authors E2E journey tests for React/TypeScript from an approved qa-journey-plan.md —
   one test per J-<n> journey over the assembled app slice (RTL full-app mount + MSW;

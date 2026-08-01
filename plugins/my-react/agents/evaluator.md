@@ -1,5 +1,5 @@
 ---
-name: react-evaluator-agent
+name: evaluator
 description: >-
   Independently evaluates a React design, implementation diff, or test suite against its
   binary evidence-typed rubric — per-axis scores, severity-ranked findings, a mechanical

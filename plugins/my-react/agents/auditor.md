@@ -1,5 +1,5 @@
 ---
-name: code-auditor-agent
+name: auditor
 description: >-
   Initializes the queryable atlas for a codebase — building flows from source, and distilling
   any curated external atlas the caller provides — as one bounded, single-context audit. Use to

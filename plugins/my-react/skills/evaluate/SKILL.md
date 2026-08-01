@@ -56,9 +56,10 @@ the scope; implementation + tests usually run together on a phase diff.
 4. **Derive** — axis scores and verdict from check outcomes per framework.md; failed
    checks become findings, severity-ranked; design mode additionally derives the
    foundation signal from the ledgers.
-5. **Report** — the framework's report template, to the caller's designated path.
-   Compact: findings carry facts, the verdict carries the decision, nothing restates
-   artifact content.
+5. **Report** — the framework's report template. Verify use returns it — the caller
+   persists it to its designated path; inline use writes it there directly. Compact:
+   findings carry facts, the verdict carries the decision, nothing restates artifact
+   content.
 
 ## Routing failed checks
 

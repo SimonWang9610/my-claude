@@ -79,7 +79,7 @@ def main() -> None:
     if args.rules:
         link_rules()
 
-    print("Done. Try: claude --agent my-react:lean-specflow-driver --worktree \"<your feature>\"")
+    print("Done. Try: claude --agent my-react:driver --worktree \"<your feature>\"")
 
 
 if __name__ == "__main__":

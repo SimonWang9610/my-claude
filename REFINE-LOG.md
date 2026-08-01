@@ -427,12 +427,12 @@ DELETED** → four workflow-agnostic essentials (where · what · materials · d
 the compact-return rule. Both drivers' hard rule renamed "Bound agents first, and every
 spawn carries its four essentials".
 
-**Agents re-specialized**: renamed back to `react-test-agent` / `react-impl-agent` (now
+**Agents re-specialized**: renamed back to `tester` / `implementer` (now
 explicitly React/TypeScript) and each opens with an expert role that activates domain
 knowledge ("senior test engineer specializing in React and TypeScript — Vitest, RTL, MSW,
 Playwright" with an opinion about what a test is worth; "senior React and TypeScript
 engineer" who knows state placement, effect loops, stale closures, memo boundaries;
-`code-auditor-agent` = "staff engineer who specializes in reading unfamiliar systems
+`auditor` = "staff engineer who specializes in reading unfamiliar systems
 fast", stays language-agnostic). Bodies restructured from rule piles into **Operating
 procedure** (numbered, ending in a self-check/verify step) → **Rules** (fences + stop
 conditions) → **Report back**. User's frontmatter choices preserved (opus/low for the
@@ -457,7 +457,7 @@ lost restated detail), phase loop tightened, Implement discipline compressed fro
 4-step list + paragraph to one arrow line + one paragraph — my-specflow 150→133 lines,
 oac 143→126.
 
-Follow-up: auditor renamed **code-auditor-agent** (language-agnostic — its skill always
+Follow-up: auditor renamed **auditor** (language-agnostic — its skill always
 was; body now says "language- and stack-agnostic" explicitly; drivers + README updated).
 Layering restored: **domain skills name skills, never agents** — design/plan/implement
 reference `/audit` directly and are **limited to query + extend** (bulk build
@@ -468,7 +468,7 @@ doesn't carry; design SKILL step 2 reworded ("the atlas first; query/extend for 
 lacks"). Only the drivers name agents.
 
 Follow-up (official subagent doc consulted — code.claude.com/docs/en/sub-agents):
-renamed to **react-test-agent / react-impl-agent** + new **react-auditor-agent**; all
+renamed to **tester / implementer** + new **react-auditor-agent**; all
 three rebuilt on documented frontmatter: `skills:` **preloads the bound skill's full
 content at startup** (binding is now structural, not an instruction — the steadiness fix),
 plus `model: sonnet`, `effort: medium`, scoped `tools:`, `color:`. Bodies carry only
@@ -602,7 +602,7 @@ sweep-then-prune. Same engine (ast-grep mode / grep fallback); ast-grep is now t
 walk's go-to-definition tool (outline = where defined, `run -p` = who calls). LSP noted as a
 more precise jump engine where available, not mandated (portability).
 
-**Callers updated** for the merge: code-auditor-agent (3 modes → build + self-healing
+**Callers updated** for the merge: auditor (3 modes → build + self-healing
 query), react-impl/test-agent gap step, both drivers' prior-artifacts rule, README atlas
 line, implement/plan SKILLs, design ground-truth Audit step — all now "query (heals on a
 miss)", no separate extend call. argument-hint + description de-extended. ast-grep-usage.md
@@ -630,7 +630,7 @@ ast-grep command forms left in usage.md only (build.md carries concepts, usage.m
 Compressed build.md's intro (it restated its own § headings). Fixed a bug — `tsx` was listed
 twice on the language line. build.md 125→121, usage 44→42; SKILL.md already lean at 58.
 
-**Follow-up (same session):** code-auditor-agent learns project conventions —
+**Follow-up (same session):** auditor learns project conventions —
 `memory: user` → **`memory: project`** (per the official scope table: project = shareable via
 version control, no cross-project leak). The loose trailing "record a PATTERN" line became a
 formal **## Memory — project conventions, as hints** section: consult before a build (warm the
@@ -642,7 +642,7 @@ misfiring convention is corrected not trusted. Write rule carved out the memory 
 **Warm start** line (a no-op for a caller without conventions, e.g. react-checker-agent) that
 pins the same hint-not-prune guardrail in the procedure itself.
 
-**Follow-up (same session):** react-impl-agent memory formalized to match — its loose trailing
+**Follow-up (same session):** implementer memory formalized to match — its loose trailing
 "record a pattern" line became a **## Memory — codebase idioms, for consistency** section,
 parallel to the auditor's but role-specific: the auditor remembers *where code lives* (Locate
 hints), the impl agent remembers *how this codebase does things* (state placement, data-
@@ -651,7 +651,7 @@ fetching/effect patterns, styling/error idioms, reusable units, cross-wave decis
 overrides the contract or a failing test** — those are the spec; a stale idiom is corrected,
 not trusted. Description gained a matching clause. (`memory: project` was already set.)
 
-**Follow-up (same session):** react-impl-agent memory reframed from "mirror the codebase's
+**Follow-up (same session):** implementer memory reframed from "mirror the codebase's
 idioms" to a **quality ledger judged against implement's rules** — the user's
 concern that mirroring would enshrine project-wide bad practices. Now three entry kinds: (1)
 good practices to reuse (match the skill's rules), (2) anti-patterns to avoid (bad practices
@@ -670,7 +670,7 @@ standard) still hold. Descriptions + README bullets reworded "project-scoped" �
 memory, per codebase". (`local` scope — project-specific + git-ignored — was offered as the
 alternative that fits "not committed" without the cross-project bleed; user chose user-level.)
 
-**Follow-up (same session):** audit + code-auditor-agent support a read-only
+**Follow-up (same session):** audit + auditor support a read-only
 **external atlas** (a curated atlas outside the spec dir, for shared/stable code). Design:
 self-describing — the **local** `atlas/index.md` declares its external baselines on an
 *External atlases:* line, so any query auto-discovers them with no per-call path plumbing.
@@ -755,7 +755,7 @@ bullet "grep to narrow, ast-grep to sharpen" → "grep + glob to locate and walk
 bullet rewritten for distill-as-mode. Net sizes: SKILL 70→54, build 145→109, ast-grep-usage (42)
 deleted, distill +20.
 
-**Follow-up (same session):** code-auditor-agent repositioned as an **atlas initializer** —
+**Follow-up (same session):** auditor repositioned as an **atlas initializer** —
 `query` removed from the agent (querying is light + inline: the skill's `query` mode, run by
 whoever needs an answer — drivers/impl/test/checker already call it directly). Agent modes are
 now **distill → build**, and they **co-exist in order**: when a curated external atlas is
@@ -767,7 +767,7 @@ auditing source for what the external didn't cover. Description/role/report-back
 **Deepen, don't duplicate** rule; README companion bullet reworded (initializer; query inline).
 
 **Follow-up (same session):** driver preflight reordered — **audit first, then the command.**
-Both drivers now: ① spawn `code-auditor-agent` to build `atlas/` for the feature scope (distill
+Both drivers now: ① spawn `auditor` to build `atlas/` for the feature scope (distill
 first if a curated external atlas is provided), ② run `/sf-preflight`|`/spec-preflight`, which
 **queries the atlas** (`/audit query`) to scope faster and better, ③ write
 preflight.md. This makes preflight the one exception to the "command runs first" rule (noted
@@ -789,7 +789,7 @@ bodies verbatim, minus per-file frontmatter, `# sf:<phase>` → `# <phase>`, `/s
 
 **Rewired:** my-specflow-driver — every `/sf-<phase>` → `/specflow <phase>`, frontmatter/Setup/intro
 prose, and the hard rule ("`/sf-*` commands only" → "The `/specflow` skill only — its phases: init …
-qa"). oac-specflow-driver untouched (drives external `/spec-*`). **Install simplified:** the
+qa"). oac-driver untouched (drives external `/spec-*`). **Install simplified:** the
 command pair `link-commands.sh`/`unlink-commands.sh` retired (specflow is a skill, auto-linked by
 link.sh); link.sh/unlink.sh comments + root README (Installing table now one pair, Layout,
 drivers mention, workflow-doc pointer → skills/specflow/README.md) updated.
@@ -879,7 +879,7 @@ becomes a question"); Inputs atlas note softened to "settle a code-dependent ope
 design keeps the general "Query narrows, grep grounds" callout — design genuinely
 wires into existing code throughout. Driver backstop unchanged (general principle).
 
-**Follow-up (same session):** react-impl-agent memory over-saved feature-specific detail (user
+**Follow-up (same session):** implementer memory over-saved feature-specific detail (user
 showed the actual store: an 11KB `project_oac_acmt2681_search_data.md` named after a ticket, and a
 5.5KB bloated pitfall — vs two good concise ones: git-stash-in-worktrees, mirror-the-by-id-SDK
 pattern). Guidance sharpened: section retitled "Memory — general rules, not feature cases"; added
@@ -892,11 +892,11 @@ not deleted unprompted).
 
 ---
 
-## react-architect-agent — dedicated design-phase agent
+## architect — dedicated design-phase agent
 
 User request: a design-phase agent, motivated by memory. Design was the only heavy, high-judgment
 phase with no dedicated agent (ran inline in the driver → couldn't accumulate memory). Built
-**agents/react-architect-agent.md** (thin binding): staff-architect role; skills design-react-
+**agents/architect.md** (thin binding): staff-architect role; skills design-react-
 contracts + audit; tools Read/Write/Edit/Grep/Glob/Bash; model sonnet, effort high
 (design is the highest-judgment phase — opus is a one-word bump); memory:user; color blue.
 Procedure: scope → ground truth from the atlas (query narrows, grep grounds) → run
@@ -906,12 +906,12 @@ query-don't-blind-scan, raise-don't-resolve (human gate owns approval). **Memory
 just-sharpened anti-feature-dump discipline** — architectural conventions only (state placement,
 layering, reusable units), general rule + short example, never a ticket/feature-named entry; this
 is the third complementary memory (auditor=where code is, architect=how it's structured,
-impl=how it's built). Wired: both drivers' design step ② now **spawns react-architect-agent**
+impl=how it's built). Wired: both drivers' design step ② now **spawns architect**
 (was inline /design) → design.md + contracts/ + draft journey plan; ③ gate presents
 its refactor proposals + open items. Both drivers' bound-agents roster gained it. README: design
 entry gained the companion bullet; worker count 4 → 5.
 
-**Follow-up (same session):** react-architect-agent memory reframed (same fix as impl-agent's).
+**Follow-up (same session):** architect memory reframed (same fix as impl-agent's).
 User: a codebase may have bad architecture — don't save it as a convention to follow; save it as a
 **bad practice to steer around**. And memory is a **tradeoff accelerator, not a mandate to
 conform** to existing shape. Section retitled "Memory — faster tradeoffs, general not feature
@@ -979,10 +979,10 @@ driver's own `/specflow` calls; known bug also blocks manual invocation) · `mcp
 (no need) · dynamic-context `!cmd` injection guidance (not used) · fewer-focused-agents advice
 (already our shape).
 
-**Model note:** user set react-architect-agent to `model: opus, effort: medium` directly
+**Model note:** user set architect to `model: opus, effort: medium` directly
 (aligning with the opus standardization); left as the user set it.
 
-**Follow-up (same session):** two agent refinements. (1) **react-test-agent gains `memory: user`**
+**Follow-up (same session):** two agent refinements. (1) **tester gains `memory: user`**
 — the harness knowledge (custom render wrapper + provider stack, MSW server/fixture helpers,
 where fixtures live) and harness pitfalls (mock-helper clobber, fake-timer quirks, racing async)
 are durable per-codebase facts that compound across batches; the best pitfall entries in the
@@ -1036,28 +1036,28 @@ the design gate) is the test-first artifact; e2e tests are its mechanical projec
 after implementation assembles the feature — red-first e2e would sit red all phase giving no
 per-wave signal. Unit tests remain the red-first per-wave signal.
 
-**2. react-e2e-agent built (user override of the one-agent-two-scopes recommendation).**
+**2. e2e built (user override of the one-agent-two-scopes recommendation).**
 `rules/e2e-testing.md` MOVED into the agent body (harness/happy/forced-error/traceability rules +
 examples); test is now **unit-only** (description, no argument-hint, no scope
 section, steps renumbered, e2e rules bullet gone; the unautomatable-journey steer bullet moved
-with the rules). react-test-agent de-scoped to unit (no Playwright, no `<variant>`). New agent:
+with the rules). tester de-scoped to unit (no Playwright, no `<variant>`). New agent:
 tools without Bash (driver runs the suite), skills audit, opus/low, `memory: user`
 (app-mount harness conventions + journey-test pitfalls; the plan is the spec — never journey
 specifics), color cyan. **Accepted duplication (recorded):** the label/observable-outcome/
 mutation-litmus/determinism essentials now appear in both test-quality.md and the e2e agent —
 the price of a self-contained agent. Fixed the who-authors gap: both drivers' implement ⑤ now
-spawns react-e2e-agent (was a bare "/test e2e, author + run" with no author).
+spawns e2e (was a bare "/test e2e, author + run" with no author).
 
 **3. DESIGN GAP repair loop wired (the missing cooperation edge).** All drivers' Implement
 discipline: *ambiguity* → impl agent's narrowest-safe + raise stands; *friction/defect* → spawn
-react-architect-agent on the design skill's **fast path** (Materials: gap block verbatim +
+architect on the design skill's **fast path** (Materials: gap block verbatim +
 affected contract + atlas/) → contract delta presented to the human → on approval the affected
 task re-runs as a fresh test+impl pair. Architect description gained the second trigger; both
 rosters gained e2e + the architect's repair duty. Also decided: test stays a
 skill, NOT folded into agents — `skills:` preload already IS the fold token-wise; folding would
 kill standalone use and rules modularity.
 
-**4. lean-specflow-driver built — the command-free A/B twin.** Hypothesis: the process shell
+**4. driver built — the command-free A/B twin.** Hypothesis: the process shell
 (/specflow SKILL + phase files, ~220 lines loaded per spec) restates what teammates' skills own;
 dropping it should cut input tokens at equal quality. Design: same phases, same `.meta.yaml`
 template (spec-qa key kept — user convention) and artifacts, so specs are driver-interchangeable;
@@ -1069,14 +1069,14 @@ at once. New hard rule "No process commands — this driver IS the process". Acc
 playbook copy to reconcile — temporary by design, like prior A/B twins. README: three drivers,
 6 workers, e2e + gap-repair in the implement flow line.
 
-**Follow-up (same session):** lean-specflow-driver artifact location pinned. Init names the
+**Follow-up (same session):** driver artifact location pinned. Init names the
 binding `$SPEC_DIR = .specflow/specs/<name>/`; the playbook intro now enumerates every phase
 artifact as `$SPEC_DIR`-resident and requires every subagent prompt's output destination to be a
 `$SPEC_DIR` path (implement writes source + tests only, never a spec artifact elsewhere);
 auditor/architect spawns name `$SPEC_DIR` outputs explicitly; the Verify step mechanically fails
 an artifact written anywhere else (move in → re-verify).
 
-**Follow-up (same session):** lean-specflow-driver made self-contained (user: isolated, lean,
+**Follow-up (same session):** driver made self-contained (user: isolated, lean,
 focused). Description rewritten off the A/B-twin framing onto what it is (own playbooks over a
 .meta.yaml ledger, teammates for heavy work, thin artifacts authored itself); Role and the
 "No process commands" hard rule dropped every /spec-* and /specflow mention — the rule is now
@@ -1106,7 +1106,7 @@ step:
 2. **plan** step 3 — every UPDATE/DELETE row lands as an
    `Update: <test path> (AC-x.y)` marker on the owning task (parallel to the Edge marker), so
    existing-test updates are planned test-batch work, never a QA surprise.
-3. **test** step 2 + **react-test-agent** step 3 — execute Update markers:
+3. **test** step 2 + **tester** step 3 — execute Update markers:
    rewrite the named existing test to the amended AC / remove on DELETE; material changes
    surfaced in the report, coverage never dropped silently. Runs pre-red, so the byte-unchanged-
    since-red guarantee is untouched.
@@ -1128,7 +1128,7 @@ checked it before returning. Fix on "judgment authors, search verifies":
   one-to-one; fix before returning.
 - **query.md** heal + **distill.md** step 3 — writes conform to build.md's templates and finish
   with its Format check (one clause each).
-- **code-auditor-agent** — new rule "The atlas format is the contract" (fix violations, never
+- **auditor** — new rule "The atlas format is the contract" (fix violations, never
   report around them) and Report back now REQUIRES `format check: PASS` — a run that can't pass
   it isn't done, giving the driver a mechanical token to verify against.
 
@@ -1255,3 +1255,40 @@ BLOCK loop unterminated; disclosure penalized by G/S bands; delta rule keyed to 
 not verdict boundary; impl scorecard concurrency/fence conflict; 5× delta-rule duplication;
 unverifiable anchors; b3 plan-phase leak; dead Total lines; unfalsifiable "significant") —
 all 16 applied; round 2 verified.
+
+---
+
+## 2026-08-01 — Workflow refactor: evaluation as its own step (Goal 2, v2)
+
+Total refactor of the my-react family around a unified evaluation framework, superseding
+the embedded-scorecard design (same day). Research adoptions (source → decision → reason):
+
+- Huang et al. ICLR 2024 (self-correction fails without external signal) + Verification
+  Mirage (same-context verification is contaminated) → evaluation separated from
+  authoring: `check` → `evaluate` skill; authors run improve loops on MECHANICAL binary
+  checks only; the certifying verdict comes from evaluator with zero author
+  context → self-judgment is worth less than nothing, mechanical self-checks are not.
+- SWE-bench retest study (29.6% plausible patches wrong) → "prefer executed evidence":
+  tests/typecheck/greps outrank prose judgment, encoded in evaluate's procedure step 2.
+- DeepEval/Langfuse judge guides (binary per-criterion beats Likert) → rubrics are binary
+  evidence-typed checks (grep · command · trace · read) grouped into axes; scores DERIVED
+  by class bands (cliff/core/polish), never judged.
+- Anthropic multi-agent blog (four-part delegation; artifacts not relay; compact returns)
+  → driver passes mode/Materials/path per spawn; evaluator returns the report, driver
+  persists it (read-only fence intact); worker reports stay line-oriented.
+- IFScale + Lost-in-the-Middle (rule budgets, early-position bias) + Anthropic skill
+  guidance (positive framing, ≤5 hard limits) → hard limits front-loaded, one term per
+  concept (check/axis/verdict/finding/evaluation report), "never X" rewritten as
+  affirmative procedure + short hard-limit lists.
+- User directives adopted: skills=how/agents=what (author agents sequence
+  design→evaluate→improve; trigger axis ≤2, ONE loop); maintainability/scalability (s6) +
+  readability (impl s4) as visible checks; evaluation outcomes feed agent memory (failed
+  check = generalized avoid-pattern); foundation signal says when refactoring the blast
+  radius pays (≥2 flows · caps an axis · recurs across specs).
+- Rejected: author self-scorecards as artifacts (delta/evidence-shift machinery deleted
+  with them); judge ensembles (cost); scoring the fast path.
+
+Fresh-eyes iterations: round 1 = 17 findings (evaluator can't write its own report;
+ledger/Verified columns missing from templates; a1 unexecutable; oac driver unmirrored;
+c5/v3 double-cover; double-ask ceremony) — all applied; round 2 verified.
+**Round 3 residuals (4):** a1 unverifiable fallback · oac prior-ledger Materials · multi-mode single-verdict shape · evaluate step 5 return-vs-write — applied.

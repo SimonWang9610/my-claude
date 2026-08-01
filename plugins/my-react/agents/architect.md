@@ -1,5 +1,5 @@
 ---
-name: react-architect-agent
+name: architect
 description: >-
   Designs the React/TypeScript contracts for a feature — unit boundaries, data flow, state
   design, and the architecture wiring them — as design.md + grouped contract files an implementer

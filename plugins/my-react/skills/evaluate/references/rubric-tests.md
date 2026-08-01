@@ -2,7 +2,7 @@
 
 Binary checks per axis; classes and derivation in [framework.md](./framework.md).
 Rule cards: `skills/test/rules/` (unit-testing, test-quality). Scope: the test files in
-the caller's scope (unit tests; journey tests carry the same checks over their plan).
+the caller's scope.
 
 ## V — Coverage: every promised behavior has its proving test
 
@@ -16,7 +16,7 @@ the caller's scope (unit tests; journey tests carry the same checks over their p
 
 | id | class | check | evidence |
 |----|-------|-------|----------|
-| a1 | cliff | each critical test fails when its production condition is inverted (mutation litmus — spot-run it) | command |
+| a1 | cliff | each critical test demonstrably fails when its behavior is absent — the recorded red baseline run is the evidence (no baseline provided → outcome `unverifiable`, reported) | command |
 | a2 | core | assertions target the AC's observable outcome through the contract seam — user-visible signals, not implementation internals | read |
 | a3 | core | a test's pass requires the unit's real logic — fixtures and MSW stubs sit at the boundary, so a stub alone can't satisfy it | read |
 

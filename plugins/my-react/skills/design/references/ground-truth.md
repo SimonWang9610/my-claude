@@ -70,7 +70,8 @@ Refine the flows with the audit notes, in order:
 
 5. **VERIFY every named symbol** — each existing unit/symbol the design will reference
    gets `verified <path:line>` (a grep/read hit) in the unit inventory; behavior relied
-   on but not read is marked `ASSUMED` and routed to Open items.    evaluation's G axis — a remembered symbol is not a grounded one.
+   on but not read is marked `ASSUMED` and routed to Open items. Feeds the evaluation's
+   G axis — a remembered symbol is not a grounded one.
 6. **LEDGER the inherited defects** — every existing-scope violation of `rules/` on the
    blast radius (dual writer, cycle, God unit…) gets a verdict: `INHERIT <cost>` ·
    `FIX-NOW <refactor proposal>` · `QUARANTINE <containment boundary>`. Feeds the
