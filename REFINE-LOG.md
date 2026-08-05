@@ -1,6 +1,43 @@
 
 ---
 
+## Telemetry stack + TypeScript LSP (adopted from the internal oac-agentic-harness)
+
+Two pieces pulled across from the internal plugin, both re-derived rather than copied.
+
+**1. `metrics/` — local Claude Code telemetry.** Same topology as the source (OTel Collector →
+Prometheus + Loki → Grafana, dashboard 25255), rewritten as one stdlib-only `stack.py`
+(Python 3.9+, no `jq`/`bash`). Changes over the source:
+
+- **One config file.** `metrics/config.json` (ports, creds, retention, dashboard id, settings
+  path, content logging) + gitignored `config.local.json` shallow-merged over it; `stack.py`
+  resolves those into the environment that `docker compose` substitutes, so nothing is
+  configured in two places.
+- **`cumulative` temporality** written into the settings env — Prometheus counters expect
+  cumulative, and it survives a collector restart without losing totals.
+- **CLI readouts, so no skill is needed** — `summary` (cost/tokens/sessions/edit decisions),
+  `metrics`, `query <promql>`, `search <logql>`, `labels`, and `verify` (settings + endpoints
+  + metrics-arriving, exit 0/1). `summary` **discovers** metric names at runtime instead of
+  hardcoding them, because the OTLP→Prometheus mangling appends units and `_total`.
+- **`unconfigure`** for a clean removal of only the keys `configure` wrote.
+- Content logging on by default (prompts/responses/tool details → Loki), documented as a
+  local-plaintext tradeoff with a one-key opt-out.
+
+Rejected: the source's `observability` skill (detect-endpoint-then-offer-stack). Its whole
+procedure is `stack.py verify` + `stack.py up`, and its remaining bulk is guard/egress
+handling specific to that harness — no judgment left for a skill to carry.
+
+**2. `plugins/my-react/.lsp.json`.** TypeScript LSP registration (auto-discovered from plugin
+root; no `plugin.json` inline). Buys exact go-to-definition/find-references and post-edit type
+diagnostics on top of the skills' grep+glob navigation. Binaries are not bundled — `install.py`
+gained a `check_lsp()` preflight that prints the `npm install -g` line when they're missing.
+`my-react` bumped to 1.1.0. Not mirrored into `marketplace.json` (the source duplicates it
+there; with the default `strict: true` the plugin's own manifest is already the authority).
+
+`install.py` gained `--metrics` (runs `stack.py up`).
+
+---
+
 ## Driver fixes: shared worktree + strict Setup ordering (both drivers)
 
 Two operational bugs the user hit:

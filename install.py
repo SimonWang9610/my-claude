@@ -7,6 +7,7 @@ via the `claude plugin` CLI.
   python3 install.py --local       # register THIS checkout as the marketplace (development)
   python3 install.py --rules      # also symlink rules/preferences.md -> ~/.claude/rules/
   python3 install.py --aliases    # also write shell functions for the driver agents
+  python3 install.py --metrics    # also start the local telemetry stack (metrics/stack.py up)
   python3 install.py --uninstall  # remove plugins + marketplace + rules symlink + aliases
 """
 
@@ -22,6 +23,8 @@ GITHUB_SOURCE = "SimonWang9610/my-claude"
 PLUGINS = ["my-react", "my-flutter"]
 RULES_SRC = REPO / "rules" / "preferences.md"
 RULES_LINK = Path.home() / ".claude" / "rules" / "preferences.md"
+STACK = REPO / "metrics" / "stack.py"
+LSP_BINARIES = ("typescript-language-server", "tsserver")
 DRIVER_ALIASES = {"my-react-driver": "my-react:driver", "oac-driver": "my-react:oac-driver"}
 ALIAS_BEGIN = "# >>> my-claude driver aliases >>>"
 ALIAS_END = "# <<< my-claude driver aliases <<<"
@@ -85,6 +88,23 @@ def uninstall() -> None:
     print("Uninstalled.")
 
 
+def check_lsp() -> None:
+    """my-react ships plugins/my-react/.lsp.json; the binaries are not bundled."""
+    missing = [binary for binary in LSP_BINARIES if shutil.which(binary) is None]
+    if missing:
+        print(
+            "\nNOTE: my-react registers a TypeScript language server, but "
+            + ", ".join(missing)
+            + " is not on PATH.\n"
+            "      Claude Code will show it in the /plugin Errors tab until you install it:\n"
+            "        npm install -g typescript-language-server typescript"
+        )
+
+
+def start_metrics() -> None:
+    subprocess.run([sys.executable, str(STACK), "up"])
+
+
 def link_rules() -> None:
     RULES_LINK.parent.mkdir(parents=True, exist_ok=True)
     if RULES_LINK.exists() and not RULES_LINK.is_symlink():
@@ -102,6 +122,7 @@ def main() -> None:
     parser.add_argument("--local", action="store_true", help="register this checkout as the marketplace")
     parser.add_argument("--rules", action="store_true", help="symlink rules/preferences.md into ~/.claude/rules/")
     parser.add_argument("--aliases", action="store_true", help="write shell functions for the driver agents into your rc file")
+    parser.add_argument("--metrics", action="store_true", help="start the local telemetry stack and point Claude Code at it")
     parser.add_argument("--uninstall", action="store_true", help="remove plugins, marketplace, rules symlink, and aliases")
     args = parser.parse_args()
 
@@ -127,7 +148,12 @@ def main() -> None:
     if args.aliases:
         write_aliases()
 
-    print("Done. Try: claude --agent my-react:driver --worktree \"<your feature>\"")
+    if args.metrics:
+        start_metrics()
+
+    check_lsp()
+
+    print("\nDone. Try: claude --agent my-react:driver --worktree \"<your feature>\"")
 
 
 if __name__ == "__main__":
