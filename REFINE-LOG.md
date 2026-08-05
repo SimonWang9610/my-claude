@@ -1,6 +1,29 @@
 
 ---
 
+## Design evaluation moves to the independent evaluator
+
+The architect ran `/my-react:evaluate design` on its own output and improved once, and that run
+was the design evaluation of record at the gate. Self-scoring re-runs the reasoning that produced
+the design, so the only artifact the human gate could not get an independent read on was the one
+every later phase builds against.
+
+`evaluate`'s improve/verify split collapses to a single independent use — authors never score
+themselves; each scope is evaluated once, at its gate. The architect drops the `my-react:evaluate`
+binding and its Evaluate/Improve steps, hands back instead, and reports the inherited-defect ledger
+verdicts (the evaluator's foundation-signal input) in place of a check summary; a repair spawn
+works from the artifacts + findings, never a remembered transcript. Both drivers' design playbooks
+spawn `my-react:evaluator` in `design` mode after hand-back (Materials: `design.md` + `contracts/`
++ ACs + `atlas/` + the ledger — never the architect's report), and the gate presents its verdict,
+findings and foundation signal. The bugfix-scale fast path still skips evaluation.
+
+Consequence, accepted: one extra fresh-context spawn per spec, and the architect no longer fixes
+its own ≤2 axes silently — every design finding surfaces at the human gate.
+
+`my-react` bumped to 1.2.1 (evaluation cadence change in agent definitions; no renames).
+
+---
+
 ## Fresh-spawn dispatch replaces teammate continuation (both drivers)
 
 Continuing a bound agent re-sends its **entire working transcript** as input every turn, and a

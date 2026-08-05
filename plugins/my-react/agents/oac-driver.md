@@ -49,13 +49,15 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
   2. else `/spec-clarify` · ONE batched Q&A round on exactly those → `clarify.md`.
 - **design**
   1. `/spec-design` · spawn `my-react:architect` to design — (requirements + `atlas/` + decomposition) →
-    `design.md` + `contracts/` + draft `qa-journey-plan.md`; its own procedure evaluates
-    the design and improves once — its report carries the check outcomes + foundation
-    signal.
-  2. checks still failing in its report → open items at the gate; the gate decides
-    accept vs re-spawn vs descope.
-  3. **human gate** — present the architect's evaluation summary (fixes made · failing
-    checks · foundation signal) beside the design.
+    `design.md` + `contracts/` + draft `qa-journey-plan.md`.
+  2. spawn `my-react:evaluator`, mode `design` — Materials: `design.md` + `contracts/` +
+    requirements/ACs + `atlas/` + the inherited-defect ledger (+ a prior spec's ledger
+    when one exists); never the architect's report. Its verdict + foundation signal are
+    the design evaluation of record.
+  3. findings → open items at the gate; the gate decides accept vs re-spawn the architect
+    on the findings vs descope.
+  4. **human gate** — present the evaluator's verdict, findings and foundation signal
+    beside the design.
 - **tasks**
   1. `/spec-tasks` · `/my-react:plan` → `tasks.md`.
 - **implement**

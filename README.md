@@ -242,9 +242,9 @@ removes; its companion agent (if any) follows.
   PASS / CONDITIONAL / BLOCK verdict, and for designs a foundation signal on when
   refactoring the blast radius pays.
 - **Why** — evaluation separated from authoring is what makes a verdict trustworthy:
-  the architect runs the same rubric to *improve* its design — that run is the design
-  evaluation of record at the gate; the independent evaluator runs it to *verify* with
-  fresh eyes, once over the whole diff after implementation completes.
+  authors never score themselves, so the independent evaluator runs every mode with
+  fresh eyes — the design once the architect hands it back, implementation + tests once
+  over the whole diff after implementation completes.
 - **Pain** — bugs that "look correct"; unfounded quality claims; not knowing whether
   fixing inherited debt is worth it before building on top of it.
 - **evaluator** — a read-only tool fence (no Write/Edit), zero author
@@ -306,8 +306,8 @@ removes; its companion agent (if any) follows.
 
 ## 4 · The whole workflow — drivers orchestrate everything
 
-One command runs the entire pipeline — audit → requirements → design (self-evaluated,
-improve loop) → tasks → red→green waves → one independent implementation+tests
+One command runs the entire pipeline — audit → requirements → design (independently
+evaluated) → tasks → red→green waves → one independent implementation+tests
 evaluation → E2E → QA —
 with a human gate at every consequential boundary:
 
@@ -339,9 +339,9 @@ driver never advances past an open gate.
 ### The evaluation framework — one rubric system, evaluation as its own step
 
 All evaluation lives in the `evaluate` skill (`skills/evaluate/references/` — one
-framework file + three rubrics), applied at two moments: the architect runs it to **improve** its design (the design
-evaluation of record, foundation signal included), and the evaluator agent runs it to
-**verify** implementation + tests once, after all implementation tasks complete.
+framework file + three rubrics), always run by the evaluator agent, never by the author:
+**design** once the architect hands it back (foundation signal included), then
+**implementation** + **tests** once, after all implementation tasks complete.
 Reports are intermediate, presented at gates and never persisted.
 
 - **Binary evidence-typed checks, grouped into axes** — design: Grounding · Fit ·

@@ -50,8 +50,6 @@ To the caller-designated dir; templates in [references/design.md](./references/d
   journey-level: per journey `J-<n>` (precondition · steps · covers-ACs), happy +
   error/boundary, each NEW or MODIFY <existing test path>, plus a NOT-automated table.
   A draft — the caller's design gate approves it.
-Evaluation is a separate step: after authoring, run `/my-react:evaluate design` on your
-own output — the improve run is the design evaluation of record at the gate.
 
 **Discipline:** terse, goal-accurate — AC/rule IDs, exact identifiers/paths, no filler.
 Decisions, never reasoning ("why" = a one-line rule citation; unresolved → Open items).
@@ -77,7 +75,7 @@ Step 1 → consult [references/ground-truth.md](./references/ground-truth.md); s
 2. **Design** — per MODIFY/NEW unit: data contract, state design, decomposition per `rules/` → design.md + contracts/ (+ the draft journey plan when the test strategy has journey rows).
 3. **Complete** — artifacts exist at their paths, every template section filled or
    marked n/a with reason; open items → pause with what was tried, wait for steering,
-   resume; else hand back. Evaluation runs next, as its own step.
+   resume; else hand back. Evaluation runs next and independently — never self-scored here.
 
 **Refactor proposals:** touched code fighting the requirements → name root friction,
 restricted scope, payoff, cost delta; present at the gate beside the minimal design — the
