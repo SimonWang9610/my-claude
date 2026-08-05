@@ -88,6 +88,14 @@ def uninstall() -> None:
     print("Uninstalled.")
 
 
+def install_or_update(plugin: str) -> None:
+    """`plugin install` no-ops on an already-installed plugin, so a re-run would
+    never pick up a new version — `plugin update` is the command that bumps it."""
+    ref = f"{plugin}@{MARKETPLACE}"
+    claude("plugin", "install", ref)
+    claude("plugin", "update", ref, check=False)
+
+
 def check_lsp() -> None:
     """my-react ships plugins/my-react/.lsp.json; the binaries are not bundled."""
     missing = [binary for binary in LSP_BINARIES if shutil.which(binary) is None]
@@ -138,9 +146,9 @@ def main() -> None:
     if not claude("plugin", "marketplace", "add", source, check=False):
         claude("plugin", "marketplace", "update", MARKETPLACE)
 
-    claude("plugin", "install", f"my-react@{MARKETPLACE}")
+    install_or_update("my-react")
     if args.flutter:
-        claude("plugin", "install", f"my-flutter@{MARKETPLACE}")
+        install_or_update("my-flutter")
 
     if args.rules:
         link_rules()
@@ -153,7 +161,8 @@ def main() -> None:
 
     check_lsp()
 
-    print("\nDone. Try: claude --agent my-react:driver --worktree \"<your feature>\"")
+    print("\nDone — restart Claude Code to apply any plugin version change.")
+    print("Try: claude --agent my-react:driver --worktree \"<your feature>\"")
 
 
 if __name__ == "__main__":
