@@ -4,12 +4,11 @@ description: >
   Evaluates a React design, implementation diff, or test suite against its binary
   evidence-typed rubric — per-axis scores derived from countable checks, severity-ranked
   findings, a mechanical verdict (PASS / CONDITIONAL / BLOCK), and, for designs, a
-  foundation signal saying when refactoring the blast radius is worth it. The architect
-  runs "evaluate design" on its own output as the design evaluation of record; the
-  independent evaluator runs "evaluate implementation" + "evaluate tests" once, after
-  all implementation tasks complete (fresh-eyes design re-check on demand). Not for the pre-merge verdict
-  (use my-react:review) or building the atlas (use my-react:audit). Output: one
-  evaluation report per mode.
+  foundation signal saying when refactoring the blast radius is worth it. Always run by
+  an independent evaluator, never by the author: "design" once the architect hands the
+  design back, "implementation" + "tests" once, after all implementation tasks complete.
+  Not for the pre-merge verdict (use my-react:review) or building the atlas (use
+  my-react:audit). Output: one evaluation report per mode.
 ---
 
 # evaluate
@@ -18,22 +17,16 @@ Every judgment is a **check**: binary, evidence-typed, defined in the mode's rub
 Scores and verdicts are derived from check outcomes by the framework's fixed mapping —
 you run checks and collect evidence; arithmetic does the rest.
 
-Two uses of the same rubric:
+**Independent by construction** — you evaluate work you did not author, from its
+artifacts alone; keep your context free of the author's reasoning. Authors never score
+themselves here: self-evaluation re-runs the reasoning that produced the output. Each
+scope is evaluated once, at its gate — `design` when the architect hands it back,
+`implementation` + `tests` on the whole implement diff after all tasks complete, never
+per batch.
 
-- **Improve** (author, right after authoring) — run the checks on your own output, fix
-  what any axis ≤2 reveals, ONE bounded loop; internal working process, no report.
-  Mechanical evidence keeps self-evaluation honest — judgment-only self-review is worth
-  less than nothing. Design-scale work only: the architect's improve run is the design
-  evaluation of record (it also derives the foundation signal for the gate);
-  implementation and tests are verified once, independently, after all implementation
-  tasks complete — never per batch.
-- **Verify** (independent, at a gate) — evaluate work you did not author, from its
-  artifacts alone; keep your context free of the author's reasoning. Produces the
-  evaluation report; findings only — leave every file untouched, fixing belongs to the
-  author's next pass.
-
-**Hard limits (verify):** edit nothing · report only evidence-backed check outcomes ·
-one pass per invocation (re-evaluation is the caller's next spawn).
+**Hard limits:** edit nothing — findings carry fix directions, fixing belongs to the
+author's next pass · report only evidence-backed check outcomes · one pass per
+invocation (re-evaluation is the caller's next spawn).
 
 ## Modes and inputs
 

@@ -68,14 +68,16 @@ repo is read-only except during implement, and implement writes source and tests
   2. else ONE batched Q&A round on exactly those → `clarify.md`.
 - **design**
   1. spawn `my-react:architect` to design — (requirements + `atlas/` + decomposition) → `design.md` +
-    `contracts/` + draft `qa-journey-plan.md`; its own procedure evaluates the design
-    and improves once, so its report carries the check outcomes + foundation signal.
-    Fast path: a contract delta — verify its fields, no evaluation.
-  2. checks still failing in its report → they go to the gate as open items; the gate
-    decides accept vs re-spawn vs descope — never a driver loop.
-  3. **human gate** — design AND journey plan: present the architect's evaluation
-    summary (fixes made · failing checks · foundation signal) + refactor proposals +
-    open items.
+    `contracts/` + draft `qa-journey-plan.md`. Fast path: a contract delta — verify its
+    fields, no evaluation.
+  2. spawn `my-react:evaluator`, mode `design` — Materials: `design.md` + `contracts/` +
+    requirements/ACs + `atlas/` + the inherited-defect ledger (+ a prior spec's ledger
+    when one exists); never the architect's report. Its verdict + foundation signal are
+    the design evaluation of record.
+  3. findings → the gate as open items; the gate decides accept vs re-spawn the architect
+    on the findings vs descope — never a driver loop.
+  4. **human gate** — design AND journey plan: present the evaluator's verdict, findings
+    and foundation signal + the architect's refactor proposals + open items.
 - **tasks**
   1. `/my-react:plan` → `tasks.md`.
 - **implement**

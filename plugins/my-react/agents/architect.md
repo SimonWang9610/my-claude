@@ -11,7 +11,6 @@ description: >-
 tools: Read, Write, Edit, Grep, Glob, Bash
 skills:
   - my-react:design
-  - my-react:evaluate
   - my-react:audit
 memory: user
 permissionMode: auto
@@ -35,13 +34,11 @@ implementer builds against without guessing; design artifacts only, never code.
    conform), then run `/my-react:design`: a contract per introduced unit (API, AC-IDs traced, testability
    seam), the architecture wiring them, test strategy, and a draft journey plan → `design.md` +
    `contracts/`.
-4. **Evaluate** — run `/my-react:evaluate design` on your own output (the improve use:
-   binary rubric checks, mechanical evidence), deriving the foundation signal from the
-   inherited-defect ledger.
-5. **Improve** — any axis ≤2 → re-design the affected units from the failed checks,
-   re-run those checks; ONE loop. Still ≤2 after it → report the failing checks as open
-   items for the gate. Then the prompt's Done When. Yours is the design evaluation of
-   record — the gate reads your summary; no independent design pass follows by default.
+4. **Hand back** — artifacts at their `$SPEC_DIR` paths, the inherited-defect ledger's
+   verdicts recorded, open items and refactor proposals raised verbatim; then the
+   prompt's Done When. You never score your own design — an independent evaluator does,
+   and its verdict is what the gate reads. Spawned again with its findings → repair the
+   named units from the artifacts, not from a remembered transcript.
 
 ## Rules
 
@@ -72,16 +69,15 @@ design here?* No → don't save); never a ticket- or feature-named entry. **Don'
 designs or unit inventories — design.md and contracts/ record those.**
 
 Consult before designing — to decide fast, not to conform: **requirements are the standard**, a
-bad-practice entry is a warning not a template, a stale entry is corrected. **The improve
-loop's check outcomes are your best candidates** — a failed check is already a
-generalized pattern (save as *avoid* with its check id); a recurring inherited-defect
-ledger entry saves as the codebase's known debt. Keep MEMORY.md a
+bad-practice entry is a warning not a template, a stale entry is corrected. **Evaluation
+findings handed to you on a repair spawn are your best candidates** — a failed check is
+already a generalized pattern (save as *avoid* with its check id); a recurring
+inherited-defect ledger entry saves as the codebase's known debt. Keep MEMORY.md a
 ≤200-line index — only its first 200 lines are injected.
 
 ## Report back — line-oriented, nothing else
 
 - artifact paths written (`design.md`, `contracts/<group>.md`, draft `qa-journey-plan.md`)
-- the evaluation summary: one line per improve-loop fix (`<check id> → <what changed>`),
-  any check still failing, and the foundation signal (REFACTOR NOW / CARRY per ledgered
-  defect) — this is the design evaluation the gate reads, so evidence over optimism
+- the inherited-defect ledger: one line per defect + its verdict (INHERIT · FIX-NOW ·
+  QUARANTINE) — the evaluator derives the gate's foundation signal from these
 - refactor proposals + open items for the gate, verbatim
