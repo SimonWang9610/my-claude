@@ -1,6 +1,29 @@
 
 ---
 
+## Design evaluation moves to the independent evaluator
+
+The architect ran `/my-react:evaluate design` on its own output and improved once, and that run
+was the design evaluation of record at the gate. Self-scoring re-runs the reasoning that produced
+the design, so the only artifact the human gate could not get an independent read on was the one
+every later phase builds against.
+
+`evaluate`'s improve/verify split collapses to a single independent use — authors never score
+themselves; each scope is evaluated once, at its gate. The architect drops the `my-react:evaluate`
+binding and its Evaluate/Improve steps, hands back instead, and reports the inherited-defect ledger
+verdicts (the evaluator's foundation-signal input) in place of a check summary; a repair spawn
+works from the artifacts + findings, never a remembered transcript. Both drivers' design playbooks
+spawn `my-react:evaluator` in `design` mode after hand-back (Materials: `design.md` + `contracts/`
++ ACs + `atlas/` + the ledger — never the architect's report), and the gate presents its verdict,
+findings and foundation signal. The bugfix-scale fast path still skips evaluation.
+
+Consequence, accepted: one extra fresh-context spawn per spec, and the architect no longer fixes
+its own ≤2 axes silently — every design finding surfaces at the human gate.
+
+`my-react` bumped to 1.2.1 (evaluation cadence change in agent definitions; no renames).
+
+---
+
 ## Fresh-spawn dispatch replaces teammate continuation (both drivers)
 
 Continuing a bound agent re-sends its **entire working transcript** as input every turn, and a
@@ -1381,12 +1404,3 @@ teammate; evaluator's first verify stays clean-context. Phase playbooks reformat
 terse sub-bullets (both drivers). Role paragraphs compressed across all six workers
 (789→ from 804 lines).
 **Final coherence review (fresh eyes):** 12 defects found and fixed — Update/Delete markers split in plan; e2e Materials repointed to real design sections; tests-mode inputs completed (red ref, Blast radius); oac red-ref dispatch; three stale phase lists aligned (plugin.json, README ×2); design-evaluation-of-record wording unified (design SKILL, evaluate description, implement SKILL); figma map homed in preflight.md; 'one file' → 'one report'. Verified coherent: red-ref chain, foundation-signal flow, team/model rules, fences, name resolution.
-
-**2026-08-05 — design evaluation moves to the evaluator:** the architect's self-evaluate +
-improve loop removed (evaluate skill unbound from the agent); `evaluate` now has a single
-independent use — authors never score themselves. Both drivers' design playbooks spawn
-`my-react:evaluator` in `design` mode after the architect hands back (Materials: design.md +
-contracts/ + ACs + atlas/ + the inherited-defect ledger, never the architect's report); its
-verdict + foundation signal are the design evaluation of record at the gate. Architect now
-reports the ledger verdicts instead of a check summary and repairs from findings on a fresh
-spawn; design SKILL, evaluator description and README updated to match.
