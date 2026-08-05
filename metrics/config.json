@@ -1,0 +1,35 @@
+{
+  "$comment": "The one place to configure the local telemetry stack. Edit this file, or drop a gitignored metrics/config.local.json with only the keys you want to override (shallow-merged per section). stack.py reads both.",
+
+  "project": "my-claude-metrics",
+
+  "grafana": {
+    "port": 3000,
+    "user": "admin",
+    "password": "admin",
+    "dashboardId": 25255
+  },
+
+  "prometheus": {
+    "port": 9090,
+    "retention": "35d"
+  },
+
+  "loki": {
+    "port": 3100,
+    "retention": "840h"
+  },
+
+  "otlp": {
+    "grpcPort": 4317,
+    "httpPort": 4318
+  },
+
+  "claude": {
+    "settingsPath": "~/.claude/settings.json",
+    "endpoint": null,
+    "protocol": "grpc",
+    "logContent": true,
+    "extraEnv": {}
+  }
+}

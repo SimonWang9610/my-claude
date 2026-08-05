@@ -29,7 +29,7 @@ python3 install.py                 # my-react from GitHub marketplace
 ```
 
 ```bash
-python3 install.py --flutter --rules --aliases   # + my-flutter, + rules symlink, + driver shell aliases
+python3 install.py --flutter --rules --aliases --metrics   # + my-flutter, rules symlink, driver aliases, telemetry stack
 ```
 
 ```bash
@@ -75,6 +75,38 @@ symlinks it for you, or do it yourself:
 ```bash
 ln -s "$(pwd)/rules/preferences.md" ~/.claude/rules/preferences.md
 ```
+
+### TypeScript language server
+
+`my-react` registers a TypeScript LSP ([`plugins/my-react/.lsp.json`](plugins/my-react/.lsp.json)),
+giving Claude exact go-to-definition, find-references, and type diagnostics pushed into
+context after each edit — precision the skills' grep+glob navigation can't reach on its own.
+The binaries are **not** bundled; `install.py` warns when they're missing:
+
+```bash
+npm install -g typescript-language-server typescript
+```
+
+Without them the plugin still works — Claude Code lists the server in the `/plugin` Errors tab
+and everything else loads. If another enabled plugin already claims `.ts`/`.tsx`, the first
+server registered wins and this one stays idle; that is harmless when both point at the same
+binary.
+
+### Telemetry (optional)
+
+[`metrics/`](metrics/README.md) is a local sink for Claude Code's OpenTelemetry output —
+OTel Collector → Prometheus + Loki → Grafana — driven by one stdlib-only Python script:
+
+```bash
+python3 metrics/stack.py up && python3 metrics/stack.py verify
+```
+
+That starts the containers, points `~/.claude/settings.json` at them (backing it up first),
+and imports the dashboard; `verify` proves metrics are actually arriving. Cost, tokens,
+sessions, and edit accept/reject rates are readable without Grafana —
+`stack.py summary --since 24h`, `stack.py query '<promql>'`, `stack.py search '<logql>'`.
+Everything is configured from [`metrics/config.json`](metrics/config.json). Telemetry is
+machine-level, so this lives in the repo rather than inside a plugin.
 
 ### Migrating from the symlink install (breaking change)
 
@@ -387,12 +419,14 @@ my-claude/
 ├── plugins/
 │   ├── my-react/
 │   │   ├── .claude-plugin/plugin.json
+│   │   ├── .lsp.json  TypeScript language server registration
 │   │   ├── skills/    the contract skills above
 │   │   └── agents/    2 drivers + 6 companion workers
 │   └── my-flutter/
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/    fl-* skills
 │       └── rules/     architecture-principles.md · test-quality.md
+├── metrics/           local telemetry stack + stack.py (not plugin-shipped)
 └── rules/             user-level working discipline — preferences.md (not plugin-shipped)
 ```
 
