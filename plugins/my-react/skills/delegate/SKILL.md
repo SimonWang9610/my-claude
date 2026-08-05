@@ -33,6 +33,11 @@ compact conclusion · independent items that run concurrently (batch them in ONE
 · review that must not inherit the author's reasoning · separation of duties (nobody
 grades their own work).
 
+**Never re-enter a finished spawn.** A revision goes to a *fresh* spawn pointed at the
+persisted artifact — the artifact is the state, the agent's transcript is not. Re-entering
+re-sends that whole transcript at full price once its cache lapses (minutes, not the
+parent's hour) and grows it every turn; a fresh spawn pays only for the artifact + delta.
+
 ## 2. Bound agent, or ad-hoc?
 
 Match the work against the available agents' `description` — a purpose-built agent pins

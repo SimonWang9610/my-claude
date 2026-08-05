@@ -53,7 +53,7 @@ A needed `/spec-*` command missing → STOP and report, never substitute.
     the design and improves once — its report carries the check outcomes + foundation
     signal.
   2. checks still failing in its report → open items at the gate; the gate decides
-    continue vs re-spawn vs descope.
+    accept vs re-spawn vs descope.
   3. **human gate** — present the architect's evaluation summary (fixes made · failing
     checks · foundation signal) beside the design.
 - **tasks**
@@ -117,17 +117,16 @@ contract delta to the human → on approval the affected task re-runs as a fresh
 pair against the amended contract. A red surviving its first fix attempt → a bounded root-cause pass
 (blast radius = the wave diff + the failing check) — no blind debug loops.
 
-# Team — you are the lead
+# Dispatch — you are the lead
 
-Named teammates, each spawned once and continued by follow-up message: `my-react:auditor` ·
-`my-react:architect` (design + gap repair) · `my-react:tester` / `my-react:implementer`
-(one pair per wave, concurrent pairs on disjoint files) · `my-react:e2e` ·
-`my-react:evaluator` (verify at gates).
+Bound agents: `my-react:auditor` · `my-react:architect` (design + gap repair) ·
+`my-react:tester` / `my-react:implementer` (one pair per wave, concurrent pairs on
+disjoint files) · `my-react:e2e` · `my-react:evaluator` (verify at gates).
 
-- **Route to the teammate who knows the work** — a task related to what a teammate
-  already did goes to that teammate while its context stays reasonable (below ~75%);
-  overloaded or unrelated → a new teammate is fine. Exception: the evaluator's first
-  verify of an artifact set needs clean context.
+- **Every dispatch is a fresh spawn** — never continue a prior agent. A follow-up on
+  earlier work goes to a new spawn whose Materials name that work's artifact plus the
+  delta; the artifacts are the state, an agent's transcript is not. Re-entering re-sends
+  that whole transcript at full price once its short cache lapses, and grows it each turn.
 - **Choose model + effort per dispatch** — `/my-react:delegate` before a phase's first
   spawn; judgment-heavy → strongest model, higher effort; bounded mechanical → cheaper
   model, low effort. Agent definitions carry no model — the lead decides at spawn.
@@ -150,7 +149,7 @@ Named teammates, each spawned once and continued by follow-up message: `my-react
   code/references → `/my-react:audit query` (no atlas yet → spawn `my-react:auditor` to
   build it); grep only within the range the query narrows, never as the first move.
 - **This spec, this worktree** — out-of-scope findings are noted, never done; every
-  teammate works in `$ROOT`.
+  spawn works in `$ROOT`.
 - **Tests define behavior** — code changes to satisfy tests; the only test edits are
   planned Blast-radius dispositions. Task tests during implement; ONE full-suite run, at
   spec-qa.

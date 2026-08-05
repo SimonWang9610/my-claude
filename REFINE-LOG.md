@@ -1,6 +1,33 @@
 
 ---
 
+## Fresh-spawn dispatch replaces teammate continuation (both drivers)
+
+Continuing a bound agent re-sends its **entire working transcript** as input every turn, and a
+subagent's prompt cache TTL is minutes — not the parent session's hour. So the "route to the
+teammate who knows the work (below ~75% context)" rule was optimizing for warm context that in
+practice was almost always cold: a mid-session architecture adjustment paid full price for the
+architect's whole accumulated context, and grew it each turn.
+
+`# Team — you are the lead` → `# Dispatch — you are the lead` in both drivers; the routing bullet
+becomes **every dispatch is a fresh spawn**, whose Materials name the prior work's artifact plus
+the delta. The rule carries its runtime reason inline so it generalizes rather than reading as an
+arbitrary ban. Teammate vocabulary retired throughout (Role, frontmatter, `§ Team` cross-ref); the
+design gate's `continue vs re-spawn` → `accept vs re-spawn`, ambiguous once "continue" could mean
+continuing an agent. `delegate` §1 gets the general-purpose form, since routing is decided there
+before any spawn.
+
+Rejected: a hard `permissions.deny: ["SendMessage"]` in user settings → enforcement belongs in the
+agent definitions, and the deny would also kill cross-session peer messaging.
+
+Consequence, accepted: artifact completeness becomes load-bearing — a `design.md` that omits what
+the architect knew can no longer be silently patched by a still-warm agent, so it fails visibly at
+the next spawn instead.
+
+`my-react` bumped to 1.2.0 (behavior change in agent definitions; no renames, so no migration note).
+
+---
+
 ## Telemetry stack + TypeScript LSP (adopted from the internal oac-agentic-harness)
 
 Two pieces pulled across from the internal plugin, both re-derived rather than copied.
