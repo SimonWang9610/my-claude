@@ -1,6 +1,8 @@
 {
   "name": "my-claude",
-  "owner": { "name": "SimonWang9610" },
+  "owner": {
+    "name": "SimonWang9610"
+  },
   "metadata": {
     "description": "Spec-driven-development plugins for Claude Code: my-react (React/TS contract flow + driver agents) and my-flutter (Flutter/Dart rules + skills). Profiles install independently."
   },
@@ -14,6 +16,11 @@
       "name": "my-flutter",
       "source": "./plugins/my-flutter",
       "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1–P8), Riverpod, test quality, PR review."
+    },
+    {
+      "name": "think",
+      "source": "./plugins/think",
+      "description": "Stack-neutral skillset for working with agents efficiently, for Claude Code and GitHub Copilot: clarify (ambiguity → decision + brief), explore (codebase), architect (design / discuss / evaluate, level-aware); light preferences file; explorer + scout agents; no-CLI installer."
     }
   ]
 }
