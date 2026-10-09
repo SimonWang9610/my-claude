@@ -11,6 +11,7 @@ to shipped, evaluated code:
 |--------|----------|--------|
 | `my-react` | 11 React/TS contract skills + 2 driver agents + 6 worker agents + the evaluation framework | stable |
 | `my-flutter` | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`) | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
+| `think` | stack-neutral skillset for working with agents efficiently, for Claude Code **and GitHub Copilot**: `clarify <request>` (ambiguity → questions, options, decision, brief), `explore <question>` (any codebase), `architect <question>` (design / discuss / evaluate, level-aware); light preferences file; `explorer` + `scout` agents; `install.py` for machines without the `claude` CLI — see [plugins/think/README.md](plugins/think/README.md) | new |
 
 It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
 agents carry the process, plugins package it.** A skill is a self-contained procedure Claude

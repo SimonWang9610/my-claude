@@ -1,0 +1,13 @@
+{
+  "name": "think",
+  "version": "0.5.1",
+  "description": "Three question-shaped skills for working with AI agents better and more efficiently on any project, for Claude Code and GitHub Copilot: clarify (ambiguity, open suggestions, decision, brief), explore (codebase at the right altitude), architect (design, discuss, or evaluate at the product / project / module levels a question spans), plus a light preferences file and a symlink-based no-CLI installer.",
+  "keywords": [
+    "prompting",
+    "architecture",
+    "codebase-exploration",
+    "decision-records",
+    "copilot",
+    "agent-skills"
+  ]
+}
