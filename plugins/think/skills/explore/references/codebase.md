@@ -1,4 +1,4 @@
-# Altitudes — pick the one the question needs
+# Codebase altitudes — pick the one the question needs
 
 | Altitude | Question sounds like | Read | Bound | Output shape |
 |---|---|---|---|---|

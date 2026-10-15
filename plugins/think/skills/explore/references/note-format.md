@@ -1,4 +1,4 @@
-# Note format — the atlas written by explore
+# Note format — explore notes, written only when the user asks to keep them
 
 `<dir>/INDEX.md` is the only index; every note has one row. The first line of INDEX.md is the marker
 `<!-- think-atlas -->` so later runs find the folder. Notes are `<id>-<short-name>.md`

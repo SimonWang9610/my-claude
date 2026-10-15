@@ -1,12 +1,12 @@
 {
   "name": "think",
-  "version": "0.5.1",
-  "description": "Three question-shaped skills for working with AI agents better and more efficiently on any project, for Claude Code and GitHub Copilot: clarify (ambiguity, open suggestions, decision, brief), explore (codebase at the right altitude), architect (design, discuss, or evaluate at the product / project / module levels a question spans), plus a light preferences file and a symlink-based no-CLI installer.",
+  "version": "0.7.0",
+  "description": "A gated workflow for working with AI agents on any project, for Claude Code and GitHub Copilot: prompt (raw request \u2192 compact code or non-code spec), design (optional options or architecture), build (code) and write (non-code) with optional review, explore as a companion for facts from code, docs, or the web; working preferences embedded in the builder and writer agents.",
   "keywords": [
     "prompting",
+    "spec",
     "architecture",
-    "codebase-exploration",
-    "decision-records",
+    "workflow",
     "copilot",
     "agent-skills"
   ]

@@ -8,8 +8,6 @@
 
 ## Recognition
 
-- **Intent.** "should we / how would you / which" → design or discuss; "is this sound / review /
-  what is wrong / evaluate / compare our plan" → evaluate. Design and discuss share one treatment.
 - **Signals for product:** more than one system or deployable, clients and servers, sync or offline,
   tenants, scaling, build vs buy, no stack fixed yet. **Project:** one codebase's layout, layers,
   folders, state flow, config, testing, a stack or framework named. **Module:** one unit named (a
