@@ -12,7 +12,7 @@ argument-hint: <question>
 
 # explore
 
-Uses: agent `explorer` for large explorations (Claude Code `think:explorer` · Copilot `explorer`).
+Uses: agent `explorer` for large explorations (Claude Code `think:explorer`).
 
 1. **Source.** Pick the source(s) the question needs: codebase → [codebase.md](references/codebase.md)
    (choose the altitude there); existing docs → search the repo's docs folders, README, ADRs,

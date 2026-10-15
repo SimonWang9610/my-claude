@@ -11,7 +11,7 @@ skills:
   - think:explore
 ---
 
-Skill: `explore` (Claude Code `think:explore` · Copilot `/explore`) — follow it exactly: pick the
+Skill: `think:explore` — follow it exactly: pick the
 sources, read only what an open question needs, stop at the budget and name the gaps, mark facts you did
 not read as `(inferred)`, date every online source.
 

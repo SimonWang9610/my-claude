@@ -8,8 +8,9 @@
   python3 setup.py install --tools copilot --plugins all --update
 
 Already-installed plugins are skipped per tool unless --update is given. Claude Code installs through
-the `claude` CLI when present, otherwise (or with --link) as a symlink loaded as `<plugin>@skills-dir`.
-Copilot gets symlinks. Every run removes dangling links into this repo left by older installers.
+the `claude` CLI when it works, otherwise (or with --link) as a symlink loaded as `<plugin>@skills-dir`.
+Copilot reads the same Claude-format plugins: through the `copilot` CLI when it works, otherwise by
+registering the plugin folders in VS Code's chat.pluginLocations. Every run removes dangling links into this repo left by older installers.
 Stdlib only; modules live in scripts/.
 """
 
@@ -76,7 +77,7 @@ def main():
     ap.add_argument("--plugins", help="comma-separated plugin names or 'all' (asked when omitted)")
     ap.add_argument("--update", action="store_true", help="also reinstall/update plugins that are already installed")
     ap.add_argument("--link", action="store_true", help="Claude Code: symlink instead of the marketplace (automatic without the CLI)")
-    ap.add_argument("--local", action="store_true", help="Claude Code: register this checkout as the marketplace")
+    ap.add_argument("--local", action="store_true", help="register this checkout as the marketplace (CLI installs)")
     ap.add_argument("--copy", action="store_true", help="copy instead of symlinking")
     ap.add_argument("--rules", action="store_true", help="Claude Code: link rules/preferences.md into ~/.claude/rules/")
     ap.add_argument("--aliases", action="store_true", help="Claude Code: shell functions for the my-react driver agents")
@@ -99,8 +100,7 @@ def main():
         if plan.get("claude"):
             claude.uninstall(plan["claude"], available)
         if plan.get("copilot"):
-            remaining = [n for n in available if n not in plan["copilot"] and copilot.installed(n, available)]
-            copilot.uninstall(plan["copilot"], available, remaining)
+            copilot.uninstall(plan["copilot"], available)
         if "claude" in tools and (args.rules or args.aliases):
             extras.unlink_rules(); extras.remove_aliases()
         print("\nDone."); return
@@ -110,13 +110,12 @@ def main():
         if "my-react" in plan["claude"]:
             extras.check_lsp()
     if plan.get("copilot"):
-        already = [n for n in available if n not in plan["copilot"] and copilot.installed(n, available)]
-        copilot.install(plan["copilot"], available, already)
+        copilot.install(plan["copilot"], available, local=args.local)
     if "claude" in tools:
         if args.rules: extras.link_rules()
         if args.aliases: extras.write_aliases()
         if args.metrics: extras.start_metrics()
-    print("\nDone. Claude Code: restart or /reload-plugins. Copilot: reload the window.")
+    print("\nDone. Claude Code: restart or /reload-plugins. Copilot: reload the window. Skills are /<plugin>:<skill> in both.")
 
 
 if __name__ == "__main__":

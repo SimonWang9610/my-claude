@@ -9,7 +9,7 @@ to shipped, evaluated code:
 
 | Plugin | Contents | Status |
 |--------|----------|--------|
-| `my-react` | 11 React/TS contract skills + 2 driver agents + 6 worker agents + the evaluation framework | stable |
+| `my-react` | 9 React/TS contract skills + 1 driver agent + 6 worker agents + the evaluation framework | stable |
 | `my-flutter` | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`) | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
 | `think` | stack-neutral gated workflow for working with agents, for Claude Code **and GitHub Copilot**: `prompt` (raw request → code or non-code spec) → `design` (optional) → `build` (code) or `write` (non-code) → review (optional); `explore` companion; `builder` / `writer` / `explorer` / `reviewer` agents; symlink installer — see [plugins/think/README.md](plugins/think/README.md) | new |
 
@@ -50,20 +50,27 @@ python3 setup.py status
   `--link`, it symlinks
   `~/.claude/skills/<plugin>` to the plugin folder, which Claude Code loads as `<plugin>@skills-dir`.
   Extras: `--local` (this checkout as the marketplace), `--rules`, `--aliases`, `--metrics`.
-- **GitHub Copilot** gets symlinks: skills into `~/.copilot/skills/`, agents into `~/.claude/agents/`
-  (the Claude-format location VS Code Copilot reads), and `~/.copilot/hooks/<plugin>.json` pointing at
-  the plugin's hook scripts. Copilot has one skill namespace, so a skill name shared by several installed
-  plugins (`design`, `implement`, `review`) is installed with the plugin name as a prefix
-  (`think-design`, `my-react-design`). Prefixes are recomputed on every install and uninstall, so they
-  disappear when the clash does. A prefixed skill is a small folder with a renamed `SKILL.md` and
-  symlinks for the rest; re-run setup after pulling changes to its `SKILL.md`.
+- **GitHub Copilot** reads these Claude-format plugins directly (`.claude-plugin/plugin.json`,
+  `skills/`, `agents/`, `hooks/hooks.json`). With a working `copilot` CLI, setup runs
+  `copilot plugin marketplace add` and `copilot plugin install`; VS Code Copilot Chat picks up
+  CLI-installed plugins. Without it, setup adds the plugin folders to VS Code's `chat.pluginLocations`
+  and turns on `chat.plugins.enabled`, editing your user `settings.json` in place (comments kept, a
+  `.my-claude.bak` backup written first), so `git pull` updates the plugins with no reinstall.
+- **Portability rules** that keep one plugin folder valid for both tools: agents are named
+  `<name>.agent.md` (Claude Code reads any `*.md`; the Copilot CLI documents `.agent.md`), skills and
+  references link to sibling files with relative Markdown links rather than `${CLAUDE_PLUGIN_ROOT}`, and
+  Claude-only agent fields (`skills:`, `memory`, `permissionMode`, `effort`, `color`) are ignored by
+  Copilot, so an agent's body names the skills it uses. Skills are invoked as `/<plugin>:<skill>` in
+  Claude Code and Copilot alike (VS Code prefixes plugin skills with the plugin name); a skill's own
+  `name` field stays unprefixed, since Copilot refuses to load a prefixed one.
 - `--update` re-offers already-installed plugins (to update them); `--copy` copies instead of
   symlinking. Files that are not this installer's are never overwritten, and each run removes dangling
   links into this repo left by older installers.
 
 The installer is a small stdlib-only package: `setup.py` drives `scripts/claude.py`,
-`scripts/copilot.py`, `scripts/extras.py` (rules, aliases, metrics, LSP check), and
-`scripts/common.py` (paths, plugin discovery from the marketplace manifest, safe symlinks, prompts).
+`scripts/copilot.py`, `scripts/extras.py` (rules, aliases, metrics, LSP check), `scripts/jsonc.py`
+(comment-preserving VS Code settings edits), and `scripts/common.py` (paths, plugin discovery from the
+marketplace manifest, safe symlinks, prompts).
 
 Or manually, inside a `claude` session:
 
@@ -171,8 +178,6 @@ directly. The quick map (my-react):
 | author unit tests against contracts | `/my-react:test` · agent `my-react:tester` (E2E: agent `my-react:e2e`) |
 | implement against contracts / fix a bug | `/my-react:implement` · agent `my-react:implementer` |
 | review a PR before merge | `/my-react:review` |
-| route work to the cheapest execution | `/my-react:delegate` |
-| reconcile a JIRA ticket with reality | `/my-react:jira-align` |
 
 Agents run via the Agent tool or `claude --agent my-react:<name>`; each carries its own
 tool fence, preloaded skills, and report format — your prompt only needs where · what ·
@@ -302,23 +307,6 @@ removes; its companion agent (if any) follows.
 - **Pain** — rebuilding components that already exist; design handoffs that don't say what to
   actually build.
 
-### `delegate`
-
-- **Purpose** — routes a piece of work to the cheapest execution that does it well: inline, a
-  fork, or a subagent (bound or ad-hoc), and fixes what the spawn must carry back.
-- **Why** — a subagent re-pays a cold start; fanning out blindly burns tokens, while keeping
-  everything inline floods one context.
-- **Pain** — token-wasteful over-delegation; context floods from noisy exploration; a reviewer
-  seeing the reasoning that produced the work.
-
-### `jira-align`
-
-- **Purpose** — a three-way reconcile of a JIRA ticket's AC against the spec and the shipped code,
-  updating the ticket and posting one alignment comment.
-- **Why** — tickets go stale the moment requirements shift mid-development, and a ticket that lies
-  about what was built misleads everyone downstream.
-- **Pain** — "the ticket doesn't match the code"; AC drift after mid-flight changes.
-
 ---
 
 ### Flutter (`my-flutter` — ⚠️ work in progress, incomplete)
@@ -345,11 +333,9 @@ with a human gate at every consequential boundary:
 claude --agent my-react:driver --worktree "add a logout button"
 ```
 
-Two **driver agents** you launch to run a whole spec: `driver` (self-contained —
-the phase playbooks live in the agent itself over a `.meta.yaml` ledger, no process commands;
-heavy work runs in its teammate agents) and `oac-driver` (drives an external
-**specflow** project's `/spec-*` commands). A driver is not tied to one skill — it binds
-them all.
+One **driver agent** you launch to run a whole spec: `driver` (self-contained — the phase
+playbooks live in the agent itself over a `.meta.yaml` ledger, no process commands; heavy work
+runs in its teammate agents). The driver is not tied to one skill — it binds them all.
 
 - **Purpose** — drive one spec through its phases: run each phase's playbook, delegate
   heavy work to the worker agents, verify every output mechanically, and pause at human gates.
@@ -407,8 +393,8 @@ correct without heavy oversight.
   built and a read can't run away.
 - **grep + glob to locate and walk** — keyword search narrows to the candidate entries, then the
   walk follows definitions hop by hop by grepping symbols and reading — no heavier tooling needed.
-- **Route to the cheapest execution** — `delegate` picks inline / fork / subagent and the
-  model + effort by task complexity, batching work to avoid re-paying a subagent's cold start.
+- **Route to the cheapest execution** — the driver picks inline or a spawn, and the model +
+  effort, per dispatch by task complexity, batching work to avoid re-paying a subagent's cold start.
 - **Progressive disclosure + terse prompts** — SKILL.md stays lean; heavy procedure lives in
   lazy-loaded `references/` (opened only in the mode that needs it); inter-agent prompts carry
   four essentials — where · what · materials · done-when. Skills load on every trigger, so every
@@ -451,7 +437,7 @@ my-claude/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .lsp.json  TypeScript language server registration
 │   │   ├── skills/    the contract skills above
-│   │   └── agents/    2 drivers + 6 companion workers
+│   │   └── agents/    1 driver + 6 companion workers
 │   └── my-flutter/
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/    fl-* skills
@@ -461,4 +447,4 @@ my-claude/
 ```
 
 For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
-**[plugins/my-react/agents/driver.md](plugins/my-react/agents/driver.md)**.
+**[plugins/my-react/agents/driver.agent.md](plugins/my-react/agents/driver.agent.md)**.
