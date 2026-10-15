@@ -17,17 +17,19 @@ critical questions or asking to continue; nothing advances without your permissi
 
 ## Skills
 
-Start with `prompt`. After that, the spec in the conversation is the input of every later stage, so
+Skills are invoked as `/think:<skill>` in Claude Code, in VS Code Copilot Chat (which prefixes plugin
+skills with the plugin name), and in the Copilot CLI (which also accepts the bare `/<skill>` when no other
+plugin uses the name). Start with `prompt`. After that, the spec in the conversation is the input of every later stage, so
 `design`, `build`, and `write` need no argument; add one only for extra requirements, which are folded
 into the spec (`/think:build must use pnpm; no schema migration`).
 
-| Skill | Claude Code | Copilot | Does |
-|---|---|---|---|
-| prompt | `/think:prompt <request>` | `/prompt <request>` | Classifies code vs non-code, explores before asking, asks ≤3 critical questions per round, returns a compact spec ([code](skills/prompt/templates/code.md), [non-code](skills/prompt/templates/non-code.md)) that replaces the raw request. |
-| design | `/think:design [requirements]` | `/design [requirements]` | Optional. Options with pros, cons, and a recommendation; architecture at the level(s) the task spans with diagrams, rationale, trade-offs; or an evaluation with a verdict. Researches only when asked or needed. Also takes a standalone question when there is no spec. |
-| build | `/think:build [requirements]` | `/build [requirements]` | Code: ordered subtasks, execution (or hand-off to a project's own driver), roadblock and change handling, verification against `done`, review when `review: on`. |
-| write | `/think:write [requirements]` | `/write [requirements]` | Non-code: outline mapped to the spec, draft, checklist check, review when `review: on`. |
-| explore | `/think:explore <question>` | `/explore <question>` | Companion: bounded facts from code (map, mechanism, onboarding, locate), docs, or the web, with anchors or dated sources. |
+| Skill | Invoke (Claude Code and Copilot) | Does |
+|---|---|---|
+| prompt | `/think:prompt <request>` | Classifies code vs non-code, explores before asking, asks ≤3 critical questions per round, returns a compact spec ([code](skills/prompt/templates/code.md), [non-code](skills/prompt/templates/non-code.md)) that replaces the raw request. |
+| design | `/think:design [requirements]` | Optional. Options with pros, cons, and a recommendation; architecture at the level(s) the task spans with diagrams, rationale, trade-offs; or an evaluation with a verdict. Researches only when asked or needed. Also takes a standalone question when there is no spec. |
+| build | `/think:build [requirements]` | Code: ordered subtasks, execution (or hand-off to a project's own driver), roadblock and change handling, verification against `done`, review when `review: on`. |
+| write | `/think:write [requirements]` | Non-code: outline mapped to the spec, draft, checklist check, review when `review: on`. |
+| explore | `/think:explore <question>` | Companion: bounded facts from code (map, mechanism, onboarding, locate), docs, or the web, with anchors or dated sources. |
 
 ## Agents
 
@@ -47,9 +49,11 @@ driver.
 ## Skill declarations
 
 Every agent names the skills it uses twice: a `skills:` frontmatter list, which Claude Code preloads into
-the agent, and a numbered "Skills" section naming each one in both forms (Claude Code `think:<name>`,
-Copilot `/<name>`), which is what Copilot follows. Each skill opens with a `Uses:` line naming the skills
-and agents it calls, in the same two forms.
+the agent, and a numbered "Skills" section naming each one as `think:<skill>`, which is what Copilot
+follows (Copilot ignores the frontmatter list). Each skill opens with a `Uses:` line naming the skills
+and agents it calls. The plugin-qualified skill name is the same in Claude Code and Copilot; skill
+`name` fields stay bare (`explore`), because Copilot refuses to load a skill whose own name carries a
+prefix. Agents are `think:<agent>` in Claude Code and the bare `<agent>` in Copilot.
 
 ## Working preferences
 
@@ -69,17 +73,14 @@ python3 setup.py install --tools copilot --plugins think
 python3 setup.py install --tools claude,copilot --plugins think
 ```
 
-Claude Code uses the `claude plugin` CLI when it is installed and works; otherwise (VS Code extension
-only), the installer symlinks `~/.claude/skills/think` to the plugin, which loads as `think@skills-dir`. Inside the
-extension you can also type `/plugins`, add the marketplace `SimonWang9610/my-claude`, and install
-`think`. For Copilot, the skills are linked into `~/.copilot/skills/`, the agents into
-`~/.claude/agents/`, and the routing hint into `~/.copilot/hooks/think.json`; no instructions file is
-installed or modified. Everything is a symlink into the clone, so `git pull` updates in place.
-`python3 setup.py uninstall --plugins think` removes it. Use one install path per host, or the plugin loads twice.
+Claude Code uses the `claude plugin` CLI when it works; otherwise (VS Code extension only) setup
+symlinks `~/.claude/skills/think` to the plugin, which loads as `think@skills-dir`. Inside the extension
+you can also type `/plugins`, add the marketplace `SimonWang9610/my-claude`, and install `think`.
 
-Copilot has one skill namespace: when `my-react` or `my-flutter` is installed for Copilot too, their
-`design` skill and this one share a name, so each is installed with its plugin prefix and this one
-becomes `/think-design`.
+GitHub Copilot reads this plugin as is. With the `copilot` CLI: `copilot plugin marketplace add
+SimonWang9610/my-claude`, then `copilot plugin install think@my-claude` (setup does this). Without it,
+setup adds this folder to VS Code's `chat.pluginLocations` and enables `chat.plugins.enabled`; reload the
+window. `python3 setup.py uninstall --plugins think` removes it from every tool you pick.
 
 ## Notes
 

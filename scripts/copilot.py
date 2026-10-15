@@ -1,108 +1,133 @@
-"""GitHub Copilot: skills symlinked into ~/.copilot/skills, Claude-format agents into ~/.claude/agents
-(the location VS Code Copilot reads in that format), hooks written to ~/.copilot/hooks/<plugin>.json.
+"""GitHub Copilot: the plugins are installed as plugins, in the Claude format Copilot reads directly
+(.claude-plugin/plugin.json, skills/, agents/, hooks/hooks.json).
 
-Copilot has one flat skill namespace. A skill name shared by several installed plugins is installed as
-`<plugin>-<skill>` for each of them: a real folder with a SKILL.md whose `name` is rewritten (Copilot
-requires folder name == name) and symlinks for everything else. Names are recomputed over every plugin
-installed for Copilot on each install and uninstall, so prefixes appear and disappear as clashes do."""
+- Copilot CLI present and working → `copilot plugin marketplace add` + `copilot plugin install`.
+  VS Code Copilot Chat picks up CLI-installed plugins automatically.
+- Otherwise (VS Code only) → the local plugin folders go into VS Code's `chat.pluginLocations`, and
+  `chat.plugins.enabled` is turned on. The settings file is edited in place (comments kept) after a
+  backup; `git pull` then updates the plugins with no reinstall.
+Earlier versions symlinked skills and agents one by one; those links are removed on every run."""
 
-import json
+import functools
 import os
-import re
+import platform
+import shutil
+import subprocess
+from pathlib import Path
 
 from . import common as c
+from . import jsonc
 
 NAME = "GitHub Copilot"
-SKILLS, AGENTS, HOOKS = c.COPILOT_DIR / "skills", c.CLAUDE_DIR / "agents", c.COPILOT_DIR / "hooks"
+ENABLED, LOCATIONS = "chat.plugins.enabled", "chat.pluginLocations"
 
 
-def skills_of(plugin) -> list:
-    return sorted(s.parent for s in (plugin / "skills").glob("*/SKILL.md"))
+def vscode_settings() -> Path:
+    """VS Code user settings path (override with MY_CLAUDE_VSCODE_SETTINGS, e.g. for Insiders)."""
+    if os.environ.get("MY_CLAUDE_VSCODE_SETTINGS"):
+        return Path(os.environ["MY_CLAUDE_VSCODE_SETTINGS"]).expanduser()
+    system = platform.system()
+    if system == "Darwin":
+        base = c.HOME / "Library" / "Application Support"
+    elif system == "Windows":
+        base = Path(os.environ.get("APPDATA", c.HOME / "AppData" / "Roaming"))
+    else:
+        base = Path(os.environ.get("XDG_CONFIG_HOME", c.HOME / ".config"))
+    return base / "Code" / "User" / "settings.json"
+
+
+@functools.lru_cache(maxsize=None)
+def cli_problem() -> str:
+    path = shutil.which("copilot")
+    if not path:
+        return "no `copilot` command on PATH"
+    try:
+        r = subprocess.run([path, "--version"], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return f"`{path}` could not run ({e.__class__.__name__})"
+    return "" if r.returncode == 0 else f"`{path} --version` failed"
+
+
+def cli(*args: str) -> bool:
+    try:
+        return subprocess.run(["copilot", *args]).returncode == 0
+    except OSError:
+        return False
+
+
+def _read_settings():
+    f = vscode_settings()
+    text = f.read_text() if f.exists() else ""
+    return f, text, jsonc.load(text)
+
+
+def _write_settings(f: Path, old: str, new: str):
+    if new == old:
+        return
+    if old:
+        backup = f.with_name(f.name + ".my-claude.bak")
+        if not backup.exists():
+            backup.write_text(old); print(f"  backup {backup}")
+    f.parent.mkdir(parents=True, exist_ok=True); f.write_text(new)
 
 
 def installed(name: str, available: dict) -> str:
-    plugin = available[name]
-    for skill in skills_of(plugin):
-        for p in (SKILLS / skill.name, SKILLS / f"{name}-{skill.name}"):
-            if c.source_of(p) == str(skill):
-                return "link"
-    return ""
+    ways = []
+    root = c.COPILOT_DIR / "installed-plugins"
+    if root.is_dir() and any(p.name == name for p in root.rglob(name) if p.is_dir()):
+        ways.append("cli")
+    try:
+        if _read_settings()[2].get(LOCATIONS, {}).get(str(available[name])):
+            ways.append("vscode")
+    except ValueError:
+        pass
+    return " + ".join(ways)
 
 
-def names_for(plugin_names: list, available: dict) -> dict:
-    """(plugin, skill folder) → Copilot skill name; shared names get the plugin prefix."""
-    found = [(p, s) for p in plugin_names for s in skills_of(available[p])]
-    count = {}
-    for _, s in found:
-        count[s.name] = count.get(s.name, 0) + 1
-    return {(p, s): (f"{p}-{s.name}" if count[s.name] > 1 else s.name) for p, s in found}
-
-
-def place_renamed(src, dst, name: str):
-    """A skill under a new name: SKILL.md with `name:` rewritten, every other entry symlinked."""
-    if (dst.exists() or dst.is_symlink()) and not c.ours(dst):
-        print(f"  SKIP {dst}: exists and is not ours (remove it to reinstall)"); return
-    c.remove(dst); dst.mkdir(parents=True)
-    for child in src.iterdir():
-        if child.name == "SKILL.md":
-            (dst / "SKILL.md").write_text(re.sub(r"(?m)^name:.*$", f"name: {name}", child.read_text(), count=1))
-        else:
-            c.place(child, dst / child.name)
-    (dst / c.MARKER).write_text(str(src) + "\n")
-    print(f"  {dst} → {src} (as {name}; re-run setup after pulling changes to its SKILL.md)")
-
-
-def hooks_for(plugin) -> dict:
-    """The plugin's hooks.json flattened to Copilot's shape, ${CLAUDE_PLUGIN_ROOT} resolved."""
-    src = plugin / "hooks" / "hooks.json"
-    out = {}
-    for event, groups in (json.loads(src.read_text()).get("hooks", {}) if src.exists() else {}).items():
-        for group in groups:
-            for h in group.get("hooks", [group]):
-                if h.get("type") == "command":
-                    cmd = h["command"].replace("${CLAUDE_PLUGIN_ROOT}", str(plugin))
-                    out.setdefault(event, []).append({"type": "command", "command": cmd, "timeout": h.get("timeout", 30)})
-    return {"hooks": out} if out else {}
-
-
-def sync_skills(plugin_names: list, available: dict):
-    """Place every skill of these plugins under its current name; drop the other variant if ours."""
-    for (p, skill), name in names_for(plugin_names, available).items():
-        target, other = SKILLS / name, SKILLS / (skill.name if name != skill.name else f"{p}-{skill.name}")
-        if c.source_of(other) == str(skill):
-            c.remove(other); print(f"  removed {other} (now {name})")
-        c.place(skill, target) if name == skill.name else place_renamed(skill, target, name)
-
-
-def install(names: list, available: dict, already: list):
-    print(f"\n{NAME}: symlinks")
-    sync_skills(list(dict.fromkeys(already + names)), available)
+def remove_legacy(names: list, available: dict):
+    """Undo the per-skill symlinks, renamed-skill folders, agent links, and hook files of setup ≤ 2026-10-15."""
     for name in names:
-        plugin = available[name]
-        for agent in sorted((plugin / "agents").glob("*.md")):
-            c.place(agent, AGENTS / agent.name)
-        hooks = hooks_for(plugin)
-        if hooks:
-            HOOKS.mkdir(parents=True, exist_ok=True)
-            (HOOKS / f"{name}.json").write_text(json.dumps(hooks, indent=2) + "\n"); print(f"  {HOOKS / (name + '.json')}")
-        if any("CLAUDE_PLUGIN_ROOT" in f.read_text() for f in (plugin / "skills").rglob("*.md")):
-            print(f"  NOTE {name}: its skills reference ${{CLAUDE_PLUGIN_ROOT}}, which Copilot does not resolve.")
+        plugin = str(available[name])
+        for d in (c.COPILOT_DIR / "skills", c.CLAUDE_DIR / "agents"):
+            for p in (d.iterdir() if d.is_dir() else []):
+                if c.source_of(p).startswith(plugin + os.sep):
+                    c.remove(p); print(f"  removed old {p}")
+        hook = c.COPILOT_DIR / "hooks" / f"{name}.json"
+        if hook.is_file() and plugin in hook.read_text():
+            hook.unlink(); print(f"  removed old {hook}")
 
 
-def uninstall(names: list, available: dict, remaining: list):
+def install(names: list, available: dict, local: bool = False):
+    remove_legacy(names, available)
+    f, text, data = _read_settings()
+    if cli_problem():
+        print(f"\n{NAME}: {cli_problem()}; registering the plugin folders in VS Code ({f})")
+        locations = dict(data.get(LOCATIONS, {}))
+        locations.update({str(available[n]): True for n in names})
+        new = jsonc.set_key(jsonc.set_key(text, ENABLED, True), LOCATIONS, locations)
+        _write_settings(f, text, new)
+        for n in names:
+            print(f"  {n}: {available[n]}")
+        return
+    print(f"\n{NAME}: Copilot CLI marketplace '{c.MARKETPLACE}' (VS Code picks CLI-installed plugins up)")
+    source = str(c.REPO) if local else c.GITHUB_SOURCE
+    cli("plugin", "marketplace", "add", source) or cli("plugin", "marketplace", "update", c.MARKETPLACE)
+    for n in names:
+        cli("plugin", "install", f"{n}@{c.MARKETPLACE}") and cli("plugin", "update", f"{n}@{c.MARKETPLACE}")
+    if f.exists() and data.get(ENABLED) is not True:
+        _write_settings(f, text, jsonc.set_key(text, ENABLED, True)); print(f"  enabled {ENABLED} in {f}")
+
+
+def uninstall(names: list, available: dict):
     print(f"\n{NAME}")
-    for name in names:
-        plugin = available[name]
-        for skill in skills_of(plugin):
-            for p in (SKILLS / skill.name, SKILLS / f"{name}-{skill.name}"):
-                if c.source_of(p) == str(skill):
-                    c.remove(p); print(f"  removed {p}")
-        for agent in (plugin / "agents").glob("*.md"):
-            p = AGENTS / agent.name
-            if c.source_of(p) == str(agent):
-                p.unlink(); print(f"  removed {p}")
-        hook = HOOKS / f"{name}.json"
-        if hook.exists() and str(plugin) in hook.read_text():
-            hook.unlink(); print(f"  removed {hook}")
-    if remaining:
-        sync_skills(remaining, available)  # a clash may be gone: prefixed names revert to plain ones
+    remove_legacy(names, available)
+    f, text, data = _read_settings()
+    locations = dict(data.get(LOCATIONS, {}))
+    dropped = [n for n in names if locations.pop(str(available[n]), None) is not None]
+    if dropped:
+        _write_settings(f, text, jsonc.set_key(text, LOCATIONS, locations))
+        print(f"  removed from {LOCATIONS}: {', '.join(dropped)}")
+    if not cli_problem():
+        for n in names:
+            if "cli" in installed(n, available):
+                cli("plugin", "uninstall", f"{n}@{c.MARKETPLACE}")

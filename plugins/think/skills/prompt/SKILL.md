@@ -12,8 +12,8 @@ argument-hint: <raw request>
 
 # prompt
 
-Uses: skill `explore` (Claude Code `think:explore` · Copilot `/explore`) for facts. Routes to skill
-`design`, `build`, or `write` (Claude Code `think:<name>` · Copilot `/<name>`) only after the gate.
+Uses: skill `think:explore` for facts. Routes to skill `think:design`, `think:build`, or `think:write`
+only after the gate.
 
 1. **Classify.** Code: the deliverable is code, config, tests, or a change in a repo. Non-code:
    documents, plans, reports, decisions, research. Both: write two specs, code last.

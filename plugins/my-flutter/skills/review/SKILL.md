@@ -76,5 +76,6 @@ Full procedure with exact rule file paths and pass order: `references/review-pro
 | `/my-flutter:test-contract` skill | Six authoring-time test-quality rules (invoke by name) |
 | `/my-flutter:test-forensics` skill | Three gap-class passes (no-spec, miss-behavior, false-positive) (invoke by name) |
 
-Rule files — `architecture-principles.md` (P1–P8) and `test-quality.md` — ship with this
-plugin at `${CLAUDE_PLUGIN_ROOT}/rules/`; Read them from there when a pass needs the rule text.
+Rule files — [architecture-principles.md](../../rules/architecture-principles.md) (P1–P8) and
+[test-quality.md](../../rules/test-quality.md) — ship with this plugin; read them when a pass needs
+the rule text.

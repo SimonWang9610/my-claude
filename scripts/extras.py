@@ -10,7 +10,7 @@ from pathlib import Path
 from . import common as c
 
 RULES_SRC, RULES_LINK = c.REPO / "rules" / "preferences.md", c.CLAUDE_DIR / "rules" / "preferences.md"
-DRIVER_ALIASES = {"my-react-driver": "my-react:driver", "oac-driver": "my-react:oac-driver"}
+DRIVER_ALIASES = {"my-react-driver": "my-react:driver"}
 BEGIN, END = "# >>> my-claude driver aliases >>>", "# <<< my-claude driver aliases <<<"
 
 

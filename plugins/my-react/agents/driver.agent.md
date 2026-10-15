@@ -152,10 +152,12 @@ concurrent pairs on disjoint files) · `my-react:e2e` (journey tests) ·
   earlier work goes to a new spawn whose Materials name that work's artifact plus the
   delta; the artifacts are the state, an agent's transcript is not. Re-entering re-sends
   that whole transcript at full price once its short cache lapses, and grows it each turn.
-- **Choose model + effort per dispatch** — `/my-react:delegate` before a phase's first
-  spawn; judgment-heavy work (architect design, feature-scale verify) → strongest model,
-  higher effort; bounded mechanical work (a scoped batch, a distill, a re-run) → cheaper
-  model, low effort. Agent definitions carry no model — the lead decides at spawn.
+- **Choose route, model + effort per dispatch** — inline when the work is trivial, tightly
+  sequential, or is itself the decision; a spawn for isolation, parallel fan-out (batched in
+  one message), or fresh eyes; a bound agent when one's description matches, else ad-hoc.
+  Judgment-heavy work (architect design, feature-scale verify) → strongest model, higher
+  effort; bounded mechanical work (a scoped batch, a distill, a re-run) → cheaper model, low
+  effort. Agent definitions carry no model — the lead decides at spawn.
 - **Every dispatch carries four essentials** — where · what · materials · done when;
   sliced paths, never a whole spec dir, never your reasoning. Fences, skills, and return
   format come from the agent's definition — never restated.

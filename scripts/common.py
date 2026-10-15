@@ -11,7 +11,7 @@ REPO = Path(__file__).resolve().parent.parent
 HOME = Path.home()
 CLAUDE_DIR, COPILOT_DIR = HOME / ".claude", HOME / ".copilot"
 MARKETPLACE, GITHUB_SOURCE = "my-claude", "SimonWang9610/my-claude"
-MARKER = ".installed-by-my-claude"  # inside folders we create (renamed Copilot skills); holds the source path
+MARKER = ".installed-by-my-claude"  # inside folders setup made (copies, old renamed Copilot skills); holds the source
 COPY = False  # set by setup.py --copy
 
 

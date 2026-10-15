@@ -12,8 +12,8 @@ argument-hint: [requirements]
 
 # write
 
-Uses: skill `prompt` when no spec exists, skill `explore` for sources (Claude Code `think:<name>` ·
-Copilot `/<name>`); agent `reviewer` for review (Claude Code `think:reviewer` · Copilot `reviewer`).
+Uses: skill `think:prompt` when no spec exists, skill `think:explore` for sources; agent `reviewer` for
+review (Claude Code `think:reviewer`).
 
 **Input.** The latest non-code spec in the session (with any design decisions agreed after it) is the
 task. An argument adds or changes requirements: fold them into the spec as `must` or `limits` lines and

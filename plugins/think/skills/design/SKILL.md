@@ -15,8 +15,8 @@ argument-hint: [requirements or question]
 
 # design
 
-Uses: skill `explore` (Claude Code `think:explore` · Copilot `/explore`) for facts and research. Hands
-off to skill `build` or `write` (Claude Code `think:<name>` · Copilot `/<name>`) only after the gate.
+Uses: skill `think:explore` for facts and research. Hands off to skill `think:build` or `think:write`
+only after the gate.
 
 0. **Input.** The latest spec in the session is the task. An argument adds or changes requirements:
    fold them into the spec and say so in one line. No spec in the session → the argument is the
