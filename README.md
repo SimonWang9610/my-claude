@@ -11,7 +11,7 @@ to shipped, evaluated code:
 |--------|----------|--------|
 | `my-react` | 11 React/TS contract skills + 2 driver agents + 6 worker agents + the evaluation framework | stable |
 | `my-flutter` | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`) | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
-| `think` | stack-neutral skillset for working with agents efficiently, for Claude Code **and GitHub Copilot**: `clarify <request>` (ambiguity → questions, options, decision, brief), `explore <question>` (any codebase), `architect <question>` (design / discuss / evaluate, level-aware); light preferences file; `explorer` + `scout` agents; `install.py` for machines without the `claude` CLI — see [plugins/think/README.md](plugins/think/README.md) | new |
+| `think` | stack-neutral gated workflow for working with agents, for Claude Code **and GitHub Copilot**: `prompt` (raw request → code or non-code spec) → `design` (optional) → `build` (code) or `write` (non-code) → review (optional); `explore` companion; `builder` / `writer` / `explorer` / `reviewer` agents; symlink installer — see [plugins/think/README.md](plugins/think/README.md) | new |
 
 It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
 agents carry the process, plugins package it.** A skill is a self-contained procedure Claude
@@ -23,19 +23,46 @@ project configuration.
 
 ## 2 · Install & update
 
-The install script registers the marketplace and installs the plugins via the `claude plugin` CLI:
+`setup.py` installs any of this repo's plugins (`my-react`, `my-flutter`, `think`) for Claude Code,
+GitHub Copilot, or both. Run it with no arguments and it asks which tools, then which plugins; plugins
+already installed for the chosen tools are not offered again:
 
 ```bash
-python3 install.py                 # my-react from GitHub marketplace
+python3 setup.py
+```
+
+The same choices on the command line, plus uninstall and a status table:
+
+```bash
+python3 setup.py install --tools claude,copilot --plugins think,my-react
 ```
 
 ```bash
-python3 install.py --flutter --rules --aliases --metrics   # + my-flutter, rules symlink, driver aliases, telemetry stack
+python3 setup.py uninstall --tools copilot --plugins my-react
 ```
 
 ```bash
-python3 install.py --local             # register THIS checkout as the marketplace (for development)
+python3 setup.py status
 ```
+
+- **Claude Code** installs through the `claude plugin` CLI (marketplace install, then update). Without
+  the CLI, for example with only the VS Code extension, or with `--link`, it symlinks
+  `~/.claude/skills/<plugin>` to the plugin folder, which Claude Code loads as `<plugin>@skills-dir`.
+  Extras: `--local` (this checkout as the marketplace), `--rules`, `--aliases`, `--metrics`.
+- **GitHub Copilot** gets symlinks: skills into `~/.copilot/skills/`, agents into `~/.claude/agents/`
+  (the Claude-format location VS Code Copilot reads), and `~/.copilot/hooks/<plugin>.json` pointing at
+  the plugin's hook scripts. Copilot has one skill namespace, so a skill name shared by several installed
+  plugins (`design`, `implement`, `review`) is installed with the plugin name as a prefix
+  (`think-design`, `my-react-design`). Prefixes are recomputed on every install and uninstall, so they
+  disappear when the clash does. A prefixed skill is a small folder with a renamed `SKILL.md` and
+  symlinks for the rest; re-run setup after pulling changes to its `SKILL.md`.
+- `--update` re-offers already-installed plugins (to update them); `--copy` copies instead of
+  symlinking. Files that are not this installer's are never overwritten, and each run removes dangling
+  links into this repo left by older installers.
+
+The installer is a small stdlib-only package: `setup.py` drives `scripts/claude.py`,
+`scripts/copilot.py`, `scripts/extras.py` (rules, aliases, metrics, LSP check), and
+`scripts/common.py` (paths, plugin discovery from the marketplace manifest, safe symlinks, prompts).
 
 Or manually, inside a `claude` session:
 
@@ -43,12 +70,13 @@ Or manually, inside a `claude` session:
 /plugin marketplace add SimonWang9610/my-claude
 /plugin install my-react@my-claude
 /plugin install my-flutter@my-claude     # optional, independent
+/plugin install think@my-claude          # optional, independent
 ```
 
 For one-off local testing without any install:
 
 ```bash
-claude --plugin-dir ./plugins/my-react --plugin-dir ./plugins/my-flutter
+claude --plugin-dir ./plugins/my-react --plugin-dir ./plugins/my-flutter --plugin-dir ./plugins/think
 ```
 
 ### Updating to a new version
@@ -82,7 +110,7 @@ ln -s "$(pwd)/rules/preferences.md" ~/.claude/rules/preferences.md
 `my-react` registers a TypeScript LSP ([`plugins/my-react/.lsp.json`](plugins/my-react/.lsp.json)),
 giving Claude exact go-to-definition, find-references, and type diagnostics pushed into
 context after each edit — precision the skills' grep+glob navigation can't reach on its own.
-The binaries are **not** bundled; `install.py` warns when they're missing:
+The binaries are **not** bundled; `setup.py` warns when they're missing:
 
 ```bash
 npm install -g typescript-language-server typescript
