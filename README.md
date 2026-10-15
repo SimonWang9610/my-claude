@@ -45,8 +45,9 @@ python3 setup.py uninstall --tools copilot --plugins my-react
 python3 setup.py status
 ```
 
-- **Claude Code** installs through the `claude plugin` CLI (marketplace install, then update). Without
-  the CLI, for example with only the VS Code extension, or with `--link`, it symlinks
+- **Claude Code** installs through the `claude plugin` CLI (marketplace install, then update). When the
+  `claude` command is missing or does not work, for example with only the VS Code extension, or with
+  `--link`, it symlinks
   `~/.claude/skills/<plugin>` to the plugin folder, which Claude Code loads as `<plugin>@skills-dir`.
   Extras: `--local` (this checkout as the marketplace), `--rules`, `--aliases`, `--metrics`.
 - **GitHub Copilot** gets symlinks: skills into `~/.copilot/skills/`, agents into `~/.claude/agents/`

@@ -69,8 +69,8 @@ python3 setup.py install --tools copilot --plugins think
 python3 setup.py install --tools claude,copilot --plugins think
 ```
 
-Claude Code uses the `claude plugin` CLI when it is installed; without it (VS Code extension only), the
-installer symlinks `~/.claude/skills/think` to the plugin, which loads as `think@skills-dir`. Inside the
+Claude Code uses the `claude plugin` CLI when it is installed and works; otherwise (VS Code extension
+only), the installer symlinks `~/.claude/skills/think` to the plugin, which loads as `think@skills-dir`. Inside the
 extension you can also type `/plugins`, add the marketplace `SimonWang9610/my-claude`, and install
 `think`. For Copilot, the skills are linked into `~/.copilot/skills/`, the agents into
 `~/.claude/agents/`, and the routing hint into `~/.copilot/hooks/think.json`; no instructions file is
