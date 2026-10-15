@@ -1,0 +1,114 @@
+{
+ "metrics": {
+  "outlook": {
+   "params": {
+    "r_base": 0.0941,
+    "eps_0": 7.46,
+    "shareholder_yield": 0.0212,
+    "g": {
+     "bear": 0.06,
+     "base": 0.09,
+     "bull": 0.12,
+     "inputs": {
+      "eps_cagr_5y": 0.1012,
+      "consensus_next_year": 0.0788,
+      "consensus_5y": null
+     }
+    },
+    "multiple": {
+     "basis": "pe",
+     "current": 46.1,
+     "median": 28.4,
+     "p25": 24.9,
+     "p75": 32.0,
+     "high": 46.1
+    }
+   },
+   "horizons": {
+    "1": {
+     "bear": {
+      "price": 220.5,
+      "cagr": -0.3376
+     },
+     "base": {
+      "price": 330.1,
+      "cagr": -0.0188
+     },
+     "bull": {
+      "price": 413.0,
+      "cagr": 0.2223
+     },
+     "verdict": "expensive"
+    },
+    "5": {
+     "bear": {
+      "price": 280.4,
+      "cagr": -0.0196
+     },
+     "base": {
+      "price": 370.2,
+      "cagr": 0.036
+     },
+     "bull": {
+      "price": 480.9,
+      "cagr": 0.0907
+     },
+     "verdict": "expensive"
+    }
+   },
+   "months": {
+    "horizon_days": 90,
+    "range_1sd": {
+     "low": 315.1,
+     "high": 370.8,
+     "expiry": "2026-11-20"
+    },
+    "trend": "up",
+    "events": [
+     {
+      "event": "next earnings",
+      "date": "2026-10-29"
+     }
+    ],
+    "revisions": "up",
+    "regime": "normal"
+   },
+   "method_note": "Bogle decomposition: EPS growth x multiple drift + shareholder yield [UNVERIFIED]"
+  },
+  "multiples": {
+   "pe": {
+    "current": 46.1,
+    "median_10y": 28.4,
+    "p25": 24.9,
+    "p75": 32.0,
+    "low": 12.1,
+    "high": 46.1
+   }
+  },
+  "calibration": {
+   "fy_then": 2020,
+   "price_then": 112.28,
+   "strict_value_then": 53.4,
+   "ratio_price_to_value": 2.1,
+   "realized_cagr_since": 0.197,
+   "base_forecast_then": 0.112,
+   "error_pp": -8.5,
+   "note": "five years ago the strict model called it 2.1x overvalued; it returned 19.7% a year since"
+  }
+ },
+ "consensus": {
+  "available": true,
+  "targets": {
+   "mean": 352.4,
+   "median": 355.0,
+   "high": 420.0,
+   "low": 230.0,
+   "count": 41
+  },
+  "growth": {
+   "next_year": 0.0788
+  },
+  "recommendation_mean": 2.0,
+  "src": "S9"
+ }
+}

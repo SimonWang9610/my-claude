@@ -1,0 +1,5 @@
+{ "as_of_10k": "0000320193-25-000079", "judged": "2026-10-14",
+  "G4":  { "verdict": "pass", "marker": "S100", "quote": "the financial statements present fairly, in all material respects", "where": "auditor.txt" },
+  "1.5": { "verdict": "pass", "marker": "S100", "quote": "holds a broad collection of intellectual property rights", "where": "item-1.txt", "moat_sources": ["intangible assets"] },
+  "5.4": { "verdict": "pass", "marker": "S100", "quote": "was effective as of September 27, 2025", "where": "item-9a.txt" },
+  "5.5": { "verdict": "no evidence", "marker": "S100", "quote": "", "where": "notes.txt", "method": "" } }

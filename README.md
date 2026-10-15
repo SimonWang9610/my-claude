@@ -2,7 +2,7 @@
 
 ## 1 · What is this
 
-A [Claude Code](https://claude.com/claude-code) **plugin marketplace** carrying two
+A [Claude Code](https://claude.com/claude-code) **plugin marketplace** carrying four
 self-contained plugins that drive a structured, spec-driven workflow —
 `preflight → requirements → clarify → design → tasks → implement → spec-qa` — from a request
 to shipped, evaluated code:
@@ -12,6 +12,7 @@ to shipped, evaluated code:
 | `my-react` | 11 React/TS contract skills + 2 driver agents + 6 worker agents + the evaluation framework | stable |
 | `my-flutter` | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`) | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
 | `think` | stack-neutral skillset for working with agents efficiently, for Claude Code **and GitHub Copilot**: `clarify <request>` (ambiguity → questions, options, decision, brief), `explore <question>` (any codebase), `architect <question>` (design / discuss / evaluate, level-aware); light preferences file; `explorer` + `scout` agents; `install.py` for machines without the `claude` CLI — see [plugins/think/README.md](plugins/think/README.md) | new |
+| `my-invest` | ask about US stocks in plain words: `analyze` (price outlook at 1/2/5/10 years, buy and sell prices with timing, reasons, strengths and weaknesses, options context, holdings gains and Canadian tax treatment, short-term lens, charts, a dossier that grows per question), `find` (ranked screen for a horizon and strategy), `digest` (daily or weekly over every stock asked about); cited gates-first scorecard, owner-earnings valuation, one `researcher` agent, Python scripts over SEC XBRL, FRED, Bank of Canada and Yahoo; lint-enforced citations — see [plugins/my-invest/README.md](plugins/my-invest/README.md) | new |
 
 It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
 agents carry the process, plugins package it.** A skill is a self-contained procedure Claude

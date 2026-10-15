@@ -4,7 +4,7 @@
     "name": "SimonWang9610"
   },
   "metadata": {
-    "description": "Spec-driven-development plugins for Claude Code: my-react (React/TS contract flow + driver agents) and my-flutter (Flutter/Dart rules + skills). Profiles install independently."
+    "description": "Plugins for Claude Code: my-react (React/TS spec-driven flow + driver agents), my-flutter (Flutter/Dart rules + skills), think (clarify / explore / architect), my-invest (cited value-investing stock research). Profiles install independently."
   },
   "plugins": [
     {
@@ -15,12 +15,17 @@
     {
       "name": "my-flutter",
       "source": "./plugins/my-flutter",
-      "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1–P8), Riverpod, test quality, PR review."
+      "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1\u2013P8), Riverpod, test quality, PR review."
     },
     {
       "name": "think",
       "source": "./plugins/think",
-      "description": "Stack-neutral skillset for working with agents efficiently, for Claude Code and GitHub Copilot: clarify (ambiguity → decision + brief), explore (codebase), architect (design / discuss / evaluate, level-aware); light preferences file; explorer + scout agents; no-CLI installer."
+      "description": "Stack-neutral skillset for working with agents efficiently, for Claude Code and GitHub Copilot: clarify (ambiguity \u2192 decision + brief), explore (codebase), architect (design / discuss / evaluate, level-aware); light preferences file; explorer + scout agents; no-CLI installer."
+    },
+    {
+      "name": "my-invest",
+      "source": "./plugins/my-invest",
+      "description": "Value-investing research for US stocks from plain questions: analyze (price outlook at 1/2/5/10 years, buy and sell zones with timing, reasons, strengths and weaknesses, options context, holdings and Canadian tax treatment, short-term lens, charts, growing dossiers), find (ranked screen for a horizon and strategy), digest (daily or weekly); lint-enforced citations."
     }
   ]
 }

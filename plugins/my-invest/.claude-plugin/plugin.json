@@ -1,0 +1,18 @@
+{
+  "name": "my-invest",
+  "version": "0.1.0",
+  "description": "Value-investing research for US-listed stocks from plain questions: analyze one or more tickers (price outlook at 1/2/5/10 years, buy and sell zones with timing, reasons, strengths and weaknesses, options context, holdings gains and Canadian tax treatment, a labelled short-term lens, charts), find stocks for a horizon and strategy, and a daily or weekly digest over every stock asked about. Every figure carries a source URL and date, enforced by a lint script; each ticker's dossier grows with every question.",
+  "author": {
+    "name": "SimonWang9610"
+  },
+  "keywords": [
+    "investing",
+    "value-investing",
+    "stocks",
+    "sec-edgar",
+    "research",
+    "canada",
+    "tfsa",
+    "rrsp"
+  ]
+}
