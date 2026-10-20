@@ -4,7 +4,7 @@
   python3 setup.py                     # interactive install: pick tools, then plugins
   python3 setup.py uninstall           # interactive uninstall
   python3 setup.py status              # what is installed where
-  python3 setup.py install --tools claude,copilot --plugins think,my-react
+  python3 setup.py install --tools claude,copilot --plugins my-spec,my-react
   python3 setup.py install --tools copilot --plugins all --update
 
 Already-installed plugins are skipped per tool unless --update is given. Claude Code installs through
@@ -37,7 +37,7 @@ def pick(args, available: dict, uninstall: bool):
         tools = [{"Claude Code": "claude", "GitHub Copilot": "copilot"}[t] for t in
                  common.choose("Which tools?", ["Claude Code", "GitHub Copilot"], default="1")]
     else:
-        sys.exit("No --tools given and no terminal to ask in. Example: setup.py install --tools claude --plugins think")
+        sys.exit("No --tools given and no terminal to ask in. Example: setup.py install --tools claude --plugins my-spec")
     bad = [t for t in tools if t not in TOOLS]
     if bad:
         sys.exit(f"Unknown tool(s): {', '.join(bad)}. Use claude, copilot, or all.")
@@ -63,6 +63,16 @@ def pick(args, available: dict, uninstall: bool):
     else:
         sys.exit("No --plugins given and no terminal to ask in.")
     return tools, {t: [n for n in names if wanted(t, n)] for t in tools}
+
+
+def migrate_renamed(plan: dict):
+    """Uninstall a renamed plugin's old name from each tool that is installing its new name."""
+    for old, new in common.RENAMED.items():
+        legacy = {old: common.REPO / "plugins" / old}
+        for tool, names in plan.items():
+            if new in names and status_of(tool, old, legacy):
+                print(f"{TOOLS[tool].NAME}: {old} was renamed {new}; removing {old}")
+                TOOLS[tool].uninstall([old], legacy)
 
 
 def status(available: dict):
@@ -105,6 +115,7 @@ def main():
             extras.unlink_rules(); extras.remove_aliases()
         print("\nDone."); return
 
+    migrate_renamed(plan)
     if plan.get("claude"):
         claude.install(plan["claude"], available, link=args.link, local=args.local)
         if "my-react" in plan["claude"]:

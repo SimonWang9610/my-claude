@@ -2,16 +2,16 @@
 
 ## 1 · What is this
 
-A [Claude Code](https://claude.com/claude-code) **plugin marketplace** carrying two
-self-contained plugins that drive a structured, spec-driven workflow —
+A [Claude Code](https://claude.com/claude-code) **plugin marketplace** carrying three
+self-contained plugins. `my-react` drives a structured, spec-driven workflow —
 `preflight → requirements → clarify → design → tasks → implement → spec-qa` — from a request
-to shipped, evaluated code:
+to shipped, evaluated code.
 
 | Plugin | Contents | Status |
 |--------|----------|--------|
 | `my-react` | 9 React/TS contract skills + 1 driver agent + 6 worker agents + the evaluation framework | stable |
 | `my-flutter` | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`) | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
-| `think` | stack-neutral gated workflow for working with agents, for Claude Code **and GitHub Copilot**: `prompt` (raw request → code or non-code spec) → `design` (optional) → `build` (code) or `write` (non-code) → review (optional); `explore` companion; `builder` / `writer` / `explorer` / `reviewer` agents; symlink installer — see [plugins/think/README.md](plugins/think/README.md) | new |
+| `my-spec` | language- and framework-agnostic workflow from a prompt to the final output, for Claude Code **and GitHub Copilot**: `start` (request → spec; a fast track for small changes) → `explore` (optional: ground in existing code and patterns) → `decide` (optional: approach, plus only the design parts the task needs: `scaffold-project-structure`, `design-component`, `analyze-ui-state`) → `build` (plan, implement, verify) or `write` → `critique` (verified review); two artifacts at most (`spec.md`, `design.md`); `builder` / `writer` drive and hand work to `explorer` / `designer` / `reviewer`, each with its own model and effort — see [plugins/my-spec/README.md](plugins/my-spec/README.md) | new |
 
 It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
 agents carry the process, plugins package it.** A skill is a self-contained procedure Claude
@@ -23,9 +23,9 @@ project configuration.
 
 ## 2 · Install & update
 
-`setup.py` installs any of this repo's plugins (`my-react`, `my-flutter`, `think`) for Claude Code,
-GitHub Copilot, or both. Run it with no arguments and it asks which tools, then which plugins; plugins
-already installed for the chosen tools are not offered again:
+`setup.py` installs any of this repo's plugins (`my-react`, `my-flutter`, `my-spec`) for
+Claude Code, GitHub Copilot, or both. Run it with no arguments and it asks which tools, then which
+plugins; plugins already installed for the chosen tools are not offered again:
 
 ```bash
 python3 setup.py
@@ -34,7 +34,7 @@ python3 setup.py
 The same choices on the command line, plus uninstall and a status table:
 
 ```bash
-python3 setup.py install --tools claude,copilot --plugins think,my-react
+python3 setup.py install --tools claude,copilot --plugins my-spec,my-react
 ```
 
 ```bash
@@ -78,13 +78,13 @@ Or manually, inside a `claude` session:
 /plugin marketplace add SimonWang9610/my-claude
 /plugin install my-react@my-claude
 /plugin install my-flutter@my-claude     # optional, independent
-/plugin install think@my-claude          # optional, independent
+/plugin install my-spec@my-claude        # optional, independent
 ```
 
 For one-off local testing without any install:
 
 ```bash
-claude --plugin-dir ./plugins/my-react --plugin-dir ./plugins/my-flutter --plugin-dir ./plugins/think
+claude --plugin-dir ./plugins/my-react --plugin-dir ./plugins/my-flutter --plugin-dir ./plugins/my-spec
 ```
 
 ### Updating to a new version
@@ -438,10 +438,16 @@ my-claude/
 │   │   ├── .lsp.json  TypeScript language server registration
 │   │   ├── skills/    the contract skills above
 │   │   └── agents/    1 driver + 6 companion workers
-│   └── my-flutter/
+│   ├── my-flutter/
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── skills/    fl-* skills
+│   │   └── rules/     architecture-principles.md · test-quality.md
+│   └── my-spec/
 │       ├── .claude-plugin/plugin.json
-│       ├── skills/    fl-* skills
-│       └── rules/     architecture-principles.md · test-quality.md
+│       ├── skills/    stage skills, explore, and the three architecture views
+│       ├── agents/    builder · writer · designer · explorer · reviewer
+│       ├── shared/    rules several skills follow (save, translate, decisions, check rows, …)
+│       └── hooks/ + scripts/  the prompt hook and its routing script
 ├── metrics/           local telemetry stack + stack.py (not plugin-shipped)
 └── rules/             user-level working discipline — preferences.md (not plugin-shipped)
 ```

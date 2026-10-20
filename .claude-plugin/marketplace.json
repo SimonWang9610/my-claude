@@ -4,7 +4,7 @@
     "name": "SimonWang9610"
   },
   "metadata": {
-    "description": "Plugins for Claude Code (and GitHub Copilot for think): my-react (React/TS contract flow + driver agents), my-flutter (Flutter/Dart rules + skills), think (gated workflow for working with agents). Install any subset with install.py."
+    "description": "Plugins for Claude Code and GitHub Copilot: my-react (React/TS contract flow + driver agents), my-flutter (Flutter/Dart rules + skills), my-spec (gated prompt-to-output workflow with critique and language-agnostic architecture views). Install any subset with setup.py."
   },
   "plugins": [
     {
@@ -18,9 +18,9 @@
       "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1–P8), Riverpod, test quality, PR review."
     },
     {
-      "name": "think",
-      "source": "./plugins/think",
-      "description": "Gated workflow for working with agents, for Claude Code and GitHub Copilot: prompt → design (optional) → build (code) or write (non-code) → review (optional); explore as a companion; builder, writer, explorer, reviewer agents."
+      "name": "my-spec",
+      "source": "./plugins/my-spec",
+      "description": "Workflow from a prompt to the final output, language- and framework-agnostic: start (fast track for small changes) → explore → decide (only the design parts a task needs) → build or write → critique; follows your project's patterns; builder, writer, designer, explorer, reviewer agents."
     }
   ]
 }
