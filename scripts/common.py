@@ -12,6 +12,7 @@ HOME = Path.home()
 CLAUDE_DIR, COPILOT_DIR = HOME / ".claude", HOME / ".copilot"
 MARKETPLACE, GITHUB_SOURCE = "my-claude", "SimonWang9610/my-claude"
 MARKER = ".installed-by-my-claude"  # inside folders setup made (copies, old renamed Copilot skills); holds the source
+RENAMED = {"think": "my-spec"}  # old plugin name → new; installing the new name removes the old one
 COPY = False  # set by setup.py --copy
 
 

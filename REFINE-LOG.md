@@ -1,6 +1,63 @@
 
 ---
 
+## my-spec 0.9 — simplified to the high-level flow
+
+my-spec keeps goals, decisions and structure; stack detail comes from the project (explore) or the
+user. Skill, agent and shared text drops from about 111 KB to 35 KB, and 45 files to 24. Decisions,
+as source → decision → reason:
+
+- User decision: focus on the high-level flow start → explore → decide → build or write → critique → stage skills keep only their steps; the Translate step, the per-stack enforcement table, check-row reports and numbered check lists are removed; each design part keeps one short "Check before writing" list → stack know-how already lives in the project and in installed stack skills.
+- User decision: no heavy intermediate artifacts → at most `spec.md` and `design.md` per task (full track only); the three view files, explore's saved notes and decide's answer template are gone; design parts write sections of one `design.md` → one place to read the design.
+- User decision: a fast path → `start` sizes the task: fast = a short inline spec straight into build or write, no saves, no plan, no gates (a question with no safe default makes it full); full = saved spec and design, gates after spec, design, plan and review → small fixes stop paying for ceremony.
+- User decision: paths from the plugin root → each SKILL.md opens with `Plugin root: ${CLAUDE_PLUGIN_ROOT}` (Claude Code expands it in skill and agent bodies; Copilot does not, so the line also says "two folders above this file"); every path is root-relative → a reference can't break when a file moves between skills.
+- User decision: agents use agents → builder and writer run the stages, whose skills hand wide reading to `explorer`, multi-part design to `designer` and review to `reviewer`; designer's explore can use explorer → each job runs in the context and model that suit it.
+- User decision: model and effort per agent → builder and writer opus · medium, designer and reviewer opus · high, explorer sonnet · low; `reasoning-effort` mirrors `effort` for Copilot, which ignores Claude model aliases in plugin agents and uses the session model → cheap reads, careful design and review.
+- Copilot keeps one skill per bare name in its auto-invoke index, and my-react's `design` and `review` sort first → my-spec keeps `decide` and `critique` → its skills stay reachable in VS Code.
+- Trials: review ran twice (build's step and builder's stage), builder and decide disagreed on when to call `designer`, and no step owned the scaffold → each skill step owns its one dispatch (explore → `explorer`, decide → `designer`, critique → `reviewer`); build owns the review-and-fix round (one retry, then a gate even under `gates auto`); build's first task makes a new layout's scaffold; answered `Q`s become `D`s in place → one owner per handoff.
+- VS Code ignores `disallowedTools` and blocks nested subagents by default → explorer and reviewer keep read-only body rules; a spawned agent that cannot dispatch runs the skill inline → the same behaviour without the fences.
+
+`my-spec` 0.9.0 replaces 0.8.0 (changes listed in its README).
+
+---
+
+## my-spec 0.8 — think renamed; critique, decide, and architecture views in one plugin
+
+think becomes my-spec, a language- and framework-agnostic workflow from a prompt to the final output: it
+gains `critique`, renames its skills to verb-object names, and carries the architecture views and the
+`designer` agent. Decisions, as source → decision → reason:
+
+- User decision: plugin `think` → `my-spec` → the name says what it is: a spec-led workflow from a prompt to the final output.
+- User decision: intuitive verb-object skill names → `prompt` → `start`, `ui-state` → `analyze-ui-state`, `project-structure` → `scaffold-project-structure`, `module` → `design-component` → a name tells when to call the skill.
+- User decision: component = any self-contained unit others use (package, library, service, subsystem, UI kit, UI component) → `design-component` covers a set of components and their edges, and one component's inside (`references/internals.md`); decide's modules and unit levels merge into one components level → one word and one skill, not only UI.
+- User decision: agnostic skills and agents, stack chosen at runtime → `start` records the stack in the spec's `context` line; `build` and `write` hand work to an installed skill covering that stack or document kind, else apply its practices → stack know-how stays in stack skills.
+- User decision: concise skills → description ≤ 400 chars, SKILL.md holds steps only, formats in `templates/`, detail in `references/` loaded at the step that needs it, cross-skill rules once in `shared/` → a trigger loads only what its step needs; one rule, one place.
+- User decision: one plugin → architect's skills and `designer` merged in; "if installed" seams become direct references; decide's project and module cards removed → plugin `dependencies` are hard, so every seam needed a fallback.
+- User decision: structure differs by project → `scaffold-project-structure` frames each deployable by archetype (UI app · backend service · CLI/tool · library/SDK · data pipeline · workspace) → no single container set forced onto every project.
+- User decision: analyse, then translate → views reason in roles; Translate maps them onto the stack, delegating first to an installed skill matched by name or description → the analysis survives a stack change.
+- User decision: no hard-coded save locations → the spec's `save` line, else the user, caller or project context, else ask proposing `.docs/<area>/`; views save by default, stage output only when asked → artifacts land where the project keeps them.
+- Copilot dedupes skills by bare name and does not namespace agents → `review` → `critique`, `design` → `decide`, agent `designer`, names unique across the marketplace → first-found-wins shadows silently.
+- Subagents cannot ask the user and report next turn; VS Code subagents do not nest → gates on the main thread only; spawned agents dispatch and ask nothing, defaults become `open` lines → a gate inside a subagent never reaches the user.
+- Plugin agents ignore `permissionMode`, `hooks`, `mcpServers` → dropped; fences are `disallowedTools` plus a body rule → an ignored field reads as a guarantee it is not.
+- Only Mermaid renders on GitHub, VS Code and Copilot; the Claude Code terminal shows source → Mermaid core subset beside a table that carries the meaning, trees as text → one source reads on every surface.
+- Precision-first review practice (validate or drop, a do-not-flag list, the reviewer never sees the author's reasoning) → the `critique` procedure → a false positive costs the user more than a missed minor.
+- Copilot and the Agent Skills spec cap `description` at 1,024 chars → the project rule drops from 1,536 to 1,024 → Claude Code only truncates; Copilot binds.
+- my-react driver → adopted into `builder` / `writer`: the where · what · materials · done-when brief, a fresh spawn per dispatch, caller-verified outputs, a loop budget; dropped: `.meta.yaml`, spec dir, preflight / clarify / qa files, worktree check, TDD waves → my-spec stays stack- and project-neutral.
+- User decision: `builder` and `writer` stay separate; both dispatch `designer` for a new app or a design spanning ≥2 views, else use `/my-spec:decide` → one driver per deliverable kind.
+- Final trials: each skill restated the gate and its wording drifted → the gate (≤3 open lines, cliff first, `defaults` lines, no gate when called or spawned) and the id rule (assigned once, never renumbered) live in `shared/decisions.md`; each skill keeps a one-line selector → one rule, one place.
+- Final trials: decide's routed views translated before the user picked, and a delegated stack skill wrote its own files → Translate is deferred for `designer` and `decide`, detects in the target project's root, and delegates once per view for an inline mapping (no files, no questions) → a delegate never writes or asks mid-run.
+- Final trials: stack cards lived inside the installed plugin, which every update replaces → cards dropped; stack knowledge = the project's rules + installed skills → no second channel that silently disappears.
+- Final trials: `scaffold-project-structure` scaffolded nothing → a final Scaffold step creates greenfield or new containers' folders, public-entry and composition-root stubs and enforcement config after the gate's yes; existing moves stay deltas for build → the name matches the behaviour.
+- Final trials: `critique` alone had no runtime-stack step → a stack lens: an installed review skill for the target's stack runs in code and architecture modes, its candidates verified like any other → stack anti-patterns get reviewed.
+- Final trials: the rename left `think` installed beside `my-spec` (conflicting hook hints, clashing bare names in Copilot) → `RENAMED = {"think": "my-spec"}` in `scripts/common.py`; installing `my-spec` uninstalls `think` from that tool → no manual migration.
+- Confirmation trials: Scaffold wrote behaviour into its stubs → stubs hold signatures and wiring only; behaviour is build's → scaffold never ships untested logic.
+- Confirmation trials: a delegated stack skill (my-react:design) needs ACs and writes its own files, and translation rewrote the abstract record → the narrowing replaces the delegate's inputs, outputs and pauses (rule files only when it is gated on inputs the view lacks); Translate writes no `decide` line, and a stack fact that contradicts or adds to one is an `open` line → the abstract view stays the record.
+- Confirmation trials: the test-honesty probe ran tests against the base version, flagging tests of unchanged behaviour; the stack lens admitted stack-agnostic reviewers → mutate the changed line the test claims to prove; the lens skill must name the stack → no false positives from either.
+
+`my-spec` 0.8.0 replaces `think` 0.7.0 (migration notes in its README).
+
+---
+
 ## Design evaluation moves to the independent evaluator
 
 The architect ran `/my-react:evaluate design` on its own output and improved once, and that run
