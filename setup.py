@@ -4,7 +4,7 @@
   python3 setup.py                     # interactive install: pick tools, then plugins
   python3 setup.py uninstall           # interactive uninstall
   python3 setup.py status              # what is installed where
-  python3 setup.py install --tools claude,copilot --plugins my-spec,my-react
+  python3 setup.py install --tools claude,copilot --plugins my-workflow,my-react
   python3 setup.py install --tools copilot --plugins all --update
 
 Already-installed plugins are skipped per tool unless --update is given. Claude Code installs through
@@ -37,7 +37,7 @@ def pick(args, available: dict, uninstall: bool):
         tools = [{"Claude Code": "claude", "GitHub Copilot": "copilot"}[t] for t in
                  common.choose("Which tools?", ["Claude Code", "GitHub Copilot"], default="1")]
     else:
-        sys.exit("No --tools given and no terminal to ask in. Example: setup.py install --tools claude --plugins my-spec")
+        sys.exit("No --tools given and no terminal to ask in. Example: setup.py install --tools claude --plugins my-workflow")
     bad = [t for t in tools if t not in TOOLS]
     if bad:
         sys.exit(f"Unknown tool(s): {', '.join(bad)}. Use claude, copilot, or all.")
@@ -89,7 +89,6 @@ def main():
     ap.add_argument("--link", action="store_true", help="Claude Code: symlink instead of the marketplace (automatic without the CLI)")
     ap.add_argument("--local", action="store_true", help="register this checkout as the marketplace (CLI installs)")
     ap.add_argument("--copy", action="store_true", help="copy instead of symlinking")
-    ap.add_argument("--rules", action="store_true", help="Claude Code: link rules/preferences.md into ~/.claude/rules/")
     ap.add_argument("--aliases", action="store_true", help="Claude Code: shell functions for the my-react driver agents")
     ap.add_argument("--metrics", action="store_true", help="Claude Code: start the local telemetry stack")
     args = ap.parse_args()
@@ -100,7 +99,7 @@ def main():
         return status(available)
     uninstall = args.action == "uninstall"
     tools, plan = pick(args, available, uninstall)
-    if not any(plan.values()) and not (args.rules or args.aliases or args.metrics):
+    if not any(plan.values()) and not (args.aliases or args.metrics):
         print("Nothing to do."); return
     for tool, names in plan.items():
         print(f"{TOOLS[tool].NAME}: {', '.join(names) or 'nothing'}")
@@ -111,8 +110,8 @@ def main():
             claude.uninstall(plan["claude"], available)
         if plan.get("copilot"):
             copilot.uninstall(plan["copilot"], available)
-        if "claude" in tools and (args.rules or args.aliases):
-            extras.unlink_rules(); extras.remove_aliases()
+        if "claude" in tools and args.aliases:
+            extras.remove_aliases()
         print("\nDone."); return
 
     migrate_renamed(plan)
@@ -123,7 +122,6 @@ def main():
     if plan.get("copilot"):
         copilot.install(plan["copilot"], available, local=args.local)
     if "claude" in tools:
-        if args.rules: extras.link_rules()
         if args.aliases: extras.write_aliases()
         if args.metrics: extras.start_metrics()
     print("\nDone. Claude Code: restart or /reload-plugins. Copilot: reload the window. Skills are /<plugin>:<skill> in both.")

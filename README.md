@@ -11,7 +11,7 @@ to shipped, evaluated code.
 |--------|----------|--------|
 | `my-react` | 9 React/TS contract skills + 1 driver agent + 6 worker agents + the evaluation framework | stable |
 | `my-flutter` | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`) | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
-| `my-spec` | language- and framework-agnostic workflow from a prompt to the final output, for Claude Code **and GitHub Copilot**: `start` (request → spec; a fast track for small changes) → `explore` (optional: ground in existing code and patterns) → `decide` (optional: approach, plus only the design parts the task needs: `scaffold-project-structure`, `design-component`, `analyze-ui-state`) → `build` (plan, implement, verify) or `write` → `critique` (verified review); two artifacts at most (`spec.md`, `design.md`); `builder` / `writer` drive and hand work to `explorer` / `designer` / `reviewer`, each with its own model and effort — see [plugins/my-spec/README.md](plugins/my-spec/README.md) | new |
+| `my-workflow` | language- and framework-agnostic software workflow for Claude Code **and GitHub Copilot**, led by the `drive-spec` skill in your session, which brings in `spec-architect`, `spec-tester`, `spec-implementer` and `spec-reviewer` when a task warrants it and saves the spec artifacts under `specs/<task>/`; every other skill does one step and works alone — `rephrase`, `audit-truth`, `decide` (+ `scaffold-project-structure`, `design-component`, `analyze-ui-state`), `build`, `verify`, `critique`; adapts to how much you specify and uses the stack knowledge you have installed — see [plugins/my-workflow/README.md](plugins/my-workflow/README.md) (renamed from `my-spec`) | new |
 
 It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
 agents carry the process, plugins package it.** A skill is a self-contained procedure Claude
@@ -23,7 +23,7 @@ project configuration.
 
 ## 2 · Install & update
 
-`setup.py` installs any of this repo's plugins (`my-react`, `my-flutter`, `my-spec`) for
+`setup.py` installs any of this repo's plugins (`my-react`, `my-flutter`, `my-workflow`) for
 Claude Code, GitHub Copilot, or both. Run it with no arguments and it asks which tools, then which
 plugins; plugins already installed for the chosen tools are not offered again:
 
@@ -34,7 +34,7 @@ python3 setup.py
 The same choices on the command line, plus uninstall and a status table:
 
 ```bash
-python3 setup.py install --tools claude,copilot --plugins my-spec,my-react
+python3 setup.py install --tools claude,copilot --plugins my-workflow,my-react
 ```
 
 ```bash
@@ -49,7 +49,7 @@ python3 setup.py status
   `claude` command is missing or does not work, for example with only the VS Code extension, or with
   `--link`, it symlinks
   `~/.claude/skills/<plugin>` to the plugin folder, which Claude Code loads as `<plugin>@skills-dir`.
-  Extras: `--local` (this checkout as the marketplace), `--rules`, `--aliases`, `--metrics`.
+  Extras: `--local` (this checkout as the marketplace), `--aliases`, `--metrics`.
 - **GitHub Copilot** reads these Claude-format plugins directly (`.claude-plugin/plugin.json`,
   `skills/`, `agents/`, `hooks/hooks.json`). With a working `copilot` CLI, setup runs
   `copilot plugin marketplace add` and `copilot plugin install`; VS Code Copilot Chat picks up
@@ -78,13 +78,13 @@ Or manually, inside a `claude` session:
 /plugin marketplace add SimonWang9610/my-claude
 /plugin install my-react@my-claude
 /plugin install my-flutter@my-claude     # optional, independent
-/plugin install my-spec@my-claude        # optional, independent
+/plugin install my-workflow@my-claude    # optional, independent
 ```
 
 For one-off local testing without any install:
 
 ```bash
-claude --plugin-dir ./plugins/my-react --plugin-dir ./plugins/my-flutter --plugin-dir ./plugins/my-spec
+claude --plugin-dir ./plugins/my-react --plugin-dir ./plugins/my-flutter --plugin-dir ./plugins/my-workflow
 ```
 
 ### Updating to a new version
@@ -105,13 +105,10 @@ need no update step — edit and `/reload-plugins`. Breaking renames between ver
 listed in this README's migration notes; skill/agent names are the stable API, so a
 version that renames them will always say so here.
 
-`rules/preferences.md` is the one asset a plugin **cannot** carry: plugins do not inject
-always-on context (a plugin CLAUDE.md is ignored). It stays a user-level file — `--rules`
-symlinks it for you, or do it yourself:
-
-```bash
-ln -s "$(pwd)/rules/preferences.md" ~/.claude/rules/preferences.md
-```
+Coding principles ship with `my-workflow` as
+[`shared/principles.md`](plugins/my-workflow/shared/principles.md), which its build and decide skills
+follow. The old user-level `rules/preferences.md` is merged into it and removed; setup clears a
+leftover link.
 
 ### TypeScript language server
 
@@ -158,7 +155,7 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
    → `my-react:driver`, `/review` → `/my-flutter:review`, etc.
    The `/sflow` phase skill and `my-specflow-driver` are removed — the lean driver embeds the
    phase playbooks.
-5. Re-link `rules/preferences.md` (see above) — it is no longer installed for you.
+5. `rules/preferences.md` is gone; its rules live in my-workflow's coding principles.
 
 ---
 
@@ -442,14 +439,14 @@ my-claude/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/    fl-* skills
 │   │   └── rules/     architecture-principles.md · test-quality.md
-│   └── my-spec/
+│   └── my-workflow/
 │       ├── .claude-plugin/plugin.json
-│       ├── skills/    stage skills, explore, and the three architecture views
-│       ├── agents/    builder · writer · designer · explorer · reviewer
-│       ├── shared/    rules several skills follow (save, translate, decisions, check rows, …)
-│       └── hooks/ + scripts/  the prompt hook and its routing script
+│       ├── skills/    drive-spec (spec and lead) · one step each: rephrase · audit-truth · decide (+ 3 design parts) · build · verify · critique
+│       ├── agents/    spec-architect · spec-implementer · spec-tester · spec-reviewer · code-auditor
+│       ├── shared/    conventions.md (ids, questions, output, knowledge, diagrams) · principles.md · kinds.md · atlas.md
+│       ├── templates/ spec · design · review
+│       └── hooks/ + scripts/  prompt hook (routing hints)
 ├── metrics/           local telemetry stack + stack.py (not plugin-shipped)
-└── rules/             user-level working discipline — preferences.md (not plugin-shipped)
 ```
 
 For the full phase lifecycle, the `.meta.yaml` ledger, and human gates, see
