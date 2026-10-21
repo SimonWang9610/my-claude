@@ -1,2 +1,4 @@
 .claude/worktrees
 metrics/config.local.json
+
+__pycache__
