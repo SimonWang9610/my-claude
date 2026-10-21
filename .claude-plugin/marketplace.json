@@ -4,7 +4,7 @@
     "name": "SimonWang9610"
   },
   "metadata": {
-    "description": "Plugins for Claude Code and GitHub Copilot: my-react (React/TS contract flow + driver agents), my-flutter (Flutter/Dart rules + skills), my-spec (gated prompt-to-output workflow with critique and language-agnostic architecture views). Install any subset with setup.py."
+    "description": "Plugins for Claude Code and GitHub Copilot: my-react (React/TS contract flow + driver agents), my-flutter (Flutter/Dart rules + skills), my-workflow (language-agnostic spec-driven workflow run by a small agent team). Install any subset with setup.py."
   },
   "plugins": [
     {
@@ -18,9 +18,9 @@
       "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1–P8), Riverpod, test quality, PR review."
     },
     {
-      "name": "my-spec",
-      "source": "./plugins/my-spec",
-      "description": "Workflow from a prompt to the final output, language- and framework-agnostic: start (fast track for small changes) → explore → decide (only the design parts a task needs) → build or write → critique; follows your project's patterns; builder, writer, designer, explorer, reviewer agents."
+      "name": "my-workflow",
+      "source": "./plugins/my-workflow",
+      "description": "Language-agnostic spec-driven workflow: drive-spec leads a task in your session with spec-architect, spec-tester, spec-implementer and spec-reviewer; every other skill does one step alone: rephrase, audit-truth, decide, build, verify, critique; code-auditor builds a codebase atlas. Adapts to how much you specify; uses your installed stack knowledge."
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "name": "my-workflow",
+  "version": "1.0.0",
+  "description": "A spec-driven software workflow for Claude Code and GitHub Copilot. drive-spec turns a request into a spec and leads it to a verified, reviewed change in your session, running only the steps a task needs, keeping spec.md and design.md under specs/<task>/, and bringing in the spec-architect, spec-tester, spec-implementer and spec-reviewer agents only when they pay off. Every other skill does one step, works alone and returns its result: rephrase, audit-truth (facts and claim checks), decide (approach or stack, structure, components, contracts, UI state), build, verify (acceptance checks), critique (verified review on quality axes). code-auditor builds a grounded-truth atlas of a codebase that later sessions read first. Adapts to how much you specify; uses the stack knowledge you have installed.",
+  "keywords": [
+    "workflow",
+    "spec",
+    "agent-team",
+    "architecture",
+    "acceptance-tests",
+    "review",
+    "quality",
+    "language-agnostic",
+    "copilot",
+    "agent-skills"
+  ]
+}

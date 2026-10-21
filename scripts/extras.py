@@ -1,4 +1,4 @@
-"""Claude Code extras: user rules link, my-react driver shell aliases, telemetry stack, LSP check."""
+"""Claude Code extras: my-react driver shell aliases, telemetry stack, LSP check."""
 
 import os
 import re
@@ -9,18 +9,8 @@ from pathlib import Path
 
 from . import common as c
 
-RULES_SRC, RULES_LINK = c.REPO / "rules" / "preferences.md", c.CLAUDE_DIR / "rules" / "preferences.md"
 DRIVER_ALIASES = {"my-react-driver": "my-react:driver"}
 BEGIN, END = "# >>> my-claude driver aliases >>>", "# <<< my-claude driver aliases <<<"
-
-
-def link_rules():
-    c.place(RULES_SRC, RULES_LINK)
-
-
-def unlink_rules():
-    if c.ours(RULES_LINK):
-        RULES_LINK.unlink(); print(f"  removed {RULES_LINK}")
 
 
 def rc_file() -> Path:
