@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """UserPromptSubmit hook: one-line routing hint for the my-workflow skills. Never blocks. Silent on slash
-commands and gate replies; else hints rephrase for a long prompt, then critique, verify, a design skill or
-audit-truth by the prompt's shape, or drive-spec for a short task request that opens with a task verb."""
+commands and gate replies; else hints rephrase for a long prompt, then critique, verify, discuss, a design
+skill or audit-truth by the prompt's shape, or drive-spec for a short task request that opens with a task verb."""
 import json, re, sys
 
 GATE = re.compile(r"^(y(es)?|no?|ok(ay)?|go|continue|proceed|sure|agreed|use (the )?defaults?|option \w+)\b", re.I)
@@ -22,6 +22,9 @@ HINTS = [
     (r"(folder|directory|project|repo) (structure|layout)|where does (this|it) (go|belong)|by feature or (by )?layer|"
      r"\bscaffold\b.*\b(project|app|repo|service|package|workspace)\b",
      "Project structure: `/my-workflow:scaffold-project-structure`."),
+    (r"\b(let'?s|let us|help me) (discuss|think (this |it )?through)\b|\bbrainstorm|\bopen discussion\b|"
+     r"\bexplore (the )?options before\b",
+     "Open discussion: `/my-workflow:discuss` (questions, research, trade-offs, then a direction draft)."),
     (r"\b(architect(ure|ural)?|how (should|would) (we|i|you) (build|structure|approach|design)|"
      r"what are (the )?options|which approach|which stack|client.server|local.first|monolith)",
      "Design question: `/my-workflow:decide` (approach or stack, and the design parts it needs)."),

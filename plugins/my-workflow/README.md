@@ -57,7 +57,8 @@ you name, returns its result without saving it, and ends with an `Open:` line sa
 
 | Skill | Use it to |
 |---|---|
-| `rephrase <prompt>` | Put the main objective of a long prompt first, and see what was dropped. |
+| `rephrase <prompt>` | Put the main objective of a long prompt, or of the conversation so far, first; it reads the files the prompt names before rewriting. |
+| `discuss <topic>` | Talk a problem through (questions, research, trade-offs) and draft a direction a later session can spec. |
 | `audit-truth <question>` | Find out how something works, where it lives, or whether a claim is true. |
 | `decide` | Choose an approach or stack and design only the parts needed. |
 | `scaffold-project-structure` · `design-component` · `analyze-ui-state` | Design one part: the folder layout, components, or UI state. |
@@ -75,6 +76,14 @@ optional:
 /my-workflow:build — the plan only
 /my-workflow:build
 /my-workflow:critique
+```
+
+To settle a direction first and spec it in a fresh session:
+
+```text
+/my-workflow:discuss offline sync for the mobile app
+… discuss, then: wrap up and save the draft to specs/offline-sync/direction.md
+/my-workflow:drive-spec the direction at specs/offline-sync/direction.md   # in a new session
 ```
 
 Results carry over in the conversation. To keep them across sessions, ask to save one to a file you
@@ -141,6 +150,13 @@ To write a skill my-workflow will pick up:
 
 drive-spec dispatches the first four. Copilot ignores the model names and runs agents on your session
 model.
+
+## Changes in 1.1
+
+- `rephrase` reads what a prompt points to (files, paths, links, earlier results) before rewriting,
+  can rephrase the conversation so far, and never carries out the prompt's instructions.
+- New `discuss`: a standalone open discussion that ends in a direction draft you can save and hand to
+  a new session.
 
 ## Changes from my-spec 0.9
 

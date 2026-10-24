@@ -1,6 +1,20 @@
 
 ---
 
+## my-workflow 1.1 — rephrase grounds before rewriting; discuss drafts a direction
+
+Decisions, as source → decision → reason:
+
+- User report: rephrase rewrote "read these files and do X" word for word → it now reads only what the prompt names (files, paths, links, earlier results) to resolve terms and capture anchored facts, never searches further, and never carries out the prompt's instructions → the rewrite is informed, and rephrase stays a rewrite, not an executor.
+- User request: "summarize our conversation, focusing on questions and requirements" → the conversation can be the source: asked, decided (latest word wins), answered, rejected, open; assistant text counts only where the user agreed → the rewritten prompt is self-contained for a new session.
+- User request: open discussion before the spec flow → new `discuss`: a multi-turn loop (frame, research, weigh, ledger) that stops at direction altitude and drafts goal, direction, decisions with rejected options, risks with reopen conditions and questions for the spec; interface-level points are parked as `Q`s → a later session does not reopen settled trade-offs.
+- User decision: discuss is standalone → it names no next step and drive-spec has no step for it; the saved draft is passed to a new session like any other instruction.
+- Rejected: a separate direction template file → the draft's sections fit in the skill, read on every trigger anyway.
+
+`my-workflow` 1.1.0 replaces 1.0.0.
+
+---
+
 ## my-workflow 1.0 — my-spec renamed; skills do one step, a role-based agent team runs the flow
 
 my-spec becomes my-workflow: each skill does one step and works alone, and five `spec-` agents work as
