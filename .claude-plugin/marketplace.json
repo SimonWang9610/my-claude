@@ -20,7 +20,7 @@
     {
       "name": "my-workflow",
       "source": "./plugins/my-workflow",
-      "description": "Language-agnostic spec-driven workflow: drive-spec leads a task in your session with spec-architect, spec-tester, spec-implementer and spec-reviewer; every other skill does one step alone: rephrase, audit-truth, decide, build, verify, critique; code-auditor builds a codebase atlas. Adapts to how much you specify; uses your installed stack knowledge."
+      "description": "Language-agnostic spec-driven workflow: drive-spec leads a task in your session with spec-architect, spec-tester, spec-implementer and spec-reviewer; every other skill does one step alone: rephrase, discuss, audit-truth, decide, build, verify, critique; code-auditor builds a codebase atlas. Adapts to how much you specify; uses your installed stack knowledge."
     }
   ]
 }
