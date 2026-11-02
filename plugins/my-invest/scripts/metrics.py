@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """metrics.py <facts.json> [--out PATH] [--mos 0.30] [--erp X]
 
-Derives every `metrics.*` object of facts.json (skills/data/references/facts-schema.md) from
-`fundamentals.annual`, `price`, `macro` and `sector_class`, per skills/score/rules/*.md and
-skills/score/references/valuation.md. A pure function of the input file; stdlib only.
+Derives every `metrics.*` object of facts.json (skills/evidence/references/facts-schema.md) from
+`fundamentals.annual`, `price`, `macro` and `sector_class`, per skills/standard/rules/*.md and
+skills/standard/references/valuation.md. A pure function of the input file; stdlib only.
 
 Conventions the cards leave open (each also stated in the object's `note` where it applies):
 - Years are matched by `fy` (t-1 = fy0-1, t-5 = fy0-5), not by list position; a gap yields null.
@@ -13,14 +13,21 @@ Conventions the cards leave open (each also stated in the object's `note` where 
 - EBIT = `operating_income`, else `pretax_income + interest_expense`.
 - Owner earnings per year = net_income + da - min(capex, da) (estimate); CF_0 averages the
   available years among the last three.
+- `calibration.record` replays the method one fiscal year at a time (3..9 years back); SPY for the same window
+  comes from <store>/market/SPY.json, located as common.Stock does (facts.py --out: market/ beside the output).
 Ratios are rounded to 4 decimals, dollar amounts to 2. Missing inputs give null plus `reason`.
 Exit 1 with {"error": ...} only when the input cannot be read.
 """
 import argparse
+import bisect
 import datetime
 import json
 import math
+import os
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import common  # noqa: E402  (store layout only: where market/SPY.json sits relative to facts.json)
 
 ERP_DEFAULT = 4.20          # Damodaran implied ERP, % (valuation.md source [3])
 ERP_DEFAULT_DATE = "2026-10-01"
@@ -1217,22 +1224,77 @@ def outlook(Y, facts, m, erp_arg, horizons):
     return with_notes(out, notes)
 
 
-def calibration(Y, facts, m, mos, erp_arg):
-    price = facts.get("price")
-    inputs = ["fundamentals.annual", "price.close_at", "price.last", "price.splits", "macro"]
-    blank = {"fy_then": None, "strict_value_then": None, "price_then": None, "ratio_price_to_value": None,
-             "realized_cagr_since": None, "base_forecast_then": None, "error_pp": None}
-    if not isinstance(price, dict):
-        return null_obj(PRICE_NULL, inputs, **blank)
-    ks = [k for k in range(3, 10) if Y.row(k) is not None]
-    if not ks:
-        return null_obj("fewer than four fiscal years: nothing three or more years back", inputs, **blank)
-    k = 5 if Y.row(5) is not None else max(ks)
+SIMULATED_NOTE = ("simulated record: figures as the companyfacts API reports them today, not as first filed "
+                  "(point-in-time data is not available); the rule's thresholds were set on this same history, so the "
+                  "evaluation is in-sample")
+RECORD_SIGN = "error_pp = realised minus base forecast (pp), top level and per record row: positive means the base case was too low"
+
+
+def market_dir_for(facts_path):
+    """<store>/market as common.Stock resolves it for <store>/stocks/<T>/facts/facts.json; when that folder does
+    not exist, market/ beside the facts file (facts.py --out writes it there)."""
+    here = os.path.dirname(os.path.abspath(facts_path))
+    cands = [common.Stock(os.path.dirname(here)).market_dir, os.path.join(here, "market")]
+    return next((c for c in cands if os.path.isdir(c)), cands[0])
+
+
+def load_spy(market_dir):
+    """market/SPY.json ({dates, close, adj_close}) or None when missing or unreadable."""
+    try:
+        with open(os.path.join(market_dir or "", "SPY.json"), encoding="utf-8") as fh:
+            d = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    return d if isinstance(d, dict) and isinstance(d.get("dates"), list) else None
+
+
+def spy_series(spy):
+    """(sorted [(date, value)], field) using adj_close when it has values, else close."""
+    dates = spy.get("dates") or []
+    for field in ("adj_close", "close"):
+        vals = spy.get(field) if isinstance(spy.get(field), list) else []
+        pts = sorted((str(d)[:10], num(v)) for d, v in zip(dates, vals) if isinstance(d, str) and num(v) is not None)
+        if pts:
+            return pts, field
+    return [], None
+
+
+def spy_at(pts, d):
+    """Value on the last trading date <= d; None before the series starts or more than a week past its end."""
+    if not pts or not d:
+        return None
+    i = bisect.bisect_right([p[0] for p in pts], d) - 1
+    if i < 0:
+        return None
+    last = day(pts[-1][0])
+    if i == len(pts) - 1 and day(d) and last and (day(d) - last).days > 7:
+        return None
+    return pts[i][1]
+
+
+def spy_cagr(spy, then, now, yrs):
+    """(CAGR, basis) of SPY from `then` to `now` (ISO dates) over yrs years; basis says which column and why null."""
+    if spy is None:
+        return None, "market/SPY.json missing: no SPY comparison"
+    pts, field = spy_series(spy)
+    if not pts:
+        return None, "market/SPY.json has no close values"
+    if not (then and now and yrs and yrs > 0):
+        return None, "window dates unavailable"
+    a, b = spy_at(pts, then), spy_at(pts, now)
+    if a is None or b is None or a <= 0:
+        return None, "SPY series does not cover %s to %s" % (then, now)
+    basis = ("SPY total return (adj_close)" if field == "adj_close"
+             else "SPY price return only (close; adj_close missing)")
+    return (b / a) ** (1.0 / yrs) - 1, basis + " %s to %s" % (then, now)
+
+
+def calibration_point(Y, facts, mos, erp_arg, k, spy):
+    """One fiscal year k back: strict value then vs price then, realised CAGR since, the base case the
+    decomposition would have given then, and SPY over the same window. Figures as reported today (SIMULATED_NOTE)."""
+    price = facts["price"]
     fy_then, row_then = Y.fy(k), Y.row(k)
-    out = dict(blank, fy_then=fy_then, years_back=k, inputs=[Y.ref(range(k, 10))] + inputs[1:])
     notes = {"strict value uses today's r and terminal g, not the rates of FY%d" % fy_then}
-    if k != 5:
-        notes.add("fiscal year five years back unavailable: used the oldest year %d back" % k)
     Yt = Y.truncate(fy_then)
     raw_t = roic_series(Yt)[1]
     ro = roiic_5y(Yt, raw_t)
@@ -1258,20 +1320,23 @@ def calibration(Y, facts, m, mos, erp_arg):
         reasons.append("strict value then unavailable: %s" % val.get("reason"))
     if px is None:
         reasons.append("price.close_at missing for FY%d period end" % fy_then)
-    out.update(strict_value_then=v_then, strict_g_then=r4(g), price_then=r2(px), price_then_date=pdate_then)
+    pt = {"fy_then": fy_then, "years_back": k, "strict_value_then": v_then, "strict_g_then": r4(g),
+          "price_then": r2(px), "price_then_date": pdate_then, "ratio_price_to_value": None,
+          "realized_cagr_since": None, "realized_basis": None, "years_elapsed": None,
+          "base_forecast_then": None, "error_pp": None, "spy_cagr_same_window": None, "spy_basis": None}
     if v_then is not None and v_then > 0 and px is not None:
-        out["ratio_price_to_value"] = r4(px / v_then)
+        pt["ratio_price_to_value"] = r4(px / v_then)
     yrs = (now - then).days / 365.25 if now and then else None
     realized = None
     if px is not None and last is not None and yrs and yrs > 0:
         if adj is not None and adj > 0:
             realized = (last / adj) ** (1 / yrs) - 1
-            out["realized_basis"] = "total return incl. dividends (price.last vs Yahoo adj_close then)"
+            pt["realized_basis"] = "total return incl. dividends (price.last vs Yahoo adj_close then)"
         else:
             realized = (last / px) ** (1 / yrs) - 1
-            out["realized_basis"] = "price return only (no dividend-adjusted close then)"
-        out["realized_cagr_since"] = r4(realized)
-        out["years_elapsed"] = r4(yrs)
+            pt["realized_basis"] = "price return only (no dividend-adjusted close then)"
+        pt["realized_cagr_since"] = r4(realized)
+        pt["years_elapsed"] = r4(yrs)
     else:
         reasons.append("price.last, price.date or the close then missing")
     # §1 base case as of fy_then: history-only g, multiples as of then
@@ -1293,34 +1358,105 @@ def calibration(Y, facts, m, mos, erp_arg):
         gb = min(gh, 0.25)
         mult = path_multiples(cur_t, pctl(vals, 0.5), pctl(vals, 0.25), pctl(vals, 0.75), yrs)["base"]
         _, forecast = decomp(x0, gb, mult, yrs, px, sy_t)
-        out["base_forecast_then"] = {"basis": basis, "g": r4(gb), "g_years": gn, "multiple_then": r4(cur_t),
-                                     "median_then": r4(pctl(vals, 0.5)), "years_of_multiples": len(vals),
-                                     "shareholder_yield_then": r4(sy_t), "cagr": r4(forecast)}
+        pt["base_forecast_then"] = {"basis": basis, "g": r4(gb), "g_years": gn, "multiple_then": r4(cur_t),
+                                    "median_then": r4(pctl(vals, 0.5)), "years_of_multiples": len(vals),
+                                    "shareholder_yield_then": r4(sy_t), "cagr": r4(forecast)}
     else:
-        reasons.append("base forecast then needs a history growth rate and multiples as of FY%d" % fy_then)
+        pt["forecast_reason"] = "base forecast then needs a history growth rate and multiples as of FY%d" % fy_then
+        reasons.append(pt["forecast_reason"])
     if realized is not None and forecast is not None:
-        out["error_pp"] = r4((realized - forecast) * 100)
+        pt["error_pp"] = r4((realized - forecast) * 100)
+    spy_c, pt["spy_basis"] = spy_cagr(spy, pdate_then or (then.isoformat() if then else None),
+                                      price.get("date"), yrs)
+    pt["spy_cagr_same_window"] = r4(spy_c)
+    pt["reasons"], pt["notes"], pt["realized"], pt["forecast"] = reasons, notes, realized, forecast
+    return pt
+
+
+def record_entry(pt):
+    b = pt["base_forecast_then"]
+    e = {"years_back": pt["years_back"], "fy_then": pt["fy_then"], "price_then": pt["price_then"],
+         "price_then_date": pt["price_then_date"], "strict_value_then": pt["strict_value_then"],
+         "ratio_price_to_value": pt["ratio_price_to_value"], "base_forecast_cagr": b["cagr"] if b else None,
+         "realized_cagr_since": pt["realized_cagr_since"], "realized_basis": pt["realized_basis"],
+         "spy_cagr_same_window": pt["spy_cagr_same_window"], "spy_basis": pt["spy_basis"],
+         "error_pp": pt["error_pp"], "years_elapsed": pt["years_elapsed"]}
+    if e["base_forecast_cagr"] is None:
+        e["reason"] = pt.get("forecast_reason") or "; ".join(pt["reasons"])
+    return e
+
+
+def record_summary(record, name):
+    errs = [e["error_pp"] for e in record if e["error_pp"] is not None]
+    pairs = [(e["realized_cagr_since"], e["spy_cagr_same_window"]) for e in record
+             if e["realized_cagr_since"] is not None and e["spy_cagr_same_window"] is not None]
+    beat = sum(1 for a, b in pairs if a > b)
+    out = {"n": len([e for e in record if e["base_forecast_cagr"] is not None]),
+           "mean_abs_error_pp": r2(mean([abs(x) for x in errs])) if errs else None,
+           "mean_error_pp": r2(mean(errs)) if errs else None,
+           "beat_spy_count": beat if pairs else None, "spy_windows": len(pairs), "note": None}
+    words = []
+    if errs:
+        low = sum(1 for x in errs if x > 0)
+        words.append("over %d past year%s the base case missed realised returns by %.1f pp on average (too low in "
+                     "%d, too high in %d)" % (len(errs), "" if len(errs) == 1 else "s", out["mean_abs_error_pp"],
+                                             low, len(errs) - low))
+    if pairs:
+        words.append("%s beat SPY in %d of %d windows" % (name, beat, len(pairs)))
+    elif record:
+        words.append("no SPY comparison (%s)" % (record[0].get("spy_basis") or "market/SPY.json missing"))
+    if words:
+        words.append("simulated with today's method on then-available data")
+    out["note"] = "; ".join(words) if words else None
+    return out
+
+
+def calibration(Y, facts, m, mos, erp_arg, spy=None):
+    price = facts.get("price")
+    inputs = ["fundamentals.annual", "price.close_at", "price.last", "price.splits", "macro", "market/SPY.json"]
+    blank = {"fy_then": None, "strict_value_then": None, "price_then": None, "ratio_price_to_value": None,
+             "realized_cagr_since": None, "base_forecast_then": None, "error_pp": None, "record": [],
+             "record_summary": {"n": 0, "mean_abs_error_pp": None, "beat_spy_count": None, "note": None}}
+    if not isinstance(price, dict):
+        return null_obj(PRICE_NULL, inputs, **blank)
+    ks = [k for k in range(3, 10) if Y.row(k) is not None]
+    if not ks:
+        return null_obj("fewer than four fiscal years: nothing three or more years back", inputs, **blank)
+    k = 5 if Y.row(5) is not None else max(ks)
+    points = {j: calibration_point(Y, facts, mos, erp_arg, j, spy) for j in ks}
+    pt = points[k]
+    out = dict(blank, inputs=[Y.ref(range(min(ks), 10))] + inputs[1:])
+    out.update({f: pt[f] for f in ("fy_then", "years_back", "strict_value_then", "strict_g_then", "price_then",
+                                   "price_then_date", "ratio_price_to_value", "base_forecast_then", "error_pp")})
+    for f in ("realized_basis", "realized_cagr_since", "years_elapsed"):
+        if pt[f] is not None:
+            out[f] = pt[f]
+    notes = set(pt["notes"]) | {SIMULATED_NOTE, RECORD_SIGN}
+    if k != 5:
+        notes.add("fiscal year five years back unavailable: used the oldest year %d back" % k)
     name = facts.get("ticker") or "the stock"
     words = []
     if out["ratio_price_to_value"] is not None:
-        rv = out["ratio_price_to_value"]
         words.append("%d years back (FY%d) the strict model valued %s at $%.2f a share against a price of $%.2f "
-                     "(%.2fx the value)" % (k, fy_then, name, v_then, px, rv))
-    if realized is not None:
-        words.append("it returned %.1f%% a year since (%s)" % (realized * 100, out["realized_basis"].split(" (")[0]))
-    if forecast is not None:
+                     "(%.2fx the value)" % (k, out["fy_then"], name, out["strict_value_then"], out["price_then"],
+                                            out["ratio_price_to_value"]))
+    if pt["realized"] is not None:
+        words.append("it returned %.1f%% a year since (%s)" % (pt["realized"] * 100, out["realized_basis"].split(" (")[0]))
+    if pt["forecast"] is not None:
         words.append("the base case then forecast %.1f%% a year%s" % (
-            forecast * 100, ", an error of %+.1f pp" % out["error_pp"] if out["error_pp"] is not None else ""))
+            pt["forecast"] * 100, ", an error of %+.1f pp" % out["error_pp"] if out["error_pp"] is not None else ""))
     out["note"] = ("; ".join(words) + ".") if words else None
-    if reasons:
-        out["reason"] = "; ".join(reasons)
+    if pt["reasons"]:
+        out["reason"] = "; ".join(pt["reasons"])
+    out["record"] = [record_entry(points[j]) for j in sorted(ks)]
+    out["record_summary"] = record_summary(out["record"], name)
     out["assumptions"] = sorted(notes)
     return out
 
 
 # ---------- driver ----------
 
-def compute(facts, mos=0.30, erp=None, horizons=HORIZONS, g_base=None):
+def compute(facts, mos=0.30, erp=None, horizons=HORIZONS, g_base=None, spy=None):
     fund = facts.get("fundamentals") if isinstance(facts.get("fundamentals"), dict) else {}
     price = facts.get("price") if isinstance(facts.get("price"), dict) else {}
     Y = Years(fund.get("annual"), price.get("splits"), fund.get("shares_history"))
@@ -1341,7 +1477,7 @@ def compute(facts, mos=0.30, erp=None, horizons=HORIZONS, g_base=None):
     m["valuation"] = valuation(Y, facts, mos, erp, raw_roiic, horizons, g_base)
     m["multiples"] = multiples(Y, facts)
     m["outlook"] = outlook(Y, facts, m, erp, horizons)
-    m["calibration"] = calibration(Y, facts, m, mos, erp)
+    m["calibration"] = calibration(Y, facts, m, mos, erp, spy)
     if not isinstance(facts.get("price"), dict):
         blank_price_dependent(m, facts.get("sector_class"))
     return m
@@ -1396,7 +1532,7 @@ def main(argv=None):
     except (OSError, ValueError) as e:
         print(json.dumps({"error": "cannot read %s: %s" % (a.facts, e)}))
         return 1
-    facts["metrics"] = compute(facts, a.mos, a.erp, horizons, a.g_base)
+    facts["metrics"] = compute(facts, a.mos, a.erp, horizons, a.g_base, load_spy(market_dir_for(a.facts)))
     out = a.out or a.facts
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(facts, fh, indent=2)

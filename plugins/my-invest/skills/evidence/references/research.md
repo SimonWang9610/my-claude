@@ -1,13 +1,3 @@
----
-name: research
-description: >-
-  Explains how my-invest gathers evidence for a stock: filings from local extracts (never a truncating
-  web fetch), the four evidence-required verdicts, market trend, news, posts, the industry chain and
-  related stocks, industry mode for a theme, incremental rules and the cumulative research file. Use when
-  an agent must add cited evidence for a stock or map an industry; preloaded into the advisor and analyst
-  agents, not invoked by the user.
-user-invocable: false
----
 
 # research
 

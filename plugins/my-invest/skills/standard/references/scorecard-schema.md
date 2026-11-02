@@ -24,7 +24,7 @@
 `implied_cagr[h][scenario]` = `(V_h / price)^(1/h) − 1`. `action` follows [action-matrix.md](action-matrix.md);
 `short_term` follows [lens-short-term.md](../rules/lens-short-term.md) and is null unless requested.
 
-Evidence-required items (G4, 1.5, 5.4, 5.5) read `evidence.json`, written by the researcher:
+Evidence-required items (G4, 1.5, 5.4, 5.5) read `evidence.json`, written by the analyst:
 
 ```jsonc
 { "as_of_10k": "0000320193-25-000079", "judged": "2026-10-14",

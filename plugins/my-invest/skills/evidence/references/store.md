@@ -46,7 +46,7 @@ The plugin writes nothing anywhere else.
 | fundamentals | only when the submissions feed shows a 10-K or 10-Q newer than the one used |
 | filings_recent | three years back, merged and deduplicated |
 | filing extracts | immutable; a new 10-K gets a new folder |
-| research.md, evidence.json | the researcher appends dated entries since the last run; verdicts re-judged only on a new 10-K |
+| research.md, evidence.json | the analyst appends dated entries since the last run; verdicts re-judged only on a new 10-K |
 | industry.md | written when absent or older than 90 days, or when the question asks about the industry or peers |
 | INDEX.md, log.md, reports, charts | every run |
 
@@ -54,14 +54,14 @@ The plugin writes nothing anywhere else.
 
 Scripts use `S1`–`S99`: `S1`–`S59` fetched sources in `facts.json`, `S60` the metrics derived row, `S61` the
 score derived row, `S62` the history row, `S80`–`S89` the peer comparison rows, `S90`–`S99` the holdings tax
-sources (fixed, so saved narratives keep resolving). The researcher uses `S100` upward, cumulative across
+sources (fixed, so saved narratives keep resolving). Research files use `S100` upward, cumulative across
 runs. `report.py` merges both ranges into the dossier's Evidence log; the lint's `--facts` option resolves
 the ids of the sibling `facts.json`, `scorecard.json`, `holdings_tables.json` and `research.md`.
 
 ## Incremental run
 
 1. `facts.py <T>` refreshes per the table and prints `changed: […]`, `reused: […]`, `news_since`.
-2. The researcher gets the stock folder, `news_since`, the `changed` list, the first free id
+2. The analyst gets the stock folder, `news_since`, the `changed` list, the first free id
    (`store.py next-id <T>`), whether `evidence.json` must be (re)judged and whether `industry.md` is due,
    and adds only new or changed evidence.
 3. `score.py` and `report.py` run on the whole folder; `log.md` records what moved since the last line and

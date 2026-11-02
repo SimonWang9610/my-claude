@@ -2,7 +2,7 @@
 """report.py <TICKER | stock folder> --question "<text>" --lens long|short|both [--narrative PATH] [--chat] [--html]
     [--no-lint]
 
-Renders reports/dossier.md per skills/analyze/references/report-template.md from facts/facts.json,
+Renders reports/dossier.md per skills/advisor/references/answer.md from facts/facts.json,
 facts/scorecard.json, the narrative (--narrative, default the newest history/<date>-<HHMM>.md other than log.md),
 research/research.md and research/industry.md (optional), facts/holdings.json and facts/holdings_tables.json
 (optional); writes reports/<date>-<HHMM>.md, appends one line to history/log.md, regenerates INDEX.md at the stock
@@ -28,7 +28,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import EnvelopeParser, add_common_args, locate, run_main, stamp, today  # noqa: E402
 from lint import DISCLAIMER, facts_ids, lint_text  # noqa: E402
-from score import horizon_label  # noqa: E402
+from score import TESTS, horizon_label  # noqa: E402
 
 PILLAR_NAMES = {"1": "Business quality and moat", "2": "Financial strength", "3": "Management and capital allocation",
                 "4": "Valuation and margin of safety", "5": "Risks and red flags"}
@@ -51,6 +51,9 @@ GLOSS = (
     ("buy zone / sell zone", r"\b(?:buy|sell) zone", "cheap enough to buy / expensive enough to sell, by the model's own rule"),
     ("confidence", r"\bconfiden", "how much of the evidence the model could check and how closely its scenarios agree, "
                                    "out of 100"),
+    ("confidence band", r"/100 \((?:strong evidence|solid|mixed|thin)\)",
+     "the word after the confidence score: strong evidence (80 or more), solid (65 to 79), mixed (45 to 64), thin "
+     "(below 45)"),
     ("deal-breaker check", r"deal-breaker", "a pass/fail test (bankruptcy, restatement, going concern, distress, "
                                             "losses, dilution); one failure means stay away"),
     ("owner earnings", r"owner earnings|cash the business really makes",
@@ -148,6 +151,33 @@ def num(v):
 
 def ratio1(x):
     return "n/a" if x is None else "%.1f" % x
+
+
+def spct(x):
+    """Signed percent, one decimal: +4.2% / -0.3%."""
+    return "n/a" if x is None else "%+.1f%%" % (x * 100)
+
+
+def unmoney(s):
+    """'$1,234.50' / '-$3.00' -> float; None when the text is not a money cell."""
+    m = re.fullmatch(r"(-?)\$([\d,]+(?:\.\d+)?)", (s or "").strip())
+    return None if not m else float(m.group(2).replace(",", "")) * (-1 if m.group(1) else 1)
+
+
+def weekdays_between(a, b):
+    """Weekdays after ISO date a up to and including b (holidays ignored); None when a date is missing."""
+    try:
+        da, db = datetime.date.fromisoformat(str(a)[:10]), datetime.date.fromisoformat(str(b)[:10])
+    except (TypeError, ValueError):
+        return None
+    return sum(1 for i in range(1, (db - da).days + 1) if (da + datetime.timedelta(days=i)).weekday() < 5)
+
+
+def band_word(v):
+    """Confidence band: >= 80 strong evidence, 65-79 solid, 45-64 mixed, below 45 thin."""
+    if num(v) is None:
+        return None
+    return "strong evidence" if v >= 80 else "solid" if v >= 65 else "mixed" if v >= 45 else "thin"
 
 
 def plain(line):
@@ -262,6 +292,20 @@ def parse_research(text):
     return {k: trim(v) for k, v in secs.items()}, oq, log
 
 
+def parse_history(line):
+    """A history/log.md line -> {date, question, lens, tier, score, stance, confidence, price, said, expected, zones,
+    changed}. Fields are found by name, so lines written before a field existed parse too (the key is then absent)."""
+    parts = line.lstrip("- ").split(SEP)
+    out = {"date": parts[0].strip() if parts else ""}
+    for part in parts[1:]:
+        if part.startswith("changed: "):
+            out["changed"] = part[len("changed: "):]
+        else:
+            name, _, val = part.partition(" ")
+            out[name] = val
+    return out
+
+
 # ---------- renderer ----------
 class Report:
     def __init__(self, stock, question, lens, date, narrative=None, when=None):
@@ -294,6 +338,8 @@ class Report:
         self.sources.update(self.sc.get("sources") or {})
         self.H = "S62"   # fixed derived row (S60 metrics, S61 score, S62 history)
         self.hist_path = stock.log
+        self.hist_line_now = None            # set by history_line(); excluded from "what this advisor said before"
+        self.spy = read_json(os.path.join(stock.market_dir, "SPY.json"))
         self.sources[self.H] = {"class": "derived", "what": "report.py run history, one line per analysis",
                                 "url": "file://" + os.path.abspath(self.hist_path), "as_of": date, "retrieved": date}
         peers = read_json(os.path.join(stock.facts_dir, "peers.json"))
@@ -314,27 +360,49 @@ class Report:
     def history_line(self):
         sc, z = self.sc, self.sc.get("zones") or {}
         q = "`%s`" % re.sub(r"\s+", " ", self.q.replace("`", "'").replace(SEP, " - ")).strip()
+        rec = self.rec()
         fields = [self.date, "question " + q, "lens " + self.lens, "tier " + sc["tier"], "score %s/100" % sc["score"],
                   "stance " + sc["stance"], "confidence %s/100" % sc["confidence"]["value"],
-                  "price " + money(sc.get("price")),
-                  "zones buy below %s / sell above %s" % (money(z.get("buy_below")), money(z.get("sell_above")))]
-        prev = self.history()[-1:] if self.history() else []
+                  "price " + money(sc.get("price")), "said " + (rec.get("cell") or rec.get("stance") or sc["stance"])]
+        if rec.get("basis") == "outlook":
+            fields.append("expected %s/yr at %s vs %s required" % (pct(rec.get("expected_return"), 1), rec.get("label"),
+                                                                   pct(rec.get("required_return"), 1)))
+        fields.append("zones buy below %s / sell above %s" % (money(z.get("buy_below")), money(z.get("sell_above"))))
+        prev = self.history()[-1:]
         if not prev:
             changed = "first analysis"
         else:
-            p = prev[0].lstrip("- ").split(SEP)
-            diffs = []
-            for i, name in ((3, "tier"), (4, "score"), (5, "stance"), (8, "zones")):
-                old = p[i][len(name) + 1:] if i < len(p) and p[i].startswith(name) else (p[i] if i < len(p) else "")
-                new = fields[i][len(name) + 1:]
-                if old != new:
-                    diffs.append("%s %s → %s" % (name, old, new))
+            old, new = parse_history(prev[0]), parse_history(SEP.join(fields))
+            diffs = ["%s %s → %s" % (name, old.get(name, ""), new.get(name, "")) for name in ("tier", "score", "stance", "zones")
+                     if old.get(name, "") != new.get(name, "")]
             changed = "; ".join(diffs) if diffs else "no change in tier, score, stance or zones"
-        return "- " + SEP.join(fields + ["changed: " + changed])
+        self.hist_line_now = "- " + SEP.join(fields + ["changed: " + changed])
+        return self.hist_line_now
 
     def history(self):
         t = read(self.hist_path) or ""
         return [l for l in t.splitlines() if l.startswith("- ")]
+
+    def prior_history(self):
+        """log.md lines of earlier runs: the line this run writes is dropped once appended."""
+        lines = self.history()
+        return lines[:-1] if lines and lines[-1] == self.hist_line_now else lines
+
+    def spy_change(self, a, b):
+        """SPY simple return from ISO date a to b (adj_close, else close), None when the series does not cover both."""
+        spy = self.spy
+        if not isinstance(spy, dict) or not isinstance(spy.get("dates"), list):
+            return None
+        col = next((spy[k] for k in ("adj_close", "close") if isinstance(spy.get(k), list) and any(num(v) is not None for v in spy[k])), None)
+        if col is None:
+            return None
+        pts = sorted((str(d)[:10], num(v)) for d, v in zip(spy["dates"], col) if isinstance(d, str) and num(v) is not None)
+
+        def at(d):
+            prior = [v for dd, v in pts if dd <= str(d)[:10]]
+            return prior[-1] if prior else None
+        va, vb = at(a), at(b)
+        return None if va is None or vb is None or va <= 0 else vb / va - 1
 
     # -- sections --
     def header(self):
@@ -825,16 +893,14 @@ class Report:
 
     def history_rows(self, lines):
         """History table rows (newest first) from log.md-format lines."""
-        rows = ["| Date | Question | Lens | Tier | Score | Stance | Confidence | Price | Zones | Changed | |",
-                "|---|---|---|---|---|---|---|---|---|---|---|"]
+        rows = ["| Date | Question | Lens | Tier | Score | Stance | Confidence | Price | Said | Zones | Changed | |",
+                "|---|---|---|---|---|---|---|---|---|---|---|---|"]
         for line in reversed(lines):
-            p = line.lstrip("- ").split(SEP)
-            p += [""] * (10 - len(p))
-            cell = lambda i, name: esc(p[i][len(name) + 1:] if p[i].startswith(name + " ") else p[i])  # noqa: E731
-            rows.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | [%s] |" % (
-                p[0], esc(p[1][len("question "):] if p[1].startswith("question ") else p[1]), cell(2, "lens"),
-                cell(3, "tier"), cell(4, "score"), cell(5, "stance"), cell(6, "confidence"), cell(7, "price"),
-                cell(8, "zones"), esc(p[9][len("changed: "):] if p[9].startswith("changed: ") else p[9]), self.H))
+            p = parse_history(line)
+            p["said"] = p.get("said", "") + ("; expected " + p["expected"] if p.get("expected") else "")
+            cells = [esc(p.get(k, "")) for k in ("date", "question", "lens", "tier", "score", "stance", "confidence",
+                                                 "price", "said", "zones", "changed")]
+            rows.append("| %s | [%s] |" % (" | ".join(cells), self.H))
         return rows
 
     def index_md(self, hist_lines):
@@ -845,8 +911,10 @@ class Report:
                "CIK `%s` · sector class %s · sector ETF %s" % (f.get("cik"), f.get("sector_class"), f.get("sector_etf") or "n/a"),
                "", "**Industry:** " + self.industry_line(), "",
                "## Latest decision", "Question: `%s` · lens %s" % (re.sub(r"\s+", " ", self.q.replace("`", "'")), self.lens),
-               ""] + self.verdict() + [""] + self.action_lines() + [""]
-        out += ["## Folder map"] + self.folder_map() + [""]
+               ""] + self.verdict() + [""] + self.action_lines()
+        note = g(self.m, "calibration", "record_summary", "note")
+        out += ["Track record: %s [%s]" % (note, self.D)] if note else []
+        out += [""] + ["## Folder map"] + self.folder_map() + [""]
         out += ["## History"] + self.history_rows(hist_lines) + [""]
         out += ["Open questions: %d [%s]" % (oq, self.S), "",
                 "Updated `%s UTC`" % self.when.strftime("%Y-%m-%d %H:%M"), "",
@@ -863,10 +931,12 @@ class Report:
         ana = self.analyst_section()
         out += ["## Price outlook"] + (["### What the analyst expects, and why"] + ana + ["", "### Strict value lens"]
                                        if ana else []) + self.outlook() + [""]
+        out += ["## Track record"] + self.track_record() + [""]
         out += ["## Answer", "**Question:** `%s` · lens: %s" % (self.q.replace("`", "'"), self.lens), ""] + \
             self.slot("Answer") + [""]
         out += ["## Thesis"] + self.thesis() + [""]
         out += ["## Why"] + self.why() + [""]
+        out += ["## The case against"] + self.case_against() + [""]
         out += ["## What the news says"] + (self.news_table() or [
             "- no evidence: no news slot in the narrative and no dated news in research/research.md"]) + [""]
         peers = self.peers_table()
@@ -892,13 +962,14 @@ class Report:
         out += self.scorecard() + [""]
         for name in ("Risk evidence", "News and posts"):
             out += ["## " + name] + self.research(name) + [""]
+        out += ["## What could not be verified"] + self.not_verified() + [""]
         out += ["## Open questions"] + self.open_questions() + [""]
         hist = [l + " [%s]" % self.H for l in reversed(self.history() + [hist_line])]
         out += ["## History"] + hist + [""]
         out += ["## Evidence log"] + self.evidence_log() + ["", "> " + DISCLAIMER, ""]
         return "\n".join(out)
 
-    # -- forward outlook (skills/score/rules/outlook.md), led by the answer; the strict value is one lens --
+    # -- forward outlook (skills/standard/rules/outlook.md), led by the answer; the strict value is one lens --
     def ol(self):
         o = self.sc.get("outlook")
         return o if isinstance(o, dict) and o.get("horizons") else None
@@ -1034,7 +1105,8 @@ class Report:
         if not o:
             return []
         D, P = self.D, self.P
-        out = ["| Horizon | Bear | Base | Bull | Expected yearly return (base) | Verdict | |", "|---|---|---|---|---|---|---|"]
+        out = ["*computed by scripts*", "",
+               "| Horizon | Bear | Base | Bull | Expected yearly return (base) | Verdict | |", "|---|---|---|---|---|---|---|"]
         for h, x in o["horizons"].items():
             out.append("| %s | %s | %s | %s | %s | %s | [%s, %s] |" % (
                 x.get("label"), money(g(x, "bear", "price")), money(g(x, "base", "price")), money(g(x, "bull", "price")),
@@ -1158,7 +1230,8 @@ class Report:
                 "| At what price? | sell zone starts at %s; buy zone ends at %s; today %s [%s, %s] |" % (
                     money(z.get("sell_above")), money(z.get("buy_below")), money(sc.get("price")), D, P),
                 "| Should I buy? | %s [%s, %s] |" % (buy, D, S),
-                "| How confident is the model? | %s/100 — what lowers it: %s [%s] |" % (c.get("value"), lowers, S)]
+                "| How confident is the model? | %s/100%s — what lowers it: %s [%s] |" % (
+                    c.get("value"), " (%s)" % band_word(c.get("value")) if band_word(c.get("value")) else "", lowers, S)]
 
     def price_map_strict(self):
         z = self.sc.get("zones") or {}
@@ -1172,6 +1245,90 @@ class Report:
             return [plain(l) for l in lines[:5]]
         return ["- %s (%s): %s/20 [%s]" % (PILLAR_PLAIN[p].capitalize(), PILLAR_NAMES[p].lower(), "%g" % x["points"],
                                           self.S) for p, x in sorted(self.sc["pillars"].items())]
+
+    # -- proof sections: the record, the case against, what is missing (always shown) --
+    def track_record(self):
+        """The simulated per-year record (metrics.calibration.record) and what this advisor said in earlier runs."""
+        D, rec = self.D, g(self.m, "calibration", "record") or []
+        out = ["*computed by scripts; simulated with today's method on the data then available*"]
+        if rec:
+            out += ["", "| Years ago | FY | Price then | Strict value then | Base case said (per year) | What happened "
+                    "(per year) | SPY same window (per year) | |", "|---|---|---|---|---|---|---|---|"]
+            for e in sorted(rec, key=lambda e: e.get("years_back") or 0):
+                out.append("| %s | %s | %s | %s | %s | %s | %s | [%s] |" % (
+                    e.get("years_back"), e.get("fy_then"), money(e.get("price_then")), money(e.get("strict_value_then")),
+                    pct(e.get("base_forecast_cagr"), 1), pct(e.get("realized_cagr_since"), 1),
+                    pct(e.get("spy_cagr_same_window"), 1), D))
+            bases = sorted({(e.get("realized_basis") or "").split(" (")[0] for e in rec if e.get("realized_basis")})
+            out += ["", "What happened = %s; SPY from market/SPY.json over the same dates [%s]" % (
+                " or ".join(bases) or "n/a", D)]
+            note = g(self.m, "calibration", "record_summary", "note")
+            if note:
+                out.append("%s [%s]" % (note, D))
+        said = self.said_before()
+        if said:
+            out += ["", "**What this advisor said before about %s**" % self.f.get("ticker"), ""] + said
+        if not rec and not said:
+            return ["No past calls yet; the simulated record needs at least three fiscal years of data [%s]." % D]
+        return out
+
+    def said_before(self, limit=8):
+        """One row per earlier run date (that day's last log line): what was said, price then and now, SPY since."""
+        by_date = {}
+        for line in self.prior_history():
+            p = parse_history(line)
+            if p.get("date"):
+                by_date[p["date"]] = p
+        if not by_date:
+            return []
+        now, pdate = num(self.sc.get("price")), g(self.f, "price", "date") or self.date
+        rows = ["| Date | Said | Price then | Price now (change) | SPY same window | |", "|---|---|---|---|---|---|"]
+        for d in sorted(by_date, reverse=True)[:limit]:
+            p = by_date[d]
+            said = p.get("said") or p.get("stance") or "n/a"
+            said += "; expected " + p["expected"] if p.get("expected") else ""
+            then = unmoney(p.get("price"))
+            chg = spct(now / then - 1) if then and now else "n/a"
+            rows.append("| %s | %s | %s | %s (%s) | %s | [%s] |" % (
+                d, esc(said), p.get("price") or "n/a", money(now), chg, spct(self.spy_change(d, pdate)), self.H))
+        return rows
+
+    def not_verified(self):
+        """Inputs the standard asks for that this run did not have: items, gates, null metrics, stale prices, and
+        the narrative's own `## Not verified` lines."""
+        D, S, out = self.D, self.S, []
+        it = self.sc.get("items") or {}
+        for i in sorted(it):
+            x = it[i]
+            if x.get("status") in ("no evidence", "pending"):
+                out.append("- Item %s (%s): %s%s [%s]" % (i, x.get("test") or TESTS.get(i, ""), x["status"],
+                                                          " — " + esc(x["note"]) if x.get("note") else "", S))
+        gates = self.sc.get("gates") or {}
+        for gid in sorted(gates):
+            x = gates[gid]
+            if x.get("result") in ("pending", "no evidence"):
+                out.append("- Gate %s (%s): %s%s [%s]" % (gid, GATE_NAMES.get(gid, ""), x["result"],
+                                                          " — " + esc(x["note"]) if x.get("note") else "", S))
+        nulls = [(k, v) for k, v in self.m.items() if isinstance(v, dict) and v.get("reason") and k != "freshness"
+                 and (("value" in v and v["value"] is None) or ("available" in v and v["available"] is None))]
+        out += ["- %s: %s [%s]" % (k.replace("_", " "), esc(v["reason"]), D) for k, v in nulls[:8]]
+        if len(nulls) > 8:
+            out.append("- and %d more metrics without a value this run (see Facts) [%s]" % (len(nulls) - 8, D))
+        fr, pdate = self.m.get("freshness") or {}, g(self.f, "price", "date")
+        age = max(num(fr.get("price_age_trading_days")) or 0, weekdays_between(pdate, self.date) or 0)
+        if age > 1:
+            out.append("- Price is stale: the last price is dated %s, %d trading days before this run [%s]" % (pdate, age, D))
+        if fr.get("newer_10k_exists"):
+            out.append("- A newer 10-K has been filed than the one these figures come from [%s]" % D)
+        if fr.get("value") is None and fr.get("reason"):
+            out.append("- Freshness could not be judged: %s [%s]" % (esc(fr["reason"]), D))
+        out += [l for l in (self.narr or {}).get("Not verified", []) if l.strip()]
+        return ["*computed by scripts*", ""] + (out or ["Every input the standard asks for was available this run [%s]." % S])
+
+    def case_against(self):
+        lines = [l for l in (self.narr or {}).get("Case against", []) if l.strip()]
+        return ["*the analyst's reading of the numbers above*", ""] + (lines or [
+            "The analyst's note has no case-against section; ask for a refreshed analysis [%s]." % self.H])
 
     def news_rows(self):
         """(date, what, meaning) rows: the narrative slot first, else the five newest research news items."""
@@ -1422,10 +1579,12 @@ class Report:
                         ([""] + self.if_hits() if self.what_if else [])))
         if self.ol() and want("price"):
             sec.append(("What the analyst expects, and why", self.analyst_section()))
-        sec.append(("Why, in plain words", self.why_plain()))
+        sec.append(("The case against", self.case_against()))
+        sec.append(("Why, in plain words", ["*the analyst's reading*", ""] + self.why_plain()))
+        sec.append(("Track record", self.track_record()))
         news, peers, ind = self.news_table(), self.peers_table(), self.industry_plain()
         if news and want("news"):
-            sec.append(("What the news says", news))
+            sec.append(("What the news says", ["*the analyst's reading*", ""] + news))
         if peers and want("peers"):
             slot = [l for l in (self.narr or {}).get(PEERS_SLOT, []) if l.strip()]
             sec.append(("Compared with similar companies", peers + ([""] + slot if slot else [])))
@@ -1435,6 +1594,7 @@ class Report:
         if mine and want("holdings"):
             sec.append(("Your shares", mine))
         sec.append(("What could change the answer", self.could_change()))
+        sec.append(("What could not be verified", self.not_verified()))
         if want("options"):
             sec.append(("Options, explained with your numbers", self.options_plain() + [
                 "- Options can lose the whole premium; selling a call caps your gain; shares can be called away early. "

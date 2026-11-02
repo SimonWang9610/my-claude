@@ -24,6 +24,13 @@ Is AAPL worth buying for ten years? · lens: long
 ## Weaknesses
 - Current ratio 0.8933 [S60] below Graham's floor.
 
+## Case against
+- The price $343.87 [S3] is more than twice the strict value $148.53 [S60]; if the P/E drifts back to its 10-year median the base case gives a loss.
+- Memory costs are squeezing margins and the sales guidance fell short of expectations [S105].
+
+## Not verified
+- Customer concentration by net sales: the 10-K names no customer and states no threshold [S100].
+
 ## Thesis
 - **1 year** — base value $155.04 [S60] against price $343.87 [S3].
 - **2 years** — base value $161.43 [S60].

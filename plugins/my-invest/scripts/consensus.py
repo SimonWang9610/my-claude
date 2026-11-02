@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """consensus.py TICKER - analyst consensus from Yahoo via yfinance (secondary, S12), the `consensus` block of facts.json.
 
-Block (skills/score/rules/outlook.md section 3; all growth figures are fractions):
+Block (skills/standard/rules/outlook.md section 3; all growth figures are fractions):
 {"available": true, "as_of", "src": "S12", "targets": {mean, median, high, low, count},
  "eps": {current_fy: {estimate, year_end}, next_fy: {...}}, "growth": {next_year, next_5y_per_year},
  "revenue_growth": {current_fy, next_fy}, "recommendation_mean", "recommendation_count",

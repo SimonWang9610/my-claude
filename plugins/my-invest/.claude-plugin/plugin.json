@@ -1,7 +1,7 @@
 {
   "name": "my-invest",
-  "version": "0.1.0",
-  "description": "Value-investing research for US-listed stocks from plain questions: analyze one or more tickers (price outlook at 1/2/5/10 years, buy and sell zones with timing, reasons, strengths and weaknesses, options context, holdings gains and Canadian tax treatment, a labelled short-term lens, charts), find stocks for a horizon and strategy, and a daily or weekly digest over every stock asked about. Every figure carries a source URL and date, enforced by a lint script; each ticker's dossier grows with every question.",
+  "version": "0.2.0",
+  "description": "Financial advisor for a rookie US-stock investor, from plain questions: where the price is likely to go at your horizon, whether to buy or sell, when and at what price, how confident \u2014 then the proof (scenarios and their inputs, the case against, the model's track record on the stock, what could change the answer, what could not be verified) and the detail (news, peers, industry chain, your shares and Canadian tax, options on real contracts, charts). An advisor skill delegates to a professional analyst agent; scripts compute every figure from SEC XBRL and Yahoo data; every figure carries a source URL and date, enforced by a lint.",
   "author": {
     "name": "SimonWang9610"
   },

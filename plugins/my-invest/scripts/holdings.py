@@ -2,9 +2,9 @@
 """holdings.py (<TICKER> | <stock folder>) (--question TEXT | --json JSON) [--price X] [--fx X]
     [--zones B,BASE,S] [--md] [--store DIR] [--project DIR] [--out FILE]
 
-Parses the holdings a question states (skills/analyze/references/holdings.md) for the folder's ticker only,
+Parses the holdings a question states (skills/advisor/references/holdings.md) for the folder's ticker only,
 writes facts/holdings.json and facts/holdings_tables.json in the stock folder, and prints the tables as JSON (or as a
-Markdown part with --md). Tax lines come from skills/score/references/tax-ca.md, read by row id.
+Markdown part with --md). Tax lines come from skills/standard/references/tax-ca.md, read by row id.
 Python 3.9, stdlib only. Any failure prints the error envelope and exits 1.
 """
 import datetime as dt
@@ -17,7 +17,7 @@ import common
 
 SCRIPT = "holdings.py"
 HERE = os.path.dirname(os.path.abspath(__file__))
-TAX_MD = os.path.join(HERE, "..", "skills", "score", "references", "tax-ca.md")
+TAX_MD = os.path.join(HERE, "..", "skills", "standard", "references", "tax-ca.md")
 BOC_URL = "https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json"
 INCLUSION = 0.5  # T-INCL
 DISCLAIMER = ("General information, not tax advice: provincial rates and credits differ, the marginal rate is "

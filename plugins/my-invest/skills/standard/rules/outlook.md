@@ -58,14 +58,26 @@ twelve-month horizon and 64% at some point within it (abstract, relayed). Revisi
 Lakonishok (1996), Journal of Finance 51(5): "Security analysts' earnings forecasts also respond
 sluggishly to past news". When consensus is unavailable the block says so and the base g uses history alone.
 
-## 4. Calibration — the model's own record on this stock
+## 4. Track record — the model's own record on this stock
 
-For the fiscal year five years back: the strict owner-earnings fair value with that year's inputs
-(valuation.md method, today's rate and premium) versus the price then, and the realised yearly return
-since; and what the expected-return decomposition's base case would have forecast then versus realised.
-Output: `calibration` with both errors in plain words ("five years ago the strict model called Apple 2.1×
-overvalued; it returned 19.7% a year since"). This line always appears beside the strict value when the
-price is above its sell line, so the reader can weigh the model.
+Two records, both rendered in the answer's **Track record** section, every return beside SPY over the
+same window (the quant platforms' rule: a return without its benchmark says nothing).
+
+**Simulated** (`metrics.calibration.record`, computed by `metrics.py`): for each fiscal year k = 3..9 back
+that has data, the strict owner-earnings fair value with that year's inputs (valuation.md method, today's
+rate and premium) against the price then; the expected-return decomposition's base case as it would have
+read then (history-only growth, multiples as of then); the realised yearly return since (total return when
+a dividend-adjusted close exists); SPY's yearly return over the same window; and the error in percentage
+points. `record_summary` gives the count, the mean absolute error and how often the stock beat SPY, in
+one plain sentence. The five-years-back point stays as the headline `calibration` fields. Labelled
+simulated and in-sample: the figures are as the SEC API reports them today, not as first filed, and the
+thresholds were not chosen out of sample (Lean's research guide; Qlib's point-in-time rule).
+
+**Real** (`history/log.md`, settled by `report.py`): every answer logs the date, the price, what was
+said for the reader's position and the expected return against the required one; the next answer shows
+each earlier call with the price change and SPY since. Calls made before the outcome was known are the
+only evidence that the method is not fitting the story to the chart (TradingAgents' memory log,
+ai-hedge-fund's ledger). The record accumulates as the user asks.
 
 ## 5. Recommendation logic (score.py `action.recommendation`)
 

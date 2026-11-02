@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """edgar.py TICKER - SEC EDGAR: ticker -> CIK, submissions, companyfacts -> up to 10 normalized annual rows.
 
-Normalization follows skills/analyze/references/facts-schema.md ("Normalization rules").
+Normalization follows skills/evidence/references/facts-schema.md ("Normalization rules").
 Prints one JSON object: ticker, cik, name, sic, sector_class, sources, fundamentals, shares_history.
 """
 import datetime as dt

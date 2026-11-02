@@ -22,13 +22,13 @@ about as well as book-to-market and is hard to manipulate. Not this: banks, insu
 **1.4 Defended margins.** Test: gross margin in the latest year ≥ gross margin five years earlier
 minus 2 percentage points. Inputs `metrics.gross_margin_5y_change`. Source: this standard. Why: a
 moat shows up as pricing power; margins that erode under competition are the first visible crack.
-Not this: a documented mix shift the 10-K names (hardware → services), cited by the researcher.
+Not this: a documented mix shift the 10-K names (hardware → services), cited by the analyst.
 
 **1.5 Moat source with evidence.** Test: the dossier's Business and moat section cites at least one
 passage (10-K Item 1 or 7, IR document) that evidences a Morningstar moat source — intangible assets,
 switching costs, network effect, cost advantage, efficient scale — with a URL. Source: Morningstar
 equity research methodology (2017 PDF, see research notes). Why: a moat name without a filing passage
-is the researcher's feeling. Not this: a sentence from a blog or a post; a generic "strong brand"
+is the analyst's feeling. Not this: a sentence from a blog or a post; a generic "strong brand"
 without the passage.
 
 **1.6 Durable demand.** Test: revenue five-year CAGR > 0 and no two consecutive annual revenue

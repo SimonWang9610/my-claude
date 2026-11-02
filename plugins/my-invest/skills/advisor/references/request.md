@@ -15,7 +15,7 @@ margin of safety or growth rate: each comes from here or from a stated default t
   "lens_source": "question|inferred",
   "intent": "overview|sell|buy|compare|what_if|news|filing|holdings|other",
   "holdings_text": "",                                         // the holdings phrases verbatim, for holdings.py; "" when none
-  "peers_requested": [],                                       // tickers or names the user named to compare with; else the researcher's peers
+  "peers_requested": [],                                       // tickers or names the user named to compare with; else the industry file's peers
   "margin_of_safety": null,                                    // from the question ("40% safety margin") else config default (recorded by score.py)
   "what_if": { "growth": null, "erp": null, "price": [] },     // "if growth is 5%" → growth 0.05; "if it hits 400" → price [400]
   "dates": [],                                                 // decision dates the user named ("before December", "at year end")

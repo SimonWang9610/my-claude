@@ -395,7 +395,7 @@ def ticker_dir(store, ticker):
 
 
 class Stock:
-    """Paths inside one stock folder <store>/stocks/<TICKER>/ (layout: skills/analyze/references/store.md)."""
+    """Paths inside one stock folder <store>/stocks/<TICKER>/ (layout: skills/evidence/references/store.md)."""
 
     def __init__(self, folder):
         j = os.path.join

@@ -22,14 +22,14 @@ clear the debt keeps a downturn from becoming a refinancing event. Not this: a u
 model carries structural leverage (`n/a` by sector class).
 
 **5.4 Internal control.** Test: the latest 10-K Item 9A reports no material weakness. Evidence-required:
-the researcher cites the 10-K URL and quotes ≤15 words. Source: the filing (primary). Why: a material
+the analyst cites the 10-K URL and quotes ≤15 words. Source: the filing (primary). Why: a material
 weakness means the numbers every other item uses were produced by a control system management itself
 calls deficient. Not this: a disclosed remediation completed within the year (score 1, note it).
 
 **5.5 Customer concentration.** Test: no single customer accounts for 10% or more of revenue per the
-latest 10-K. Evidence-required: the researcher cites the disclosure, or the 10-K's statement that no
+latest 10-K. Evidence-required: the analyst cites the disclosure, or the 10-K's statement that no
 customer exceeds 10%, or — because Regulation S-K Item 101(c) and ASC 280-10-50-42 require the
-disclosure whenever a customer reaches 10% of revenue — the researcher's grep of the full filing
+disclosure whenever a customer reaches 10% of revenue — the analyst's grep of the full filing
 extract finding no such disclosure (cite the filing and state the grep). Source: the filing (primary);
 https://www.ecfr.gov/current/title-17/section-229.101. Why: a decade thesis cannot rest on one
 buyer's purchasing decision. Not this: a receivables concentration note (that is credit exposure, not

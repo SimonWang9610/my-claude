@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """score.py <TICKER | stock folder> [--mos 0.30] [--lens long|short|both] [--mode full|screen] [--holding]
 
-Applies the score skill (skills/score/SKILL.md, rules/*.md, references/*.md) to one stock folder:
+Applies the standard skill (skills/standard/SKILL.md, rules/*.md, references/*.md) to one stock folder:
 reads facts/facts.json, research/evidence.json (optional) and facts/holdings.json (optional), writes facts/scorecard.json per
 scorecard-schema.md and prints a one-line JSON summary. Arithmetic only; stdlib only.
 
@@ -645,7 +645,7 @@ class Scorer:
                 act["holdings"].append(row)
         return act
 
-    # -- options operations (skills/score/rules/options-playbook.md) --
+    # -- options operations (skills/standard/rules/options-playbook.md) --
     LARGE_GAIN = 0.20   # this script's reading of "a large gain": price at least 20% above the average cost
 
     def options_ops(self, failed, band, act, st):
@@ -776,7 +776,7 @@ class Scorer:
             return "down"
         return "none"
 
-    # -- outlook and recommendation (skills/score/rules/outlook.md §1, §5) --
+    # -- outlook and recommendation (skills/standard/rules/outlook.md §1, §5) --
     def outlook(self):
         """metrics.outlook with a verdict per horizon (base expected return vs r_base ± 2 pp), or None."""
         o = self.m.get("outlook")

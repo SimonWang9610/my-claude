@@ -16,4 +16,4 @@ rate is 43%"), a holding period or target date, and prices to evaluate ("what if
 
 `holdings.py` parses the question text (or takes `--json`), writes this file to the store, and prints the
 outcome and tax tables as JSON for `report.py`. Nothing about the accounts is stored beyond this file, and
-the user can delete it. Tax rules and their citations: [tax-ca.md](../../score/references/tax-ca.md).
+the user can delete it. Tax rules and their citations: [tax-ca.md](../../standard/references/tax-ca.md).

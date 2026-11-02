@@ -4,6 +4,7 @@ import datetime
 import json
 import math
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -534,6 +535,72 @@ class Calibration(unittest.TestCase):
         c = metrics.compute(f)["calibration"]
         self.assertIsNone(c["fy_then"])
         self.assertIn("reason", c)
+
+    KEYS = {"years_back", "fy_then", "price_then", "price_then_date", "strict_value_then", "ratio_price_to_value",
+            "base_forecast_cagr", "realized_cagr_since", "realized_basis", "spy_cagr_same_window", "spy_basis",
+            "error_pp", "years_elapsed"}
+
+    def test_record_one_entry_per_year_back(self):
+        c = metrics.compute(load())["calibration"]
+        rec = c["record"]
+        self.assertEqual([e["years_back"] for e in rec], [3, 4, 5, 6, 7, 8, 9])   # FY2016..2025: 3..9 all present
+        for e in rec:
+            self.assertTrue(self.KEYS <= set(e), e)
+            self.assertEqual(e["fy_then"], 2025 - e["years_back"])
+            self.assertIsNone(e["spy_cagr_same_window"])                            # no market/SPY.json passed
+            self.assertIn("missing", e["spy_basis"])
+            if e["base_forecast_cagr"] is None:
+                self.assertIn("reason", e)
+        five = rec[2]
+        self.assertEqual(five["base_forecast_cagr"], c["base_forecast_then"]["cagr"])  # k=5 mirrors the top level
+        self.assertEqual(five["realized_cagr_since"], c["realized_cagr_since"])
+        self.assertAlmostEqual(five["error_pp"], c["error_pp"], places=6)        # record: realised minus forecast, same sign as the top level
+        rs = c["record_summary"]
+        self.assertEqual(rs["n"], len([e for e in rec if e["base_forecast_cagr"] is not None]))
+        self.assertIsNone(rs["beat_spy_count"])
+        self.assertIn("simulated", rs["note"])
+        self.assertTrue(any("not as first filed" in a for a in c["assumptions"]))
+        f = load()
+        del f["fundamentals"]["annual"][6]                                           # FY2019 gone -> k=6 skipped
+        self.assertEqual([e["years_back"] for e in metrics.compute(f)["calibration"]["record"]], [3, 4, 5, 7, 8, 9])
+
+    def test_record_spy_from_series(self):
+        with open(os.path.join(HERE, "fixtures", "market_spy.json"), encoding="utf-8") as fh:
+            spy = json.load(fh)
+        c = metrics.compute(load(), spy=spy)["calibration"]
+        five = c["record"][2]
+        yrs = (datetime.date(2026, 10, 13) - datetime.date(2020, 12, 31)).days / 365.25
+        self.assertAlmostEqual(five["spy_cagr_same_window"], (280.0 / 161.05) ** (1 / yrs) - 1, places=4)
+        self.assertTrue(five["spy_basis"].startswith("SPY total return (adj_close) 2020-12-31 to 2026-10-13"))
+        rs = c["record_summary"]
+        self.assertEqual((rs["spy_windows"], rs["beat_spy_count"]), (7, 7))
+        self.assertIn("beat SPY in 7 of 7 windows", rs["note"])
+        close_only = {"dates": spy["dates"], "close": list(spy["adj_close"])}
+        close_only["close"][-2] = 300.0                                             # 2026-10-13
+        five = metrics.compute(load(), spy=close_only)["calibration"]["record"][2]
+        self.assertAlmostEqual(five["spy_cagr_same_window"], (300.0 / 161.05) ** (1 / yrs) - 1, places=4)
+        self.assertIn("price return only (close", five["spy_basis"])
+        stale = {"dates": spy["dates"][:-2], "adj_close": spy["adj_close"][:-2]}   # ends 2025-12-31: not covering now
+        five = metrics.compute(load(), spy=stale)["calibration"]["record"][2]
+        self.assertIsNone(five["spy_cagr_same_window"])
+        self.assertIn("does not cover", five["spy_basis"])
+
+    def test_market_dir_resolution_and_cli(self):
+        with tempfile.TemporaryDirectory() as d:
+            facts = os.path.join(d, "stocks", "X", "facts", "facts.json")
+            os.makedirs(os.path.dirname(facts))
+            self.assertEqual(metrics.market_dir_for(facts), os.path.join(d, "market"))   # store layout by default
+            os.makedirs(os.path.join(d, "x", "market"))
+            self.assertEqual(metrics.market_dir_for(os.path.join(d, "x", "o.json")), os.path.join(d, "x", "market"))
+            os.makedirs(os.path.join(d, "market"))
+            self.assertIsNone(metrics.load_spy(os.path.join(d, "market")))
+            shutil.copy(os.path.join(HERE, "fixtures", "market_spy.json"), os.path.join(d, "market", "SPY.json"))
+            shutil.copy(FIXTURE, facts)
+            p = subprocess.run([sys.executable, os.path.join(SCRIPTS, "metrics.py"), facts], capture_output=True, text=True)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            with open(facts) as fh:
+                rec = json.load(fh)["metrics"]["calibration"]["record"]
+            self.assertIsNotNone(rec[2]["spy_cagr_same_window"])
 
 
 class FetchFailure(unittest.TestCase):

@@ -23,7 +23,7 @@ manufacturers a year ahead. Not this: a low Z driven by a temporary market-cap c
 and WC/TA are healthy — still fail (the author did not carve it out), but say so in the open questions.
 
 **G4 Going-concern paragraph.** Fail when the auditor's report in the latest 10-K contains a
-going-concern explanatory paragraph. Evidence-required: the researcher cites the report's URL and
+going-concern explanatory paragraph. Evidence-required: the analyst cites the report's URL and
 quotes ≤15 words. Source: the filing itself (primary). Why: the auditor doubts the entity survives
 twelve months. Not this: the standard "critical audit matters" section, or risk-factor boilerplate
 about liquidity.

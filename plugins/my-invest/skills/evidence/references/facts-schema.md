@@ -1,4 +1,4 @@
-# facts.json — the contract between scripts, the researcher and the report
+# facts.json — the contract between scripts, the analyst and the report
 
 One file per ticker at `<project>/data/stocks/<TICKER>/facts/facts.json`, rewritten by `facts.py` (incrementally); `series.json`, `scorecard.json`, `holdings*.json` and `last_run.json` sit beside it in `facts/`. Every figure-bearing object
 carries `src` (an `S<n>` id resolving in `sources`) or, for derived values, `inputs`. `null` means not
@@ -49,7 +49,7 @@ object may carry a `note` explaining a fallback.
     "rel_strength_spy_6m": 0.0, "rel_strength_sector_6m": 0.0, "inputs": [] },
   "filings_recent": [ { "form": "8-K", "filed": "", "items": "2.02,9.01", "url": "", "src": "S2" } ],   // 8-K, 10-K, 10-Q for three years back (gates G1, G2)
   "filings_window": { "from": "2023-10-15", "to": "2026-10-14", "complete": true },                  // complete=false when the feed starts later than `from`
-  "news_since": "2026-10-13",                                                                          // the researcher's window start (last run), separate from filings_recent
+  "news_since": "2026-10-13",                                                                          // the research window start (last run), separate from filings_recent
   "insiders": null,                          // null by design in v1 → dependent items are n/a
   "consensus": null,                         // null by design in v1
   "metrics": { /* unchanged metrics.py contract: piotroski, altman, beneish, accrual_ratio, roic[], roiic_5y,

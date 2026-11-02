@@ -8,7 +8,7 @@ nearest the spot (IV <= 1% counts as no quote); implied_move_pct = atm_iv x sqrt
 minimizing the summed intrinsic value of all calls and puts at expiry. next_earnings_date comes from the
 yfinance calendar when listed. Chains are often missing: every unavailable field is null and `reason` says why.
 
-`contracts` (skills/score/rules/options-playbook.md, "Contract selection"): for the first monthly expiry at least 30
+`contracts` (skills/standard/rules/options-playbook.md, "Contract selection"): for the first monthly expiry at least 30
 days out, and for the first monthly at least `--horizon-days` out when given and different, the listed strike
 nearest each anchor (price, buy_zone and sell_zone from facts/scorecard.json when it exists, price x 0.90 as
 down_10, price x 1.10 as up_10), with BOTH the call and the put at that strike: bid, ask, mid, last, oi, iv,

@@ -15,7 +15,7 @@
     {
       "name": "my-flutter",
       "source": "./plugins/my-flutter",
-      "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1–P8), Riverpod, test quality, PR review."
+      "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1\u2013P8), Riverpod, test quality, PR review."
     },
     {
       "name": "my-workflow",
@@ -25,7 +25,7 @@
     {
       "name": "my-invest",
       "source": "./plugins/my-invest",
-      "description": "Financial advisor for US stocks from plain questions: the advisor skill reads your question (stocks, horizon, holdings), delegates deep work to the analyst agent (SEC facts, filings, news, peers, industry chain, consensus, scoring at your horizons) and answers for a beginner with a forecast by horizon, a months-ahead range, a situation-aware recommendation, Canadian tax on your shares, options explained on real contracts, and an HTML page; every figure cited; artifacts under <project>/data/."
+      "description": "Financial advisor for a rookie US-stock investor from plain questions: the advisor skill reads your question (stocks, horizon, holdings), delegates deep work to the analyst agent (SEC facts, filings, news, peers, industry chain, consensus, scoring at your horizons) and answers in a fixed order: the verdict (price outlook, buy or sell, when, at what price, how confident), the proof (scenarios and inputs, the case against, the track record, what could change the answer, what could not be verified), then the detail (news, peers, Canadian tax on your shares, options on real contracts, an HTML page); every figure cited; artifacts under <project>/data/."
     }
   ]
 }
