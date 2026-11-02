@@ -1,0 +1,18 @@
+{
+  "name": "my-invest",
+  "version": "0.2.0",
+  "description": "Financial advisor for a rookie US-stock investor, from plain questions: where the price is likely to go at your horizon, whether to buy or sell, when and at what price, how confident \u2014 then the proof (scenarios and their inputs, the case against, the model's track record on the stock, what could change the answer, what could not be verified) and the detail (news, peers, industry chain, your shares and Canadian tax, options on real contracts, charts). An advisor skill delegates to a professional analyst agent; scripts compute every figure from SEC XBRL and Yahoo data; every figure carries a source URL and date, enforced by a lint.",
+  "author": {
+    "name": "SimonWang9610"
+  },
+  "keywords": [
+    "investing",
+    "value-investing",
+    "stocks",
+    "sec-edgar",
+    "research",
+    "canada",
+    "tfsa",
+    "rrsp"
+  ]
+}

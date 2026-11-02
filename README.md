@@ -2,16 +2,17 @@
 
 ## 1 · What is this
 
-A [Claude Code](https://claude.com/claude-code) **plugin marketplace** carrying three
+A [Claude Code](https://claude.com/claude-code) **plugin marketplace** carrying four
 self-contained plugins. `my-react` drives a structured, spec-driven workflow —
 `preflight → requirements → clarify → design → tasks → implement → spec-qa` — from a request
 to shipped, evaluated code.
 
-| Plugin | Contents | Status |
-|--------|----------|--------|
-| `my-react` | 9 React/TS contract skills + 1 driver agent + 6 worker agents + the evaluation framework | stable |
-| `my-flutter` | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`) | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
-| `my-workflow` | language- and framework-agnostic software workflow for Claude Code **and GitHub Copilot**, led by the `drive-spec` skill in your session, which brings in `spec-architect`, `spec-tester`, `spec-implementer` and `spec-reviewer` when a task warrants it and saves the spec artifacts under `specs/<task>/`; every other skill does one step and works alone — `rephrase`, `audit-truth`, `decide` (+ `scaffold-project-structure`, `design-component`, `analyze-ui-state`), `build`, `verify`, `critique`; adapts to how much you specify and uses the stack knowledge you have installed — see [plugins/my-workflow/README.md](plugins/my-workflow/README.md) (renamed from `my-spec`) | new |
+| Plugin        | Contents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Status                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `my-react`    | 9 React/TS contract skills + 1 driver agent + 6 worker agents + the evaluation framework                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | stable                                                                        |
+| `my-flutter`  | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
+| `my-workflow` | language- and framework-agnostic software workflow for Claude Code **and GitHub Copilot**, led by the `drive-spec` skill in your session, which brings in `spec-architect`, `spec-tester`, `spec-implementer` and `spec-reviewer` when a task warrants it and saves the spec artifacts under `specs/<task>/`; every other skill does one step and works alone — `rephrase`, `audit-truth`, `decide` (+ `scaffold-project-structure`, `design-component`, `analyze-ui-state`), `build`, `verify`, `critique`; adapts to how much you specify and uses the stack knowledge you have installed — see [plugins/my-workflow/README.md](plugins/my-workflow/README.md) (renamed from `my-spec`) | new                                                                           |
+| `my-invest` | a financial advisor for US stocks you talk to in plain words: the `advisor` skill reads your question (stocks, horizon, holdings, what you want), delegates deep work to the `analyst` agent (ten years of SEC facts, filings, news, peers, the industry chain, analyst consensus, scoring at your horizons) and answers for a beginner in a fixed order — the verdict (where the price is likely to go, buy or sell, when, at what price, how confident), the proof (scenarios and inputs, the case against, the model's track record on the stock, what could change the answer, what could not be verified) and the detail (news, peers, industry, your shares and Canadian tax, options on real contracts, an HTML page); every figure cited and lint-checked; all artifacts under `<project>/data/` — see [plugins/my-invest/README.md](plugins/my-invest/README.md) | new |
 
 It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
 agents carry the process, plugins package it.** A skill is a self-contained procedure Claude
@@ -23,7 +24,7 @@ project configuration.
 
 ## 2 · Install & update
 
-`setup.py` installs any of this repo's plugins (`my-react`, `my-flutter`, `my-workflow`) for
+`setup.py` installs any of this repo's plugins (`my-react`, `my-flutter`, `my-workflow`, `my-invest`) for
 Claude Code, GitHub Copilot, or both. Run it with no arguments and it asks which tools, then which
 plugins; plugins already installed for the chosen tools are not offered again:
 
@@ -164,17 +165,17 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
 Every piece works standalone — invoke a skill in any session, or address an agent
 directly. The quick map (my-react):
 
-| I want to… | Invoke |
-|------------|--------|
-| understand unfamiliar/legacy code (build or query the atlas) | `/my-react:audit` · agent `my-react:auditor` |
-| turn a request into a testable spec | `/my-react:requirements` |
-| break a Figma screen into buildable components | `/my-react:figma` |
-| design contracts for approved ACs | `/my-react:design` · agent `my-react:architect` |
-| evaluate a design / a diff / a test suite | `/my-react:evaluate <mode>` · agent `my-react:evaluator` |
-| turn an approved design into ordered tasks | `/my-react:plan` |
-| author unit tests against contracts | `/my-react:test` · agent `my-react:tester` (E2E: agent `my-react:e2e`) |
-| implement against contracts / fix a bug | `/my-react:implement` · agent `my-react:implementer` |
-| review a PR before merge | `/my-react:review` |
+| I want to…                                                   | Invoke                                                                 |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| understand unfamiliar/legacy code (build or query the atlas) | `/my-react:audit` · agent `my-react:auditor`                           |
+| turn a request into a testable spec                          | `/my-react:requirements`                                               |
+| break a Figma screen into buildable components               | `/my-react:figma`                                                      |
+| design contracts for approved ACs                            | `/my-react:design` · agent `my-react:architect`                        |
+| evaluate a design / a diff / a test suite                    | `/my-react:evaluate <mode>` · agent `my-react:evaluator`               |
+| turn an approved design into ordered tasks                   | `/my-react:plan`                                                       |
+| author unit tests against contracts                          | `/my-react:test` · agent `my-react:tester` (E2E: agent `my-react:e2e`) |
+| implement against contracts / fix a bug                      | `/my-react:implement` · agent `my-react:implementer`                   |
+| review a PR before merge                                     | `/my-react:review`                                                     |
 
 Agents run via the Agent tool or `claude --agent my-react:<name>`; each carries its own
 tool fence, preloaded skills, and report format — your prompt only needs where · what ·
@@ -193,11 +194,11 @@ removes; its companion agent (if any) follows.
   over per-flow GIVEN/WHEN/THEN/HOW notes), then answers questions from it and heals itself on a
   miss by reading exactly the missing spot.
 - **Why** — understanding is expensive work worth banking: a one-shot exploration evaporates in
-  an agent's context, while an atlas persists, is queryable, and *deepens* instead of being
+  an agent's context, while an atlas persists, is queryable, and _deepens_ instead of being
   re-derived every phase.
 - **Pain** — re-reading the same unfamiliar code each phase; blast-radius guesswork ("what else
   writes this fact?"); audits that read too deep because nothing bounds them.
-- **auditor** — *initializes* the atlas as one bounded, single-context audit: **build**
+- **auditor** — _initializes_ the atlas as one bounded, single-context audit: **build**
   from source, and a fast **distill** of any curated external atlas (distill first, then build
   deepens from that map). Writes only its own `atlas/`; querying it afterwards is the skill's
   `query` mode, run inline by whoever needs an answer. Keeps a **personal memory** of each
@@ -220,7 +221,7 @@ removes; its companion agent (if any) follows.
 
 - **Purpose** — turns ACs into React **contracts** (per-unit API, data flow, state) plus the
   architecture wiring them, as `design.md` + `contracts/`.
-- **Why** — deciding unit boundaries and where a fact lives *before* code is written is far
+- **Why** — deciding unit boundaries and where a fact lives _before_ code is written is far
   cheaper than discovering them mid-implementation; an implementer should build without guessing.
 - **Pain** — "where does this state belong?"; re-litigating boundaries while coding; designs an
   implementer can't act on.
@@ -259,8 +260,8 @@ removes; its companion agent (if any) follows.
 
 - **Purpose** — writes React/TS source against a contract until the batch's failing tests pass,
   raising DESIGN GAPs instead of silently deviating.
-- **Why** — the contract fixes the *what*; level-specific rules for using/building/optimizing
-  hooks, components, stores, and services keep the *how* correct.
+- **Why** — the contract fixes the _what_; level-specific rules for using/building/optimizing
+  hooks, components, stores, and services keep the _how_ correct.
 - **Pain** — silent deviation from the design; stale-closure, effect-loop, and needless-re-render
   bugs; reinventing a unit that already exists.
 - **implementer** — a source-only fence (never edits a test) + a **personal memory** of
@@ -370,7 +371,7 @@ Reports are intermediate, presented at gates and never persisted.
   evaluation marks it REFACTOR NOW when it sits on ≥2 flows, caps an axis, or recurs
   across specs — solidify the foundation before building on it, consciously.
 - **Evaluation outcomes feed agent memory** — a failed check is already a generalized
-  pattern (saved as *avoid*); a pass earned by a codebase pattern saves as the practice
+  pattern (saved as _avoid_); a pass earned by a codebase pattern saves as the practice
   that earned it.
 
 ---
@@ -383,10 +384,10 @@ correct without heavy oversight.
 **Efficiency — fewer tokens, less re-work**
 
 - **Queryable, self-healing atlas** — `audit` banks understanding once; later phases
-  *query* it instead of re-scanning, and a query heals itself on a miss (a bounded reveal budget)
+  _query_ it instead of re-scanning, and a query heals itself on a miss (a bounded reveal budget)
   rather than dead-ending. Understanding compounds instead of evaporating each phase.
 - **Bounded exploration** — the audit walks the definition graph on-purpose, one hop at a time,
-  capping depth *during* the walk (Locate → Walk → Organize) so the off-purpose graph is never
+  capping depth _during_ the walk (Locate → Walk → Organize) so the off-purpose graph is never
   built and a read can't run away.
 - **grep + glob to locate and walk** — keyword search narrows to the candidate entries, then the
   walk follows definitions hop by hop by grepping symbols and reading — no heavier tooling needed.
@@ -403,7 +404,7 @@ correct without heavy oversight.
 
 - **Narrow tool fences** — the test agent writes tests only, the impl agent source only, the
   evaluator reads only. Red-first, author ≠ implementer, and findings-never-fixes become
-  *structural*, not a promise that can slip.
+  _structural_, not a promise that can slip.
 - **Judgment authors, search verifies** — mechanical facts (call edges, anchors, couplings) come
   from tools; judgment fills only what tools can't (a flow's GIVEN/WHEN/THEN/HOW), so what's
   verifiable is verified rather than re-argued.
