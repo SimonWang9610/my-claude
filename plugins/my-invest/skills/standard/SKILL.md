@@ -42,11 +42,18 @@ their card and in every output, and are never gates.
 - Canadian tax lines for stated holdings: [tax-ca.md](references/tax-ca.md).
 - Tiers: no failed gate and score ≥ 70 → `track closely`; 45–69 → `research deeper`; below 45 or a failed
   gate → `pass`. Cutoffs are this standard's opinion (DECISIONS D-8) and the output says so.
+- Funds (ETFs) have no scorecard. The **fund rule**, labelled this standard's own reading: a leveraged or
+  inverse fund is not built for holding (it resets daily); a covered-call fund gives up upside for income;
+  otherwise trend decides (above the 200-day average with the 50-day above it → hold, add on a dip toward
+  the 200-day average; below → hold off adding until it is back above), with cost (expense ratio) and
+  concentration (top holdings' weight, overlap with stocks the user already holds) stated beside it.
 
 ## What a conclusion must carry (the proof contract)
 
 A beginner cannot check the arithmetic, so the answer must show the reader how to distrust it. Every
-answer and every analyst's note carries, in this order after the verdict:
+answer (the brief: answer, summary, why, risks, track record, what to watch, not verified, sources) and
+every analyst's note carries, in this order after the verdict, with every horizon dated from the price
+date and every figure traceable through its marker to a linked raw source:
 
 1. **The scenarios and their inputs** — bear, base, bull per horizon with the growth, multiple and
    cash-return assumptions and their markers; consensus as a secondary row with its base rate.

@@ -13,7 +13,8 @@ default the file records.
 | `compare.py <T> --peers A,B [--md]` | peer table into `facts/peers.json` (growth, margin, ROIC, cash yield, debt years, 12-month return, stance) | peers from the request or `research/industry.md` |
 | `holdings.py <T> --question "<holdings text>" [--md]` | positions, gains at price points, Canadian tax lines into `facts/holdings*.json` | the holdings phrases verbatim |
 | `score.py <T> [--lens] [--holding] [--mode screen]` | gates, pillars, score, tier, zones, outlook verdicts, recommendation, options operations, short-term lens into `facts/scorecard.json` | lens and holding from `request.json` when flags are absent |
-| `report.py <T> --question … --lens … --chat --html` | dossier, dated snapshot, HTML page, `history/log.md` line (with what was said and expected), `INDEX.md`; prints the chat answer; lints | `--narrative <path>` (default: newest file in `history/`) |
+| `fund.py <T>` | a fund (ETF): what it is and holds, cost, prices and returns against SPY, trend, into `facts/fund.json`; used when `facts.py` reports the ticker is not an SEC registrant | — |
+| `report.py <T> --question … --lens … --chat --html` | the brief (printed with `--chat`; the page with `--html`), `reports/dossier.md` and `dossier.html` with every detail, a dated snapshot, the `history/log.md` line (what was said and expected), `INDEX.md`; lints; renders the fund brief when `fund.json` exists and no scorecard | `--narrative <path>` (default: newest file in `history/`) |
 | `chart.py <T>` | the five panels as `charts/<date>.html` | — |
 | `mdhtml.py <file.md> --out <file.html> --title …` | any Markdown table or brief as a page | — |
 | `store.py list \| tree <T> \| path [<T>] \| next-id <T>` | the data folder | — |
@@ -23,5 +24,10 @@ How scripts consume the request: `metrics.py --horizons <years>` (comma list, fr
 `--g-base`, `--erp`, `--mos` from `what_if` and `margin_of_safety`; `score.py` reads the horizons present
 in the valuation and `request.json` for lens, holdings and intent; `options.py --horizon-days` from the
 longest horizon under a year or the nearest named date; `compare.py --peers` from `peers_requested`, else
-the industry file's peers; `report.py` renders the horizon rows that exist and the sections in `wants`,
-keeping the verdict and the proof sections whatever `wants` says.
+the industry file's peers; `report.py` renders the horizon rows that exist and, in the brief, only the
+detail sections in `wants`; the answer, summary, why, risks, record, what to watch and not verified
+always stay.
+
+Why so many scripts: one per data source or step, so a failure in one (Yahoo breaks every few months)
+stops only that step and says so, the rest stays cached, and every number can be traced to the script
+and inputs that produced it. The advisor runs them; the user never has to.

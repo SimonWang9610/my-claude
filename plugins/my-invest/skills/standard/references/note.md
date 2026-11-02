@@ -5,7 +5,8 @@ professional (the standard's terms allowed, every judgment tied to an item id or
 the advisor's narrative, `history/<date>-<HHMM>.md`, the same slots in plain words for a beginner. Every
 figure carries the marker it has in its source file; `report.py --narrative <file>` renders the chat
 answer and the dossier from the newest narrative and lints it with `--facts`, so the file carries no
-Evidence log of its own. Slot names are `##` headings and must match exactly.
+Evidence log of its own. Slot names are `##` headings and must match exactly. Bullets stay under thirty words: the brief shows
+the first four of Why and the first three of Case against as they are written.
 
 ```markdown
 ## Question

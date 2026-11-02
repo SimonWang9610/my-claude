@@ -3,7 +3,7 @@
 # compatibility and otherwise unused).
 # Project: --project X in the args, else $MY_INVEST_PROJECT, else the working directory.
 # Interpreter: "python" in <project>/data/config.json -> <project>/data/.venv/bin/python -> for the scripts that
-# need yfinance (prices.py, options.py, market.py, facts.py) a .venv is created from the newest python3.10+ on PATH
+# need yfinance (prices.py, options.py, market.py, facts.py, fund.py) a .venv is created from the newest python3.10+ on PATH
 # with requirements.txt installed -> python3 (SEC-only scripts keep working; prices.py reports that 3.10+ is needed).
 # Settings are resolved by the scripts (common.resolve_setting); only "python" is read here.
 set -euo pipefail
@@ -57,7 +57,7 @@ if [ -n "$PY" ]; then
 elif [ -x "$MINE/.venv/bin/python" ]; then
   PY="$MINE/.venv/bin/python"
 else
-  case "$SCRIPT" in prices.py|options.py|market.py|facts.py) provision;; esac
+  case "$SCRIPT" in prices.py|options.py|market.py|facts.py|fund.py) provision;; esac
   PY="${PY:-python3}"
 fi
 exec "$PY" "$HERE/$SCRIPT" "$@" --data "$DATA"

@@ -246,3 +246,18 @@ Closed decisions are not re-litigated. A reversal is a new entry with **Supersed
 - Options: A trust by assertion (verdict, reasons, disclaimer) / B a proof contract adopted from the surveyed repos (TradingAgents' settled memory and REVIEW sentinel, ai-hedge-fund's abstention and ledger, xvary's kill criteria, AdvancingTitans' claim typing, the quant platforms' benchmark rule) / C a multi-agent bull–bear debate
 - Chosen: B — why: the user wants analysis and evidence that the conclusion is strong and "the agent is not cheating"; a logged call settled later is the only honest evidence of that; C buys cost and run-to-run variance, not accuracy (the repos' own READMEs say two runs can differ)
 - Supersedes: D-26 (answer shape), D-32 (calibration as one point). Discards: none
+
+
+## D-35 2026-11-02 — The answer is a short brief; the full detail lives in the stock's folder for later questions
+- Non-negotiables: the direct answer first, then the figures it rests on, then why and the risks; every horizon dated from the price date ("5 years from today (to Oct 2031)"); every figure traceable through its marker to a linked raw source; plain words, a glossary only for terms used; under about a hundred lines for one stock
+- End state: `report.py --chat` prints the brief (answer, summary, why ≤ 4, risks ≤ 3, track record in two lines, what to watch ≤ 3, not verified ≤ 3 plus a count, the detail sections the question asked for, words used, sources with links); the page is the brief plus the charts with one link to `reports/dossier.html`; `reports/dossier.md` keeps every section, table and log for agents; the portfolio answer is one table plus one short block per ticker (advisor/references/answer.md)
+- Options: A keep the long chat (short answer, price map, scenarios, case against, why, record table, news, peers, industry, shares, options, short-term, glossary, then seven collapsed detail sections) / B a brief plus a separate dossier
+- Chosen: B — why: the user found the reports verbose and jargon-heavy, could not tell what "5 years" counted from, could not jump from a number to its source, and wanted the answer and a summary first; detail that matters for a later question belongs in the folder, not in the answer
+- Supersedes: D-26 (chat shape), D-34 (where the proof sections render: the brief keeps them short, the dossier keeps them whole). Discards: the seven collapsed Details sections in the chat
+
+## D-36 2026-11-02 — Funds (ETFs) get an answer from `fund.py` and a labelled fund rule, never a skip
+- Non-negotiables: no ticker the user holds is skipped for lack of a scorecard; the fund rule is this standard's own reading of trend, cost and concentration, labelled so, not a model of the fund's value; leveraged, inverse and covered-call funds carry a warning line; returns beside SPY over the same windows
+- End state: `fund.py <T>` writes `facts/fund.json` (what it is and holds, cost, prices, returns vs SPY, trend, flags, sources, missing); `report.py` renders the fund brief, a lint-clean dossier with holdings and sector weights, the log line and `INDEX.md` when `fund.json` exists and no scorecard; the advisor runs it whenever `facts.py` reports a non-registrant or the holdings file says EXCHANGE_TRADED_FUND
+- Options: A list funds without a verdict (what the first portfolio review did) / B a fund path with its own rule / C score funds through the company standard
+- Chosen: B — why: the user's accounts hold seventeen funds that got no answer; C cannot work (a fund files no 10-K and has no owner earnings); A leaves the biggest positions unanswered
+- Supersedes: none. Discards: none

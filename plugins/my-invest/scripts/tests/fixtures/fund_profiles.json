@@ -1,0 +1,61 @@
+{
+  "QQQ": {
+    "version": "1.7.0", "failed": {}, "quote_type": "ETF",
+    "info": {"longName": "Invesco QQQ Trust", "shortName": "Invesco QQQ Trust, Series 1", "quoteType": "ETF",
+             "category": "Large Growth", "fundFamily": "Invesco", "fundInceptionDate": 921024000.0,
+             "totalAssets": 380000000000.0, "yield": 0.0042, "navPrice": 681.2, "currency": "USD"},
+    "description": "The fund generally will invest at least 90% of its total assets in the securities that comprise the index. The index includes 100 of the largest domestic and international non-financial companies listed on the Nasdaq Stock Market based on market capitalization. To maintain the correspondence between the composition and weights of the securities in the trust (the securities) and the stocks in the Nasdaq-100 Index®, the adviser adjusts the securities from time to time.",
+    "overview": {"category": "Large Growth", "family": "Invesco", "legal_type": "Exchange Traded Fund"},
+    "expense_ratio": 0.002, "equity_pe": 28.3,
+    "top_holdings": [{"symbol": "NVDA", "name": "NVIDIA Corp", "weight": 0.083}, {"symbol": "AAPL", "name": "Apple Inc", "weight": 0.079},
+                     {"symbol": "MSFT", "name": "Microsoft Corp", "weight": 0.078}, {"symbol": "AMZN", "name": "Amazon.com Inc", "weight": 0.055},
+                     {"symbol": "AVGO", "name": "Broadcom Inc", "weight": 0.051}, {"symbol": "META", "name": "Meta Platforms Inc", "weight": 0.035},
+                     {"symbol": "TSLA", "name": "Tesla Inc", "weight": 0.033}, {"symbol": "GOOGL", "name": "Alphabet Inc Class A", "weight": 0.027},
+                     {"symbol": "GOOG", "name": "Alphabet Inc Class C", "weight": 0.026}, {"symbol": "NFLX", "name": "Netflix Inc", "weight": 0.021}],
+    "sector_weights": {"technology": 0.603, "communication_services": 0.154, "consumer_cyclical": 0.129, "healthcare": 0.045,
+                       "consumer_defensive": 0.038, "industrials": 0.031},
+    "asset_classes": {"cash": 0.004, "stock": 0.996, "bond": 0.0, "preferred": 0.0, "convertible": 0.0, "other": 0.0}
+  },
+  "SQQQ": {
+    "version": "1.7.0", "failed": {"equity_holdings": "topHoldings has no equityHoldings"}, "quote_type": "ETF",
+    "info": {"longName": "ProShares UltraPro Short QQQ", "shortName": "ProShares UltraPro Short QQQ", "quoteType": "ETF",
+             "category": "Trading--Inverse Equity", "fundFamily": "ProShares", "fundInceptionDate": 1265760000.0,
+             "totalAssets": 3200000000.0, "yield": 0.061, "navPrice": 17.4, "currency": "USD"},
+    "description": "The fund invests in financial instruments that ProShare Advisors believes, in combination, should produce daily returns consistent with the fund's investment objective. The index includes 100 of the largest domestic and international non-financial companies listed on The Nasdaq Stock Market based on market capitalization. The fund is non-diversified.",
+    "overview": {"category": "Trading--Inverse Equity", "family": "ProShares", "legal_type": "Exchange Traded Fund"},
+    "expense_ratio": 0.0095, "equity_pe": null, "top_holdings": [], "sector_weights": {},
+    "asset_classes": {"cash": 1.0, "stock": 0.0, "bond": 0.0, "preferred": 0.0, "convertible": 0.0, "other": 0.0}
+  },
+  "JEPI": {
+    "version": "1.7.0", "failed": {}, "quote_type": "ETF",
+    "info": {"longName": "JPMorgan Equity Premium Income ETF", "shortName": "JPMorgan Equity Premium Income", "quoteType": "ETF",
+             "category": "Derivative Income", "fundFamily": "JPMorgan", "fundInceptionDate": 1589846400.0,
+             "totalAssets": 41000000000.0, "yield": 0.081, "navPrice": 57.1, "currency": "USD"},
+    "description": "The investment seeks current income while maintaining prospects for capital appreciation. The fund seeks to achieve this objective by creating an actively managed portfolio of equity securities comprised significantly of those included in the fund's primary benchmark, the S&P 500 Total Return Index, and through equity-linked notes.",
+    "overview": {"category": "Derivative Income", "family": "JPMorgan", "legal_type": "Exchange Traded Fund"},
+    "expense_ratio": 0.0035, "equity_pe": 24.1,
+    "top_holdings": [{"symbol": "NVDA", "name": "NVIDIA Corp", "weight": 0.018}, {"symbol": "MSFT", "name": "Microsoft Corp", "weight": 0.017}],
+    "sector_weights": {"technology": 0.17, "industrials": 0.14, "financial_services": 0.13, "healthcare": 0.12, "consumer_defensive": 0.11,
+                       "utilities": 0.08, "consumer_cyclical": 0.08, "communication_services": 0.07, "energy": 0.04, "realestate": 0.03,
+                       "basic_materials": 0.03},
+    "asset_classes": {"cash": 0.03, "stock": 0.82, "bond": 0.0, "preferred": 0.0, "convertible": 0.0, "other": 0.15}
+  },
+  "BND": {
+    "version": "1.7.0", "failed": {}, "quote_type": "ETF",
+    "info": {"longName": "Vanguard Total Bond Market Index Fund ETF Shares", "shortName": "Vanguard Total Bond Market ETF", "quoteType": "ETF",
+             "category": "Intermediate Core Bond", "fundFamily": "Vanguard", "fundInceptionDate": 1175558400.0,
+             "totalAssets": 130000000000.0, "yield": 0.0375, "navPrice": 74.5, "currency": "USD"},
+    "description": "The fund invests by sampling the index, meaning that it holds a broadly diversified collection of securities that, in the aggregate, approximates the full index in terms of key risk factors and other characteristics. The index is the Bloomberg U.S. Aggregate Float Adjusted Index.",
+    "overview": {"category": "Intermediate Core Bond", "family": "Vanguard", "legal_type": "Exchange Traded Fund"},
+    "expense_ratio": 0.0003, "equity_pe": null, "top_holdings": [], "sector_weights": {},
+    "asset_classes": {"cash": 0.021, "stock": 0.0, "bond": 0.979, "preferred": 0.0, "convertible": 0.0, "other": 0.0}
+  },
+  "AAPL": {
+    "version": "1.7.0", "quote_type": "EQUITY",
+    "failed": {"description": "Only ETFs and Mutual Funds have funds data.", "fund_overview": "Only ETFs and Mutual Funds have funds data."},
+    "info": {"longName": "Apple Inc.", "shortName": "Apple Inc.", "quoteType": "EQUITY", "category": null, "fundFamily": null,
+             "fundInceptionDate": null, "totalAssets": null, "yield": null, "navPrice": null, "currency": "USD"},
+    "description": null, "overview": {"category": null, "family": null, "legal_type": null},
+    "expense_ratio": null, "equity_pe": null, "top_holdings": null, "sector_weights": null, "asset_classes": null
+  }
+}

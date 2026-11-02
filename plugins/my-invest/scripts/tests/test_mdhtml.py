@@ -97,29 +97,27 @@ class ReportHtml(unittest.TestCase):
                   "ROIC against the discount rate", "Diluted shares and cash returned", "Holdings outcomes"):
             self.assertIn("<h2>%s</h2>" % t, page)
         self.assertEqual(page.count("<svg"), 5)
-        order = [page.index(x) for x in ("The short answer", 'id="details"', 'id="charts"', 'id="full-dossier"',
-                                         "Evidence log")]
+        order = [page.index(x) for x in ("Answer", "Summary", 'id="charts"', 'id="full-dossier"')]
         self.assertEqual(order, sorted(order))
+        self.assertNotIn("Evidence log", page.split('id="charts"')[0])             # the brief carries Sources, not the log
+        self.assertNotIn("<details", page.split('id="charts"')[0])                 # the brief is never collapsed
+        self.assertIn('href="dossier.html"', page)
+        with open(os.path.join(os.path.dirname(path), "dossier.html"), encoding="utf-8") as f:
+            dossier = f.read()
+        assert_page_contract(self, dossier, "AAPL dossier")
         for h in ("The short answer", "Price outlook", "Thesis", "Facts", "Open questions", "Evidence log"):
-            self.assertRegex(page, r"<h\d id=\"[^\"]+\">%s</h\d>" % h)
-        chat = page.split('id="charts"')[0]
-        self.assertNotIn("<details", chat.split('id="details"')[0])         # the short answer stays open
-        summaries = re.findall(r'<details class="sec"><summary>([^<]+)</summary>', chat)
-        self.assertEqual(summaries, ["1. Strict value lens", "2. Action matrix", "3. Strengths / weaknesses",
-                                     "4. Industry and peers", "5. Options context", "6. Short-term lens",
-                                     "7. Open questions"])
-        self.assertNotIn("<details open", page)
-        self.assertIn("<hr>", chat)
-        dead = [m for m in re.findall(r'href="#ev-(S\d+)"', page) if 'id="ev-%s"' % m not in page]
+            self.assertRegex(dossier, r"<h\d id=\"[^\"]+\">%s</h\d>" % h)
+        dead = [m for m in re.findall(r'href="#ev-(S\d+)"', dossier) if 'id="ev-%s"' % m not in dossier]
         self.assertEqual(dead, [])
+        self.assertIn('href="https://finance.yahoo.com/quote/AAPL/history/"', page)   # inline markers link on the page
 
     def test_chat_lists_page_when_html(self):
         d = build(self.tmp)
         quiet(score.main, [d])
         out = quiet(report.main, [d, "--question", Q, "--lens", "long", "--html", "--chat"])
-        self.assertRegex(out, r"Files: \[page\]\(file://[^)]+\.html\)")
+        self.assertRegex(out, r"Files: \[full dossier\]\(file://[^)]+dossier\.md\) · \[page\]\(file://[^)]+\.html\)")
         reports = os.path.join(d, "reports")
-        html = [n for n in os.listdir(reports) if n.endswith(".html")][0]
+        html = [n for n in os.listdir(reports) if n.endswith(".html") and n != "dossier.html"][0]
         with open(os.path.join(reports, html), encoding="utf-8") as f:
             self.assertIn("Charts: no evidence", f.read())
 

@@ -86,6 +86,7 @@ GLOSS = (
     ("time decay", r"time decay", "an option loses value each day as expiry nears, all else equal"),
     ("breakeven", r"breakeven|strike plus premium", "the share price at which the option trade neither gains nor loses"),
 )
+OPTION_TERMS = {"call", "put", "premium", "strike", "expiry", "covered", "assignment", "time decay", "breakeven"}
 INLINE = (  # (term, gloss injected on first mention, guard): skipped when the guard already appears in the line
     (r"\bowner earnings\b(?! \()", "owner earnings (the cash the business really makes)", r"cash the business really makes"),
     (r"\bimplied CAGR\b(?! \()", "implied CAGR (the yearly return the price implies)", r"yearly return the price implies"),
@@ -881,7 +882,7 @@ class Report:
         out = []
         for rel, what in self.FOLDER_MAP:
             if "*" in rel:
-                skip = ("log.md",) if rel.startswith("history") else ("dossier.md",) if rel.startswith("reports/*.md") else ()
+                skip = ("log.md",) if rel.startswith("history") else ("dossier.md", "dossier.html") if rel.startswith("reports/") else ()
                 hits = [h for h in sorted(glob.glob(os.path.join(self.store, rel))) if os.path.basename(h) not in skip]
                 path = os.path.relpath(hits[-1], self.store) if hits else None
                 label = "%s (newest of %d)" % (rel, len(hits)) if len(hits) > 1 else rel
@@ -1002,8 +1003,8 @@ class Report:
         b, u, r = g(h, "bear", "cagr"), g(h, "bull", "cagr"), o.get("required_return")
         base = g(h, "base", "cagr")
         rel = ("above" if base >= r + 0.02 else "about" if base >= r - 0.02 else "below") if None not in (base, r) else "versus"
-        return "## %s — %s, %s; expect roughly %s to %s a year over %s, %s the %s the risk demands" % (
-            self.f.get("ticker"), word, trend, pct(b, 0), pct(u, 0), h.get("label"), rel, pct(r, 1))
+        return "## %s — %s, %s; expect roughly %s to %s a year over the %s, %s the %s the risk demands" % (
+            self.f.get("ticker"), word, trend, pct(b, 0), pct(u, 0), self.dated(self.ref(), h.get("label")), rel, pct(r, 1))
 
     def short_answer(self):
         o, rec = self.ol(), self.rec()
@@ -1618,26 +1619,441 @@ class Report:
             out += ["### " + t] + b + [""]
         return "\n".join(out)
 
+    # ---------- the brief: the short report the user reads (advisor/references/answer.md) ----------
+    def price_date(self):
+        return g(self.f, "price", "date") or self.sc.get("as_of") or self.date
 
-def write_html(r, path, chat_md, dossier_md):
-    """Chat answer, then the chart panels (no second copy of the data), then the full dossier."""
+    def end_month(self, h):
+        """Calendar month h years after the price date: 'Nov 2031'."""
+        try:
+            d = datetime.date.fromisoformat(str(self.price_date())[:10])
+        except ValueError:
+            return "n/a"
+        months = int(round(float(h) * 12))
+        y, m = divmod(d.month - 1 + months, 12)
+        return datetime.date(d.year + y, m + 1, 1).strftime("%b %Y")
+
+    def dated(self, h, label=None):
+        """'5 years from today (to Nov 2031)' so a horizon is never read as a past span."""
+        return "%s from today (to %s)" % (label or horizon_label(h), self.end_month(h))
+
+    def source_url(self, sid):
+        s = self.sources.get(sid) or {}
+        if s.get("url"):
+            return s["url"]
+        row = next((l for l in self.res_log if re.match(r"^\|\s*%s\s*\|" % sid, l)), None)
+        if row:
+            cells = [c.strip() for c in row.strip().strip("|").split("|")]
+            if len(cells) > 3 and cells[3]:
+                return cells[3]
+        return None
+
+    def link(self, sid):
+        url = self.source_url(sid)
+        return "[%s](%s)" % (sid, url) if url else "[%s]" % sid
+
+    def linkify(self, text):
+        """[S3] and [S60, S61] become links to the source row's URL (a filing, an API call, an article, or the
+        local file a script computed into), so a reader jumps from a figure to its raw source."""
+        return re.sub(r"\[(S\d+(?:,\s*S\d+)*)\](?!\()",
+                      lambda m: ", ".join(self.link(x.strip()) for x in m.group(1).split(",")), text)
+
+    def used_ids(self, text):
+        return sorted({x for grp in re.findall(r"\[(S\d+(?:,\s*S\d+)*)\](?!\()", text)
+                       for x in re.split(r",\s*", grp)}, key=sid_num)
+
+    def sources_lines(self, text):
+        """One line per source cited in the text; a derived row (a script's arithmetic) is followed by the raw
+        sources named in its `what`, so the reader can jump from a computed figure to the filing or API behind it."""
+        out, ids, seen = [], list(self.used_ids(text)), set()
+        for sid in ids:
+            s = self.sources.get(sid) or {}
+            if s.get("class") == "derived":
+                ids += [x for x in re.findall(r"\bS\d+\b", str(s.get("what", ""))) if x not in ids]
+        for sid in sorted(set(ids), key=sid_num):
+            s = self.sources.get(sid) or {}
+            what, cls = s.get("what"), s.get("class")
+            if not s:
+                row = next((l for l in self.res_log if re.match(r"^\|\s*%s\s*\|" % sid, l)), None)
+                if row:
+                    cells = [c.strip() for c in row.strip().strip("|").split("|")]
+                    cls, what = (cells + ["", ""])[1], (cells + ["", "", ""])[2]
+            url = self.source_url(sid)
+            if cls == "derived":
+                out.append("- %s — %s (a script's arithmetic; its inputs are the sources above): %s" % (
+                    sid, esc(what or "derived"), "<%s>" % url if url else "no file"))
+            else:
+                out.append("- %s — %s%s: %s" % (sid, esc(what or "source"), " (%s)" % cls if cls else "",
+                                                "<%s>" % url if url else "no URL"))
+        return out
+
+    def rec_reason(self):
+        rec, r = self.rec(), self.ref()
+        if rec.get("basis") != "outlook" or rec.get("expected_return") is None:
+            return rec.get("note") or ""
+        h = g(self.ol(), "horizons", r) or {}
+        return "the expected return of about %s a year over the %s %s the %s the risk demands, and the trend is %s" % (
+            pct(rec.get("expected_return"), 1), self.dated(r, h.get("label")),
+            {"above": "beats", "within": "is about", "below": "is below"}.get(rec.get("band"), "versus"),
+            pct(rec.get("required_return"), 1), rec.get("trend") or "unknown")
+
+    def levels_line(self):
+        lv = (self.rec().get("levels") or {})
+        names = (("ma50", "50-day average"), ("pullback_10pct", "10% below today"), ("ma200", "200-day average"),
+                 ("strict_value", "a strict value investor's price"))
+        parts = ["%s (%s)" % (money(lv[k]), n) for k, n in names if lv.get(k) is not None]
+        return SEP.join(parts)
+
+    def answer_lines(self):
+        """The direct answer: what to do if you hold it, what to do if you want to buy, the limit-order levels."""
+        sc, rec, S = self.sc, self.rec(), self.S
+        marks = mk(rec.get("markers") or [S])
+        if sc.get("gates_failed"):
+            return ["- **Stay away, or sell what you hold** — a deal-breaker check failed (%s); nothing else in this "
+                    "report softens that%s" % (", ".join(sc["gates_failed"]), mk([S]))]
+        if not rec.get("holding") and not rec.get("not_holding"):
+            return ["- **No verdict** — %s; this report does not fill the gap with a default hold%s" % (
+                esc(rec.get("note") or "the scripts could not compute an expected return"), mk([S]))]
+        if rec.get("basis") != "outlook" or rec.get("expected_return") is None:
+            z = self.sc.get("zones") or {}
+            why = "the outlook could not be computed (%s), so the strict value rule decides: fair value %s, buy below %s, " \
+                  "sell above %s" % (esc(rec.get("note") or "inputs missing"), money(z.get("base_today")),
+                                     money(z.get("buy_below")), money(z.get("sell_above")))
+        else:
+            why = self.rec_reason()
+        out = ["- **If you hold it:** %s — because %s%s" % (rec.get("holding") or "n/a", why, marks),
+               "- **If you want to buy:** %s%s" % (rec.get("not_holding") or "n/a", marks)]
+        lv = self.levels_line()
+        if lv:
+            out.append("- **Limit-order levels the rule points to:** %s%s" % (lv, marks))
+        return out + self.if_hits()
+
+    def summary_rows(self):
+        """Six to eight rows of the figures the answer rests on, each dated and linked."""
+        sc, o, r, D, S, P = self.sc, self.ol(), self.ref(), self.D, self.S, self.P
+        rows = ["| | |", "|---|---|", "| Price today (%s) | %s [%s] |" % (self.price_date(), money(sc.get("price")), P)]
+        if o and r:
+            h = o["horizons"][r]
+            rows.append("| Expected by %s (%s) | worst %s · likely %s · best %s — about %s a year in the likely case [%s, %s] |" % (
+                self.end_month(r), "%s from today" % h.get("label"), money(g(h, "bear", "price")),
+                money(g(h, "base", "price")), money(g(h, "bull", "price")), pct(g(h, "base", "cagr"), 1), D, S))
+            rows.append("| Return the risk demands | %s a year (10-year Treasury yield plus an equity risk premium) [%s] |" % (
+                pct(o.get("required_return"), 1), D))
+        rows.append("| Next few months | %s |" % self.months_cell())
+        c = self.cons()
+        if c and g(c, "targets", "mean") is not None:
+            rows.append("| Analysts' average 12-month target (secondary; only about 38%% of such targets are met) | %s from %s analysts [%s] |" % (
+                money(g(c, "targets", "mean")), g(c, "targets", "count") or "n/a", c.get("src") or "S12"))
+        rows.append(self.short_answer_strict()[-1].replace("How confident is the model?", "Confidence")
+                    .replace("How confident is the analyst?", "Confidence"))
+        a = self.sc.get("action") or {}
+        hold = a.get("holdings") or []
+        if hold:
+            worth = sum(num(x.get("value")) or 0 for x in hold)
+            gain = sum(num(x.get("gain")) or 0 for x in hold)
+            rows.append("| Your shares | worth %s, gain %s (%s) [%s, %s] |" % (
+                usd0(worth), signed0(gain), ", ".join(ACCOUNTS.get(x.get("account"), x.get("account")) for x in hold),
+                P, S))
+        return rows
+
+    def record_lines(self):
+        """The track record in two sentences; the per-year table stays in the dossier."""
+        out = []
+        note = g(self.m, "calibration", "record_summary", "note")
+        if note:
+            out.append("- %s [%s]" % (note, self.D))
+        said = self.said_before(limit=1)
+        if len(said) > 2:
+            c = [x.strip() for x in said[2].strip().strip("|").split("|")]
+            out.append("- Last time (%s) this advisor said %s at %s; now %s, SPY %s over the same days [%s]" % (
+                c[0], c[1], c[2], c[3], c[4], self.H))
+        return out or ["- No past calls yet; the simulated record needs at least three fiscal years of data [%s]" % self.D]
+
+    def missing_lines(self, limit=3):
+        lines = [l for l in self.not_verified() if l.startswith("- ")]
+        more = len(lines) - limit
+        return lines[:limit] + (["- and %d more, listed in the dossier [%s]" % (more, self.S)] if more > 0 else [])
+
+    def brief(self, paths, page=None, links=False):
+        """The short report: answer, summary, why, risks, record, what to watch, not verified, the detail the
+        question asked for, sources as links. Everything else lives in the dossier for later questions. With
+        `links` (the page) every inline marker is a link too; in the chat the Sources list carries the links."""
+        want = (lambda k: True) if self.wants is None else (lambda k: k in self.wants)
+        sec = [("Answer", self.answer_lines()),
+               ("Summary", ["*computed by scripts; horizons count from today, %s*" % self.price_date(), ""] + self.summary_rows()),
+               ("Why", ["*the analyst's reading*", ""] + self.why_plain()[:4]),
+               ("Risks: the case against", [l for l in self.case_against()[2:] if l.strip()][:3]),
+               ("Track record", self.record_lines()),
+               ("What to watch", self.could_change()),
+               ("Not verified", self.missing_lines())]
+        mine = self.your_shares()
+        if mine:
+            sec.append(("Your shares", mine))
+        news = self.news_table()
+        if news and want("news"):
+            sec.append(("News, what it means", news[:5]))
+        if want("peers"):
+            slot = [l for l in (self.narr or {}).get(PEERS_SLOT, []) if l.strip()]
+            if slot:
+                sec.append(("Compared with similar companies", slot[:2]))
+        if want("options"):
+            ops = self.options_plain()
+            if ops and not ops[0].startswith("Not now"):
+                sec.append(("Options on this stock, explained", ops + [
+                    "- Options can lose the whole premium; selling a call caps your gain. This shows how the pieces work, "
+                    "not a recommendation."]))
+        sv = self.short_view()
+        if sv and want("short_term"):
+            sec.append(("Short-term view", sv))
+        body = [self.headline(), "*As of %s. Every horizon below is counted from that date.*" % self.price_date(), ""]
+        for t, b in sec:
+            body += ["### " + t] + b + [""]
+        text = "\n".join(body)
+        words = ["- **%s** — %s" % (t, d) for t, rx, d in GLOSS if re.search(rx, text, re.I)
+                 and (t not in OPTION_TERMS or "### Options" in text) and t != "quality / strength / capital use / price / risk"]
+        if words:
+            body += ["### Words used here"] + words + [""]
+        body += ["### Sources"] + self.sources_lines(text) + [""]
+        files = [("full dossier", paths[0])] + ([("page", page)] if page else [])
+        charts = sorted(glob.glob(os.path.join(self.store, "charts", "*.html")))
+        if charts:
+            files.append(("chart", charts[-1]))
+        body += ["Files: " + SEP.join("[%s](file://%s)" % (n, os.path.abspath(p)) for n, p in files), "", "> " + DISCLAIMER]
+        return self.linkify("\n".join(body)) if links else "\n".join(body)
+
+
+# ---------- funds (ETFs): rendered from facts/fund.json, which fund.py writes; no scorecard ----------
+FUND_KIND = {"index": "an index fund", "sector": "a sector fund", "bond": "a bond fund", "dividend": "a dividend fund",
+             "international": "an international fund", "leveraged": "a leveraged fund", "inverse": "an inverse fund",
+             "covered-call": "a covered-call fund", "other": "a fund"}
+
+
+class FundReport:
+    """The brief for a fund. The 'fund rule' is this standard's own reading of trend, cost and concentration; it is
+    labelled as such because no model values a fund the way the scorecard values a company."""
+
+    def __init__(self, stock, question, date, when=None):
+        self.st, self.store, self.q, self.date = stock, stock.root, question, date
+        self.when = when or datetime.datetime.now(datetime.timezone.utc)
+        self.f = read_json(os.path.join(stock.facts_dir, "fund.json"))
+        if self.f is None:
+            raise FileNotFoundError("facts/fund.json is required in %s (run fund.py)" % stock.root)
+        self.sources = dict(self.f.get("sources") or {})
+        self.H = "S62"
+        self.hist_path = stock.log
+        self.sources[self.H] = {"class": "derived", "what": "report.py run history, one line per analysis",
+                                "url": "file://" + os.path.abspath(self.hist_path), "as_of": date, "retrieved": date}
+        self.P = next((k for k, v in self.sources.items() if "price" in str(v.get("what", "")).lower()), "S1")
+        self.Q = next((k for k, v in self.sources.items() if "profile" in str(v.get("what", "")).lower()), "S2")
+        self.M = next((k for k, v in self.sources.items() if "SPY" in str(v.get("what", ""))), None)
+        self.res_log = []
+        self.m = {}
+
+    source_url, link, linkify, used_ids, sources_lines = (Report.source_url, Report.link, Report.linkify,
+                                                          Report.used_ids, Report.sources_lines)
+
+    def pr(self):
+        return self.f.get("price") if isinstance(self.f.get("price"), dict) else {}
+
+    def kind_phrase(self):
+        k = self.f.get("kind") or "other"
+        what = FUND_KIND.get(k, "a fund")
+        tracks = self.f.get("tracks")
+        return "%s%s" % (what, " tracking %s" % tracks if tracks else "")
+
+    def rule(self):
+        """(holder, buyer) per the fund rule."""
+        k, p = self.f.get("kind"), self.pr()
+        if k in ("leveraged", "inverse"):
+            return ("not built for holding: it resets daily, so over weeks it drifts from its index; the fund's own "
+                    "prospectus governs", "do not buy to hold")
+        if k == "covered-call":
+            return ("hold only if you want income more than growth: it gives up part of the upside",
+                    "buy only for income; the underlying stock keeps the upside")
+        tr, ma200 = p.get("trend"), p.get("ma200")
+        if tr == "up":
+            return ("hold; add on a dip toward the 200-day average%s" % (" (%s)" % money(ma200) if ma200 else ""),
+                    "buy in stages; the 200-day average%s is the natural limit level" % (" %s" % money(ma200) if ma200 else ""))
+        if tr == "down":
+            return ("hold off adding until the price is back above its 200-day average%s" % (
+                " (%s)" % money(ma200) if ma200 else ""), "wait for the trend to turn")
+        return ("hold; no trend signal either way", "buy in stages if you want the exposure")
+
+    def vs_spy(self, key):
+        a, b = num(self.pr().get(key)), num(g(self.f, "spy", key))
+        if a is None:
+            return "n/a"
+        return "%s (SPY %s)" % (spct(a) if "cagr" not in key else pct(a, 1) + " a year",
+                                (spct(b) if "cagr" not in key else pct(b, 1) + " a year") if b is not None else "n/a")
+
+    def headline(self):
+        p = self.pr()
+        return "## %s — %s, %s; trend %s; 12 months %s" % (
+            self.f.get("ticker"), self.f.get("name") or "fund", self.kind_phrase(), p.get("trend") or "unknown",
+            self.vs_spy("return_12m"))
+
+    def summary_rows(self):
+        p, P, Q, M = self.pr(), self.P, self.Q, self.M
+        rows = ["| | |", "|---|---|",
+                "| Price today (%s) | %s %s [%s] |" % (p.get("date") or self.date, money(p.get("last")), p.get("currency") or "", P),
+                "| 52-week range | %s to %s [%s] |" % (money(p.get("low_52w")), money(p.get("high_52w")), P),
+                "| 1 month / 6 months / 12 months | %s / %s / %s [%s%s] |" % (
+                    self.vs_spy("return_1m"), self.vs_spy("return_6m"), self.vs_spy("return_12m"), P, ", %s" % M if M else ""),
+                "| 5 years / 10 years, per year | %s / %s [%s%s] |" % (
+                    self.vs_spy("return_5y_cagr"), self.vs_spy("return_10y_cagr"), P, ", %s" % M if M else ""),
+                "| Trend | %s (%s) [%s] |" % (p.get("trend") or "unknown", esc(p.get("trend_rule") or "ST1"), P)]
+        er = self.f.get("expense_ratio")
+        rows.append("| Yearly cost (expense ratio) | %s [%s] |" % (pct(er, 2) if er is not None else "no evidence", Q))
+        th = [h for h in (self.f.get("top_holdings") or []) if isinstance(h, dict)]
+        if th:
+            rows.append("| Biggest holdings | %s — top %d = %s of the fund [%s] |" % (
+                ", ".join("%s %s" % (h.get("symbol"), pct(h.get("weight"), 1)) for h in th[:5]), min(len(th), 10),
+                pct(self.f.get("top_holdings_weight"), 0), Q))
+        return rows
+
+    def brief(self, paths, page=None, links=False):
+        holder, buyer = self.rule()
+        P, Q = self.P, self.Q
+        body = [self.headline(), "*As of %s. A fund has no scorecard: the answer follows the fund rule (trend, cost, "
+                "concentration), this standard's own reading, not a model of the fund's value.*" % (self.pr().get("date") or self.date), "",
+                "### Answer",
+                "- **What it is:** %s (%s)%s [%s]" % (self.kind_phrase(), esc(self.f.get("category") or "no category"),
+                                                       "; " + esc(self.f.get("kind_reason")) if self.f.get("kind_reason") else "", Q),
+                "- **If you hold it:** %s [%s]" % (holder, P),
+                "- **If you want to buy:** %s [%s]" % (buyer, P)]
+        body += ["- **Watch out:** %s [%s]" % (esc(fl), Q) for fl in (self.f.get("flags") or [])[:2]]
+        body += ["", "### Summary", "*computed by scripts*", ""] + self.summary_rows() + [""]
+        body += ["### What to watch",
+                 "- The price crossing its 200-day average %s changes the trend reading [%s]" % (money(self.pr().get("ma200")), P),
+                 "- A change in the fund's biggest holdings or its cost, on the fund's own page [%s]" % Q, ""]
+        miss = [m for m in (self.f.get("missing") or []) if isinstance(m, dict)]
+        body += ["### Not verified"] + (["- %s: %s [%s]" % (m.get("field"), esc(m.get("reason")), Q) for m in miss[:4]] or
+                                       ["- Every field the fund rule asks for was available this run [%s]" % Q]) + [""]
+        text = "\n".join(body)
+        words = ["- **%s** — %s" % (t, d) for t, rx, d in GLOSS if re.search(rx, text, re.I)]
+        if words:
+            body += ["### Words used here"] + words + [""]
+        body += ["### Sources"] + self.sources_lines(text) + [""]
+        files = [("full dossier", paths[0])] + ([("page", page)] if page else [])
+        body += ["Files: " + SEP.join("[%s](file://%s)" % (n, os.path.abspath(p)) for n, p in files), "", "> " + DISCLAIMER]
+        return self.linkify("\n".join(body)) if links else "\n".join(body)
+
+    def history_line(self):
+        p, holder = self.pr(), self.rule()[0]
+        q = "`%s`" % re.sub(r"\s+", " ", self.q.replace("`", "'").replace(SEP, " - ")).strip()
+        return "- " + SEP.join([self.date, "question " + q, "fund " + (self.f.get("kind") or "other"),
+                                "price " + money(p.get("last")), "trend " + str(p.get("trend") or "unknown"),
+                                "said " + holder.split(";")[0].split(":")[0]])
+
+    def history(self):
+        t = read(self.hist_path) or ""
+        return [l for l in t.splitlines() if l.startswith("- ")]
+
+    def evidence_log(self):
+        rows = ["| S | class | what | url | as-of | retrieved |", "|---|---|---|---|---|---|"]
+        for k in sorted(self.sources, key=sid_num):
+            s = self.sources[k]
+            rows.append("| %s | %s | %s | %s | %s | %s |" % (k, s.get("class"), esc(s.get("what", "")), s.get("url"),
+                                                            s.get("as_of", ""), s.get("retrieved", "")))
+        return rows
+
+    def dossier(self, brief_md, hist_line):
+        body = ["# %s (%s) — fund dossier" % (self.f.get("name"), self.f.get("ticker")),
+                "Updated %s · %s · last price %s on %s [%s]" % (self.date, self.kind_phrase(), money(self.pr().get("last")),
+                                                                self.pr().get("date"), self.P), ""]
+        keep = brief_md.split("\n### Words used here")[0].split("\n### Sources")[0]
+        body += [l for l in keep.splitlines()[1:] if not l.startswith("Files: ") and not l.startswith("> ")]
+        th = [h for h in (self.f.get("top_holdings") or []) if isinstance(h, dict)]
+        if th:
+            body += ["", "## Holdings", "| Holding | Weight | |", "|---|---|---|"] + [
+                "| %s %s | %s | [%s] |" % (h.get("symbol"), esc(h.get("name") or ""), pct(h.get("weight"), 2), self.Q) for h in th]
+        sw = self.f.get("sector_weights") or {}
+        if isinstance(sw, dict) and sw:
+            body += ["", "## Sector weights", "| Sector | Weight | |", "|---|---|---|"] + [
+                "| %s | %s | [%s] |" % (k, pct(v, 1), self.Q) for k, v in sorted(sw.items(), key=lambda kv: -(num(kv[1]) or 0))]
+        body += ["", "## History"] + ["%s [%s]" % (l, self.H) for l in reversed(self.history() + [hist_line])]
+        body += ["", "## Evidence log"] + self.evidence_log() + ["", "> " + DISCLAIMER, ""]
+        return "\n".join(body)
+
+    def index_md(self, hist_lines):
+        p = self.pr()
+        out = ["# %s — %s (fund)" % (self.f.get("ticker"), self.f.get("name")),
+               "%s · trend %s · price %s on %s [%s]" % (self.kind_phrase(), p.get("trend"), money(p.get("last")), p.get("date"), self.P),
+               "", "## Decision", "- If you hold it: %s [%s]" % (self.rule()[0], self.P),
+               "- If you want to buy: %s [%s]" % (self.rule()[1], self.P), "",
+               "## Folder", "- facts/fund.json — what the fund is, holds and costs; prices and returns vs SPY",
+               "- reports/dossier.md — the latest brief with holdings, sector weights, history and the evidence log",
+               "- reports/<date>-<HHMM>.md|.html — dated snapshots and pages", "- history/log.md — one line per question", "",
+               "## History", "| Date | Question | Trend | Price | Said | |", "|---|---|---|---|---|---|"]
+        for l in reversed(hist_lines):
+            h = parse_history(l)
+            out.append("| %s | %s | %s | %s | %s | [%s] |" % (h.get("date"), esc(h.get("question", "")), h.get("trend", ""),
+                                                             h.get("price", ""), esc(h.get("said", "")), self.H))
+        out += ["", "Updated %s" % self.when.strftime("%Y-%m-%d %H:%M UTC")]
+        return "\n".join(out) + "\n"
+
+
+def write_html(r, path, brief_md, dossier_md, dossier_html=None):
+    """The page: the brief, then the chart panels, then a link to the full dossier (written as its own page)."""
     import chart
     import mdhtml
     ticker = r.f.get("ticker") or os.path.basename(os.path.normpath(r.store))
     series = read_json(r.st.series)
-    if series is None:
+    if not hasattr(r, "sc"):
+        panels = ['<p class="none">Charts: none for a fund yet.</p>']
+    elif series is None:
         panels = ['<p class="none">Charts: no evidence (facts/series.json missing; run facts.py first).</p>']
     else:
         panels, _ = chart.build_panels(r.f, series, r.tables if isinstance(r.tables, dict) else None)
-    md = "# %s analysis\n\n**Question:** `%s` · lens: %s\n\n%s" % (
-        ticker, r.q.replace("`", "'"), r.lens, chat_md)
-    page = mdhtml.render(md, "%s Analysis" % ticker,
-                         ['<h2 id="charts">Charts</h2>'] + panels
-                         + ['<h2 id="full-dossier">Full dossier</h2>', mdhtml.to_html(dossier_md, shift=2)],
-                         css=chart.PANEL_CSS)
+    md = "# %s\n\n**Question:** `%s`\n\n%s" % (ticker, r.q.replace("`", "'"), brief_md)
+    extra = ['<h2 id="charts">Charts</h2>'] + panels
+    if dossier_html:
+        extra.append('<h2 id="full-dossier">Full detail</h2><p>Everything the scripts and the analyst produced, for '
+                     'later questions: <a href="%s">dossier</a> (also <code>reports/dossier.md</code>).</p>' %
+                     os.path.basename(dossier_html))
+    page = mdhtml.render(md, "%s Analysis" % ticker, extra, css=chart.PANEL_CSS)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(page)
+    if dossier_html:
+        with open(dossier_html, "w", encoding="utf-8") as fh:
+            fh.write(mdhtml.render(dossier_md, "%s dossier" % ticker))
+
+
+def fund_main(a, st, when, date, name):
+    r = FundReport(st, a.question, date, when)
+    hist_line = r.history_line()
+    os.makedirs(st.reports_dir, exist_ok=True)
+    os.makedirs(st.history_dir, exist_ok=True)
+    snap = os.path.join(st.reports_dir, name + ".md")
+    page = os.path.join(st.reports_dir, name + ".html") if a.html else None
+    brief_md = r.brief((st.dossier, snap), page)
+    text = r.dossier(brief_md, hist_line)
+    with open(st.dossier, "w", encoding="utf-8") as fh:
+        fh.write(text)
+    violations = [] if a.no_lint else lint_text(st.dossier, text)
+    if violations:
+        for v in violations:
+            print(v)
+        print("lint: %d violation(s) in %s; snapshot and history not written" % (len(violations), st.dossier))
+        sys.exit(1)
+    with open(snap, "w", encoding="utf-8") as fh:
+        fh.write(text)
+    with open(st.log, "a", encoding="utf-8") as fh:
+        fh.write(hist_line + "\n")
+    if page:
+        write_html(r, page, r.brief((st.dossier, snap), page, links=True), text, os.path.join(st.reports_dir, "dossier.html"))
+    index = r.index_md(r.history())
+    with open(st.index, "w", encoding="utf-8") as fh:
+        fh.write(index)
+    if a.chat:
+        print(brief_md)
+    else:
+        out = {"dossier": st.dossier, "snapshot": snap, "history": hist_line, "index": st.index, "fund": True,
+               "lint": "skipped" if a.no_lint else "OK"}
+        if page:
+            out["html"] = os.path.abspath(page)
+        print(json.dumps(out))
 
 
 def main(argv=None):
@@ -1647,14 +2063,17 @@ def main(argv=None):
     ap.add_argument("--lens", choices=("long", "short", "both"), default=None,
                     help="default: request.json lens, else long")
     ap.add_argument("--narrative", default="", help="narrative file (default: newest history/<date>-<HHMM>.md)")
-    ap.add_argument("--chat", action="store_true", help="print the beginner chat answer (then the Details) as Markdown")
-    ap.add_argument("--html", action="store_true", help="also write reports/<date>-<HHMM>.html (answer, charts, dossier)")
+    ap.add_argument("--chat", action="store_true", help="print the brief (the short report) as Markdown")
+    ap.add_argument("--html", action="store_true",
+                    help="also write reports/<date>-<HHMM>.html (the brief and the charts) and reports/dossier.html")
     ap.add_argument("--no-lint", action="store_true", help="skip the evidence lint")
     add_common_args(ap)
     a = ap.parse_args(argv)
     st = locate(a.target, a)
     when = datetime.datetime.now(datetime.timezone.utc)
     date, name = today(), stamp(when)
+    if not os.path.exists(st.scorecard) and os.path.exists(os.path.join(st.facts_dir, "fund.json")):
+        return fund_main(a, st, when, date, name)
     req = read_json(os.path.join(st.root, "request.json"))
     req = req if isinstance(req, dict) else {}
     lens = a.lens or (req.get("lens") if req.get("lens") in ("long", "short", "both") else None) or "long"
@@ -1677,9 +2096,9 @@ def main(argv=None):
     with open(st.log, "a", encoding="utf-8") as fh:
         fh.write(hist_line + "\n")
     page = os.path.join(st.reports_dir, name + ".html") if a.html else None
-    chat_md = r.chat((st.dossier, snap), page)
+    chat_md = r.brief((st.dossier, snap), page)
     if page:
-        write_html(r, page, r.chat((st.dossier, snap), page, full=True), text)
+        write_html(r, page, r.brief((st.dossier, snap), page, links=True), text, os.path.join(st.reports_dir, "dossier.html"))
     index = r.index_md(r.history())        # after the snapshot and the page, so the folder map links this run's files
     with open(st.index, "w", encoding="utf-8") as fh:
         fh.write(index)

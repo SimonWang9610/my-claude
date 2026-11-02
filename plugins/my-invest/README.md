@@ -14,29 +14,38 @@ You talk to the **advisor**. Ask in plain words, in the project folder where you
 - "how about Apple?" · "should I sell AAPL? I have 120 shares at $150 in my TFSA and 80 at $210 non-registered, marginal rate 43%" · "is it a good time to sell GOOGL" · "what did the 10-K say about China" · "what if AAPL hits 400" · "AI is hot, which stocks are popular and rising in it or its supply chain?" · "which stocks should I buy for the next 3 years" · "daily digest"
 - or type `/my-invest:advisor <question>`.
 
-The advisor reads your question (stocks, horizon, holdings, what you want to know), decides whether the
-saved analysis is fresh enough or asks the **analyst** to do the deep work first, and answers in the same
-order every time:
+The advisor reads your question (tickers, horizon, holdings, what you want to know), decides whether the
+saved analysis is fresh enough or asks the **analyst** to do the deep work first, and answers with a
+short brief, the same shape every time:
 
-1. **The verdict** — a table: where is the price likely to go at your horizon, the next few months, should I
-   sell, should I buy (with entry levels), how confident (a number, its band, and what lowers it); then a
-   one-line price map.
-2. **The proof** — *computed by scripts*: the bear, base and bull scenarios with the growth, multiple and
-   cash-return assumptions behind them, and analyst consensus as a secondary row · *the analyst's reading*:
-   the case against the verdict · *computed by scripts*: the track record — the same method applied at each
-   past fiscal year (forecast vs what happened vs SPY, labelled simulated) and what this advisor said about
-   the stock before, with the price and SPY since · what could change the answer (observable events with a
-   date or price) · what could not be verified (every missing input, stale figure and refused page).
-3. **The detail** you asked for — what the news says and what it means, compared with similar companies,
-   how the industry chain is doing, your shares (worth, gain, tax if sold now, per account), options
-   explained on this stock's own contracts, a short-term view for questions about weeks or months, and the
-   words used.
-4. An HTML page with the same first and the full dossier collapsed below.
+- **Answer** — if you hold it: hold, trim or sell, and why in one clause; if you want to buy: buy in
+  stages, wait, or stay away, with the limit-order levels the rule points to. A failed deal-breaker
+  check says "stay away"; missing data says "no verdict", never a default hold.
+- **Summary** — the figures the answer rests on: price today, the expected range by a named month ("by
+  Oct 2031, 5 years from today": worst, likely, best, and the yearly return that implies), the return
+  the risk demands, the next few months, analysts' average target with its base rate, confidence with
+  its band, your shares. Every horizon counts from the price date printed under the headline.
+- **Why** (four bullets), **Risks: the case against** (three), **Track record** (how the same method did
+  in past years against what happened and against SPY, and what this advisor said last time), **What to
+  watch**, **Not verified**.
+- The detail you asked for, and only that: the news and what it means, similar companies, your shares
+  with Canadian tax, options explained on this stock's contracts, a short-term view.
+- **Words used here** and **Sources**: every figure carries a marker such as `[S3]`, and Sources lists
+  each marker with a link to the raw source — the SEC filing or API call, the Yahoo page — or, for a
+  script's arithmetic, the file it was computed into and the raw sources it used. On the page the
+  markers are links.
+- A page with the brief and the charts, and one link to the **full dossier** (every table, the
+  scorecard, the strict value lens, the evidence log), which stays in the stock's folder for the next
+  question rather than in the answer.
+
+A portfolio question gets one table (one row per position: worth, gain, what to do, limit level,
+expected vs required return, confidence, link) and one short block per ticker; funds (ETFs) are
+answered too, by the fund rule (trend, cost, concentration, labelled as this standard's own reading),
+with a warning for leveraged, inverse and covered-call funds.
 
 Nothing is fixed in advance: horizons ("next 3 years", "by 2030", "this quarter"), the lens, the peers,
 a margin of safety or a growth what-if are read from your question, and any assumption is stated. Your
-positions are read from the question for that answer only and never stored. When the data cannot support a
-verdict, the answer says `no verdict` and why; it never defaults to "hold".
+positions are read from the question (or the broker file it names) for that answer only and never stored.
 
 ## Agents and skills
 
@@ -50,7 +59,10 @@ verdict, the answer says `no verdict` and why; it never defaults to "hold".
   every number and claim is obtained and cited: scripts, data folder, research procedure, the lint) and
   `standard` (how a verdict is formed and what proof it must carry).
 
-Everything numeric is done by scripts, not by any agent. The design draws on a survey of the most-starred
+Everything numeric is done by scripts, not by any agent: one script per data source or step (SEC facts,
+filings, prices, options, consensus, momentum, news, a fund, metrics, score, compare, holdings, chart,
+report, lint), so a failure in one stops only that step and every number traces to the script and inputs
+that produced it. The advisor runs them; you never do. The design draws on a survey of the most-starred
 AI trading repositories (`research/2026-11-02-ai-trading-repos.md`): what was adopted (a fixed answer
 order, scripts compute and the model narrates, the case against, abstaining instead of a fake hold, a
 settled record of past calls, every return beside its benchmark) and what was deliberately not (live
@@ -104,11 +116,11 @@ Everything is written under `<project>/data/` in the folder you run Claude Code 
   digests/              daily and weekly digests (.md and .html)
   stocks/<TICKER>/
     INDEX.md            start here: latest decision, track-record line, industry line, folder map, history table
-    facts/              facts.json (statements, prices, macro, market, options, consensus, momentum, metrics incl. the simulated record), series.json, scorecard.json, peers.json
+    facts/              facts.json (statements, prices, macro, market, options, consensus, momentum, metrics incl. the simulated record), series.json, scorecard.json, peers.json — or fund.json for an ETF
     filings/<accn>/     the 10-K split into items, auditor's report, notes
     research/           research.md (cumulative, cited, dated), evidence.json (the four verdicts), industry.md (chain position and related stocks)
     history/            log.md (one line per question: what was said, at what price, what was expected), the analyst's note and the advisor's narrative for each question
-    reports/            dossier.md (latest), dated snapshots, and the HTML answer pages
+    reports/            dossier.md and dossier.html (every detail, for later questions), dated snapshots of the brief, the answer pages
     charts/             the five-panel chart per run
 ```
 
@@ -123,7 +135,7 @@ Everything is written under `<project>/data/` in the folder you run Claude Code 
 
 ## Limitations
 
-- US-listed stocks only. Financials, REITs and utilities get `n/a` on the industrial models, so their scores rest on fewer items.
+- US-listed stocks and ETFs only. Financials, REITs and utilities get `n/a` on the industrial models, so their scores rest on fewer items; a fund has no scorecard and is answered by the fund rule from Yahoo data.
 - The outlook is a model output, not a forecast: stated growth and multiple paths, a discount rate from the Treasury yield plus an equity risk premium. Parameters are printed and are the standard's opinion. No single-number price target is ever given.
 - The simulated track record uses the figures the SEC API reports today, not as first filed, and the standard's thresholds were not chosen out of sample; it is labelled simulated for that reason. Only the logged past calls are a true record, and they accumulate as you ask.
 - Short-term signals describe the recent past. The verified sources report modest average edges with large drawdowns after market declines; the output says so each time.

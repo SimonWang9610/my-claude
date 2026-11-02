@@ -110,36 +110,32 @@ class Report(unittest.TestCase):
         out = self.render(d, "--chat")
         heads = [l for l in out.splitlines() if l.startswith("#")]
         self.assertTrue(heads[0].startswith("## AAPL — the price is far above what the model thinks a share is worth"))
-        self.assertEqual(heads[1:], [
-            "### The short answer", "### Price map", "### The case against", "### Why, in plain words", "### Track record",
-            "### What the news says", "### How the industry is doing", "### What could change the answer",
-            "### What could not be verified", "### Options, explained with your numbers", "### Words used here",
-            "## Details",
-            "### 1. Strict value lens", "### 2. Action matrix", "### 3. Strengths / weaknesses",
-            "### 4. Industry and peers", "### 5. Options context", "### 6. Short-term lens", "### 7. Open questions"])
-        short = out.split("### The short answer\n")[1].split("\n\n")[0].splitlines()
-        self.assertEqual(len(short), 7)                                   # header, separator, five rows
-        self.assertEqual([r.split(" | ")[0] for r in short[2:]],
-                         ["| Should I sell?", "| When?", "| At what price?", "| Should I buy?",
-                          "| How confident is the model?"])
-        self.assertIn("`buy zone ◄── $103.97 ──── $148.53 fair ──── $175.77 ──► sell zone      ▲ you are here $343.87` "
-                      "[S60, S3]", out)
+        self.assertEqual(heads[1:8], ["### Answer", "### Summary", "### Why", "### Risks: the case against",
+                                      "### Track record", "### What to watch", "### Not verified"])
+        self.assertEqual(heads[-2:], ["### Words used here", "### Sources"])
+        self.assertIn("### News, what it means", out)                             # wants unset: the news slot stays
+        self.assertNotIn("## Details", out)                                        # the detail lives in the dossier
+        self.assertIn("*As of 2026-10-14. Every horizon below is counted from that date.*", out)
+        self.assertIn("| Price today (2026-10-14) | $343.87 [S3] |", out)
+        self.assertIn("| Confidence | 78/100 (solid) — what lowers it", out)
+        self.assertIn("- **If you hold it:** ", out)
+        self.assertIn("- **If you want to buy:** ", out)
         self.assertIn("| 2026-07-30 | Fiscal Q3 revenue $109.4 billion, up 16% [S103] |", out)   # narrative news slot
-        self.assertIn("- Memory prices rose sharply this year", out)                           # narrative industry slot
         self.assertIn("- a going-concern paragraph (deal-breaker check G4)", out)              # what would break it
-        self.assertIn("ROIC (return on the money invested in the business)", out)            # inline gloss
-        self.assertIn("Not now: no contracts available", out)
-        self.assertIn("| How confident is the model? | 78/100 (solid) — what lowers it", out)
         self.assertIn("- **confidence band** —", out)
-        self.assertLess(out.index(lint.DISCLAIMER), out.index("\n---\n## Details"))
+        self.assertRegex(out, r"- S3 — [^\n]*\(secondary\): <https://finance\.yahoo\.com/quote/AAPL/history/>")
+        self.assertRegex(out, r"- S60 — [^\n]*\(a script's arithmetic; its inputs are the sources above\): <file://")
+        self.assertIn("- S1 — ", out)                                              # a derived row's raw inputs are listed
+        self.assertNotIn("](file://", out.split("### Sources")[0].split("Files:")[0])   # chat markers stay plain
+        self.assertEqual(out.rstrip().splitlines()[-1], "> " + lint.DISCLAIMER)
         words = out.split("### Words used here\n")[1].split("\n\n")[0]
-        above = out.split("### Words used here")[0]
-        for term, rx, _ in report.GLOSS:
-            self.assertEqual("- **%s** —" % term in words, bool(re.search(rx, above, re.I)), term)
-        self.assertNotIn("**trend**", words)                               # long lens: no short-term view
+        for term in ("call", "put", "premium", "strike"):                           # no options section, no options terms
+            self.assertNotIn("- **%s** —" % term, words)
         self.assertNotIn("### Your shares", out)
-        self.assertNotIn("### Compared with similar companies", out)      # no facts/peers.json
-
+        self.assertIn("### Compared with similar companies", out)         # the narrative's peers slot, two lines at most
+        doc = text(os.path.join(d, "reports", "dossier.md"))
+        self.assertIn("`buy zone ◄── $103.97 ──── $148.53 fair ──── $175.77 ──► sell zone      ▲ you are here $343.87` "
+                      "[S60, S3]", doc)
     def test_chat_shares_peers_options_and_fallbacks(self):
         hold = {"ticker": "AAPL", "positions": [{"account": "TFSA", "shares": 120.0, "avg_cost": 150.0}]}
         d = build(self.tmp, narrative=False, holdings=hold)
@@ -156,19 +152,20 @@ class Report(unittest.TestCase):
         with open(os.path.join(d, "facts", "peers.json"), "w", encoding="utf-8") as fh:
             json.dump(peers, fh)
         out = self.render(d, "--chat")
-        self.assertIn("| Should I sell? | Yes — trim or sell (model stance: sell zone) [S61] |", out)
+        self.assertIn("- **If you hold it:** trim or sell — because the outlook could not be computed (", out)
+        self.assertIn("### Your shares\n| Account | Shares | You paid | Worth now | Gain | Tax if sold now | You keep | |", out)
         self.assertIn("| TFSA | 100 | $20.00 | $3,150 | +$1,150 | no evidence | no evidence | [S3, S99] |", out)
-        self.assertIn("| | AAPL | MSFT | |", out)
-        self.assertIn("| Return on the money invested (ROIC) | 82.3% | no evidence | [S80, S81] |", out)
-        self.assertIn("| Debt vs that cash (years to repay) | 0.6 years | 0.1 years | [S80, S81] |", out)
-        self.assertIn("Not compared: GOOG (no facts).", out)
-        news = out.split("### What the news says\n*the analyst's reading*\n\n")[1].split("\n\n")[0].splitlines()
+        self.assertRegex(out, r"\| Your shares \| worth \$[\d,]+, gain [+-]\$[\d,]+ \(TFSA\) \[S3, S61\] \|")
+        self.assertNotIn("### Compared with similar companies", out)             # no narrative slot: the table is in the dossier
+        news = out.split("### News, what it means\n")[1].split("\n\n")[0].splitlines()
         self.assertTrue(2 < len(news) <= 7 and all(r.endswith("| — |") for r in news[2:]))  # research fallback
-        self.assertNotIn("### How the industry is doing", out)            # no slot, no industry.md
         doc = text(os.path.join(d, "reports", "dossier.md"))
+        self.assertIn("| | AAPL | MSFT | |", doc)
+        self.assertIn("| Return on the money invested (ROIC) | 82.3% | no evidence | [S80, S81] |", doc)
+        self.assertIn("| Debt vs that cash (years to repay) | 0.6 years | 0.1 years | [S80, S81] |", doc)
+        self.assertIn("Not compared: GOOG (no facts).", doc)
         self.assertIn("| S80 | derived | compare.py |", doc)
         self.assertEqual(lint.lint_text("dossier.md", doc), [])
-
     def test_request_horizons_what_if_and_wants(self):
         d = build(self.tmp, narrative=False)
         f = json.loads(text(os.path.join(d, "facts", "facts.json")))
@@ -185,18 +182,18 @@ class Report(unittest.TestCase):
         self.assertNotIn("| 1 year |", doc)
         self.assertIn("- **3 years** — base value $178.83 against today's $343.87", doc)   # thesis per horizon
         self.assertEqual(lint.lint_text("dossier.md", doc), [])
-        self.assertIn("- If it hits $400.00: in the sell zone (it starts at $175.77)", out)
+        self.assertIn("- If it hits $400.00: in the sell zone (it starts at $175.77)", out)   # what-if, in the answer
         self.assertIn("- Within 3 years: the model's base value reaches $178.83", out)
-        for gone in ("### What the news says", "### Options, explained"):                 # not in wants
+        for gone in ("### News, what it means", "### Options on this stock"):              # not in wants
             self.assertNotIn(gone, out)
-        page = [n for n in os.listdir(os.path.join(d, "reports")) if n.endswith(".html")][0]
-        html = text(os.path.join(d, "reports", page))
-        self.assertIn("What the news says", html)                                          # kept in the page
-        self.assertIn("Options, explained with your numbers", html)
-
+        reports = os.path.join(d, "reports")
+        page = [n for n in os.listdir(reports) if n.endswith(".html") and n != "dossier.html"][0]
+        html = text(os.path.join(reports, page))
+        self.assertIn('href="dossier.html"', html)                                         # the detail is one click away
+        self.assertIn("What the news says", text(os.path.join(reports, "dossier.html")))
     def test_chat_leads_with_the_outlook(self):
         from tests.test_score import with_outlook
-        d = build(self.tmp, narrative=False)   
+        d = build(self.tmp, narrative=False)
         f = json.loads(text(os.path.join(d, "facts", "facts.json")))
         m = json.loads(text(os.path.join(FIX, "score_momentum.json")))
         for k in ("momentum", "market", "options"):
@@ -208,37 +205,28 @@ class Report(unittest.TestCase):
         quiet(score.main, [d, "--holding"])
         out = quiet(report.main, [d, "--question", Q, "--lens", "long", "--chat"])
         self.assertTrue(out.startswith("## AAPL — expensive on fundamentals, rising trend; expect roughly -2% to 9% a "
-                                       "year over 5 years, below the 9.4% the risk demands"))
-        short = out.split("### The short answer\n")[1].split("\n\n")[0].splitlines()
-        self.assertEqual([r.split(" | ")[0] for r in short[2:]],
-                         ["| Where is the price likely to go?", "| Next few months?", "| Should I sell?",
-                          "| Should I buy?", "| How confident is the analyst?"])
-        self.assertIn("| Where is the price likely to go? | 5 years: $280.40 to $480.90 (base $370.20), about 3.6% a year "
-                      "expected vs 9.4% required — expensive [S60, S61] |", out)
-        self.assertIn("likely range $315.10–$370.80 by 2026-11-20 (one standard deviation); trend up; next event "
-                      "2026-10-29 (next earnings)", out)
-        self.assertIn("| Should I sell? | trim into strength; trailing trigger at the 50-day average — base 3.6% a year vs "
-                      "9.4% required, trend up", out)
-        self.assertIn("| Should I buy? | wait; the strict value and the pullback levels are the entry map — entry levels: "
-                      "50-day average $330.00", out)
-        self.assertIn("`strict value $148.53 ◄── pullback $330.00 ── today $343.87 ── consensus target $352.40 ──► bull "
-                      "5 years $480.90` [S60, S3, S9]", out)
-        self.assertIn("A strict value investor would pay $148.53 [S60]; the model's record on this stock: in FY2020 the "
-                      "strict model called it 2.1× overvalued", out)
-        ana = out.split("### What the analyst expects, and why\n")[1].split("\n\n")
-        self.assertEqual(ana[0], "*computed by scripts*")
-        self.assertIn("| Analyst consensus (41 analysts, secondary) | $230.00 | $352.40 | $420.00 | — | — | [S9] |", ana[1])
-        bullets = [l for l in ana[2].splitlines() if l.startswith("- ")]
-        self.assertEqual([b.split(":")[0] for b in bullets[:4]],
-                         ["- Growth assumed", "- Multiple assumed", "- Cash returned", "- The market's own assumption"])
-        self.assertIn("(the company's 5-year record of 10.1%; analysts' 7.9% next-year estimate) [S60, S9]", bullets[0])
-        self.assertIn("### 1. Strict value lens", out)
-        self.assertIn("Calibration: FY2020 price $112.28", out)
+                                       "year over the 5 years from today (to Oct 2031), below the 9.4% the risk demands"))
+        self.assertIn("- **If you hold it:** trim into strength; trailing trigger at the 50-day average — because the "
+                      "expected return of about 3.6% a year over the 5 years from today (to Oct 2031) is below the 9.4% "
+                      "the risk demands, and the trend is up [S60, S61, S9]", out)
+        self.assertIn("- **If you want to buy:** wait; the strict value and the pullback levels are the entry map [S60, S61, S9]", out)
+        self.assertIn("- **Limit-order levels the rule points to:** $330.00 (50-day average)", out)
+        self.assertIn("| Expected by Oct 2031 (5 years from today) | worst $280.40 · likely $370.20 · best $480.90 — about "
+                      "3.6% a year in the likely case [S60, S61] |", out)
+        self.assertIn("| Return the risk demands | 9.4% a year (10-year Treasury yield plus an equity risk premium) [S60] |", out)
+        self.assertIn("| Next few months | likely range $315.10–$370.80 by 2026-11-20 (one standard deviation); trend up; "
+                      "next event 2026-10-29 (next earnings)", out)
+        self.assertIn("| Analysts' average 12-month target (secondary; only about 38% of such targets are met) | $352.40 "
+                      "from 41 analysts [S9] |", out)
+        self.assertIn("| Confidence | ", out)
         doc = text(os.path.join(d, "reports", "dossier.md"))
+        self.assertIn("`strict value $148.53 ◄── pullback $330.00 ── today $343.87 ── consensus target $352.40 ──► bull "
+                      "5 years $480.90` [S60, S3, S9]", doc)
         self.assertIn("### What the analyst expects, and why", doc)
+        self.assertIn("| Analyst consensus (41 analysts, secondary) | $230.00 | $352.40 | $420.00 | — | — | [S9] |", doc)
+        self.assertIn("(the company's 5-year record of 10.1%; analysts' 7.9% next-year estimate) [S60, S9]", doc)
         self.assertIn("0.4 × coverage", doc)
         self.assertEqual(lint.lint_text("dossier.md", doc), [])
-
     def outlook_store(self, name, mutate=None, request=None):
         from tests.test_score import with_outlook
         d = build(os.path.join(self.tmp, name), narrative=False)
@@ -266,17 +254,20 @@ class Report(unittest.TestCase):
             f["metrics"]["outlook"]["params"]["g"]["inputs"]["consensus_2y"] = 0.1334
             f["consensus"]["targets"]["mean"] = 329.38
         out = self.outlook_store("default", ten_years_low_target, {"horizon_source": "default", "horizons_years": [1, 5, 10]})
-        self.assertIn("a year over 5 years", out.splitlines()[0])                        # default -> 5 years, not 10
-        self.assertIn("| Where is the price likely to go? | 5 years:", out)
-        self.assertIn("| 10 years | $240.00 |", out)                                       # the table keeps every horizon
-        self.assertIn("analysts' 13.3% two-year estimate", out)
-        pm = re.search(r"`(strict value[^`]+)`", out).group(1)
+        self.assertIn("a year over the 5 years from today (to ", out.splitlines()[0])      # default -> 5 years, dated
+        self.assertIn("| Expected by Oct 2031 (5 years from today) |", out)
+        self.assertIn("| Analysts' average 12-month target (secondary; only about 38% of such targets are met) | $329.38 from", out)
+        doc = text(os.path.join(self.tmp, "default", "AAPL", "reports", "dossier.md"))
+        self.assertIn("| Where is the price likely to go? | 5 years:", doc)
+        self.assertIn("| 10 years | $240.00 |", doc)                                       # the table keeps every horizon
+        self.assertIn("analysts' 13.3% two-year estimate", doc)
+        pm = re.search(r"`(strict value[^`]+)`", doc).group(1)
         vals = [float(v.replace(",", "")) for v in re.findall(r"\$([\d,]+\.\d\d)", pm)]
         self.assertEqual(vals, sorted(vals))                                               # left to right by price
         self.assertLess(pm.index("consensus target $329.38"), pm.index("today $343.87"))
         out = self.outlook_store("asked", ten_years_low_target, {"horizon_source": "question", "horizons_years": [1]})
-        self.assertIn("a year over 1 year", out.splitlines()[0])
-        self.assertIn("| Where is the price likely to go? | 1 year:", out)
+        self.assertIn("a year over the 1 year from today (to Oct 2027)", out.splitlines()[0])
+        self.assertIn("| Expected by Oct 2027 (1 year from today) |", out)
 
     def test_gloss_not_injected_twice(self):
         self.assertEqual(report.plain("- a restatement (deal-breaker checks G1, G2)"),
@@ -300,18 +291,16 @@ class Report(unittest.TestCase):
         d = build(self.tmp, holdings=hold)
         chat = self.render(d, "--chat")
         doc = text(os.path.join(d, "reports", "dossier.md"))
+        self.assertIn("- Current ratio 0.8933 [S60] below Graham's floor.", doc)  # narrative weakness
+        self.assertNotIn("- 2.3 current ratio 0.8933 [S60]", doc)               # mechanical list dropped
+        self.assertNotIn("- 1.1 ROIC >=", doc)
         for out in (doc, chat):
-            self.assertIn("- Current ratio 0.8933 [S60] below Graham's floor.", out)  # narrative weakness
-            self.assertNotIn("- 2.3 current ratio 0.8933 [S60]", out)               # mechanical list dropped
-            self.assertNotIn("- 1.1 ROIC >=", out)
             self.assertNotIn("- Pillar 1 Business quality", out)                    # narrative Why wins
-        self.assertIn("- TFSA: 120 shares at $150.00 cost", chat)
+        self.assertIn("| TFSA | 120 | $150.00 |", chat)                               # the shares table in the brief
         d2 = build(os.path.join(self.tmp, "bare"), narrative=False)
         chat = self.render(d2, "--chat")
-        self.assertIn("- 2.3 current ratio 0.8933 [S60]", chat)
-        self.assertIn("- Quality (business quality and moat): 20/20 [S61]", chat)
+        self.assertIn("- Quality (business quality and moat): 20/20 [S61]", chat)   # mechanical Why when no narrative
         self.assertIn("- Pillar 1 Business quality and moat: 20/20 [S61]", text(os.path.join(d2, "reports", "dossier.md")))
-
     def test_short_lens_section(self):
         d = build(self.tmp, narrative=False)
         facts = json.loads(text(os.path.join(d, "facts", "facts.json")))
@@ -369,16 +358,11 @@ class Report(unittest.TestCase):
         self.assertNotIn("# AAPL — industry chain", doc)
         self.assertIn("- Which suppliers sit in the second tier is not disclosed in the filings.", doc)  # merged open question
         self.assertEqual(lint.lint_text("dossier.md", doc), [])
-        self.assertLess(chat.index("### 3. Strengths"), chat.index("### 4. Industry and peers"))
-        block = chat.split("### 4. Industry and peers\n")[1].split("\n\n")[0].splitlines()
-        self.assertTrue(0 < len(block) <= 6)
+        self.assertNotIn("Industry and peers", chat)                                  # the brief leaves the chain to the dossier
         idx = text(os.path.join(d, "INDEX.md"))
         self.assertIn("**Industry:** Brand owner and integrator – Apple – AAPL [S100]; Foundry – TSMC – TSM [S100]; "
                       "Memory – Micron – MU [S103]", idx)
         self.assertEqual(lint_main(["--part", "--facts", os.path.join(d, "facts", "facts.json"), os.path.join(d, "INDEX.md")]), 0)
-        plain = self.render(build(os.path.join(self.tmp, "plain")), "--chat")
-        self.assertIn("### 4. Industry and peers\n- not yet mapped", plain)
-
     def test_index_industry_line_compact_and_links_this_run(self):
         d = build(self.tmp, industry=True)
         with open(os.path.join(d, "research", "industry.md"), "a", encoding="utf-8") as fh:
@@ -436,52 +420,47 @@ class Report(unittest.TestCase):
         d = self.proof_store()
         first = self.render(d, "--chat")
         tr = first.split("### Track record\n")[1].split("\n### ")[0]
-        self.assertTrue(tr.startswith("*computed by scripts; simulated with today's method on the data then available*\n\n"
-                                      "| Years ago | FY | Price then | Strict value then | Base case said (per year) | "
-                                      "What happened (per year) | SPY same window (per year) | |"))
-        rows = [l for l in tr.splitlines() if re.match(r"\| \d ", l)]
-        self.assertEqual([r.split(" | ")[0] for r in rows], ["| 3", "| 4", "| 5", "| 6", "| 7", "| 8", "| 9"])  # newest first
-        self.assertIn("| 5 | 2020 | $112.28 | $62.37 | 10.7% | 20.9% | 11.4% | [S60] |", tr)
-        self.assertIn("| 9 | 2016 | n/a | $23.73 | n/a | n/a | 10.8% | [S60] |", tr)
-        self.assertRegex(tr, r"over 5 past years the base case missed realised returns by 5\.1 pp on average .* beat SPY "
-                             r"in 6 of 6 windows; simulated with today's method on then-available data \[S60\]")
-        self.assertNotIn("What this advisor said before", tr)                      # this run's line is not a past call
-        ca = first.split("### The case against\n")[1].split("\n### ")[0]
-        self.assertTrue(ca.startswith("*the analyst's reading of the numbers above*\n\n- The price $343.87 [S3]"))
+        self.assertRegex(tr, r"^- over 5 past years the base case missed realised returns by 5\.1 pp on average .* beat SPY "
+                             r"in 6 of 6 windows; simulated with today's method on then-available data \[S60\]\n")
+        self.assertNotIn("Last time", tr)                                          # this run's line is not a past call
+        ca = first.split("### Risks: the case against\n")[1].split("\n### ")[0]
+        self.assertTrue(ca.startswith("- The price $343.87 [S3]"))
         self.assertIn("sales guidance fell short of expectations [S105].", ca)
-        nv = first.split("### What could not be verified\n")[1].split("\n### ")[0]
-        self.assertTrue(nv.startswith("*computed by scripts*\n\n"))
-        self.assertIn("- Item 5.5 (no customer >= 10% of revenue): no evidence — researcher verdict no evidence", nv)
-        self.assertIn("- roiic 5y: invested capital did not grow over five years (denominator <= 0) [S60]", nv)
-        self.assertIn("- Customer concentration by net sales: the 10-K names no customer and states no threshold [S100].", nv)
-        for l in nv.splitlines()[2:]:
+        self.assertLessEqual(len([l for l in ca.splitlines() if l.startswith("- ")]), 3)
+        nv = first.split("### Not verified\n")[1].split("\n### ")[0]
+        lines = [l for l in nv.splitlines() if l.startswith("- ")]
+        self.assertLessEqual(len(lines), 4)
+        self.assertTrue(lines[-1].startswith("- and ") and lines[-1].endswith("more, listed in the dossier [S61]"))
+        for l in lines:
             self.assertRegex(l, r"\[S\d+\]\.?$")
-        self.assertLess(first.index("### The case against"), first.index("### Why, in plain words"))
-        self.assertLess(first.index("### Why, in plain words"), first.index("### Track record"))
-        self.assertLess(first.index("### What could change the answer"), first.index("### What could not be verified"))
+        self.assertLess(first.index("### Risks: the case against"), first.index("### Track record"))
+        self.assertLess(first.index("### What to watch"), first.index("### Not verified"))
         second = self.render(d, "--chat")
         tr = second.split("### Track record\n")[1].split("\n### ")[0]
-        self.assertIn("**What this advisor said before about AAPL**\n\n| Date | Said | Price then | Price now (change) | "
-                      "SPY same window | |", tr)
-        said = [l for l in tr.splitlines() if l.startswith("| 20")]
-        self.assertEqual(len(said), 1)                                            # one row per date, not per line
-        self.assertRegex(said[0], r"^\| \d{4}-\d{2}-\d{2} \| avoid \| \$343\.87 \| \$343\.87 \(\+0\.0%\) \| [+-]\d+\.\d% \| \[S62\] \|$")
+        self.assertRegex(tr, r"\n- Last time \(\d{4}-\d{2}-\d{2}\) this advisor said avoid at \$343\.87; now \$343\.87 "
+                             r"\(\+0\.0%\), SPY [+-]\d+\.\d% over the same days \[S62\]")
         doc = text(os.path.join(d, "reports", "dossier.md"))
         for h in ("## Track record", "## The case against", "## What could not be verified"):
             self.assertIn(h, doc)
+        self.assertIn("| Years ago | FY | Price then | Strict value then | Base case said (per year) | What happened "
+                      "(per year) | SPY same window (per year) | |", doc)
+        self.assertIn("| 5 | 2020 | $112.28 | $62.37 | 10.7% | 20.9% | 11.4% | [S60] |", doc)
+        self.assertIn("| 9 | 2016 | n/a | $23.73 | n/a | n/a | 10.8% | [S60] |", doc)
+        self.assertIn("**What this advisor said before about AAPL**", doc)
+        self.assertIn("- Item 5.5 (no customer >= 10% of revenue): no evidence — researcher verdict no evidence", doc)
+        self.assertIn("- Customer concentration by net sales: the 10-K names no customer and states no threshold [S100].", doc)
         self.assertEqual(lint.lint_text("dossier.md", doc), [])
         idx = text(os.path.join(d, "INDEX.md"))
         self.assertRegex(idx, r"\nTrack record: over 5 past years .* \[S60\]\n")
         self.assertEqual(lint_main(["--part", "--facts", os.path.join(d, "facts", "facts.json"), os.path.join(d, "INDEX.md")]), 0)
         self.assertIn("| Price | Said | Zones | Changed | |", idx)
-
     def test_proof_sections_fallbacks(self):
         d = build(self.tmp, narrative=False)                                        # fixture metrics: no calibration
         out = self.render(d, "--chat")
-        self.assertIn("### Track record\nNo past calls yet; the simulated record needs at least three fiscal years of "
-                      "data [S60].\n", out)
-        self.assertIn("### The case against\n*the analyst's reading of the numbers above*\n\nThe analyst's note has no "
-                      "case-against section; ask for a refreshed analysis [S62].\n", out)
+        self.assertIn("### Track record\n- No past calls yet; the simulated record needs at least three fiscal years of "
+                      "data [S60]\n", out)
+        self.assertIn("### Risks: the case against\nThe analyst's note has no case-against section; ask for a refreshed "
+                      "analysis [S62].\n", out)
         self.assertNotIn("Track record:", text(os.path.join(d, "INDEX.md")))
         r = report.Report(report.locate(d), Q, "long", "2026-10-14")
         for x in r.sc["items"].values():
@@ -518,8 +497,12 @@ class Report(unittest.TestCase):
         lines = text(os.path.join(d, "history", "log.md")).splitlines()
         self.assertTrue(lines[-1].endswith("changed: tier buy → research deeper; score 90/100 → 63/100; stance buy zone → sell zone"))
         tr = out.split("### Track record\n")[1].split("\n### ")[0]
-        self.assertIn("| 2026-09-01 | buy zone | $300.00 | $343.87 (+14.6%) | n/a | [S62] |", tr)   # stance fallback, no SPY.json
-        self.assertIn("expected 3.6%/yr at 5 years vs 9.4% required", tr)
+        self.assertRegex(tr, r"- Last time \(2026-\d{2}-\d{2}\) this advisor said wait; the strict value and the pullback levels "
+                             r"are the entry map; expected 3\.6%/yr at 5 years vs 9\.4% required at \$343\.87; now \$343\.87 "
+                             r"\(\+0\.0%\), SPY n/a over the same days \[S62\]")           # the newest earlier call
+        doc = text(os.path.join(d, "reports", "dossier.md"))
+        self.assertIn("| 2026-09-01 | buy zone | $300.00 | $343.87 (+14.6%) | n/a | [S62] |", doc)
+        self.assertIn("expected 3.6%/yr at 5 years vs 9.4% required", doc)
         idx = text(os.path.join(d, "INDEX.md"))
         self.assertIn("| 2026-09-01 | `old` | long | buy | 90/100 | buy zone | 80/100 | $300.00 |  | buy below $103.97 / sell above "
                       "$175.77 | first analysis | [S62] |", idx)
@@ -539,3 +522,56 @@ class ParseResearchHeadings(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class FundBrief(unittest.TestCase):
+    """A fund (facts/fund.json, no scorecard) renders the fund brief, a lint-clean dossier, a log line and INDEX.md."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self.d = os.path.join(self.tmp, "stocks", "QQQ")
+        os.makedirs(os.path.join(self.d, "facts"))
+        shutil.copy(os.path.join(FIX, "fund_qqq.json"), os.path.join(self.d, "facts", "fund.json"))
+
+    def test_fund_brief_dossier_and_index(self):
+        out = quiet(report.main, [self.d, "--question", "should I keep QQQ?", "--chat", "--html"])
+        heads = [l for l in out.splitlines() if l.startswith("#")]
+        self.assertEqual(heads[0], "## QQQ — Invesco QQQ Trust, an index fund tracking the Nasdaq-100 index; trend up; "
+                                   "12 months +8.8% (SPY +16.0%)")
+        self.assertEqual(heads[1:], ["### Answer", "### Summary", "### What to watch", "### Not verified",
+                                     "### Words used here", "### Sources"])
+        self.assertIn("- **If you hold it:** hold; add on a dip toward the 200-day average ($679.82) [S1]", out)
+        self.assertIn("| Yearly cost (expense ratio) | 0.18% [S2] |", out)
+        self.assertIn("| Biggest holdings | NVDA 8.3%, AAPL 7.4%, MSFT 5.8%, MU 5%, AMD 4.2% — top 6 = 47% of the fund [S2] |", out)
+        self.assertIn("| 5 years / 10 years, per year | 12.5% a year (SPY 14% a year) / 20.3% a year (SPY 13% a year) [S1, S7] |", out)
+        self.assertIn("- inception: not in Yahoo info [S2]", out)
+        self.assertIn("- S2 — QQQ fund profile", out)
+        self.assertNotIn("scorecard", out.lower().split("### sources")[0].replace("a fund has no scorecard", ""))
+        doc = text(os.path.join(self.d, "reports", "dossier.md"))
+        self.assertEqual(lint.lint_text("dossier.md", doc), [])
+        self.assertIn("## Holdings", doc)
+        self.assertIn("| NVDA NVIDIA Corp | 8.3% | [S2] |", doc)
+        log = text(os.path.join(self.d, "history", "log.md")).splitlines()
+        self.assertEqual(len(log), 1)
+        self.assertIn(" · fund index · price $681.09 · trend up · said hold", log[0])
+        idx = text(os.path.join(self.d, "INDEX.md"))
+        self.assertTrue(idx.startswith("# QQQ — Invesco QQQ Trust (fund)"))
+        self.assertIn("| 2026-", idx)
+        reports = os.path.join(self.d, "reports")
+        page = [n for n in os.listdir(reports) if n.endswith(".html") and n != "dossier.html"][0]
+        html = text(os.path.join(reports, page))
+        self.assertIn("Charts: none for a fund yet", html)
+        self.assertIn('href="https://finance.yahoo.com/quote/QQQ/holdings/"', html)
+        self.assertTrue(os.path.exists(os.path.join(reports, "dossier.html")))
+
+    def test_leveraged_fund_rule(self):
+        fp = os.path.join(self.d, "facts", "fund.json")
+        f = json.loads(text(fp))
+        f.update(ticker="SQQQ", name="ProShares UltraPro Short QQQ", kind="inverse",
+                 kind_reason="name contains 'UltraPro Short'", flags=["leveraged or inverse: resets daily, not built for holding"])
+        with open(fp, "w", encoding="utf-8") as fh:
+            json.dump(f, fh)
+        out = quiet(report.main, [self.d, "--question", "SQQQ?", "--chat", "--no-lint"])
+        self.assertIn("- **If you hold it:** not built for holding: it resets daily", out)
+        self.assertIn("- **If you want to buy:** do not buy to hold [S1]", out)
+        self.assertIn("- **Watch out:** leveraged or inverse: resets daily, not built for holding [S2]", out)
