@@ -4,7 +4,7 @@
     "name": "SimonWang9610"
   },
   "metadata": {
-    "description": "Plugins for Claude Code: my-react (React/TS spec-driven flow + driver agents), my-flutter (Flutter/Dart rules + skills), think (clarify / explore / architect), my-invest (cited value-investing stock research). Profiles install independently."
+    "description": "Plugins for Claude Code and GitHub Copilot: my-react (React/TS contract flow + driver agents), my-flutter (Flutter/Dart rules + skills), my-workflow (language-agnostic spec-driven workflow run by a small agent team), my-invest (financial advisor and analyst for US stocks, cited). Install any subset with setup.py."
   },
   "plugins": [
     {
@@ -15,17 +15,17 @@
     {
       "name": "my-flutter",
       "source": "./plugins/my-flutter",
-      "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1\u2013P8), Riverpod, test quality, PR review."
+      "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1–P8), Riverpod, test quality, PR review."
     },
     {
-      "name": "think",
-      "source": "./plugins/think",
-      "description": "Stack-neutral skillset for working with agents efficiently, for Claude Code and GitHub Copilot: clarify (ambiguity \u2192 decision + brief), explore (codebase), architect (design / discuss / evaluate, level-aware); light preferences file; explorer + scout agents; no-CLI installer."
+      "name": "my-workflow",
+      "source": "./plugins/my-workflow",
+      "description": "Language-agnostic spec-driven workflow: drive-spec leads a task in your session with spec-architect, spec-tester, spec-implementer and spec-reviewer; every other skill does one step alone: rephrase, discuss, audit-truth, decide, build, verify, critique; code-auditor builds a codebase atlas. Adapts to how much you specify; uses your installed stack knowledge."
     },
     {
       "name": "my-invest",
       "source": "./plugins/my-invest",
-      "description": "Value-investing research for US stocks from plain questions: analyze (price outlook at 1/2/5/10 years, buy and sell zones with timing, reasons, strengths and weaknesses, options context, holdings and Canadian tax treatment, short-term lens, charts, growing dossiers), find (ranked screen for a horizon and strategy), digest (daily or weekly); lint-enforced citations."
+      "description": "Financial advisor for US stocks from plain questions: the advisor skill reads your question (stocks, horizon, holdings), delegates deep work to the analyst agent (SEC facts, filings, news, peers, industry chain, consensus, scoring at your horizons) and answers for a beginner with a forecast by horizon, a months-ahead range, a situation-aware recommendation, Canadian tax on your shares, options explained on real contracts, and an HTML page; every figure cited; artifacts under <project>/data/."
     }
   ]
 }

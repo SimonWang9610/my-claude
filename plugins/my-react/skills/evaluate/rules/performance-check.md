@@ -43,8 +43,8 @@ Diagnose from architecture downward; a fix applied below the cause's level is a 
 ## Route the fix
 
 - **Implementation-level cause** (2–4, within the contract): a finding whose fix
-  direction cites `${CLAUDE_PLUGIN_ROOT}/skills/implement/rules/optimize-hooks.md` /
-  `optimize-components.md`.
+  direction cites [optimize-hooks.md](../../implement/rules/optimize-hooks.md) /
+  [optimize-components.md](../../implement/rules/optimize-components.md).
 - **Design-level cause** (1, or a boundary the design drew wrong): a **DESIGN GAP**
   finding (friction — or defect when the contract mandates the slow structure),
   measurement attached as evidence. Never suggest patching locally what the design must

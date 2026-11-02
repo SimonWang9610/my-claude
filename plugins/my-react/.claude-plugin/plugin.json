@@ -1,7 +1,15 @@
 {
   "name": "my-react",
-  "description": "Spec-driven development for React/TypeScript: the spec-driven phase process (preflight → requirements → clarify → design → tasks → implement → spec-qa) embedded in its driver agents, contract skills (requirements, design, plan, test, implement, evaluate, review), the code-flow atlas auditor, and the driver + worker agents that orchestrate them.",
-  "version": "1.2.1",
-  "author": { "name": "SimonWang9610" },
-  "keywords": ["react", "typescript", "spec-driven", "spec-driven-workflow", "contracts"]
+  "description": "Spec-driven development for React/TypeScript: the spec-driven phase process (preflight \u2192 requirements \u2192 clarify \u2192 design \u2192 tasks \u2192 implement \u2192 spec-qa) embedded in its driver agents, contract skills (requirements, design, plan, test, implement, evaluate, review), the code-flow atlas auditor, and the driver + worker agents that orchestrate them.",
+  "version": "1.3.0",
+  "author": {
+    "name": "SimonWang9610"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "spec-driven",
+    "spec-driven-workflow",
+    "contracts"
+  ]
 }
