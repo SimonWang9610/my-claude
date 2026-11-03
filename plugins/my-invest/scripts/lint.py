@@ -176,13 +176,14 @@ def lint_text(path, text, part=False, extra_ids=None):
 
 
 def facts_ids(facts_path):
-    """Source ids a part may cite: facts/facts.json, its sibling scorecard.json and holdings_tables.json, and the
-    Evidence log rows of ../research/research.md."""
+    """Source ids a part may cite: facts/facts.json, its siblings scorecard.json, holdings_tables.json, peers.json and
+    sizing.json, and the Evidence log rows of ../research/research.md."""
     import json as _json
     import os as _os
     ids = set()
     folder = _os.path.dirname(_os.path.abspath(facts_path))   # <stock>/facts
-    for fp in (facts_path, _os.path.join(folder, "scorecard.json"), _os.path.join(folder, "holdings_tables.json"), _os.path.join(folder, "peers.json")):
+    for fp in (facts_path, _os.path.join(folder, "scorecard.json"), _os.path.join(folder, "holdings_tables.json"),
+               _os.path.join(folder, "peers.json"), _os.path.join(folder, "sizing.json")):
         try:
             with open(fp, encoding="utf-8") as fh:
                 ids.update((_json.load(fh).get("sources") or {}).keys())

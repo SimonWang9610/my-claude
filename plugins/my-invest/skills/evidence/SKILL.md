@@ -68,7 +68,7 @@ the fact itself: a filing, an API call, an article. A homepage or a search page 
 
 **Ids.** Scripts use `S1`–`S99`, regenerated each run: `S1`–`S59` the fetched sources in `facts.json`,
 `S60` the metrics derived row, `S61` the score derived row, `S62` the history row, `S80`–`S89` the peer
-comparison rows, `S90`–`S99` the holdings script's tax sources. `research.md` uses `S100` upward,
+comparison rows, `S90`–`S97` the holdings script's tax sources, `S98`–`S99` the sizing script's rows. `research.md` uses `S100` upward,
 cumulative across runs, so an old citation still resolves; it ends with `## Open questions` and its own
 `## Evidence log`. `report.py` merges both ranges into the dossier.
 
@@ -115,8 +115,8 @@ Before handing any output back:
 ```
 
 `--part` for `research.md`, a note or a script's Markdown output (no disclaimer expected), with `--facts`
-so the ids of the sibling `facts.json`, `scorecard.json`, `holdings_tables.json` and `research.md`
-resolve; without them for a dossier, digest or screen table. `report.py` runs the full check itself and
+so the ids of the sibling `facts.json`, `scorecard.json`, `holdings_tables.json`, `peers.json`, `sizing.json` and
+`research.md` resolve; without them for a dossier, digest or screen table. `report.py` runs the full check itself and
 fails on a violation: a figure line without a resolving marker, a marker without a log row, a log row
 without a URL, or a missing disclaimer. A failing lint is a defect in the output, not a reason to drop
 the figure.

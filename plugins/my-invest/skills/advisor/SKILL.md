@@ -63,10 +63,15 @@ tickers: the portfolio answer of answer.md — one table, one short block per ti
 pages hold the rest. Publish the page with the Artifact tool when available (icon `chart`), else send
 the file; link `INDEX.md`.
 
+A follow-up that asks for an action — how many shares, at what price, from which account — is answered
+in the conversation from the files and one `size.py` run, in the shape of [follow-ups.md](references/follow-ups.md):
+the verdict, the frames with your pick, the plan in halves at named levels, what it changes in the
+earlier answers.
+
 ## 4. Leave no positions behind
 
-After the answer, delete `facts/holdings.json` and `facts/holdings_tables.json` when the question stated a
-position. The dated report snapshot keeps the answer that was given; nothing else keeps the holdings.
+After the answer, delete `facts/holdings.json`, `facts/holdings_tables.json` and `facts/sizing.json` when
+the question stated a position. The dated report snapshot keeps the answer that was given; nothing else keeps the holdings.
 
 Budget: one analyst spawn per ticker per question; an analyst's error is relayed verbatim with its stage.
 Never add a number that is not in the files; never use a term from the standard without its gloss; never

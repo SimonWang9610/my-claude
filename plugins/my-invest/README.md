@@ -38,6 +38,12 @@ short brief, the same shape every time:
   scorecard, the strict value lens, the evidence log), which stays in the stock's folder for the next
   question rather than in the answer.
 
+A follow-up such as "which price should I sell, and how many shares?" is answered in the conversation:
+the sizing frames (cap the weight at 15%, 12.5% or 10% of your accounts, sell the gain, recover the
+cost) with the advisor's pick, the look-through weight once your funds are counted, which account to
+sell from first, the plan in halves at named levels (52-week high, 50-day average, the options-implied
+range, the next earnings date), and what it changes in the earlier answers.
+
 A portfolio question gets one table (one row per position: worth, gain, what to do, limit level,
 expected vs required return, confidence, link) and one short block per ticker; funds (ETFs) are
 answered too, by the fund rule (trend, cost, concentration, labelled as this standard's own reading),

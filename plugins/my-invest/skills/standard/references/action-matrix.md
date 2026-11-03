@@ -39,3 +39,24 @@ and the stance applies unchanged (the model does not anchor on cost).
 From `lens-short-term.md`: trend state, momentum, volatility regime, implied move to the next expiry,
 events inside the horizon, relative strength; a `short-term stance` (`trend up` / `trend down` / `no trend`)
 followed by the lens's base-rate line (`short_term.caveat`) and the rule that it never overrides a failed gate.
+
+## Sizing frames and order levels (`size.py`) — this standard's own, labelled so
+
+No published source sizes a trim for a retail holder, so the frames are plain arithmetic on the user's
+own positions and are always shown together, with the advisor's pick marked:
+
+| Frame | Shares to sell |
+|---|---|
+| cap at 15%, 12.5%, 10% of the accounts in scope | (position value − cap × total) ÷ price, rounded down |
+| sell the gain, keep your cost invested | gain ÷ price, rounded down; what is kept is worth about the cost |
+| recover your cost, keep the gain as house money | cost ÷ price, rounded up; what is kept is the gain |
+
+Look-through: the stock's weight also counts the user's funds (fund position value × the stock's weight
+in the fund, from `fund.json`), so a 15% outright line can be 20% in truth. Sell from taxable accounts
+last; between registered accounts RRSP before TFSA (TFSA growth stays tax-free for good; an RRSP is taxed
+on withdrawal anyway). A failed gate or an `exit` cell is not sized: the answer is sell.
+
+Order levels, each named by its rule: the 50-day and 200-day averages (trailing trigger, pullback
+entry), the 52-week high and low (a limit into strength; the floor where the trend reading flips), the
+options-implied one-standard-deviation range to the first monthly expiry after the horizon (the upper
+edge for a limit sell, the lower for a limit buy), and the next earnings date with its implied move.
