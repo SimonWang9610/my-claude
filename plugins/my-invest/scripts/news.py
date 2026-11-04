@@ -1,137 +1,160 @@
 #!/usr/bin/env python3
-"""news.py TICKER [--since DAYS] [--fts "phrase"] [--rss] [--forms F1,F2|all] [--items 2.02,5.02]
+"""news.py {fetch|lean} - news items per subject (secondary, Google News RSS) and the analyst's lean on each.
 
-Recent filings from the SEC submissions feed (primary), optional EDGAR full-text-search hits (primary),
-optional Google News RSS (secondary; failures tolerated, reported in `rss_error`).
-Default form set: 8-K, 10-K, 10-Q, 6-K, 20-F, 40-F, proxy, registration statements, 13D/G, tender, NT forms
-(Forms 3/4/5 and the like are noise unless named in --forms). --items keeps only 8-Ks naming one of the items.
+Usage: python3 news.py fetch SUBJECT [--query "..."] [--days 30] [--md] --project P
+       python3 news.py lean ID VALUE --by "analyst run N" [--note "..."] --project P
+SUBJECT is a ticker, sector:<name> or market. fetch stores the items (newest first, capped at config depth.news)
+into `news` by url, lean left NULL; lean records the analyst's reading (-1 against .. +1 for) on one item.
 """
+import argparse
 import datetime as dt
+import email.utils
+import html
+import os
+import re
+import sys
 import urllib.parse
 import xml.etree.ElementTree as ET
 
-import common
-import edgar
-from common import FetchError
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import common  # noqa: E402
+import db  # noqa: E402
 
 SCRIPT = "news.py"
-FTS_URL = "https://efts.sec.gov/LATEST/search-index?"
-RSS_URL = "https://news.google.com/rss/search?q=%s&hl=en-US&gl=US&ceid=US:en"
-DEFAULT_FORM_PREFIXES = ("8-K", "10-K", "10-Q", "6-K", "20-F", "40-F", "DEF 14A", "DEFA14A", "S-1", "S-3", "S-4",
-                         "SC 13", "SCHEDULE 13", "SC TO", "NT 10")
+RSS_URL = "https://news.google.com/rss/search?%s"
 
 
-def filing_url(cik_int, accn, doc):
-    return "https://www.sec.gov/Archives/edgar/data/%d/%s/%s" % (int(cik_int), accn.replace("-", ""), doc)
+# --- query --------------------------------------------------------------------------------------
+def normalise_subject(subject):
+    if subject.lower() == "market":
+        return "market"
+    if subject.lower().startswith("sector:"):
+        return "sector:" + subject[7:].strip()
+    return subject.upper()
 
 
-def form_wanted(form, forms):
-    if forms == "all":
-        return True
-    if forms:
-        return form in forms
-    return form.startswith(DEFAULT_FORM_PREFIXES)
+def default_query(conn, subject):
+    if subject == "market":
+        return "stock market"
+    if subject.startswith("sector:"):
+        return "%s industry" % subject[7:]
+    row = db.one(conn, "SELECT name FROM securities WHERE ticker = ?", (subject,))
+    if row and row["name"]:
+        return '"%s" OR %s stock' % (row["name"], subject)
+    return "%s stock" % subject
 
 
-def recent_filings(sub, cik_int, since_days, today, forms=None, items=None, src="S2"):
-    """Filter submissions `filings.recent` to the window. Returns (list newest first, coverage_start)."""
-    r = sub.get("filings", {}).get("recent", {})
-    cutoff = (today - dt.timedelta(days=since_days)).isoformat()
-    want_items = set(items or [])
-    out = []
-    n = len(r.get("accessionNumber", []))
-    for i in range(n):
-        filed, form = r["filingDate"][i], r["form"][i]
-        if filed < cutoff or not form_wanted(form, forms):
-            continue
-        it = r.get("items", [""] * n)[i] or ""
-        if want_items and not (form.startswith("8-K") and want_items & {x.strip() for x in it.split(",")}):
-            continue
-        out.append({"form": form, "filed": filed, "items": it,
-                    "url": filing_url(cik_int, r["accessionNumber"][i], r["primaryDocument"][i]), "src": src})
-    out.sort(key=lambda x: x["filed"], reverse=True)
-    dates = r.get("filingDate", [])
-    return out, (min(dates) if dates else None)
+def rss_url(query):
+    return RSS_URL % urllib.parse.urlencode({"q": query, "hl": "en-US", "gl": "US", "ceid": "US:en"})
 
 
-def fts_hits(obj, since_cutoff):
-    """EDGAR full-text-search JSON -> hit list within the window."""
-    hits = []
-    for h in obj.get("hits", {}).get("hits", []):
-        s = h.get("_source", {})
-        accn, _, fname = h.get("_id", "").partition(":")
-        ciks = s.get("ciks") or [""]
-        if not accn or not fname or s.get("file_date", "") < since_cutoff:
-            continue
-        hits.append({"form": s.get("form"), "filed": s.get("file_date"), "items": ",".join(s.get("items") or []),
-                     "file_type": s.get("file_type"),
-                     "url": filing_url(int(ciks[0]), accn, fname) if ciks[0] else None})
-    return sorted(hits, key=lambda x: x["filed"], reverse=True)
+# --- parsing ------------------------------------------------------------------------------------
+def strip_html(text):
+    text = re.sub(r"<[^>]+>", " ", text or "")
+    return re.sub(r"\s+", " ", html.unescape(text)).strip()
 
 
-def parse_rss(body):
-    root = ET.fromstring(body)
-    out = []
+def iso_utc(pubdate):
+    """RFC 2822 pubDate -> ISO UTC, or None when it cannot be read."""
+    if not pubdate:
+        return None
+    try:
+        t = email.utils.parsedate_to_datetime(pubdate)
+    except (TypeError, ValueError):
+        return None
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=dt.timezone.utc)
+    return common.iso(t.astimezone(dt.timezone.utc))
+
+
+def parse_rss(text):
+    """RSS body -> [{published, source, url, title, summary}] in feed order."""
+    root = ET.fromstring(text)
+    items = []
     for it in root.iter("item"):
+        url = (it.findtext("link") or "").strip()
+        title = strip_html(it.findtext("title") or "")
+        if not url or not title:
+            continue
         src = it.find("source")
-        out.append({"title": (it.findtext("title") or "").strip(), "url": (it.findtext("link") or "").strip(),
-                    "published": (it.findtext("pubDate") or "").strip(),
-                    "outlet": (src.text or "").strip() if src is not None else ""})
-    return out
+        items.append({"published": iso_utc(it.findtext("pubDate")), "source": (src.text or "").strip() if src is not None else None,
+                      "url": url, "title": title, "summary": strip_html(it.findtext("description")) or None})
+    return items
 
 
-def build(ctx, ticker, since=90, fts="", rss=False, forms=None, items=None, sub=None):
-    """`sub` = (submissions JSON, retrieved) when the caller already fetched it (facts.py shares one fetch)."""
-    ticker = ticker.upper()
-    if sub:
-        cik, title = int(sub[0]["cik"]), sub[0].get("name", ticker)
-    else:
-        cik, title, _ = edgar.resolve_cik(ctx, ticker)
-    cik10 = "%010d" % cik
-    today = ctx.now().date()
-    prov = common.Provenance()
-    sub_url = edgar.SUBMISSIONS_URL % cik10
-    sub, sub_ret = sub or ctx.get_json(sub_url, "news")
-    dates = sub.get("filings", {}).get("recent", {}).get("filingDate", [])
-    sid = prov.add("primary", "submissions: filings index", sub_url, dates[0] if dates else "", sub_ret)
-    filings, coverage = recent_filings(sub, cik, since, today, forms, items, sid)
-    cutoff = (today - dt.timedelta(days=since)).isoformat()
-    out = {"ticker": ticker, "cik": cik10, "window": {"since_days": since, "from": cutoff, "to": today.isoformat(),
-                                                      "feed_oldest": coverage},
-           "sources": prov.sources, "filings": filings}
-    if fts:
-        q = {"q": '"%s"' % fts, "forms": "8-K", "ciks": cik10, "dateRange": "custom",
-             "startdt": cutoff, "enddt": today.isoformat()}
-        url = FTS_URL + urllib.parse.urlencode(q)
-        obj, ret = ctx.get_json(url, "news")
-        out["fts_hits"] = fts_hits(obj, cutoff)
-        out["fts_source"] = prov.add("primary", "EDGAR full-text search: %s" % fts, url, today.isoformat(), ret)
-    if rss:
-        try:
-            url = RSS_URL % urllib.parse.quote_plus('"%s" stock' % title)
-            body, ret = ctx.get(url, "news")
-            out["rss"] = parse_rss(body)
-            out["rss_source"] = prov.add("secondary", "Google News RSS: %s" % title, url, today.isoformat(), ret)
-        except Exception as e:  # tolerated by design: undocumented, flaky feed
-            out["rss"], out["rss_error"] = [], str(e)
-    return out
+def select_items(items, days, cap, now=None):
+    """Items published within `days` of now (undated items dropped), newest first, at most `cap`."""
+    now = now or common.utcnow()
+    since = common.iso(now - dt.timedelta(days=days))
+    kept = [i for i in items if i["published"] and i["published"] >= since]
+    kept.sort(key=lambda i: i["published"], reverse=True)
+    return kept[:cap]
+
+
+# --- commands -----------------------------------------------------------------------------------
+def fetch(conn, subject, query, days, cap, text=None):
+    """Fetch (or parse `text`) and store; returns (stored rows with ids, url)."""
+    url = rss_url(query)
+    text = text if text is not None else common.get_text(url)
+    items = select_items(parse_rss(text), days, cap)
+    now = common.iso()
+    sid = db.source(conn, url, "secondary", "Google News: %s" % query)
+    for i in items:
+        i.update({"subject": subject, "fetched_at": now, "source_id": sid})
+    db.upsert(conn, "news", items, keys=["url"])
+    urls = [i["url"] for i in items]
+    stored = []
+    if urls:
+        stored = db.rows(conn, "SELECT id, subject, published, source, title, url, summary, lean FROM news WHERE url IN (%s) "
+                         "ORDER BY published DESC" % ",".join("?" * len(urls)), urls)
+    return stored, url
+
+
+def set_lean(conn, item_id, value, by, note):
+    if not -1 <= value <= 1:
+        raise ValueError("lean must be between -1 and 1, got %s" % value)
+    if not db.one(conn, "SELECT id FROM news WHERE id = ?", (item_id,)):
+        raise ValueError("no news item with id %s" % item_id)
+    conn.execute("UPDATE news SET lean = ?, lean_by = ?, lean_note = ? WHERE id = ?", (value, by, note, item_id))
 
 
 def run(argv=None):
-    ap = common.base_parser("Recent filings / news for one ticker")
-    ap.add_argument("ticker")
-    ap.add_argument("--since", type=int, default=90, help="window in days")
-    ap.add_argument("--fts", default="", help="EDGAR full-text phrase (8-K)")
-    ap.add_argument("--rss", action="store_true", help="add Google News RSS (secondary)")
-    ap.add_argument("--forms", default="", help="comma list of exact forms, or 'all'")
-    ap.add_argument("--items", default="", help="8-K item filter, e.g. 2.02,5.02")
-    args = ap.parse_args(argv)
-    forms = args.forms if args.forms == "all" else [f.strip() for f in args.forms.split(",") if f.strip()]
-    items = [i.strip() for i in args.items.split(",") if i.strip()]
-    out = build(common.ctx_from(args), args.ticker, args.since, args.fts, args.rss, forms, items)
-    common.emit(out, args.out)
-    return out
+    p = common.parser(SCRIPT, "news items per subject and the analyst's lean")
+    sub = p.add_subparsers(dest="command")
+    sub.required = True
+    f = sub.add_parser("fetch", help="fetch news for a ticker, sector:<name> or market")
+    f.add_argument("subject")
+    f.add_argument("--query", default="", help="search query (default built from the subject)")
+    f.add_argument("--days", type=int, default=30, help="keep items published within N days (default 30)")
+    l = sub.add_parser("lean", help="record the analyst's lean on one item")
+    l.add_argument("id", type=int)
+    l.add_argument("value", type=float, help="-1 against .. +1 for the subject")
+    l.add_argument("--by", required=True, help="who set it, e.g. 'analyst run 12'")
+    l.add_argument("--note", default=None, help="why, in a few words")
+    for sp in (f, l):  # accepted after the subcommand too; SUPPRESS keeps the main parser's value otherwise
+        sp.add_argument("--project", default=argparse.SUPPRESS)
+        sp.add_argument("--md", action="store_true", default=argparse.SUPPRESS)
+    a = p.parse_args(argv)
+    project = common.resolve_project(a.project)
+    cfg = common.load_config(project)
+    conn = db.connect(project)
+
+    if a.command == "lean":
+        try:
+            set_lean(conn, a.id, a.value, a.by, a.note)
+        except ValueError as e:
+            return common.fail(SCRIPT, e)
+        return common.emit({"ok": True, "script": SCRIPT, "id": a.id, "lean": a.value, "lean_by": a.by, "lean_note": a.note})
+
+    subject = normalise_subject(a.subject)
+    query = a.query or default_query(conn, subject)
+    stored, url = fetch(conn, subject, query, a.days, common.depth(cfg, "news"))
+    sid = db.source(conn, url, "secondary", "Google News: %s" % query)
+    out = {"ok": True, "script": SCRIPT, "subject": subject, "query": query, "days": a.days, "n": len(stored),
+           "source_id": sid, "items": stored}
+    md = db.md_table(stored, ["id", "published", "source", "title"]) if a.md else None
+    return common.emit(out, md)
 
 
 if __name__ == "__main__":
-    common.run_main(SCRIPT, run)
+    sys.exit(common.run_main(SCRIPT, run))

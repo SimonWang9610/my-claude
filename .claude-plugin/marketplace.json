@@ -25,7 +25,7 @@
     {
       "name": "my-invest",
       "source": "./plugins/my-invest",
-      "description": "Financial advisor for a rookie US-stock investor from plain questions: the advisor skill reads your question (stocks, horizon, holdings), delegates deep work to the analyst agent (SEC facts, filings, news, peers, industry chain, consensus, scoring at your horizons) and answers in a fixed order: the verdict (price outlook, buy or sell, when, at what price, how confident), the proof (scenarios and inputs, the case against, the track record, what could change the answer, what could not be verified), then the detail (news, peers, Canadian tax on your shares, options on real contracts, an HTML page); every figure cited; artifacts under <project>/data/."
+      "description": "Financial advisor for a beginner in US stocks and funds: reads what the question asks (one stock, your holdings from a broker CSV, a sector, the market, or a mix), runs six analysis dimensions (SEC fundamentals, a three-scenario DCF, price statistics, macro and politics, industry, sentiment) through nine single-purpose scripts over one SQLite database, and answers result-first with three options (conservative, moderate, aggressive) in tables shaped by the question, each with a confidence score built from evidence, agreement and its own track record against the index; a daily digest skill for your holdings; every figure linked to its source; Markdown in the chat, an HTML page on disk. US-listed only; holdings never stored."
     }
   ]
 }

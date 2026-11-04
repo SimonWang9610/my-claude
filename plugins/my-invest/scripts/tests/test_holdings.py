@@ -1,196 +1,214 @@
-"""holdings.py: question parsing, P&L at price points, Canadian tax lines, FX, Markdown lint (no network)."""
-import io
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
 
-import holdings
-import lint
-from tests import fx
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, HERE)
+import common  # noqa: E402
+import db  # noqa: E402
+import holdings  # noqa: E402
 
-AS_OF = "2026-10-14"
-SCRIPT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "holdings.py")
-E2E_Q = ("I have 120 AAPL at $150 in my TFSA and 80 at $210 in a non-registered account, "
-         "marginal rate 43%, what if it hits 400")
+CSV = os.path.join(HERE, "tests", "fixtures", "holdings_two_accounts.csv")
 
 
-def parse(q, ticker="AAPL"):
-    return holdings.parse_question(q, ticker, AS_OF)[0]
+def seed(conn):
+    sid = db.source(conn, "https://yahoo/x", "secondary", "Yahoo")
+    db.upsert(conn, "prices", [{"ticker": "AAPL", "date": "2025-12-31", "close": 200.0, "source_id": sid},
+                               {"ticker": "QQQ", "date": "2025-12-31", "close": 450.0, "source_id": sid}])
+    db.upsert(conn, "securities", [{"ticker": "QQQ", "kind": "fund", "updated_at": "t"}])
+    db.upsert(conn, "fund_weights", [{"fund": "QQQ", "kind": "holding", "key": "AAPL", "weight": 0.10, "asof": "2025-12-01", "source_id": sid},
+                                     {"fund": "QQQ", "kind": "holding", "key": "MSFT", "weight": 0.09, "asof": "2025-12-01", "source_id": sid},
+                                     {"fund": "QQQ", "kind": "holding", "key": "MSFT", "weight": 0.05, "asof": "2025-01-01", "source_id": sid},
+                                     {"fund": "QQQ", "kind": "sector", "key": "Technology", "weight": 0.5, "asof": "2025-12-01", "source_id": sid}])
+    db.upsert(conn, "stats", [{"ticker": "AAPL", "asof": "2025-12-31", "metric": m, "window": "spot", "value": v, "source_id": sid}
+                              for m, v in (("ma50", 195.0), ("ma200", 180.0), ("high_52w", 210.0), ("low_52w", 150.0),
+                                           ("range_3m_low", 185.0), ("range_3m_high", 216.0))])
+    db.upsert(conn, "estimates", [{"ticker": "AAPL", "asof": "2025-12-30", "next_earnings": "2026-01-29", "source_id": sid}])
+    return sid
 
 
-def pos(q, ticker="AAPL"):
-    return [(p["account"], p["shares"], p["avg_cost"]) for p in parse(q, ticker)["positions"]]
+def counts(conn):
+    return {t: conn.execute("SELECT COUNT(*) FROM %s" % t).fetchone()[0] for t in db.table_names()}
 
 
 class Parsing(unittest.TestCase):
-    def test_account_prefix_and_at_sign(self):
-        self.assertEqual(pos("RRSP: 50 AAPL @ 180"), [("RRSP", 50, 180)])
+    def test_columns_accounts_and_skips(self):
+        rows, cols, skipped = holdings.parse(CSV)
+        self.assertEqual(cols["ticker"], "Symbol")
+        self.assertEqual(cols["shares"], "Quantity")
+        self.assertEqual(cols["cost"], "Average Cost")
+        self.assertEqual(cols["cost_mode"], "per_share")
+        self.assertEqual(cols["account"], "Account Type")
+        self.assertEqual(cols["value"], "Market Value")
+        self.assertEqual(cols["type"], "Description")
+        self.assertEqual([r["account"] for r in rows], ["TFSA", "RRSP", "NONREG"])
+        self.assertEqual(rows[0]["avg_cost"], 150.0)         # "$150.00"
+        self.assertEqual(rows[0]["csv_value"], 2000.0)       # "$2,000.00"
+        self.assertTrue(rows[2]["is_fund"])
+        self.assertEqual(skipped, [{"symbol": "SHOP.TO", "reason": "not a US listing"}])
 
-    def test_other_ticker_kept_only_for_its_folder(self):
-        q = "200 shares of GOOGL avg cost 135 non-registered"
-        self.assertEqual(pos(q, "GOOGL"), [("NONREG", 200, 135)])
-        self.assertEqual(pos(q, "AAPL"), [])
+    def test_account_mapping_and_symbol_cleaning(self):
+        for text, kind in (("RRSP USD", "RRSP"), ("LIRA", "RRSP"), ("RRIF", "RRSP"), ("FHSA", "TFSA"), ("TFSA", "TFSA"),
+                           ("Margin", "NONREG"), ("Cash", "NONREG"), ("", "NONREG"), ("Non-registered", "NONREG")):
+            self.assertEqual(holdings.account_kind(text), kind, text)
+        self.assertEqual(holdings.clean_symbol(" aapl-u "), ("AAPL", None))
+        self.assertEqual(holdings.clean_symbol("BRK.B"), ("BRK.B", None))
+        self.assertEqual(holdings.clean_symbol("XEQT.TO"), ("XEQT.TO", "not a US listing"))
+        self.assertEqual(holdings.clean_symbol(""), (None, "no ticker"))
 
-    def test_comma_form_average_cost(self):
-        self.assertEqual(pos("200 shares of GOOGL, average cost 135, non-registered", "GOOGL"),
-                         [("NONREG", 200, 135)])
-
-    def test_two_positions_inherit_ticker_rate_and_named_price(self):
-        h = parse(E2E_Q)
-        self.assertEqual([(p["account"], p["shares"], p["avg_cost"]) for p in h["positions"]],
-                         [("TFSA", 120, 150), ("NONREG", 80, 210)])
-        self.assertEqual(h["marginal_rate"], 0.43)
-        self.assertEqual(h["eval_prices"], [400.0])
-        self.assertEqual((h["ticker"], h["currency"], h["as_of"]), ("AAPL", "USD", AS_OF))
-
-    def test_labelled_accounts_in_sequence(self):
-        self.assertEqual(pos("TFSA: 100 AAPL @ 150; RRSP: 50 AAPL @ 180"), [("TFSA", 100, 150), ("RRSP", 50, 180)])
-
-    def test_holding_period_alias_and_lowercase_ticker(self):
-        h = parse("I hold 30 aapl at 120 in my FHSA and plan to hold for 3 years")
-        self.assertEqual(pos("I hold 30 aapl at 120 in my FHSA"), [("TFSA", 30, 120)])
-        self.assertEqual(h["horizon_end"], "2029-10-14")
-
-    def test_cad_cost_and_lira(self):
-        h = parse("my LIRA has 10 AAPL avg price 99.5 CAD")
-        self.assertEqual(h["positions"], [{"account": "RRSP", "shares": 10, "avg_cost": 99.5, "currency": "CAD"}])
-
-    def test_mixed_tickers_and_several_named_prices(self):
-        h = parse("I have 100 GOOGL at 120 in TFSA and 40 AAPL at 170 in RRSP, sell at 250 or 300? 33% bracket")
-        self.assertEqual([(p["account"], p["shares"]) for p in h["positions"]], [("RRSP", 40)])
-        self.assertEqual(h["eval_prices"], [250.0, 300.0])
-        self.assertEqual(h["marginal_rate"], 0.33)
-
-    def test_no_rate_no_prices_no_horizon(self):
-        h = parse("RRSP: 50 AAPL @ 180")
-        self.assertEqual((h["marginal_rate"], h["eval_prices"], h["horizon_end"]), (None, [], None))
+    def test_total_cost_column_and_missing_shares_column(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "a.csv")
+            with open(p, "w") as f:
+                f.write("Account,Ticker,Shares,Book Cost,Market Value\nTFSA,AAPL,10,1500,2000\n")
+            rows, cols, _ = holdings.parse(p)
+            self.assertEqual(cols["cost_mode"], "total")
+            self.assertEqual(rows[0]["avg_cost"], 150.0)
+            with open(p, "w") as f:
+                f.write("Account,Ticker,Price\nTFSA,AAPL,10\n")
+            with self.assertRaises(common.FetchError) as cm:
+                holdings.parse(p)
+            self.assertIn("shares", str(cm.exception))
 
 
-class Tables(unittest.TestCase):
+class Arithmetic(unittest.TestCase):
     def setUp(self):
-        self.rules = holdings.load_rules()
-        self.zones = fx.load("holdings_scorecard.json")["zones"]
+        self.c = db.connect(path=":memory:")
+        seed(self.c)
 
-    def tables(self, q, fxr=1.4, zones=True):
-        h = parse(q)
-        return holdings.build("/tmp/AAPL", h, 300.0, fxr, AS_OF, {"class": "primary", "what": "BoC",
-                              "url": holdings.BOC_URL, "as_of": AS_OF, "retrieved": AS_OF},
-                              self.zones if zones else None, self.rules)
+    def test_aggregation_weights_and_split(self):
+        res = holdings.analyse(self.c, CSV, [], [0.15, 0.125, 0.10], None)
+        pos = {p["ticker"]: p for p in res["positions"]}
+        self.assertEqual(res["portfolio"]["total"], 12000.0)
+        self.assertEqual(res["portfolio"]["positions"], 2)
+        aapl = pos["AAPL"]
+        self.assertEqual(aapl["shares"], 15)
+        self.assertEqual(aapl["value"], 3000.0)
+        self.assertEqual(aapl["cost"], 2400.0)
+        self.assertEqual(aapl["gain"], 600.0)
+        self.assertAlmostEqual(aapl["gain_pct"], 0.25)
+        self.assertAlmostEqual(aapl["avg_cost"], 160.0)
+        self.assertAlmostEqual(aapl["weight"], 0.25)
+        self.assertEqual([r["account"] for r in aapl["accounts"]], ["TFSA", "RRSP"])
+        self.assertTrue(pos["QQQ"]["is_fund"])
+        self.assertAlmostEqual(res["portfolio"]["funds_weight"], 0.75)
+        self.assertAlmostEqual(res["portfolio"]["stocks_weight"], 0.25)
+        self.assertEqual(res["portfolio"]["top5"][0]["ticker"], "QQQ")
 
-    @staticmethod
-    def point(t, section, account, label):
-        row = next(r for r in t[section] if r["account"] == account)
-        return next(p for p in row["price_points" if section == "outcomes" else "points"] if p["label"] == label)
+    def test_look_through_sums_direct_and_via_the_fund(self):
+        res = holdings.analyse(self.c, CSV, [], [0.15], None)
+        lt = {x["ticker"]: x for x in res["look_through"]}
+        self.assertAlmostEqual(lt["AAPL"]["direct_weight"], 0.25)
+        self.assertAlmostEqual(lt["AAPL"]["via_weight"], 0.075)        # 9000 x 10% / 12000
+        self.assertAlmostEqual(lt["AAPL"]["total_weight"], 0.325)
+        self.assertEqual(lt["AAPL"]["via"][0]["fund"], "QQQ")
+        self.assertAlmostEqual(lt["MSFT"]["via_weight"], 0.0675)       # the latest asof (9%), not the older 5%
+        self.assertEqual(lt["MSFT"]["direct"], 0.0)
+        self.assertNotIn("QQQ", lt)
+        self.assertEqual(res["portfolio"]["funds_looked_through"], [{"fund": "QQQ", "asof": "2025-12-01", "constituents": 2}])
 
-    def test_price_points_and_pnl(self):
-        t = self.tables(E2E_Q)
-        tfsa = next(o for o in t["outcomes"] if o["account"] == "TFSA")
-        self.assertEqual([p["label"] for p in tfsa["price_points"]],
-                         ["current", "buy zone", "base value", "sell zone", "named $400"])
-        self.assertEqual(tfsa["cost_total"], 18000.0)
-        cur = self.point(t, "outcomes", "TFSA", "current")
-        self.assertEqual((cur["value"], cur["gain_abs"], cur["gain_pct"]), (36000.0, 18000.0, 1.0))
-        buy = self.point(t, "outcomes", "NONREG", "buy zone")
-        self.assertEqual((buy["value"], buy["gain_abs"], buy["gain_pct"]), (16000.0, -800.0, -0.0476))
+    def test_frames_and_sell_order(self):
+        res = holdings.analyse(self.c, CSV, ["AAPL"], [0.15, 0.125, 0.10, 0.30], None)
+        fr = {f["frame"]: f for f in res["sizing"]["AAPL"]["frames"]}
+        cap15 = fr["cap at 15.0%"]
+        self.assertEqual(cap15["shares_to_sell"], 6)                   # (3000 - 1800) / 200
+        self.assertEqual(cap15["proceeds"], 1200.0)
+        self.assertEqual(cap15["shares_kept"], 9)
+        self.assertEqual([(a["account"], a["shares"]) for a in cap15["from_accounts"]], [("RRSP", 5), ("TFSA", 1)])
+        self.assertEqual(cap15["from_accounts"][0]["reason"], "no tax on a sale; withdrawals are taxed as income later")
+        self.assertEqual(fr["cap at 10.0%"]["shares_to_sell"], 9)
+        self.assertEqual(fr["cap at 30.0%"]["shares_to_sell"], 0)
+        self.assertEqual(fr["cap at 30.0%"]["note"], "already under the cap")
+        self.assertEqual(fr["sell the gain"]["shares_to_sell"], 3)      # 600 / 200
+        self.assertEqual(fr["recover cost"]["shares_to_sell"], 12)      # 2400 / 200
+        self.assertEqual(fr["recover cost"]["shares_kept"], 3)
+        lv = res["sizing"]["AAPL"]["levels"]
+        self.assertEqual((lv["ma50"], lv["ma200"], lv["next_earnings"]), (195.0, 180.0, "2026-01-29"))
 
-    def test_fx_conversion(self):
-        cur = self.point(self.tables(E2E_Q), "outcomes", "NONREG", "current")
-        self.assertEqual((cur["value_cad"], cur["gain_cad"]), (33600.0, 10080.0))
+    def test_sizing_a_ticker_without_stats_or_not_held(self):
+        res = holdings.analyse(self.c, CSV, ["QQQ", "MSFT"], [0.15], None)
+        self.assertIn({"symbol": "QQQ", "reason": "run stats.py QQQ"}, res["skipped"])
+        self.assertEqual(res["sizing"]["MSFT"]["error"], "MSFT is not in the CSV")
 
-    def test_cad_cost_basis(self):
-        t = self.tables("100 AAPL at C$300 in my TFSA", fxr=1.5)
-        o = t["outcomes"][0]
-        self.assertEqual((o["avg_cost"], o["cost_total"], o["acb_cad"]), (200.0, 20000.0, 30000.0))
-        self.assertEqual(o["price_points"][0]["gain_cad"], 15000.0)
+    def test_total_flag_for_a_partial_csv(self):
+        res = holdings.analyse(self.c, CSV, [], [0.15], 24000.0)
+        self.assertAlmostEqual({p["ticker"]: p for p in res["positions"]}["AAPL"]["weight"], 0.125)
+        self.assertEqual(res["portfolio"]["total_from"], "flag")
 
-    def test_tfsa_zero_tax(self):
-        t = self.tables(E2E_Q)
-        for p in next(r for r in t["tax"] if r["account"] == "TFSA")["points"]:
-            self.assertEqual((p["taxable_amount_cad"], p["estimated_tax_cad"]), (0.0, 0.0))
-            self.assertIsNotNone(p["after_tax_proceeds_cad"])
+    def test_price_falls_back_to_the_csv_value(self):
+        self.c.execute("DELETE FROM prices WHERE ticker = 'QQQ'")
+        res = holdings.analyse(self.c, CSV, [], [0.15], None)
+        q = {p["ticker"]: p for p in res["positions"]}["QQQ"]
+        self.assertEqual((q["price"], q["price_from"]), (450.0, "csv"))
 
-    def test_nonreg_half_inclusion_with_rate(self):
-        t = self.tables(E2E_Q)
-        p = self.point(t, "tax", "NONREG", "current")
-        self.assertEqual((p["taxable_amount_cad"], p["estimated_tax_cad"], p["after_tax_proceeds_cad"]),
-                         (5040.0, 2167.2, 31432.8))
-        loss = self.point(t, "tax", "NONREG", "buy zone")
-        self.assertEqual((loss["taxable_amount_cad"], loss["estimated_tax_cad"]), (-560.0, 0.0))
-        self.assertTrue(any("superficial loss" in n for n in t["notes"]))
-        row = next(r for r in t["tax"] if r["account"] == "NONREG")
-        self.assertEqual(row["citation"], self.rules["T-GAIN"]["url"])
-        self.assertEqual(row["inclusion_rate"], 0.5)
+    def test_a_directory_of_csvs_merges_like_accounts(self):
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "tfsa.csv"), "w") as f:
+                f.write("Symbol,Quantity,Average Cost,Account\nAAPL,10,150.00,TFSA\nQQQ,20,400.00,TFSA\n")
+            with open(os.path.join(d, "rrsp.csv"), "w") as f:
+                f.write("Ticker,Shares,Book Cost,Account Name\nAAPL,5,900.00,RRSP\nXEQT.TO,3,100,RRSP\n")
+            with open(os.path.join(d, "notes.txt"), "w") as f:
+                f.write("ignored\n")
+            res = holdings.analyse(self.c, d, ["AAPL"], [0.15], None)
+            self.assertEqual([os.path.basename(f) for f in res["files"]], ["rrsp.csv", "tfsa.csv"])
+            self.assertEqual(res["columns"]["rrsp.csv"]["cost_mode"], "total")
+            self.assertEqual(res["columns"]["tfsa.csv"]["cost_mode"], "per_share")
+            aapl = {p["ticker"]: p for p in res["positions"]}["AAPL"]
+            self.assertEqual((aapl["shares"], aapl["cost"], aapl["value"]), (15, 2400.0, 3000.0))
+            self.assertEqual(sorted((r["account"], r["file"]) for r in aapl["accounts"]), [("RRSP", "rrsp.csv"), ("TFSA", "tfsa.csv")])
+            self.assertEqual(res["portfolio"]["total"], 12000.0)
+            self.assertEqual(res["sizing"]["AAPL"]["frames"][0]["shares_to_sell"], 6)
+            self.assertIn({"symbol": "XEQT.TO", "reason": "not a US listing", "file": "rrsp.csv"}, res["skipped"])
+            empty = os.path.join(d, "sub_empty")
+            os.mkdir(empty)
+            with self.assertRaises(common.FetchError) as cm:
+                holdings.analyse(self.c, empty, [], [0.15], None)
+            self.assertIn("no *.csv", str(cm.exception))
 
-    def test_nonreg_without_rate(self):
-        t = self.tables("80 AAPL at 210 non-registered")
-        p = self.point(t, "tax", "NONREG", "current")
-        self.assertEqual((p["taxable_amount_cad"], p["estimated_tax_cad"], p["after_tax_proceeds_cad"]),
-                         (5040.0, None, None))
-        self.assertTrue(any("no marginal rate" in n for n in t["notes"]))
-
-    def test_rrsp_note_and_if_withdrawn(self):
-        t = self.tables("RRSP: 50 AAPL @ 180, marginal rate 43%")
-        row = t["tax"][0]
-        self.assertIn("withdrawal taxed as income", row["note"])
-        p = row["points"][0]
-        self.assertEqual((p["taxable_amount_cad"], p["estimated_tax_cad"], p["after_tax_proceeds_cad"],
-                          p["if_withdrawn_tax_cad"]), (0.0, 0.0, 21000.0, 9030.0))
-        self.assertEqual(t["dividends"][0]["src"], ["S97"])
-
-    def test_no_fx_leaves_cad_null(self):
-        t = holdings.build("/tmp/AAPL", parse(E2E_Q), 300.0, None, None, None, None, self.rules)
-        p = self.point(t, "tax", "NONREG", "current")
-        self.assertIsNone(p["taxable_amount_cad"])
-        self.assertNotIn("S98", t["sources"])
-
-    def test_source_ids_in_range_and_markdown_lints(self):
-        for q in (E2E_Q, "RRSP: 50 AAPL @ 180", "80 AAPL at 210 non-registered"):
-            t = self.tables(q)
-            self.assertTrue(all(90 <= int(s[1:]) <= 99 for s in t["sources"]))
-            md = holdings.render_md(t)
-            self.assertEqual(lint.lint_text("h.md", md, part=True), [], md)
+    def test_database_is_unchanged(self):
+        before = counts(self.c)
+        db.read_only(self.c)
+        holdings.analyse(self.c, CSV, ["AAPL"], [0.15], None)
+        self.c.set_authorizer(None)
+        self.assertEqual(counts(self.c), before)
 
 
 class Cli(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, self.tmp)
-        self.folder = os.path.join(self.tmp, "stocks", "AAPL")
-        self.facts = os.path.join(self.folder, "facts")
-        os.makedirs(self.facts)
-        shutil.copy(os.path.join(fx.DIR, "holdings_facts.json"), os.path.join(self.facts, "facts.json"))
-        shutil.copy(os.path.join(fx.DIR, "holdings_scorecard.json"), os.path.join(self.facts, "scorecard.json"))
+        self.tmp = tempfile.TemporaryDirectory()
+        self.proj = self.tmp.name
+        c = db.connect(self.proj)
+        seed(c)
+        c.close()
 
-    def test_writes_both_files_with_defaults(self):
-        with redirect_stdout(io.StringIO()):
-            t = holdings.run([self.folder, "--question", E2E_Q, "--offline", "--data", self.tmp])
-        self.assertEqual(t["fx_usdcad"], {"rate": 1.4, "date": "2026-10-14", "src": "S98"})
-        self.assertEqual(t["outcomes"][0]["price_points"][0]["price"], 300.0)
-        with open(os.path.join(self.facts, "holdings.json")) as f:
-            h = json.load(f)
-        self.assertEqual(set(h), {"ticker", "as_of", "currency", "positions", "marginal_rate", "eval_prices",
-                                  "horizon_end"})
-        self.assertTrue(os.path.exists(os.path.join(self.facts, "holdings_tables.json")))
+    def tearDown(self):
+        self.tmp.cleanup()
 
-    def test_json_input_and_md(self):
-        js = json.dumps({"ticker": "AAPL", "positions": [{"account": "rrif", "shares": 5, "avg_cost": 100}]})
-        buf = io.StringIO()
-        with redirect_stdout(buf):
-            holdings.run([self.folder, "--json", js, "--md", "--fx", "1.3", "--zones", "1,2,3", "--data", self.tmp])
-        self.assertEqual(lint.lint_text("h.md", buf.getvalue(), part=True), [])
-        self.assertIn("| RRSP | 5 |", buf.getvalue())
+    def run_h(self, *args_):
+        out = subprocess.run([sys.executable, os.path.join(HERE, "holdings.py"), *args_, "--project", self.proj],
+                             capture_output=True, text=True)
+        return out.returncode, out.stdout
 
-    def test_nothing_parses_is_error_envelope(self):
-        p = subprocess.run([sys.executable, SCRIPT, self.folder, "--question", "200 shares of GOOGL avg cost 135",
-                            "--offline", "--data", self.tmp], capture_output=True, text=True)
-        self.assertEqual(p.returncode, 1)
-        self.assertEqual(json.loads(p.stdout)["script"], "holdings.py")
-        self.assertFalse(os.path.exists(os.path.join(self.facts, "holdings.json")))
+    def test_json_md_and_no_files_written(self):
+        code, out = self.run_h(CSV, "--size", "aapl")
+        self.assertEqual(code, 0, out)
+        obj = json.loads(out)
+        self.assertEqual(obj["columns"]["holdings_two_accounts.csv"]["ticker"], "Symbol")
+        self.assertEqual(obj["files"], [CSV])
+        self.assertEqual(obj["sizing"]["AAPL"]["frames"][0]["shares_to_sell"], 6)
+        code, out = self.run_h(CSV, "--size", "AAPL", "--md")
+        self.assertIn("| AAPL | stock |", out)
+        self.assertIn("**Look-through**", out)
+        self.assertIn("| cap at 15.0% | 6 |", out)
+        self.assertIn("next earnings 2026-01-29", out)
+        self.assertIn("SHOP.TO (not a US listing)", out)
+        self.assertEqual(sorted(os.listdir(os.path.join(self.proj, "data"))),
+                         sorted(f for f in os.listdir(os.path.join(self.proj, "data")) if f in (".gitignore", "config.json", "invest.db")))
+        code, out = self.run_h(os.path.join(self.proj, "missing.csv"))
+        self.assertEqual(code, 1)
 
 
 if __name__ == "__main__":

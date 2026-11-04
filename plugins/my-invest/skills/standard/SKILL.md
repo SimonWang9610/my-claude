@@ -1,101 +1,82 @@
 ---
 name: standard
 description: >-
-  Defines how my-invest reaches a verdict and what proof it must carry: red-flag gates, five equal-weight
-  pillars of cited binary items, the forward outlook (expected-return scenarios by horizon, months-ahead
-  range, consensus with its base rate), the strict owner-earnings value as a labelled lens, the
-  recommendation logic by position and trend, confidence with its band, the short-term lens, options on
-  real contracts, Canadian tax lines; and the proof contract every conclusion obeys — no verdict rather
-  than a default hold, the case against, the track record, what could change the answer, what could not be
-  verified, every return beside its benchmark. Use when interpreting scorecard.json or writing the
-  analyst's note or the advisor's narrative; computed by score.py and metrics.py, not invoked by the user.
+  The analysis standard behind every my-invest answer, written so a beginner can read and apply it: six
+  dimensions (fundamentals, DCF, statistics, macro and politics, industry, sentiment) that each end in a
+  one-line view; five deal-breakers; the three options (conservative, moderate, aggressive) defined by the
+  risk taken; a confidence score out of 100 with three auditable parts; how every call is later scored
+  against the index; the citation, dated-horizon and no-verdict rules. Use when forming, checking or
+  explaining a verdict about a US stock, fund, sector or portfolio; preloaded by the analyst agent.
 user-invocable: false
 ---
 
 # standard
 
-Every judgment is a check with a published test, a cited source and a stated input; `metrics.py` and
-`score.py` run the checks and the arithmetic, so no agent scores by feel. Weights are equal because no
-published source validates stock-level weights for a value investor; gates carry the published evidence,
-so gates come first. Thresholds that could not be pinned to a primary text are labelled UNVERIFIED in
-their card and in every output, and are never gates.
+A verdict is composed in the open from six one-line views, one per dimension, and offered as three options
+that differ by the risk taken. Nothing is weighted in secret; every figure links to its source; every
+judgment is labelled as the analyst's. Horizons are counted from the price date, named as a month and
+year, and never exceed five years.
 
-## How a verdict is formed
+## 1. The six dimensions and the view record
 
-- Gates: [gates.md](rules/gates.md). Any `fail` → tier `pass`, stance `avoid / exit`.
-- Pillars, 20 points each, mean of binary items: [1 quality and moat](rules/pillar-1-quality.md) ·
-  [2 financial strength](rules/pillar-2-strength.md) · [3 capital allocation](rules/pillar-3-capital-allocation.md) ·
-  [4 valuation](rules/pillar-4-valuation.md) · [5 risks](rules/pillar-5-risk.md).
-- Applicability: `financial`, `reit`, `utility` make Altman, Beneish, Greenblatt ranks and the
-  owner-earnings model `n/a`; `manufacturer` uses Altman Z, `non-manufacturer` Z''. An item is `n/a`
-  when its model does not apply, its denominator is undefined, or its input is null by design; `n/a`
-  leaves the denominator. A collectible input that is missing is `no evidence`: it stays in and scores 0.
-- Evidence-required items (G4, 1.5, 5.4, 5.5) are decided by the analyst's `evidence.json`; when the
-  file is absent (a screen that never ran an analysis) they are `pending` and excluded.
-- Outlook first — scenarios by horizon, the months-ahead range, consensus, calibration and the
-  recommendation logic: [outlook.md](rules/outlook.md). The headline is the base expected return at the
-  user's horizon against the return the risk demands, never a single-number target.
-- The strict value lens (owner-earnings fair value, zones, implied growth): [valuation.md](references/valuation.md) — one lens, labelled "a strict value investor's price", never the headline.
-- Action matrix, triggers and holdings rows: [action-matrix.md](references/action-matrix.md).
-- Short-term lens (short or ambiguous horizons): [lens-short-term.md](rules/lens-short-term.md).
-- Options operations shown with the stock's own contracts: [options-playbook.md](rules/options-playbook.md).
-- Canadian tax lines for stated holdings: [tax-ca.md](references/tax-ca.md).
-- Tiers: no failed gate and score ≥ 70 → `track closely`; 45–69 → `research deeper`; below 45 or a failed
-  gate → `pass`. Cutoffs are this standard's opinion (DECISIONS D-8) and the output says so.
-- Funds (ETFs) have no scorecard. The **fund rule**, labelled this standard's own reading: a leveraged or
-  inverse fund is not built for holding (it resets daily); a covered-call fund gives up upside for income;
-  otherwise trend decides (above the 200-day average with the 50-day above it → hold, add on a dip toward
-  the 200-day average; below → hold off adding until it is back above), with cost (expense ratio) and
-  concentration (top holdings' weight, overlap with stocks the user already holds) stated beside it.
+Each dimension answers one question from a named data grade and ends in a **view**: `stance` for, against
+or neutral; `strength` 1 weak, 2 clear, 3 strong; `horizon`; one `sentence` with its figures and markers;
+the `evidence` ids. The contract per dimension, the metrics to look at and what earns each stance:
+[dimensions.md](references/dimensions.md). A dimension with no data gets no view, and the gap is named
+under **Not verified**; it is never filled with a guess.
 
-## What a conclusion must carry (the proof contract)
+## 2. Deal-breakers
 
-A beginner cannot check the arithmetic, so the answer must show the reader how to distrust it. Every
-answer (the brief: answer, summary, why, risks, track record, what to watch, not verified, sources) and
-every analyst's note carries, in this order after the verdict, with every horizon dated from the price
-date and every figure traceable through its marker to a linked raw source:
+Checked first, from the filings and the fund profile. Any one of them makes the answer "stay away, or sell
+what you hold" with the item cited, and no tiers are offered:
 
-1. **The scenarios and their inputs** — bear, base, bull per horizon with the growth, multiple and
-   cash-return assumptions and their markers; consensus as a secondary row with its base rate.
-2. **The case against** — the strongest reasons the verdict could be wrong, written by the same analyst
-   and weighed on merit, each tied to a figure, an item id or a cited passage. Conflict alone is not a
-   reason for `hold`: the verdict is committed when the evidence leans and called balanced only when it is.
-3. **The track record** — the simulated record (`metrics.calibration.record`: the same method at each past
-   fiscal year, forecast vs realised vs SPY over the same window, labelled simulated and in-sample) and
-   the real one (`history/log.md`: what this advisor said before about the stock, at what price, and what
-   the price and SPY did since). Every return stands beside its benchmark over the same window.
-4. **What could change the answer** — observable events with a date or price, each naming the item or gate
-   it would flip.
-5. **What could not be verified** — every `no evidence` or pending item, null metric with its reason, stale
-   figure and refused page; gaps are shown beside the conclusion, never summarised away.
+1. Going-concern doubt or a delisting notice in the latest filing.
+2. A restatement, an auditor change with disagreement, or a material-weakness finding in the last two years.
+3. Debt the business cannot carry: net debt above four years of operating cash flow with cash flow falling.
+4. Serial dilution: diluted shares up more than a quarter over three years without matching revenue growth.
+5. For a fund: leveraged or inverse (daily-reset) products are not for holding beyond days; say so.
 
-Rules that bind the whole:
+## 3. Valuation: the DCF and its cross-checks
 
-- **No verdict beats a fake one.** When the scorecard is missing or older than one trading day and cannot
-  be refreshed, or a required script failed, the answer is `no verdict` with the failing stage; never a
-  default `hold`, never a stance recalled from memory.
-- **Confidence** is the printed formula (coverage, agreement, outlook spread, freshness) shown as a number
-  with its band — ≥ 80 strong evidence, 65–79 solid, 45–64 mixed, below 45 thin — and what lowers it.
-  The bands are this standard's labels, not probabilities, and the output says so once.
-- **Claim typing.** Sections and tables are tagged *computed by scripts* or *the analyst's reading*; a
-  judgment never borrows a figure's marker as if it were a fact. A post or forum view never supports a
-  figure.
-- **The rule before the score.** Thresholds are stated in the rule cards and never chosen on the dates
-  they are then evaluated on; the simulated record says its thresholds are in-sample.
+Three DCF scenarios (low, base, high) from the fundamentals with a Monte Carlo band and a sensitivity grid,
+the reverse DCF (the growth today's price already assumes), and the P/E cross-checks (trailing P/E against
+the stock's own five-year range and the peers' median), all computed by `dcf.py`; the analyst chooses the
+assumptions and must write why in the valuation view. Defaults, overrides, sanity checks, how the two
+methods are read together and how the scenarios map onto the tiers: [dcf.md](references/dcf.md).
 
-## Reading scorecard.json
+## 4. The three options, defined by risk taken
 
-Shape: [scorecard-schema.md](references/scorecard-schema.md). `items[id].status` tells you why an item
-did not score; `pillars[n].zero_items` are the weaknesses to name; `action.recommendation` holds the cell
-for the reader's position with the levels and markers that produced it; `short_term` is null unless the
-lens asked for it; `open_questions` are already ranked. The dossier's Scorecard section follows
-[scorecard-template.md](references/scorecard-template.md), rendered by `report.py`.
+**Conservative** takes the least risk of loss: it leans only on computed and primary evidence, acts at the
+DCF low value, sizes small, and needs the fewest things to be true. **Moderate** acts at the base value with
+the views that agree. **Aggressive** accepts the sentiment, trend and industry readings, acts up to the high
+value, sizes larger, and names what has to go right. On a sell question the same rule holds: conservative
+protects capital first (sells more, sooner, at the nearest level), aggressive holds out for higher levels.
+So "conservative" always means less risk, never less action. Each option states: the action, the limit
+price or trigger, the size, what you have to believe, one sentence of reasoning, its confidence and its
+evidence. When the question names one level, only that option is given.
 
-## The note and the narrative
+## 5. Confidence, out of 100
 
-The analyst's note and the advisor's narrative share the slots in [note.md](references/note.md); `report.py`
-reads them into the answer. They may say only what the scorecard, the facts and `research.md` contain,
-each figure with its marker. They may explain, rank and connect, convert units and round for display
-when the unit is stated (evidence skill); they may not compute new figures, soften a failed gate, or add
-a target of their own. Stance, tier and recommendation words are used as written. Re-scoring is a new
-`score.py` run on refreshed facts, never an edit of the result.
+Every conclusion (the headline and each option) carries a score with three parts: **evidence** 35 (coverage
+of the dimensions the question needs, and the grade of the sources cited), **agreement** 35 (how far the
+views point the same way, discounted when the DCF scenarios are wide), **record** 30 (how settled calls of
+the same side turned out). `record.py confidence` computes it from the tables; the formula, the bands and
+the wording: [confidence.md](references/confidence.md).
+
+## 6. Calls and how they are scored
+
+Each option is stored as a call with its price and the index level that day. When the horizon has passed,
+`record.py score` settles it: a buy-side call (buy, add, hold) was right if the stock beat SPY over the
+horizon; a sell-side call (trim, sell, wait, avoid) was right if the stock lagged SPY. The track record is
+shown in every answer and feeds the record part of confidence. No call is edited after the fact.
+
+## 7. Rules that never bend
+
+- US-listed stocks and funds only; fundamentals from SEC filings (primary), prices and profiles from Yahoo
+  (secondary), macro from FRED (primary), news and research pages (secondary), script output (derived).
+- Every figure carries a marker `[S<id>]` to a `sources` row; `record.py` refuses a report without them.
+- No default hold: when a dimension the question needs is missing or a script fails, the answer says
+  **no verdict** for that part, names the gap and what would close it.
+- Numbers come from scripts or source rows; the analyst never does arithmetic in prose.
+- Tax and options are out of scope. The one tax rule kept: sell from RRSP first, then TFSA, then a taxable
+  account, because a sale in a registered account is not taxed while half of a taxable gain is.

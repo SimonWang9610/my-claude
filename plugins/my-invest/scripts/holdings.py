@@ -1,480 +1,407 @@
 #!/usr/bin/env python3
-"""holdings.py (<TICKER> | <stock folder>) (--question TEXT | --json JSON) [--price X] [--fx X]
-    [--zones B,BASE,S] [--md] [--store DIR] [--project DIR] [--out FILE]
+"""holdings.py - arithmetic over the user's broker CSV for this run only: positions, weights, look-through
+through the ETFs held, and sizing frames for the tickers named. Reads the database (prices, stats, fund
+weights, estimates), writes nothing anywhere: holdings are never stored.
 
-Parses the holdings a question states (skills/advisor/references/holdings.md) for the folder's ticker only,
-writes facts/holdings.json and facts/holdings_tables.json in the stock folder, and prints the tables as JSON (or as a
-Markdown part with --md). Tax lines come from skills/standard/references/tax-ca.md, read by row id.
-Python 3.9, stdlib only. Any failure prints the error envelope and exits 1.
+Usage: holdings.py CSV|DIR [--size T1,T2] [--caps 15,12.5,10] [--total USD] [--project P] [--md]
+
+A directory means every *.csv in it (one export per account), merged; the files read are listed under
+"files" and each file's column mapping under "columns". A CSV's columns are found by header keywords (symbol/ticker, quantity/shares/units, average cost/book cost/
+cost basis, account, market value, currency, description/type) and the mapping used is reported under
+"columns". Accounts map to RRSP (RRIF, LIRA, LRSP), TFSA (FHSA) or NONREG (everything else). Only US tickers are
+priced; a .TO/.V/.CN/.NE symbol is listed under "skipped". Frames: cap at each --caps weight, sell the gain,
+recover the cost; shares to sell are whole shares, taken from RRSP, then TFSA, then NONREG.
 """
-import datetime as dt
-import json
+import csv
+import io
+import math
 import os
 import re
 import sys
 
+import calc
 import common
+import db
 
 SCRIPT = "holdings.py"
-HERE = os.path.dirname(os.path.abspath(__file__))
-TAX_MD = os.path.join(HERE, "..", "skills", "standard", "references", "tax-ca.md")
-BOC_URL = "https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json"
-INCLUSION = 0.5  # T-INCL
-DISCLAIMER = ("General information, not tax advice: provincial rates and credits differ, the marginal rate is "
-              "the user's input, and after-tax figures are estimates.")
-
-# rule id -> (source id, what) for the rules the tables cite; S98 = USD/CAD rate, S99 = this script.
-RULE_SRC = {"T-INCL": ("S90", "Income Tax Act s.38(a), capital gains inclusion rate"),
-            "T-GAIN": ("S91", "CRA, calculating capital gains (proceeds - ACB - outlays)"),
-            "T-TFSA": ("S92", "CRA, what is a TFSA (income and withdrawals tax-free)"),
-            "T-RRSP": ("S93", "CRA, RRSP withdrawals taxed as income"),
-            "T-FDIV": ("S94", "CRA line 12100, foreign dividends (no dividend tax credit)"),
-            "T-TREATY": ("S95", "Canada-US tax convention, Art. X(2)(b) 15% and Art. XXI(2)"),
-            "T-TFSA-WHT": ("S96", "CRA Folio S5-F2-C1 para 1.69, no foreign tax credit for TFSA"),
-            "T-RRSP-US": ("S97", "IRS PLR-142074-07, RRSP exempt from US dividend withholding")}
-TREATMENT = {"NONREG": "T-GAIN", "TFSA": "T-TFSA", "RRSP": "T-RRSP"}
-DIVIDENDS = {"NONREG": ["T-FDIV", "T-TREATY"], "TFSA": ["T-TREATY", "T-TFSA-WHT"], "RRSP": ["T-RRSP-US"]}
-ACCOUNT_ORDER = ["TFSA", "RRSP", "NONREG"]
-
-# --- parsing -----------------------------------------------------------------------------------
-NUM = r"\d[\d,]*(?:\.\d+)?"
-ACCOUNTS = [("RRSP", re.compile(r"\b(?:RRSP|RRIF|LIRA|RSP)\b", re.I)),
-            ("TFSA", re.compile(r"\b(?:TFSA|FHSA)\b", re.I)),
-            ("NONREG", re.compile(r"\bnon[-\s]?(?:registered|reg)\b|\bunregistered\b|\btaxable\b|\bmargin\b"
-                                  r"|\bcash\s+account\b", re.I))]
-POSITION = re.compile(
-    r"(?<![\w.$])(?P<qty>" + NUM + r")\s+(?:(?i:shares?|sh)\s+(?:(?i:of)\s+)?)?(?:(?P<tkr>[A-Z]{1,5}(?:[.-][A-Z])?)\b\s*)?"
-    r"(?:(?i:shares?)\s*)?,?\s*(?P<cue>@|(?i:at|bought\s+at|paid|avg\.?\s*cost|avg\.?\s*price|average\s+cost|"
-    r"average\s+price|average|cost\s+basis|cost))\s*(?i:of\s+)?[:=]?\s*"
-    r"(?P<pre>(?i:US\$|C\$|CA\$|CAD|USD))?\s*\$?\s*(?P<cost>" + NUM + r")(?P<post>\s*(?i:CAD|USD|C\$))?")
-RATE = [re.compile(r"(?i)marginal\s+(?:tax\s+)?(?:rate|bracket)\s*(?:is|of|=|:|at|around|about)?\s*(\d{1,2}(?:\.\d+)?)\s*%"),
-        re.compile(r"(?i)(\d{1,2}(?:\.\d+)?)\s*%\s*(?:marginal|tax\s+bracket|bracket)"),
-        re.compile(r"(?i)\btax\s+rate\s*(?:is|of|=|:)?\s*(\d{1,2}(?:\.\d+)?)\s*%")]
-EVAL = re.compile(r"(?i)\b(?:hits?|reach(?:es)?|goes\s+to|gets\s+to|rises\s+to|falls\s+to|drops\s+to|climbs\s+to|"
-                  r"trades\s+at|sell\s+at|price\s+(?:of|is)|what\s+if\s+(?:it(?:'s|\s+is)\s+)?(?:at\s+)?)\s*"
-                  r"(\$?\s*" + NUM + r"(?:\s*(?:,|or|and|/)\s*\$?\s*" + NUM + r")*)")
-WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
-         "ten": 10, "a": 1, "an": 1}
-PERIOD = re.compile(r"(?i)\b(?:hold(?:ing)?(?:\s+it)?(?:\s+for)?|for|over|in|within|horizon\s+of)\s+(?:the\s+next\s+|another\s+)?"
-                    r"(\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|a|an)\s*"
-                    r"(years?|yrs?|months?|mos?|weeks?)\b")
-UNTIL = re.compile(r"(?i)\b(?:until|till|by|through)\s+(?:the\s+)?(?:end\s+of\s+)?(\d{4}-\d{2}-\d{2}|(?:19|20)\d{2})\b")
+DEFAULT_CAPS = "15,12.5,10"
+COLUMN_KEYS = {
+    "ticker": ("symbol", "ticker"),
+    "shares": ("quantity", "shares", "units", "qty"),
+    "cost": ("average cost", "avg cost", "avg price", "average price", "book cost", "cost basis", "book value",
+             "adjusted cost", "acb", "cost"),
+    "account": ("account",),
+    "value": ("market value", "mkt value", "current value", "value"),
+    "currency": ("currency",),
+    "type": ("security type", "asset type", "asset class", "type", "description", "name"),
+}
+PER_SHARE_WORDS = ("price", "per share", "/share", "avg", "average")
+ACCOUNT_ORDER = ("RRSP", "TFSA", "NONREG")
+ACCOUNT_REASON = {
+    "RRSP": "no tax on a sale; withdrawals are taxed as income later",
+    "TFSA": "no tax on a sale or withdrawal",
+    "NONREG": "a sale realises a capital gain; half of it is taxable in Canada",
+}
+CANADIAN_SUFFIXES = (".TO", ".V", ".CN", ".NE")
+LEVELS = ("ma50", "ma200", "high_52w", "low_52w", "range_3m_low", "range_3m_high")
 
 
-def fnum(s):
-    return float(s.replace(",", "").replace("$", "").strip())
-
-
-def account_for(prefix, after):
-    """Account of a position: 'RRSP:' right before it, else the first keyword after it (not a 'X:' label
-    of the next position), else the last keyword before it."""
-    for name, rx in ACCOUNTS:
-        if re.search(r"(?:" + rx.pattern + r")\s*[:\-]\s*$", prefix, re.I):
-            return name
-    hits = []
-    for name, rx in ACCOUNTS:
-        for m in rx.finditer(after):
-            if not re.match(r"\s*:", after[m.end():]):
-                hits.append((m.start(), name))
-    if hits:
-        return min(hits)[1]
-    hits = [(m.start(), name) for name, rx in ACCOUNTS for m in rx.finditer(prefix)]
-    return max(hits)[1] if hits else None
-
-
-def add_period(as_of, n, unit):
-    d = dt.date.fromisoformat(as_of)
-    unit = unit.lower()
-    if unit.startswith("w"):
-        return (d + dt.timedelta(weeks=n)).isoformat()
-    months = int(round(n * 12)) if unit.startswith("y") else int(round(n))
-    y, m = divmod(d.month - 1 + months, 12)
-    day = min(d.day, [31, 29 if (d.year + y) % 4 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m])
-    return dt.date(d.year + y, m + 1, day).isoformat()
-
-
-def parse_question(text, ticker, as_of):
-    """Return the holdings.json dict for `ticker`, plus a list of parse notes."""
-    ticker = ticker.upper()
-    text = re.sub(r"(?i)(?<![A-Za-z])" + re.escape(ticker) + r"(?![A-Za-z])", ticker, text)
-    matches = list(POSITION.finditer(text))
-    positions, notes, spans, last_tkr = [], [], [], None
-    for i, m in enumerate(matches):
-        tkr = m.group("tkr")
-        if tkr and tkr.lower() in ("at", "of", "avg", "cost"):
-            tkr = None
-        tkr = tkr or last_tkr or ticker
-        last_tkr = tkr
-        spans.append(m.span())
-        if tkr != ticker:
-            continue
-        prefix = text[matches[i - 1].end() if i else 0:m.start()]
-        after = text[m.end():matches[i + 1].start() if i + 1 < len(matches) else len(text)]
-        acct = account_for(prefix, after)
-        if acct is None:
-            acct = "NONREG"
-            notes.append("account not stated for %s %s; treated as non-registered" % (m.group("qty"), tkr))
-        pos = {"account": acct, "shares": fnum(m.group("qty")), "avg_cost": fnum(m.group("cost"))}
-        cur = (m.group("pre") or "") + (m.group("post") or "")
-        if re.search(r"(?i)C\$|CA\$|CAD", cur):
-            pos["currency"] = "CAD"
-        positions.append(pos)
-    rate = None
-    for rx in RATE:
-        r = rx.search(text)
-        if r:
-            rate = round(float(r.group(1)) / 100, 4)
-            break
-    evals = []
-    for e in EVAL.finditer(text):
-        if any(a <= e.start(1) < b for a, b in spans):
-            continue
-        for n in re.findall(NUM, e.group(1)):
-            v = fnum(n)
-            if v > 0 and v not in evals:
-                evals.append(v)
-    horizon = None
-    p = PERIOD.search(text)
-    if p:
-        n = WORDS.get(p.group(1).lower()) or float(p.group(1))
-        horizon = add_period(as_of, float(n), p.group(2))
-    else:
-        u = UNTIL.search(text)
-        if u:
-            horizon = u.group(1) if "-" in u.group(1) else u.group(1) + "-12-31"
-    return ({"ticker": ticker, "as_of": as_of, "currency": "USD", "positions": positions,
-             "marginal_rate": rate, "eval_prices": evals, "horizon_end": horizon}, notes)
-
-
-def normalize_account(a):
-    for name, rx in ACCOUNTS:
-        if a and (a.upper() == name or rx.search(a)):
-            return name
-    raise common.FetchError("unknown account type %r (RRSP, TFSA or NONREG)" % (a,))
-
-
-def from_json(raw, ticker, as_of):
+# --- reading the CSV ----------------------------------------------------------------------------
+def read_csv(path):
     try:
-        h = json.loads(raw)
-    except ValueError as e:
-        raise common.FetchError("--json is not valid JSON: %s" % e)
-    if h.get("ticker") and h["ticker"].upper() != ticker.upper():
-        raise common.FetchError("--json ticker %s does not match folder %s" % (h["ticker"], ticker))
-    pos = []
-    for p in h.get("positions") or []:
-        q = {"account": normalize_account(p.get("account")), "shares": float(p["shares"]),
-             "avg_cost": float(p["avg_cost"])}
-        if str(p.get("currency", "USD")).upper() == "CAD":
-            q["currency"] = "CAD"
-        pos.append(q)
-    rate = h.get("marginal_rate")
-    return {"ticker": ticker.upper(), "as_of": h.get("as_of") or as_of, "currency": "USD", "positions": pos,
-            "marginal_rate": None if rate is None else float(rate),
-            "eval_prices": [float(x) for x in h.get("eval_prices") or []], "horizon_end": h.get("horizon_end")}
+        with open(path, newline="", encoding="utf-8-sig") as f:
+            text = f.read()
+    except OSError as e:
+        raise common.FetchError("cannot read %s: %s" % (path, e.strerror or e))
+    try:
+        dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
+    except csv.Error:
+        dialect = csv.excel
+    rows_ = [r for r in csv.reader(io.StringIO(text), dialect)]
+    for i, r in enumerate(rows_[:20]):  # some brokers put a preamble above the header
+        low = [c.strip().lower() for c in r]
+        if any(any(k in c for k in COLUMN_KEYS["ticker"]) for c in low):
+            return r, [x for x in rows_[i + 1:] if any(c.strip() for c in x)]
+    raise common.FetchError("no header with a symbol/ticker column in %s" % path)
 
 
-# --- tax rules ---------------------------------------------------------------------------------
-def load_rules(path=TAX_MD):
-    rules = {}
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            c = [x.strip() for x in line.strip().strip("|").split("|")]
-            if len(c) >= 5 and re.fullmatch(r"T-[A-Z0-9-]+", c[0]):
-                rules[c[0]] = {"rule": c[1], "url": c[2], "retrieved": c[3]}
-    missing = [k for k in list(RULE_SRC) + ["T-FX", "T-SUPER"] if k not in rules]
+def map_columns(header):
+    """{field: header text} by keyword; longer keywords win so 'book value' is cost, not value."""
+    low = [h.strip().lower() for h in header]
+    taken, mapping = set(), {}
+    for field, keys in COLUMN_KEYS.items():
+        for k in sorted(keys, key=len, reverse=True):
+            hit = next((i for i, h in enumerate(low) if k in h and i not in taken), None)
+            if hit is not None:
+                mapping[field] = header[hit]
+                taken.add(hit)
+                break
+    return mapping
+
+
+def number(s):
+    if s is None:
+        return None
+    s = str(s).strip().replace("$", "").replace(",", "").replace(" ", "")
+    neg = s.startswith("(") and s.endswith(")")
+    s = s.strip("()")
+    if s in ("", "-", "—", "N/A", "n/a"):
+        return None
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return -v if neg else v
+
+
+def account_kind(text):
+    t = (text or "").upper()
+    if any(k in t for k in ("RRSP", "RRIF", "LIRA", "LRSP")):
+        return "RRSP"
+    if any(k in t for k in ("TFSA", "FHSA")):
+        return "TFSA"
+    return "NONREG"
+
+
+def clean_symbol(raw):
+    """-> (ticker, skip reason)."""
+    s = (raw or "").strip().upper().replace("$", "")
+    if not s:
+        return None, "no ticker"
+    if s.endswith(CANADIAN_SUFFIXES):
+        return s, "not a US listing"
+    if "." not in s and s.endswith("-U"):
+        s = s[:-2]
+    return s, None
+
+
+def parse(path):
+    """-> (rows [{ticker, shares, avg_cost, account, csv_value, is_fund, currency}], columns, skipped)."""
+    header, data = read_csv(path)
+    cols = map_columns(header)
+    missing = [f for f in ("ticker", "shares") if f not in cols]
     if missing:
-        raise common.FetchError("tax-ca.md is missing rule rows: %s" % ", ".join(missing))
-    return rules
+        raise common.FetchError("cannot find the %s column(s) in the CSV header %s" % (" and ".join(missing), header))
+    idx = {f: header.index(h) for f, h in cols.items()}
+    cost_mode = None
+    if "cost" in cols:
+        cost_mode = "per_share" if any(w in cols["cost"].lower() for w in PER_SHARE_WORDS) else "total"
+    out, skipped = [], []
+    for r in data:
+        get = lambda f: r[idx[f]] if f in idx and idx[f] < len(r) else None
+        ticker, why = clean_symbol(get("ticker"))
+        type_text = (get("type") or "")
+        if why:
+            if why == "no ticker" and "CASH" in type_text.upper():
+                why = "cash row"
+            skipped.append({"symbol": (get("ticker") or type_text or "").strip(), "reason": why})
+            continue
+        shares = number(get("shares"))
+        if not shares:
+            skipped.append({"symbol": ticker, "reason": "no shares"})
+            continue
+        cost = number(get("cost"))
+        avg = None if cost is None else (cost if cost_mode == "per_share" else cost / shares)
+        out.append({"ticker": ticker, "shares": shares, "avg_cost": avg, "account": account_kind(get("account")),
+                    "account_text": (get("account") or "").strip(), "csv_value": number(get("value")),
+                    "file": os.path.basename(path),
+                    "currency": (get("currency") or "").strip().upper() or None,
+                    "is_fund": bool(re.search(r"\b(ETF|EXCHANGE[_ ]TRADED[_ ]FUND|FUND)\b", type_text.upper()))})
+    columns = dict(cols)
+    if cost_mode:
+        columns["cost_mode"] = cost_mode
+    return out, columns, skipped
 
 
-# --- computation -------------------------------------------------------------------------------
-def r2(x):
-    return None if x is None else round(x, 2)
+def parse_paths(path):
+    """A CSV, or a directory of them -> (rows, files, {basename: columns}, skipped)."""
+    if os.path.isdir(path):
+        files = sorted(os.path.join(path, f) for f in os.listdir(path) if f.lower().endswith(".csv"))
+        if not files:
+            raise common.FetchError("no *.csv in %s" % path)
+    else:
+        files = [path]
+    rows_, columns, skipped = [], {}, []
+    for f in files:
+        r, c, s = parse(f)
+        rows_ += r
+        columns[os.path.basename(f)] = c
+        skipped += [dict(x, file=os.path.basename(f)) for x in s]
+    return rows_, files, columns, skipped
 
 
-def aggregate(positions, fx):
-    """One row per account: shares, weighted average cost (USD), cost_total (USD), acb_cad."""
-    acc = {}
-    for p in positions:
-        a = acc.setdefault(p["account"], {"shares": 0.0, "cost_usd": 0.0, "acb_cad": 0.0, "usd_ok": True,
-                                          "cad_ok": True})
-        cost = p["shares"] * p["avg_cost"]
-        if p.get("currency") == "CAD":
-            a["acb_cad"] += cost
-            a["cost_usd"] += cost / fx if fx else 0.0
-            a["usd_ok"] = a["usd_ok"] and bool(fx)
+# --- pricing and aggregation --------------------------------------------------------------------
+def price_rows(conn, rows_, skipped):
+    kinds = {r["ticker"]: r["kind"] for r in db.rows(conn, "SELECT ticker, kind FROM securities")}
+    funds = {r["ticker"] for r in db.rows(conn, "SELECT ticker FROM funds")}
+    priced = []
+    for r in rows_:
+        lp = db.latest_price(conn, r["ticker"])
+        if lp:
+            r["price"], r["price_from"], r["price_date"] = lp["close"], "db", lp["date"]
+        elif r["csv_value"]:
+            r["price"], r["price_from"], r["price_date"] = r["csv_value"] / r["shares"], "csv", None
         else:
-            a["cost_usd"] += cost
-            a["acb_cad"] += cost * fx if fx else 0.0
-            a["cad_ok"] = a["cad_ok"] and bool(fx)
-        a["shares"] += p["shares"]
-    rows = []
-    for name in sorted(acc, key=ACCOUNT_ORDER.index):
-        a = acc[name]
-        cost_usd = a["cost_usd"] if a["usd_ok"] else None
-        rows.append({"account": name, "shares": a["shares"],
-                     "avg_cost": r2(cost_usd / a["shares"]) if cost_usd is not None else None,
-                     "cost_total": r2(cost_usd), "acb_cad": r2(a["acb_cad"]) if a["cad_ok"] else None})
-    return rows
+            skipped.append({"symbol": r["ticker"], "reason": "no price; run yahoo.py prices %s" % r["ticker"]})
+            continue
+        if not r["is_fund"]:
+            r["is_fund"] = kinds.get(r["ticker"]) == "fund" or r["ticker"] in funds
+        r["value"] = r["shares"] * r["price"]
+        r["cost"] = r["shares"] * r["avg_cost"] if r["avg_cost"] is not None else None
+        r["gain"] = r["value"] - r["cost"] if r["cost"] is not None else None
+        r["gain_pct"] = r["gain"] / r["cost"] if r["cost"] else None
+        priced.append(r)
+    return priced
 
 
-def price_points(price, zones, evals):
-    pts = [("current", price)]
-    for key, label in (("buy_below", "buy zone"), ("base_today", "base value"), ("sell_above", "sell zone")):
-        if zones and zones.get(key) is not None:
-            pts.append((label, float(zones[key])))
-    for e in evals:
-        pts.append(("named $%s" % fmt_num(e), e))
-    return pts
-
-
-def fmt_num(x):
-    return ("%.2f" % x).rstrip("0").rstrip(".")
-
-
-def outcomes(rows, points, fx):
+def aggregate(rows_, total):
+    by = {}
+    for r in rows_:
+        a = by.setdefault(r["ticker"], {"ticker": r["ticker"], "shares": 0.0, "value": 0.0, "cost": 0.0, "cost_known": True,
+                                        "price": r["price"], "price_from": r["price_from"], "is_fund": r["is_fund"],
+                                        "accounts": []})
+        a["shares"] += r["shares"]
+        a["value"] += r["value"]
+        if r["cost"] is None:
+            a["cost_known"] = False
+        else:
+            a["cost"] += r["cost"]
+        a["is_fund"] = a["is_fund"] or r["is_fund"]
+        a["accounts"].append(r)
     out = []
-    for r in rows:
-        pp = []
-        for label, p in points:
-            value = r["shares"] * p
-            gain = value - r["cost_total"] if r["cost_total"] is not None else None
-            vcad = value * fx if fx else None
-            gcad = vcad - r["acb_cad"] if vcad is not None and r["acb_cad"] is not None else None
-            pp.append({"label": label, "price": r2(p), "value": r2(value), "gain_abs": r2(gain),
-                       "gain_pct": round(gain / r["cost_total"], 4) if gain is not None and r["cost_total"] else None,
-                       "value_cad": r2(vcad), "gain_cad": r2(gcad)})
-        out.append({"account": r["account"], "shares": r["shares"], "avg_cost": r["avg_cost"],
-                    "cost_total": r["cost_total"], "acb_cad": r["acb_cad"], "price_points": pp})
+    for a in by.values():
+        a["avg_cost"] = a["cost"] / a["shares"] if a["cost_known"] and a["shares"] else None
+        if not a["cost_known"]:
+            a["cost"] = None
+        a["gain"] = a["value"] - a["cost"] if a["cost"] is not None else None
+        a["gain_pct"] = a["gain"] / a["cost"] if a["cost"] else None
+        a["weight"] = a["value"] / total if total else None
+        for r in a["accounts"]:
+            r["weight"] = r["value"] / total if total else None
+        out.append(a)
+    out.sort(key=lambda x: -x["value"])
     return out
 
 
-def tax_rows(outs, rate, rules):
-    rows = []
-    for o in outs:
-        a = o["account"]
-        rid = TREATMENT[a]
-        pts = []
-        for p in o["price_points"]:
-            v, g = p["value_cad"], p["gain_cad"]
-            t = {"label": p["label"], "price": p["price"]}
-            if a == "NONREG":
-                taxable = r2(INCLUSION * g) if g is not None else None
-                tax = r2(max(taxable, 0.0) * rate) if taxable is not None and rate is not None else None
-                t.update(taxable_amount_cad=taxable, estimated_tax_cad=tax,
-                         after_tax_proceeds_cad=r2(v - tax) if tax is not None else None)
-            else:
-                t.update(taxable_amount_cad=0.0 if v is not None else None, estimated_tax_cad=0.0 if v is not None else None,
-                         after_tax_proceeds_cad=v)
-                if a == "RRSP":
-                    t["if_withdrawn_tax_cad"] = r2(v * rate) if v is not None and rate is not None else None
-            pts.append(t)
-        row = {"account": a, "treatment": rules[rid]["rule"], "citation": rules[rid]["url"],
-               "src": RULE_SRC[rid][0], "points": pts}
-        if a == "NONREG":
-            row["inclusion_rate"] = INCLUSION
-            row["inclusion_src"] = RULE_SRC["T-INCL"][0]
-        if a == "RRSP":
-            row["note"] = "withdrawal taxed as income; nothing is taxed on a sale inside the plan"
-        rows.append(row)
-    return rows
+def look_through(conn, positions, total):
+    """Per constituent: direct weight + the share of each fund's value that its holdings rows assign."""
+    direct = {p["ticker"]: p["value"] for p in positions}
+    via = {}
+    funds_used = []
+    for p in positions:
+        if not p["is_fund"]:
+            continue
+        latest = db.one(conn, "SELECT MAX(asof) asof FROM fund_weights WHERE fund = ? AND kind = 'holding'", (p["ticker"],))
+        if not latest or not latest["asof"]:
+            funds_used.append({"fund": p["ticker"], "asof": None, "constituents": 0})
+            continue
+        recs = db.rows(conn, "SELECT key, weight FROM fund_weights WHERE fund = ? AND kind = 'holding' AND asof = ?",
+                       (p["ticker"], latest["asof"]))
+        funds_used.append({"fund": p["ticker"], "asof": latest["asof"], "constituents": len(recs)})
+        for r in recs:
+            k = r["key"].upper()
+            via.setdefault(k, []).append({"fund": p["ticker"], "value": p["value"] * r["weight"],
+                                          "weight": p["value"] * r["weight"] / total if total else None})
+    out = []
+    for t in set(direct) | set(via):
+        d = direct.get(t, 0.0) if not any(p["ticker"] == t and p["is_fund"] for p in positions) else 0.0
+        v = sum(x["value"] for x in via.get(t, []))
+        if d == 0 and v == 0:
+            continue
+        out.append({"ticker": t, "direct": d, "via": via.get(t, []), "via_value": v, "total_value": d + v,
+                    "direct_weight": d / total if total else None, "via_weight": v / total if total else None,
+                    "total_weight": (d + v) / total if total else None})
+    out.sort(key=lambda x: -x["total_value"])
+    return out[:10], funds_used
 
 
-def dividend_rows(outs, rules):
-    rows = []
-    for o in outs:
-        ids = DIVIDENDS[o["account"]]
-        rows.append({"account": o["account"], "treatment": " ".join(rules[i]["rule"] for i in ids),
-                     "citations": [rules[i]["url"] for i in ids], "src": [RULE_SRC[i][0] for i in ids]})
-    return rows
+# --- sizing -------------------------------------------------------------------------------------
+def from_accounts(position, shares_to_sell):
+    plan, left = [], shares_to_sell
+    for acct in ACCOUNT_ORDER:
+        for r in sorted((x for x in position["accounts"] if x["account"] == acct), key=lambda x: -x["shares"]):
+            if left <= 0:
+                break
+            take = min(r["shares"], left)
+            plan.append({"account": acct, "account_text": r["account_text"], "shares": take, "reason": ACCOUNT_REASON[acct]})
+            left -= take
+    return plan
 
 
-# --- inputs ------------------------------------------------------------------------------------
-def read_json(path):
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, ValueError):
-        return None
+def frames(position, caps, total):
+    p, s, v = position["price"], position["shares"], position["value"]
+    out = []
+
+    def frame(name, shares, note=None):
+        shares = min(s, max(0, shares))
+        out.append({"frame": name, "shares_to_sell": shares, "proceeds": shares * p, "shares_kept": s - shares,
+                    "from_accounts": from_accounts(position, shares) if shares else [], "note": note})
+
+    for cap in caps:
+        target = cap * total
+        if v <= target:
+            frame("cap at %s" % calc.pct_plain(cap, 1), 0, "already under the cap")
+        else:
+            frame("cap at %s" % calc.pct_plain(cap, 1), math.ceil((v - target) / p - 1e-9),
+                  "cap on today's total of %s" % calc.money(total, 0))
+    if position["gain"] is None:
+        frame("sell the gain", 0, "no cost basis in the CSV")
+        frame("recover cost", 0, "no cost basis in the CSV")
+    else:
+        if position["gain"] <= 0:
+            frame("sell the gain", 0, "no gain to take out")
+        else:
+            frame("sell the gain", math.ceil(position["gain"] / p - 1e-9), "takes out the dollar gain of %s" % calc.money(position["gain"], 0))
+        if position["cost"] >= v:
+            frame("recover cost", s, "selling everything does not recover the cost")
+        else:
+            frame("recover cost", math.ceil(position["cost"] / p - 1e-9), "takes out the cost basis of %s" % calc.money(position["cost"], 0))
+    return out
 
 
-def resolve_fx(args, facts, folder, as_of):
-    """Return (rate, date, source_row) or (None, None, None). Order: --fx, facts.json, Bank of Canada."""
-    if args.fx is not None:
-        return args.fx, as_of, {"class": "derived", "what": "USD/CAD rate supplied with --fx",
-                                "url": "file://" + os.path.join(folder, "holdings.json"),
-                                "as_of": as_of, "retrieved": as_of}
-    fx = ((facts or {}).get("market") or {}).get("fx_usdcad") or {}
-    if fx.get("rate"):
-        s = ((facts or {}).get("sources") or {}).get(fx.get("src"), {})
-        row = {"class": s.get("class", "primary"), "what": s.get("what", "Bank of Canada FXUSDCAD daily rate"),
-               "url": s.get("url", BOC_URL), "as_of": fx.get("date", ""), "retrieved": s.get("retrieved", as_of)}
-        return float(fx["rate"]), fx.get("date"), row
-    if args.offline:
-        return None, None, None
-    try:
-        body, retrieved = common.ctx_from(args).get_json(BOC_URL + "?recent=1", "macro")
-        ob = body["observations"][-1]
-        return float(ob["FXUSDCAD"]["v"]), ob["d"], {
-            "class": "primary", "what": "Bank of Canada FXUSDCAD daily rate (CAD per USD)",
-            "url": BOC_URL + "?start_date=%s&end_date=%s" % (ob["d"], ob["d"]), "as_of": ob["d"],
-            "retrieved": retrieved[:10]}
-    except (common.FetchError, KeyError, IndexError, ValueError, TypeError):
-        return None, None, None
+def levels(conn, ticker, skipped):
+    asof = db.one(conn, "SELECT MAX(asof) asof FROM stats WHERE ticker = ?", (ticker,))
+    out = {}
+    if asof and asof["asof"]:
+        for r in db.rows(conn, "SELECT metric, value FROM stats WHERE ticker = ? AND asof = ? AND window = 'spot'", (ticker, asof["asof"])):
+            if r["metric"] in LEVELS:
+                out[r["metric"]] = r["value"]
+        out["asof"] = asof["asof"]
+    else:
+        skipped.append({"symbol": ticker, "reason": "run stats.py %s" % ticker})
+    e = db.one(conn, "SELECT next_earnings FROM estimates WHERE ticker = ? AND next_earnings IS NOT NULL ORDER BY asof DESC LIMIT 1", (ticker,))
+    if e:
+        out["next_earnings"] = e["next_earnings"]
+    return out
 
 
-def build(folder, holdings, price, fx, fx_date, fx_row, zones, rules, parse_notes=()):
-    as_of = holdings["as_of"]
-    rows = aggregate(holdings["positions"], fx)
-    outs = outcomes(rows, price_points(price, zones, holdings["eval_prices"]), fx)
-    sources = {}
-    for rid, (sid, what) in RULE_SRC.items():
-        sources[sid] = {"class": "primary", "what": what, "url": rules[rid]["url"], "as_of": rules[rid]["retrieved"],
-                        "retrieved": rules[rid]["retrieved"]}
-    if fx_row:
-        sources["S98"] = fx_row
-    sources["S99"] = {"class": "derived", "what": "holdings.py gain/loss and tax estimates from facts.json price, "
-                      "scorecard.json zones, holdings.json and S90-S98",
-                      "url": "file://" + os.path.join(folder, "holdings_tables.json"), "as_of": as_of,
-                      "retrieved": as_of}
-    notes = list(parse_notes)
-    if any(p.get("currency") != "CAD" for p in holdings["positions"]):
-        notes.append("ACB uses the current FX rate as an approximation; CRA requires the rate on each purchase "
-                     "date (%s)" % rules["T-FX"]["url"])
-    if fx is None:
-        notes.append("no USD/CAD rate available (facts.json has none and Bank of Canada was not reached); "
-                     "CAD and tax figures are null; pass --fx")
-    if holdings["marginal_rate"] is None:
-        notes.append("no marginal rate stated; estimated tax omitted")
-    if not zones:
-        notes.append("zones not available (no scorecard.json); price points are current and named prices only")
-    if any(p["gain_cad"] is not None and p["gain_cad"] < 0 for o in outs if o["account"] == "NONREG"
-           for p in o["price_points"]):
-        notes.append("a non-registered loss is a capital loss; the superficial loss rule denies it if the same "
-                     "shares are bought within thirty days before or after the sale and still held (%s)" % rules["T-SUPER"]["url"])
-    notes.append("outlays and expenses of sale (commissions) are not stated and are taken as zero")
-    notes.append(DISCLAIMER)
-    tax, divs = tax_rows(outs, holdings["marginal_rate"], rules), dividend_rows(outs, rules)
-    used = {"S98", "S99"} | {r["src"] for r in tax} | {r.get("inclusion_src") for r in tax} | \
-        {s for d in divs for s in d["src"]}
-    return {"ticker": holdings["ticker"], "as_of": as_of, "currency": "USD",
-            "fx_usdcad": {"rate": fx, "date": fx_date, "src": "S98" if fx_row else None},
-            "marginal_rate": holdings["marginal_rate"], "horizon_end": holdings["horizon_end"],
-            "outcomes": outs, "tax": tax, "dividends": divs,
-            "sources": {k: v for k, v in sources.items() if k in used}, "notes": notes}
+# --- rendering ----------------------------------------------------------------------------------
+def md(res):
+    recs = []
+    for p in res["positions"]:
+        recs.append({"ticker": p["ticker"], "kind": "fund" if p["is_fund"] else "stock", "shares": calc.num(p["shares"], 2),
+                     "avg cost": calc.money(p["avg_cost"]), "price": calc.money(p["price"]) + ("*" if p["price_from"] == "csv" else ""),
+                     "value": calc.money(p["value"], 0), "gain": calc.money(p["gain"], 0), "gain %": calc.pct(p["gain_pct"]),
+                     "weight": calc.pct_plain(p["weight"]), "accounts": ", ".join("%s %s" % (r["account"], calc.num(r["shares"], 0)) for r in p["accounts"])})
+    pf = res["portfolio"]
+    out = ["**Positions** (total %s; %d positions; funds %s, stocks %s)" % (
+        calc.money(pf["total"], 0), pf["positions"], calc.pct_plain(pf["funds_weight"]), calc.pct_plain(pf["stocks_weight"])),
+        "", db.md_table(recs)]
+    if any(p["price_from"] == "csv" for p in res["positions"]):
+        out.append("\\* price from the CSV's market value, not the database")
+    if res["look_through"]:
+        lt = [{"ticker": x["ticker"], "direct": calc.pct_plain(x["direct_weight"]),
+               "via funds": ", ".join("%s %s" % (v["fund"], calc.pct_plain(v["weight"])) for v in x["via"]) or "",
+               "total": calc.pct_plain(x["total_weight"])} for x in res["look_through"]]
+        out += ["", "**Look-through** (top 10)", "", db.md_table(lt)]
+    for t, sz in res["sizing"].items():
+        if "error" in sz:
+            out += ["", "**%s**: %s" % (t, sz["error"])]
+            continue
+        fr = [{"frame": f["frame"], "shares to sell": calc.num(f["shares_to_sell"], 0), "proceeds": calc.money(f["proceeds"], 0),
+               "shares kept": calc.num(f["shares_kept"], 0),
+               "from accounts": "; ".join("%s %s (%s)" % (a["account"], calc.num(a["shares"], 0), a["reason"]) for a in f["from_accounts"]) or (f["note"] or "")}
+              for f in sz["frames"]]
+        out += ["", "**%s** sizing (%s shares, %s, %s of the total)" % (t, calc.num(sz["position"]["shares"], 0),
+                                                                     calc.money(sz["position"]["value"], 0), calc.pct_plain(sz["position"]["weight"])),
+                "", db.md_table(fr)]
+        lv = sz["levels"]
+        if "asof" in lv:
+            line = "Levels as of %s: " % lv["asof"] + " · ".join("%s %s" % (k, calc.money(lv[k])) for k in LEVELS if k in lv)
+        else:
+            line = "Levels: none (run stats.py %s)" % t
+        if lv.get("next_earnings"):
+            line += " · next earnings %s" % lv["next_earnings"]
+        out.append(line)
+    if res["skipped"]:
+        out += ["", "Skipped: " + "; ".join("%s (%s)" % (x["symbol"], x["reason"]) for x in res["skipped"])]
+    return "\n".join(out)
 
 
-# --- markdown ----------------------------------------------------------------------------------
-def money(x, signed=False):
-    if x is None:
-        return "n/a"
-    s = "-" if x < 0 else ("+" if signed and x > 0 else "")
-    return "%s$%s" % (s, "{:,.2f}".format(abs(x)))
-
-
-def pct(x):
-    return "n/a" if x is None else "%+.1f%%" % (x * 100)
-
-
-def render_md(t):
-    fx = t["fx_usdcad"]
-    m = ["### Holdings — %s, as of %s" % (t["ticker"], t["as_of"]), ""]
-    if fx["rate"]:
-        m += ["USD/CAD %.4f on %s [S98]." % (fx["rate"], fx["date"]), ""]
-    m += ["#### Outcomes (USD; CAD at the current rate)", "",
-          "| Account | Shares | Avg cost | Point | Price | Value | Gain | Gain % | Value CAD | Gain CAD | Src |",
-          "|---|---|---|---|---|---|---|---|---|---|---|"]
-    for o in t["outcomes"]:
-        for p in o["price_points"]:
-            m.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | [S99] |" % (
-                o["account"], fmt_num(o["shares"]), money(o["avg_cost"]), p["label"], money(p["price"]),
-                money(p["value"]), money(p["gain_abs"], True), pct(p["gain_pct"]), money(p["value_cad"]),
-                money(p["gain_cad"], True)))
-    m += ["", "#### Tax (CAD, federal rules; estimates)", "",
-          "| Account | Point | Taxable | Est. tax | After-tax proceeds | If withdrawn, tax | Src |",
-          "|---|---|---|---|---|---|---|"]
-    for r in t["tax"]:
-        src = "[%s, %s, S99]" % (r["src"], r["inclusion_src"]) if r["account"] == "NONREG" else "[%s, S99]" % r["src"]
-        for p in r["points"]:
-            m.append("| %s | %s | %s | %s | %s | %s | %s |" % (
-                r["account"], p["label"], money(p["taxable_amount_cad"]), money(p["estimated_tax_cad"]),
-                money(p["after_tax_proceeds_cad"]),
-                money(p.get("if_withdrawn_tax_cad")) if r["account"] == "RRSP" else "—", src))
-    rate = t["marginal_rate"]
-    m += ["", "Marginal rate %s as stated by the user [S99]." % ("%.1f%%" % (rate * 100)) if rate is not None
-          else "No marginal rate stated; estimated tax is n/a.", ""]
-    for r in t["tax"]:
-        m.append("- **%s** — %s [%s]" % (r["account"], r["treatment"], r["src"]))
-    m += ["", "#### US dividends by account", ""]
-    for d in t["dividends"]:
-        m.append("- **%s** — %s [%s]" % (d["account"], d["treatment"], ", ".join(d["src"])))
-    m += ["", "#### Notes", ""]
-    for n in t["notes"]:
-        m.append("- %s" % n)
-    m += ["", "### Evidence log", "", "| S | class | what | url | as-of | retrieved |", "|---|---|---|---|---|---|"]
-    for sid in sorted(t["sources"], key=lambda s: int(s[1:])):
-        s = t["sources"][sid]
-        m.append("| %s | %s | %s | %s | %s | %s |" % (sid, s["class"], s["what"], s["url"], s["as_of"], s["retrieved"]))
-    return "\n".join(m) + "\n"
-
-
-# --- CLI ---------------------------------------------------------------------------------------
-def write(path, obj):
-    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(obj, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+def analyse(conn, path, size, caps, total_flag):
+    rows_, files, columns, skipped = parse_paths(path)
+    priced = price_rows(conn, rows_, skipped)
+    if not priced:
+        raise common.FetchError("no priced US positions in %s" % path)
+    total = total_flag or sum(r["value"] for r in priced)
+    positions = aggregate(priced, total)
+    lt, funds_used = look_through(conn, positions, total)
+    fund_value = sum(p["value"] for p in positions if p["is_fund"])
+    stock_value = sum(p["value"] for p in positions if not p["is_fund"])
+    portfolio = {"total": total, "total_from": "flag" if total_flag else "sum of values", "positions": len(positions),
+                 "top5": [{"ticker": p["ticker"], "weight": p["weight"]} for p in positions[:5]],
+                 "funds_value": fund_value, "funds_weight": fund_value / total if total else None,
+                 "stocks_value": stock_value, "stocks_weight": stock_value / total if total else None,
+                 "funds_looked_through": funds_used}
+    sizing = {}
+    for t in size:
+        pos = next((p for p in positions if p["ticker"] == t), None)
+        if not pos:
+            sizing[t] = {"error": "%s is not in the CSV" % t}
+            continue
+        sizing[t] = {"position": {k: pos[k] for k in ("shares", "avg_cost", "price", "value", "cost", "gain", "gain_pct", "weight")},
+                     "frames": frames(pos, caps, total), "levels": levels(conn, t, skipped)}
+    return {"ok": True, "script": SCRIPT, "files": files, "columns": columns, "positions": positions, "portfolio": portfolio,
+            "look_through": lt, "sizing": sizing, "skipped": skipped}
 
 
 def run(argv=None):
-    ap = common.EnvelopeParser(prog=SCRIPT, description="Holdings outcome and Canadian tax tables for one ticker")
-    ap.add_argument("target", help="ticker (resolved in the store) or the stock folder path")
-    g = ap.add_mutually_exclusive_group(required=True)
-    g.add_argument("--question", help="the user's question text")
-    g.add_argument("--json", help="holdings JSON (holdings.md shape)")
-    ap.add_argument("--price", type=float, help="current price (default facts.json price.last)")
-    ap.add_argument("--fx", type=float, help="USD/CAD (default facts.json market.fx_usdcad.rate, else Bank of Canada)")
-    ap.add_argument("--zones", default="", help="buy_below,base_today,sell_above (default scorecard.json zones)")
-    ap.add_argument("--md", action="store_true", help="print the Markdown part instead of JSON")
-    ap.add_argument("--offline", action="store_true", help="never fetch the Bank of Canada rate")
-    common.add_common_args(ap)
-    args = ap.parse_args(argv)
-    st = common.locate(args.target, args)
-    if not os.path.isdir(st.root):
-        raise common.FetchError("ticker folder not found: %s" % st.root)
-    if not args.store and os.path.basename(os.path.dirname(st.root)) == "stocks":
-        args.store = os.path.dirname(os.path.dirname(st.root))  # HTTP cache goes to <store>/.cache
-    ticker, folder = st.ticker, st.facts_dir
-    facts = read_json(st.facts)
-    as_of = common.today()
-    notes = []
-    if args.question is not None:
-        holdings, notes = parse_question(args.question, ticker, as_of)
-    else:
-        holdings = from_json(args.json, ticker, as_of)
-    if not holdings["positions"]:
-        raise common.FetchError("no %s position (shares, average cost, account) found in the input" % ticker)
-    price = args.price if args.price is not None else ((facts or {}).get("price") or {}).get("last")
-    if price is None:
-        raise common.FetchError("no current price: facts.json price.last is missing; pass --price")
-    if args.zones:
-        try:
-            b, base, s = [float(x) for x in args.zones.split(",")]
-        except ValueError:
-            raise common.FetchError("--zones must be buy_below,base_today,sell_above")
-        zones = {"buy_below": b, "base_today": base, "sell_above": s}
-    else:
-        zones = (read_json(st.scorecard) or {}).get("zones")
-    fx, fx_date, fx_row = resolve_fx(args, facts, folder, as_of)
-    tables = build(folder, holdings, float(price), fx, fx_date, fx_row, zones, load_rules(), notes)
-    write(st.holdings, holdings)
-    write(st.holdings_tables, tables)
-    if args.md:
-        sys.stdout.write(render_md(tables))
-    else:
-        common.emit(tables, args.out)
-    return tables
+    p = common.parser(SCRIPT, "arithmetic over a broker CSV: positions, look-through, sizing frames; stores nothing")
+    p.add_argument("csv", help="the broker's positions export, or a folder of them (one per account)")
+    p.add_argument("--size", default="", help="tickers to size, comma-separated")
+    p.add_argument("--caps", default=DEFAULT_CAPS, help="cap weights in percent (default %s)" % DEFAULT_CAPS)
+    p.add_argument("--total", type=float, default=None, help="portfolio total in USD when the CSV is partial")
+    a = p.parse_args(argv)
+    try:
+        caps = [float(c) / 100.0 for c in a.caps.split(",") if c.strip()]
+    except ValueError:
+        return common.fail(SCRIPT, "--caps wants percents like 15,12.5,10, got %r" % a.caps)
+    size = [t.strip().upper() for t in a.size.split(",") if t.strip()]
+    conn = db.connect(a.project)
+    db.read_only(conn)
+    res = analyse(conn, a.csv, size, caps, a.total)
+    return common.emit(res, md=md(res) if a.md else None)
 
 
 if __name__ == "__main__":
-    common.run_main(SCRIPT, run)
+    sys.exit(common.run_main(SCRIPT, run))

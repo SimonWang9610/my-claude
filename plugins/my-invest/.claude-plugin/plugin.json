@@ -1,18 +1,7 @@
 {
   "name": "my-invest",
-  "version": "0.3.0",
-  "description": "Financial advisor for a rookie US-stock investor, from plain questions: a short brief with the direct answer (hold or sell, buy or wait, limit-order levels), a summary of the figures with dated horizons, why, the risks, the model's track record, what to watch, what could not be verified, and every figure linked to its raw source; the full dossier stays in the stock's folder. Stocks and ETFs, portfolios from a broker file, Canadian tax on your shares, options on real contracts. An advisor skill delegates to a professional analyst agent; scripts compute every figure from SEC XBRL and Yahoo data; a lint enforces the citations.",
-  "author": {
-    "name": "SimonWang9610"
-  },
-  "keywords": [
-    "investing",
-    "value-investing",
-    "stocks",
-    "sec-edgar",
-    "research",
-    "canada",
-    "tfsa",
-    "rrsp"
-  ]
+  "version": "1.0.0",
+  "description": "A financial advisor for a beginner in US stocks and funds: reads what the question asks (one stock, your holdings from a broker CSV, a sector, the market, or a mix), runs six analysis dimensions (SEC fundamentals, a three-scenario DCF, price statistics, macro and politics, industry, sentiment) through nine single-purpose scripts over one SQLite database, and answers result-first with three options (conservative, moderate, aggressive) in tables shaped by the question, each with a confidence score out of 100 built from evidence, agreement and the plugin's own track record against the index; every figure links to its source; the chat answer is Markdown and the saved report is an HTML page. US-listed only; holdings are never stored.",
+  "author": { "name": "Simon Wang" },
+  "keywords": ["investing", "stocks", "etf", "dcf", "sec", "advisor"]
 }

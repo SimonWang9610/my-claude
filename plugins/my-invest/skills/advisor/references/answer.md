@@ -1,86 +1,68 @@
-# The answer — a short brief: answer, summary, why, risks, record, what to watch, not verified, sources
+# The answer: Markdown in the chat, the same text as an HTML page on disk
 
-`report.py --chat` prints the brief from the scorecard, the facts, the research files and the narrative;
-the advisor pastes it as the answer. Everything else the scripts and the analyst produced goes to
-`reports/dossier.md` (and `dossier.html`), the file an agent reads for a later question; the brief never
-repeats it. Rules the brief obeys:
-
-- **Direct answer first**, then the figures it rests on, then why, then the risks. Section order never changes.
-- **Every horizon is dated**: "5 years from today (to Oct 2031)", "Expected by Oct 2031", "by 2027-01-12".
-  A horizon is counted from the price date printed under the headline, never from a past year.
-- **Every figure ends with a marker** such as `[S3]`; the **Sources** section lists each marker with a link
-  to its raw source (the SEC API call, the filing, the Yahoo page). A script's arithmetic (`S60`, `S61`)
-  links to the file it was computed into and is followed by the raw sources it used. On the page the
-  markers themselves are links.
-- **Sections are tagged** *computed by scripts* or *the analyst's reading*.
-- **Short**: under about a hundred lines for one stock; four bullets for why, three for risks, three to
-  watch, three gaps plus a count; a wanted detail section is a table of at most five rows.
-- Plain words; a term from the standard appears only with its gloss in **Words used here**, which lists
-  only the terms used (options terms only when an options section is present).
-
-## Shape (one stock)
+Result first, in this order, for every intent. Sections are fixed; the columns inside the option tables
+are not: they are built from the question's own words.
 
 ```markdown
-## <TICKER> — <one plain sentence: the verdict, with the dated horizon and the return the risk demands>
-*As of <price date>. Every horizon below is counted from that date.*
+I read this as: <intent in plain words>, horizon <dated>, <all three options | the <level> option>.
 
-### Answer
-- **If you hold it:** <recommendation> — because <expected return over the dated horizon vs required; trend>
-- **If you want to buy:** <recommendation>
-- **Limit-order levels the rule points to:** $x (50-day average) · $y (10% below today) · $z (200-day average)
-- If it hits $p: <where that price sits>                      ← only for a what-if in the question
-(a failed deal-breaker check → "Stay away, or sell what you hold"; no scorecard or inputs → "No verdict", never a default hold)
+# <SUBJECT>: <verdict in one sentence, with the dated horizon> — confidence <n>/100 (<band>)
+*As of <price date>. Horizons count from that date.*
 
-### Summary  (computed by scripts; horizons count from today, <date>)
-| Price today (<date>) | $ |
-| Expected by <month year> (<h> years from today) | worst $ · likely $ · best $ — about x% a year in the likely case |
-| Return the risk demands | r% a year (10-year Treasury yield plus an equity risk premium) |
-| Next few months | likely $lo–$hi by <date> (one standard deviation); trend; next event |
-| Analysts' average 12-month target (secondary; only about 38% of such targets are met) | $t from n analysts |
-| Confidence | n/100 (band) — what lowers it |
-| Your shares | worth $, gain $ (accounts)                    ← only when holdings were stated
+## What to do
+### Conservative
+| <columns the question needs> | what you have to believe | confidence | evidence |
+### Moderate
+...
+### Aggressive
+...
+(one table when a level was named; a failed deal-breaker → one line: stay away or sell, with the item cited)
 
-### Why  (the analyst's reading)             ≤ 4 bullets
-### Risks: the case against                  ≤ 3 bullets
-### Track record                             the simulated summary line; the last earlier call, with the price and SPY since
-### What to watch                            ≤ 3 observable events with a date or price
-### Not verified                             ≤ 3 gaps, then "and n more, listed in the dossier"
-### Your shares · News, what it means · Compared with similar companies · Options on this stock, explained · Short-term view
-                                             only as the question asks (request.wants) and only when data exists
-### Words used here
-### Sources                                  one line per marker used above, with its link
-Files: [full dossier] · [page] · [chart]
-> disclaimer
+## Why
+- three bullets, each with its figures and markers
+
+## Supporting analysis
+One block per dimension in the order valuation, fundamentals, statistics, sentiment, industry, macro: the view
+line (stance, strength, horizon) and one table of the figures it rests on, every cell with a marker.
+Then the full confidence line.
+
+## The case against
+- the strongest reasons the verdict is wrong, each cited
+
+## Track record
+The `record.py record --md` summary and the last settled calls on this subject.
+
+## Not verified
+- gaps, each with what would close it
 ```
 
-## A fund (ETF)
+`record.py report` appends **Sources** (one line per marker with its link) and the disclaimer, turns every
+`[S<id>]` into a link, adds a price chart per ticker, and writes the HTML page. The chat shows the
+Markdown above; the page is for keeping and for later questions.
 
-`facts/fund.json` instead of a scorecard (written by `fund.py`): the same shape with **What it is**, the
-fund rule for a holder and a buyer (trend, cost, concentration — labelled this standard's own reading),
-a summary of price, returns against SPY over the same windows, trend, yearly cost and biggest holdings,
-what to watch, not verified, sources. Leveraged, inverse and covered-call funds carry a **Watch out** line.
+## Column examples
 
-## Several stocks (a portfolio or holdings question)
+- "Should I buy Nvidia?" → action · limit price · size (weight) · upside to the scenario value · believe · confidence · evidence.
+- "When should I sell Apple?" → trigger level and its name (50-day average, 52-week high, 3-month range top) · how much · what it changes · believe · confidence · evidence.
+- "How many shares should I trim?" → frame (cap 15%, 12.5%, 10%; sell the gain; recover cost) · shares to sell · proceeds · shares kept · from account · confidence.
+- "Is now a good time for semiconductors?" → name · what to do · level · why in five words · confidence · evidence.
 
-One answer, in this order, written by the advisor from each stock's brief:
+## Holdings
 
-1. **The answer in one table** — one row per position: stock, accounts, worth, gain, what to do if you
-   hold it, limit-order level, expected return vs required at the dated horizon, confidence, link to the
-   stock's page. Funds in the same table with the fund rule's words. Then three lines: sell / hold / keep
-   buying, with the names.
-2. **One short block per stock** — the headline sentence, the Answer bullets and the Summary table from
-   its brief (nothing else; the full brief is on the stock's page).
-3. **Not verified** across the portfolio, in a few lines; Sources with links; the disclaimer.
+One table first with a row per position (worth, weight, look-through weight, action, limit or trigger,
+account to sell from first, confidence), then three lines: sell / hold / add, with the names. Then the
+option tables per position whose action is not hold, then the sections above once for the portfolio
+(macro and concentration under Supporting analysis). Funds follow the fund line of the standard's
+deal-breakers; a plain index fund's options are about weight, not timing.
 
-Everything else (news, peers, industry, options, strict value lens, scorecards, evidence logs) is in each
-stock's folder for the next question.
+## Follow-ups in the conversation
 
-## The dossier (`reports/dossier.md`, `reports/dossier.html`)
+Verdict in two sentences, the frames table from `holdings.py --size`, the plan in halves tied to named
+levels, what it changes in the earlier options, one `Files:` line pointing at the page. Markers may be
+omitted when every figure comes from a script run in the same turn.
 
-`report.py` renders the full detail for agents and for the curious: the short answer and price map, the
-price outlook and strict value lens, the track record tables, the answer, thesis, why, the case against,
-news, peers, industry, strengths and weaknesses, holdings, options context, the short-term lens, business
-and moat, management, market trend, industry and related stocks, facts, scorecard, risk evidence, news and
-posts, what could not be verified, open questions, history, the evidence log, the disclaimer. It lints
-every output and fails on a violation. `INDEX.md` carries the latest decision, the track-record line,
-the folder map and the history table.
+## Words
+
+Plain words; a term from the standard gets a gloss the first time ("the 200-day average, the mean closing
+price of the last 200 trading days"). Dates as "Nov 2027", never "5-year". Under about a hundred lines for
+one stock.
