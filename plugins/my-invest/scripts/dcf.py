@@ -8,7 +8,9 @@ Rates are percent (--growth 5,10,15 means 5%, 10%, 15%).
 Inputs come from fundamentals_annual (up to the latest five fiscal years), the 10-year Treasury yield from
 `macro` (DGS10) and the 3-year beta from `stats`. Every assumption a flag does not set is derived from the
 history, clamped to a sane range, and recorded in `inputs` with whether it was overridden, so the agent can
-read and argue with it. Free cash flow = revenue x margin x (1 - tax) + depreciation - capex, both grown with
+read and argue with it. Free cash flow = revenue x margin x (1 - tax) + depreciation - capex (each read from the
+first tag the filer uses: D&A, else Depreciation plus amortisation of intangibles; PP&E payments, else
+productive-asset payments), both grown with
 revenue from their latest ratios; reinvestment is 0. Terminal value is Gordon growth on the last forecast
 year; the forecast never exceeds config max_horizon_years. A Monte Carlo on the base case gives p10/p50/p90.
 With it come the cross-checks: a sensitivity grid of the base value, the reverse DCF (the growth today's price
@@ -28,8 +30,12 @@ REVENUE = ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "S
 OPINC = ("OperatingIncomeLoss",)
 TAX = ("IncomeTaxExpenseBenefit",)
 INTEREST = ("InterestExpense",)
-DEPREC = ("DepreciationDepletionAndAmortization",)
-CAPEX = ("PaymentsToAcquirePropertyPlantAndEquipment",)
+# Filers tag D&A and capex differently: MSFT, GOOG and TSLA report "Depreciation" (plus amortisation of
+# intangibles) and NVDA reports capex as "PaymentsToAcquireProductiveAssets". Tried in order; the first
+# concept with a value in the latest fiscal year wins.
+DEPREC = ("DepreciationDepletionAndAmortization", "DepreciationAndAmortization", "Depreciation")
+AMORT = ("AmortizationOfIntangibleAssets",)
+CAPEX = ("PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets")
 SHARES = ("WeightedAverageNumberOfDilutedSharesOutstanding", "EntityCommonStockSharesOutstanding")
 EPS = ("EarningsPerShareDiluted",)
 OCF = ("NetCashProvidedByUsedInOperatingActivities",)
@@ -68,6 +74,16 @@ def series(fx, concepts, years):
     """Values of the first concept found, aligned to the fiscal year ends; None where a year is missing."""
     name, by_end = first(fx, concepts)
     return name, [by_end.get(y) for y in years]
+
+
+def series_latest(fx, concepts, years):
+    """Like series(), but the first concept that has a value in the latest year wins (a filer that stopped
+    tagging a concept years ago must not shadow the one it uses now)."""
+    for c in concepts:
+        by_end = fx.get(c) or {}
+        if by_end.get(years[-1]) is not None:
+            return c, [by_end.get(y) for y in years]
+    return None, [None] * len(years)
 
 
 def latest(fx, concepts, years):
@@ -126,12 +142,19 @@ def gather(conn, ticker, cfg, a):
 
     # depreciation and capex as ratios to the latest revenue
     for key, concepts in (("depreciation", DEPREC), ("capex", CAPEX)):
-        _, s = series(fx, concepts, years)
+        name, s = series_latest(fx, concepts, years)
         v = s[-1]
         if v is None:
             v = 0.0
-            assumed.append("%s 0 (no %s)" % (key, concepts[0]))
+            assumed.append("%s 0 (none of %s)" % (key, "/".join(concepts)))
+        elif key == "depreciation" and name == "Depreciation":
+            # "Depreciation" alone leaves out the amortisation of intangibles; add it when the filer tags it
+            am_name, am = series_latest(fx, AMORT, years)
+            if am[-1] is not None:
+                v += am[-1]
+                name = "%s + %s" % (name, am_name)
         inputs[key] = v
+        inputs[key + "_concept"] = name
         inputs[key + "_ratio"] = v / revenue[-1] if revenue[-1] else 0.0
     inputs["reinvestment"] = 0.0
     inputs["reinvestment_note"] = "reinvestment beyond capex is 0; depreciation and capex grow with revenue"
