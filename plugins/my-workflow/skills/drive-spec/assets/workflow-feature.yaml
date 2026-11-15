@@ -1,0 +1,59 @@
+# This spec's metadata. drive-spec creates it; each step updates its own entry.
+# ⬜ pending · 🔄 in progress · ✅ done · ⏭️ skipped · ⛔ blocked · gate: ⏳ waiting · ✅ approved
+spec: <task>
+title: <title>
+kind: feature
+size: standard              # light | standard
+status: 🔄
+current: requirements
+branch: <branch | none>
+base: <base branch>
+gates: ask                  # ask | auto
+role: senior (inferred)     # senior | junior, (stated) or (inferred)
+stack: <stack and versions>
+atlas: none                 # path to an atlas INDEX.md
+updated: <yyyy-mm-dd>
+folder: <path>/specs/<task>  # where this spec's artifacts sit, from the project root
+
+artifacts:                  # paths inside `folder`; light: design and review point to spec.md
+  spec: spec.md
+  clarifications: clarifications.md   # written only when clarifying takes more than one round
+  design: design.md
+  plan: tasks.md
+  review: review.md         # written only when the verdict is not accept
+  questions: questions.md
+
+steps:
+  - id: requirements
+    skill: spec-requirements
+    model: session
+    skills: []              # - { name: <installed skill>, why: <one line> }
+    status: ⬜
+    gate: ⏳                # the spec, held after the design when it runs
+  - id: design
+    skill: spec-design
+    agent: none             # spec-architect when delegated
+    model: strong
+    level: none             # module | component | system
+    skills: []
+    status: ⬜
+  - id: plan
+    skill: spec-plan
+    model: session
+    skills: []
+    status: ⬜
+    gate: none              # ⏳ when teammates will implement
+  - id: implement
+    skill: spec-implement
+    agent: none             # spec-tester, spec-implementer ×<n>
+    model: standard         # complex batches run strong
+    skills: []
+    status: ⬜
+    progress: 0/0           # tasks ✅ / all
+  - id: review
+    skill: spec-review
+    agent: spec-reviewer
+    model: strong
+    skills: []
+    status: ⬜
+    verdict: none           # accept | accept with fixes | rework

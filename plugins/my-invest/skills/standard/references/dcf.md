@@ -10,7 +10,7 @@
 - **Discount rate** = cost of equity by CAPM: 10-year Treasury yield (FRED DGS10) + beta (stats 3y, else 1.0)
   × equity risk premium (`config.equity_risk_premium`, 4.2% unless edited); low/high ±1.5 points; floor 6%.
 - **Terminal growth** 2.5%, always at least 1 point under the discount rate.
-- **Forecast years** 5, the horizon cap. Depreciation and capex follow revenue at their latest ratios;
+- **Forecast years** 5, the horizon cap. Depreciation and capex follow revenue at their latest ratios (read from the first tag the filer uses: DepreciationDepletionAndAmortization, else DepreciationAndAmortization, else Depreciation plus AmortizationOfIntangibleAssets; PaymentsToAcquirePropertyPlantAndEquipment, else PaymentsToAcquireProductiveAssets);
   reinvestment is zero; tax rate from the filings, clamped 0..35%, 21% when missing.
 
 ## What the analyst may override, and the duty that comes with it

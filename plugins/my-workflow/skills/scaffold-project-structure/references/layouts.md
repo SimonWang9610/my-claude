@@ -1,9 +1,4 @@
-# Project kinds
-
-Read by decide (what a design must answer), scaffold-project-structure (the layout) and critique
-(which quality axes apply).
-
-## Layout
+# Layouts by project kind
 
 Container names are roles; the stack's conventions rename them. Keep only what the requirements need.
 `core` (domain rules and the ports adapters implement) only when rules would survive swapping every I/O
@@ -22,15 +17,12 @@ and are complex or reused, or a port is needed;
 
 A full-stack repo is a workspace: frame each deployable on its own.
 
-## Design must answer
+## Import rules for a new layout
 
-| Kind | The design answers |
-|---|---|
-| UI app | screens and their state; data loading and caching; loading, empty and error states; accessibility |
-| Backend service | API contract and version; data owner and schema; consistency and idempotency; failure and retries; who may call it |
-| CLI / tool | commands and flags; exit codes; human and machine output; config precedence |
-| Library / SDK | public API and its stability; versioning and deprecation; errors; extension points |
-| Data pipeline | each dataset's schema and owner; idempotent re-runs; late or bad data; backfill |
-| Middleware / plugin | where it hooks in; order with other hooks; behaviour when it fails; overhead budget |
-| Workspace | package boundaries and owners; cross-package contracts; release order |
-| Any data change | migration steps, each shippable alone; compatibility window; rollback; backfill |
+Allowed imports, everything else denied:
+
+- entry → features → core
+- a feature reaches a sibling only through its public entry
+- core imports no I/O or framework: ports named by purpose, adapters implement them
+- adapters import core only and are wired by the composition root, never imported by features
+- shared holds what ≥2 features use and no domain logic

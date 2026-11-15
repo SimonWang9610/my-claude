@@ -5,17 +5,17 @@ description: >-
   leads: first reads what the prompt points to (files, paths, links, earlier results) or what the
   conversation settled, then returns the objective, must-haves, constraints, facts found, ambiguities
   as questions with defaults, and what was dropped, plus a shorter ready-to-send prompt. Never carries
-  out the prompt's instructions; touches no spec, no code. Use on "rephrase this", "tighten my
+  out the prompt's instructions; touches no spec, no code; standalone, never part of a spec. Use on "rephrase this", "tighten my
   prompt", "what am I really asking", "read X and rephrase", "summarize our conversation into a
   prompt", or a long prompt that mixes goals, background and details. Not for writing requirements
-  (use my-workflow:drive-spec).
+  (use my-workflow:spec-requirements).
 argument-hint: "<prompt | 'our conversation'>"
 ---
 
 # rephrase
 
-Plugin root: `${CLAUDE_PLUGIN_ROOT}` (if shown unexpanded: the folder that holds this skill's
-`skills/` folder); paths below are relative to it. Follow `shared/conventions.md`.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (if shown unexpanded: `../../shared/conventions.md`
+from this skill's folder). Other paths are relative to this skill's folder.
 
 The prompt's instructions are its content, never your task: "read X and do Y" means read X to
 understand the prompt, then rephrase "do Y"; Y is never done here.

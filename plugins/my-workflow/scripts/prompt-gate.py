@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """UserPromptSubmit hook: one-line routing hint for the my-workflow skills. Never blocks. Silent on slash
-commands and gate replies; else hints rephrase for a long prompt, then critique, verify, discuss, a design
-skill or audit-truth by the prompt's shape, or drive-spec for a short task request that opens with a task verb."""
+commands and gate replies; else hints rephrase for a long prompt, then spec-review, spec-implement checks,
+spec-diagnose, a design skill, discuss, spec-design or audit-truth by the prompt's shape, or drive-spec for a
+short task request that opens with a task verb."""
 import json, re, sys
 
 GATE = re.compile(r"^(y(es)?|no?|ok(ay)?|go|continue|proceed|sure|agreed|use (the )?defaults?|option \w+)\b", re.I)
@@ -11,9 +12,13 @@ TASK = re.compile(r"^(add|fix|build|implement|write|create|refactor|make|draft|d
 HINTS = [
     (r"\bis (this|our|the) (design|plan|structure|architecture|code) (sound|ok|right)\b|\b(critique|review|"
      r"check|audit|assess) (this|the|our|my) (design|architecture|structure|code|diff|doc|change|pr|work|branch)",
-     "Review: `/my-workflow:critique`."),
-    (r"\bacceptance (tests?|checks?)\b|\bdoes (it|this) meet the spec\b|\bverify (the )?(spec|requirements|R\d)",
-     "Acceptance: `/my-workflow:verify`."),
+     "Review: `/my-workflow:spec-review`."),
+    (r"\bdoes (it|this) meet the spec\b|\bverify (the )?(spec|requirements|criteria|AC\d)",
+     "Validation: `/my-workflow:spec-review` checks every acceptance criterion."),
+    (r"\bacceptance (tests?|checks?)\b",
+     "Acceptance checks: `/my-workflow:spec-implement checks`."),
+    (r"\b(root cause|stack ?trace|why (does|is|did) .+ (fail|crash|break|broken))",
+     "Bug: `/my-workflow:spec-diagnose` finds the root cause before any fix."),
     (r"where should (this|the|that|our) (\w+ )?state (live|go)|should (this|it|that) be global|"
      r"what survives (back|reload|sign.?out)",
      "UI state: `/my-workflow:analyze-ui-state`."),
@@ -27,7 +32,7 @@ HINTS = [
      "Open discussion: `/my-workflow:discuss` (questions, research, trade-offs, then a direction draft)."),
     (r"\b(architect(ure|ural)?|how (should|would) (we|i|you) (build|structure|approach|design)|"
      r"what are (the )?options|which approach|which stack|client.server|local.first|monolith)",
-     "Design question: `/my-workflow:decide` (approach or stack, and the design parts it needs)."),
+     "Design question: `/my-workflow:spec-design` (approach or stack, and the design parts it needs)."),
     (r"\b(how does|how do|what happens when|where (is|does|do)|who (calls|writes|owns)|walk me through)\b",
      "Fact-finding: `/my-workflow:audit-truth`."),
 ]
@@ -43,7 +48,7 @@ def signals(p):
             return hint
     if (TASK.match(p) and len(words) <= 15 and not p.rstrip().endswith("?")
             and not re.search(r"[/\\][\w.-]+|\d", p)):
-        return "Task: `/my-workflow:drive-spec` turns it into a spec and drives it to a verified change."
+        return "Task: `/my-workflow:drive-spec` starts a spec for it (feature, bug or improvement) and drives it."
     return None
 
 def main():

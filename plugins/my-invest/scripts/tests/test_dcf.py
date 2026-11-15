@@ -60,6 +60,29 @@ class Arithmetic(unittest.TestCase):
         self.c = db.connect(path=":memory:")
         self.sid = db.source(self.c, "https://data.sec.gov/api/xbrl/companyfacts/x", "primary", "SEC")
 
+    def test_depreciation_and_capex_fall_back_to_the_filers_own_tags(self):
+        """A filer that tags Depreciation + AmortizationOfIntangibleAssets and PaymentsToAcquireProductiveAssets
+        (and whose PaymentsToAcquirePropertyPlantAndEquipment stopped years ago) is read, not assumed 0."""
+        seed_simple(self.c, self.sid)
+        db.upsert(self.c, "fundamentals", [
+            fact("ALT", "Revenues", 1000.0, "2025-12-31", "2025-01-01", sid=self.sid),
+            fact("ALT", "OperatingIncomeLoss", 200.0, "2025-12-31", "2025-01-01", sid=self.sid),
+            fact("ALT", "WeightedAverageNumberOfDilutedSharesOutstanding", 100.0, "2025-12-31", "2025-01-01", unit="shares", sid=self.sid),
+            fact("ALT", "Depreciation", 40.0, "2025-12-31", "2025-01-01", sid=self.sid),
+            fact("ALT", "AmortizationOfIntangibleAssets", 10.0, "2025-12-31", "2025-01-01", sid=self.sid),
+            fact("ALT", "PaymentsToAcquirePropertyPlantAndEquipment", 7.0, "2020-12-31", "2020-01-01", sid=self.sid),
+            fact("ALT", "PaymentsToAcquireProductiveAssets", 50.0, "2025-12-31", "2025-01-01", sid=self.sid)])
+        db.upsert(self.c, "macro_series", [{"series": "DGS10", "updated_at": "t"}])
+        db.upsert(self.c, "macro", [{"series": "DGS10", "date": "2025-12-30", "value": 4.0}])
+        inp = dcf.gather(self.c, "ALT", CFG, args())
+        self.assertEqual(inp["depreciation"], 50.0)
+        self.assertEqual(inp["depreciation_concept"], "Depreciation + AmortizationOfIntangibleAssets")
+        self.assertEqual(inp["capex"], 50.0)
+        self.assertEqual(inp["capex_concept"], "PaymentsToAcquireProductiveAssets")
+        self.assertFalse(any(a.startswith("depreciation 0") or a.startswith("capex 0") for a in inp["assumed"]))
+        one = dcf.gather(self.c, "ONE", CFG, args())
+        self.assertEqual(one["depreciation_concept"], "DepreciationDepletionAndAmortization")
+
     def test_value_by_hand(self):
         # FCF1 = 1000 x 20% x (1 - 21%) + 50 - 50 = 158; PV = 158/1.1 = 143.636
         # TV = 158 x 1.02 / (0.10 - 0.02) = 2014.5; PV(TV) = 1831.364; equity = +100 cash = 2075.0; / 100 shares

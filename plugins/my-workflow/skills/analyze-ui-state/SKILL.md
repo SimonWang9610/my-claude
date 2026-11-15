@@ -10,8 +10,8 @@ argument-hint: "[screens, feature or requirement]"
 
 # analyze-ui-state
 
-Plugin root: `${CLAUDE_PLUGIN_ROOT}` (if shown unexpanded: the folder that holds this skill's
-`skills/` folder); paths below are relative to it. Follow `shared/conventions.md`.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (if shown unexpanded: `../../shared/conventions.md`
+from this skill's folder). Other paths are relative to this skill's folder.
 
 1. **Screens** — the navigation map: shells, screens, tabs, modal routes, multi-step flows; per screen
    the facts it shows or edits. Existing code → `/my-workflow:audit-truth` on its routes and state
@@ -37,13 +37,4 @@ Plugin root: `${CLAUDE_PLUGIN_ROOT}` (if shown unexpanded: the folder that holds
    list; a `stateDiagram-v2` where 2.6 calls for one; a `sequenceDiagram` per optimistic write or
    server push. `Open:` the questions and the units with no owner yet.
 
-Check before writing:
-- server data has one home, the cache; no copies outside a draft
-- shareable or back/forward state is in the URL and nowhere else
-- no two booleans with an impossible combination; one status instead
-- each async command runs idle → running → done or error, with stale-response and double-submit guards
-  (and cancel for reads)
-- each write names its policy (wait for the server · optimistic with rollback · queued offline), what
-  it refreshes, and how two in-flight writes to one entity are ordered
-- sign-out clears every user-scoped unit and cache entry
-- each data region has loading, empty and error states
+Check before writing: every line of `references/checks.md` holds.

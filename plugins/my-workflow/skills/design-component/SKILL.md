@@ -10,8 +10,8 @@ argument-hint: "[scope or component]"
 
 # design-component
 
-Plugin root: `${CLAUDE_PLUGIN_ROOT}` (if shown unexpanded: the folder that holds this skill's
-`skills/` folder); paths below are relative to it. Follow `shared/conventions.md`.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (if shown unexpanded: `../../shared/conventions.md`
+from this skill's folder). Other paths are relative to this skill's folder.
 
 1. **Ground** — the requirements; existing units and their imports (`/my-workflow:audit-truth`: how
    the area is organised); the Structure section when the design has one.
