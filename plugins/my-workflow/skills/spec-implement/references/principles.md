@@ -1,7 +1,6 @@
 # Coding principles
 
-How to design and write code: build and decide follow these, and a skill's own steps govern where
-they are more specific.
+How to write the change; the skill's own steps govern where they are more specific.
 
 ## Think before coding
 

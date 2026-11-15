@@ -6,14 +6,14 @@ description: >-
   report anchored facts shaped as flows or structures, with where to look deeper and what stayed
   unread. Also confirms or refutes a claim. Use on "how does X work", "where is X", "what's our
   convention for X", "is it true that X", or before designing or building in unfamiliar code. Never
-  changes what it reads; not for judging quality (use my-workflow:critique).
+  changes what it reads; not for judging quality (use my-workflow:spec-review).
 argument-hint: "<question, claim or purpose> [sources]"
 ---
 
 # audit-truth
 
-Plugin root: `${CLAUDE_PLUGIN_ROOT}` (if shown unexpanded: the folder that holds this skill's
-`skills/` folder); paths below are relative to it. Follow `shared/conventions.md`.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (if shown unexpanded: `../../shared/conventions.md`
+from this skill's folder). Other paths are relative to this skill's folder.
 
 1. **Purpose** — the questions the instruction asks; they gate every read. Sources: what the
    instruction names (code, docs, notes, a path), else the workspace. Notes or a summary are read

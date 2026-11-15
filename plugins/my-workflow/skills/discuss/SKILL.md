@@ -8,14 +8,14 @@ description: >-
   questions left for the spec. A draft, not a final design: no interfaces, files, plan or code. Use on
   "let's discuss", "brainstorm", "think this through with me", "explore options before we spec", or
   to settle a direction a later session will spec and build. Not for a full design (use
-  my-workflow:decide).
+  my-workflow:spec-design).
 argument-hint: "<topic or problem>"
 ---
 
 # discuss
 
-Plugin root: `${CLAUDE_PLUGIN_ROOT}` (if shown unexpanded: the folder that holds this skill's
-`skills/` folder); paths below are relative to it. Follow `shared/conventions.md`.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (if shown unexpanded: `../../shared/conventions.md`
+from this skill's folder). Other paths are relative to this skill's folder.
 
 A conversation over several turns, not one result. The aim is a direction firm enough that a later
 session never reopens its decisions, not a design it can build from.

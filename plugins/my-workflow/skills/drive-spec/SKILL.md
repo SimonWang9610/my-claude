@@ -1,85 +1,143 @@
 ---
 name: drive-spec
 description: >-
-  Turns a software request into a spec and drives it to a verified, reviewed change in this session,
-  as its tech lead: grounds what your instructions leave open, checks claims, shapes requirements and
-  questions, then designs, plans, builds, verifies and reviews only as much as the task needs, brings
-  in spec-architect, spec-tester, spec-implementer and spec-reviewer only when they pay off, keeps the
-  spec under specs/<task>/, and revises it when you change direction. Use when starting any software
-  task: "build X", "fix X", "add X", "I want …". For one step only, use that step's skill.
-argument-hint: "<task>"
+  Starts and drives one spec for a software task in this session, as its orchestrator. Setup decides
+  the kind (feature, bug or improvement), creates specs/<task>/workflow.yaml from that kind's
+  template and maps your installed stack skills to each step; then it runs every step in order
+  through its spec-* skill, verifying each step's artifact before moving on, pausing at gates,
+  delegating to spec-architect, spec-tester, spec-implementer and spec-reviewer when that
+  pays off, logging your questions in questions.md and revising the spec when you change direction.
+  Use when starting or resuming any software task: "build X", "fix X", "improve X", "I want …",
+  "continue the spec". For one step only, use that step's spec-* skill.
+argument-hint: "<task | path to a workflow.yaml>"
 ---
 
 # drive-spec
 
-Plugin root: `${CLAUDE_PLUGIN_ROOT}` (if shown unexpanded: the folder that holds this skill's
-`skills/` folder); paths below are relative to it. Follow `shared/conventions.md`.
+Follow `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (if shown unexpanded: `../../shared/conventions.md`
+from this skill's folder). Other paths are relative to this skill's folder.
 
-You are the tech lead for this task: you own the spec, the conversation and the outcome. Skills and
-teammates only return results; you alone keep them, per `skills/drive-spec/references/task-context.md`
-(folder, artifacts, role, tracks, gates). No process for its own sake: a task that needs one step gets
-one step. my-workflow's routing hints do not apply while you drive.
+## Role
 
-## Judgement
+You coordinate exactly one spec, as an orchestrator. The step order, each step's skill, gate, model
+and mapped skills live in the spec's `workflow.yaml`; how a step is done lives in its `spec-*`
+skill. You hold neither: you decide who runs a step, verify its result and record it. You
+own `workflow.yaml`, `questions.md` and the conversation. Done = every step is done or skipped.
+my-workflow's routing hints do not apply while you drive.
 
-- Talk like a teammate: short status, a recommendation with every question, pushback with evidence
-  when something the user said does not hold.
-- Decide small things yourself; bring approach, product behaviour and visual design back as options
-  with a recommendation.
-- Batch every interaction: one round of questions, one brief carrying the full task, one report.
-- Never redo a teammate's work; check its files and evidence mechanically (grep, diff, a run), never
-  by re-judging.
-- Commit, push, open a pull request, delete or publish only on the user's explicit yes.
+## Setup
 
-## Spec
+Strict order; each finishes before the next starts. No codebase exploration here: that belongs to
+the first step.
 
-1. **Gather** — not a software task → answer directly. Else: the request (the argument, else the
-   latest rewritten prompt in the session; a long or unfocused one → `/my-workflow:rephrase` first),
-   the docs and rules it points to, the project's context files, a named atlas, and what the
-   instructions already decide (a stated decision is a `D`; a named path is read, not searched for).
-2. **Analyze** — `/my-workflow:audit-truth` on what the instructions leave open, at the role's depth.
-   Never ask what you can look up. A user statement a `D` or a task's files depend on is a claim:
-   check it; refuted with one obvious fix → `D<n> <fix> (corrects the request) — <anchor>`; with
-   competing fixes → stop and recommend. A preference becomes a `Q` only when it conflicts with a fact
-   or an `R`.
-3. **Shape** — about 7 one-line, observable `R`s; more → group them or split the task. Lenses: the
-   goal behind the ask · an ambiguous term · conflicting `R`s · a missing edge or failure case · a
-   quality axis from `skills/critique/references/standard.md` nobody named (it goes in Limits).
-   Questions per the conventions; everything else becomes a `D`.
-4. **Track** — settle it. Fast → show the spec inline, then build. Full → confirm the folder and save
-   `spec.md` (`templates/spec.md`, with the task header).
+1. **Resume** — a `workflow.yaml` is named, or one spec is in progress → skip to the Spec loop at
+   `current`.
+2. **Kind** — not a software task → answer directly and stop. Else **feature** (new or changed
+   behaviour) · **bug** (existing behaviour is broken) · **improvement** (behaviour stays, a quality
+   gets better: refactor, performance, debt). Mixed → the kind most of the work belongs to, the rest
+   noted as a follow-up spec. Unclear → ask once.
+3. **Size** — light or standard, per `references/context.md` § Size.
+4. **Folder and branch** — propose both per `references/context.md` § Folder and branch; create them
+   on a yes.
+5. **Initialize** — write `workflow.yaml` from `assets/workflow-<kind>.yaml`, adapted to the size,
+   with `folder`, `role` and `gates` set (`references/context.md` § Role) and `atlas` when the user
+   named one; and `questions.md` from `assets/questions.md`.
+6. **Map skills** — fill each step's `skills` per `references/context.md` § Skills.
+7. **Show** — kind, size, role, the steps (any skipped, and why) and the mapped skills, in a few
+   lines.
+   One word from the user corrects any of them. Then enter the Spec loop.
 
-## Deliver
+## Spec loop
 
-5. **Design** — an approach, the stack, a structure, components, contracts or UI state left open, or a
-   new project → `spec-architect` when ≥2 of those or a new project, else `/my-workflow:decide`
-   yourself; save `design.md`. Gate once on the spec and design together (the spec alone when no
-   design runs).
-6. **Build** — `/my-workflow:build`; on the full track ask for the plan first and keep it as the
-   spec's Tasks. Teammates only when they pay off: `spec-tester` for several behavioural requirements
-   or on request (else build writes the acceptance checks); one `spec-implementer` per batch when ≥2
-   batches are independent (after T1 when it is a scaffold; else build it yourself). When teammates
-   run, gate once before they start. Write every reported check command into the spec's Done when.
-7. **Verify** — `/my-workflow:verify` in run mode, once per code state, regression line included.
-8. **Review** — review on, or the ask is to judge existing work → `spec-reviewer` with the latest
-   verify report. A verdict other than accept → fix its issues, review once more; a second such
-   verdict stops even with gates on auto. Rework → save `review.md`.
-9. **Change of direction** (the user says so, any time) — wait for or stop teammates in flight; check
-   what it rests on with audit-truth. One item, nothing finished lost → apply it in one line. Else
-   impact (follow `R` → `T` → files), options and a recommendation, then ask; on a yes revise the
-   artifacts (new ids, `R<n> dropped — <why>`) and redo only the changed requirements and affected
-   batches, removing the checks of dropped ones.
+Enter only after Setup: the folder, `workflow.yaml` and `questions.md` exist. Run the steps of
+`workflow.yaml` strictly in order. For each step:
 
-Brief each teammate (`my-workflow:spec-<name>` in Claude Code, `spec-<name>` in Copilot): where · what
-· materials (the spec and design paths or text, the facts already found so it does not re-ground them,
-the next free ids, the Knowledge sources, the atlas as audit-truth's first source, the role) · done
-when; never your reasoning. Use a report when it arrives; check its files yourself. Cannot dispatch →
-run the teammate's skill yourself, the acceptance checks before any implementation.
+1. **Read it** — `id`, `skill`, `agent`, `status`, `gate`, `skills`, `model`. Never invent, reorder
+   or inject a step.
+2. **Skip or check inputs** — the Steps table says to skip → mark it skipped with a one-line reason
+   and go on. A step the template skips whose skip condition does not hold → set it pending and
+   run it. Else the artifacts of every earlier step that ran exist and are non-empty. Missing → run
+   the step that writes it; none does → stop and ask.
+3. **Run it** — run the step's skill yourself, or brief its agent, per Delegation.
+4. **Verify it** — yourself, never on a report's word: the step's artifact, when it writes one,
+   exists at its `artifacts` path, and the Steps table's "done when" holds (grep, diff, a run). Not
+   met → back to step 3 with what is missing, at most twice, then stop (review: per the stop list).
+5. **Record and advance** — the step's status and result fields (`level`, `verdict`, `severity`,
+   `progress`); for an agent's work also what it returned and could not write (task rows, check
+   commands, the review report). Then move `current` to the next step that is not skipped; after
+   the last one, or on "not a bug", set the spec's `status` to done. Never advance past a waiting
+   gate or an unverified step.
+
+| Step | Skip when | Done when |
+|---|---|---|
+| requirements | never | every story (improvement: every target and invariant) has a criterion a check can be written from |
+| diagnose | never | the root cause has evidence and a confidence, and the verdict is set |
+| design | no approach, structure, component, contract or screen is open | every criterion appears in its Coverage |
+| plan | never | every criterion and limit is served by a task |
+| implement | never | every task row is done and every criterion's check passes |
+| review | the user turned review off | the verdict is accept |
+
+**Stop and wait for the user when:**
+
+- the step has a waiting gate: show what was produced, what to check and the batched questions with
+  their defaults, then `Continue?`. On a yes mark it approved. `gates: auto` → show it and continue
+  on the defaults. Step 1's gate is held after the design when the design runs.
+- an input is missing or ambiguous: ask with a recommended answer.
+- a bug's verdict is "not a bug": the spec ends there, with the reason.
+- a review's verdict is not accept for the second time, even with gates on auto. The first time:
+  fix its issues and run the review step again.
+- a step reports a design gap or a check that keeps failing: show the evidence and the options.
+- the action is irreversible or outward-facing: commit, push, pull request, delete, publish.
+
+## Hard rules
+
+- **This spec only** — note out-of-scope findings for the user and move on.
+- **`workflow.yaml` is law** — a step is skipped only by the Steps table or the user's word, with
+  the reason recorded; an artifact changes only through its owning step.
+- **Setup before steps** — never run a step until `workflow.yaml` exists.
+- **Verify, never re-judge** — check a teammate's files and evidence mechanically; never redo its
+  work or take "done" on trust.
+- **Acceptance checks are never edited to make code pass** — a wrong-looking one is reported.
+- **Batch every interaction** — one round of questions, one brief carrying the full task, one
+  report; a recommendation with every question; pushback with evidence when a user statement does
+  not hold.
+- **New user instructions win** — see Change of direction.
+
+## Delegation
+
+Who runs a step: `references/context.md` § Delegation and § Models; implement follows the plan's
+Batches. Cannot dispatch → run the step's skill yourself, the acceptance checks before any code.
+
+- **Brief** (`my-workflow:spec-<name>` in Claude Code, `spec-<name>` in Copilot): where · what ·
+  materials (the `workflow.yaml` path, the facts already found, the batch's task ids, and by name
+  the mapped skills that serve this task; the tester: the criteria its batch's tasks serve) · done
+  when (the step's "done when"; the reviewer: the report is returned). Never your reasoning.
+- **Checks before code** — `spec-tester` writes a batch's acceptance checks before its
+  `spec-implementer` starts; never one agent for both. Record each check file's hash
+  (`git hash-object`) after the tester and compare after the implementer; changed → discard that
+  batch's work and redo it.
+- **Parallel batches** share the working tree; the plan keeps their files disjoint.
+- **Review with fresh eyes** — `spec-reviewer` gets the paths and check commands, never the author's
+  reasoning.
+
+## Questions log
+
+A question or discussion the user raises mid-spec that is not an instruction → answer it (ground it
+first when it rests on a fact) and add a row to `questions.md`. One that ends in a decision → a `D`
+in `spec.md`, referenced from the row; a `D` that changes the spec is a change of direction.
+
+## Change of direction
+
+The user says so, at any time: wait for or stop teammates in flight; check what it rests on. One
+item, nothing finished lost → apply it in one line. Else show the impact (story → criterion → task →
+files), options and a recommendation, then ask. On a yes revise the artifacts through their owning
+steps (new ids, `<id> dropped — <why>`), set the affected steps back to in progress and `current` to
+the earliest of them, and redo only the changed criteria and affected batches.
 
 ## Outcome
 
-- **Done:** <task>
+- **Done:** <task> — <kind>
 - **Changed:** <paths>
-- **Checks:** <n of m requirements done>
-- **Review:** <verdict, or offered>
+- **Criteria:** <n of m done>
+- **Review:** <verdict, or skipped>
 - **Open questions:** <each with its default>

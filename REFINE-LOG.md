@@ -1,6 +1,31 @@
 
 ---
 
+## my-workflow 2.0 — a spec workflow by task kind; step skills own their artifacts
+
+drive-spec becomes an orchestrator over six `spec-*` step skills; every spec starts with a
+`workflow.yaml`. Decisions, as source → decision → reason:
+
+- User decision: start at drive-spec, which picks the kind (feature, bug, improvement) → one `workflow-<kind>.yaml` template each; the fast and full tracks become light and standard sizes.
+- User decision: `workflow.yaml` is the spec's metadata (kind, folder, artifact paths, branch, each step's status, model and mapped skills) → it replaces the spec header; skip and done conditions stay in one table in drive-spec, not in the yaml (extra per-step fields were tried and rejected by the user).
+- User decision: each step is a `spec-` skill with its own artifact and template → `decide` → `spec-design`; `build` → `spec-plan` + `spec-implement`; `verify` + `critique` → `spec-review`; new `spec-requirements` and `spec-diagnose`; templates move to each skill's `assets/`.
+- User decision: a step skill picks its mode itself → with a `workflow.yaml` it stage-checks, saves and updates status; without one it runs the same procedure and returns inline. This reverses "skills never save" for step skills only.
+- User decision: requirements are user stories with given/when/then acceptance criteria → `US<n>`, `AC<n.m>`; `R<n>` is kept for limits; tasks, checks and the review trace to criteria.
+- User decision: `questions.md` is a sidebar log of the user's mid-spec questions; a decision lands in `spec.md` → kept apart from `clarifications.md`, which holds what the workflow asks before requirements settle.
+- User decision: map installed stack skills to steps, available not mandatory → "rules only" is dropped: a step may run a mapped skill for a section or a check, and briefs name the relevant ones.
+- User decision: important and complex work on better models → tester and implementer carry no preset; the plan sizes each task and sets each batch's model.
+- User decision: status symbols only in spec artifacts → skills, agents and shared files use the words.
+- User decision: `rephrase` and `discuss` are standalone, never part of the spec flow.
+- User-provided driver agent → adopted its shape for drive-spec (role, setup, loop, stop list, hard rules, delegation) and the work/test split with a tamper check; rejected its per-phase yaml fields and worktree rules.
+- spec-kit → adopted: per-kind step lists with gates, the bug flow's assess → gate → fix → test with a verdict and severity, clarifications written back, parallel batches. Rejected: the workflow engine, extension hooks, the constitution, one report file per bug stage.
+- Agent Skills spec → templates and references live under each skill (`assets/`, `references/`); `shared/conventions.md` stays at the plugin root so each shared rule is stated once.
+- Knowledge with no task → rehomed: layouts into scaffold-project-structure, "what a design must answer" into spec-design, principles into spec-implement, the quality standard into spec-review, UI-state checks into analyze-ui-state.
+- Two fresh-eyes rounds (15 and 20 findings, all applied): `current` was never advanced; step skills advanced it before the gate; an accepted review could not verify; the spec's status was never set to done; rules duplicated between agents and the skills they preload.
+
+`my-workflow` 2.0.0 replaces 1.1.0. Not yet run end to end on a real task.
+
+---
+
 ## my-workflow 1.1 — rephrase grounds before rewriting; discuss drafts a direction
 
 Decisions, as source → decision → reason:
