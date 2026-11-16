@@ -33,9 +33,12 @@ Only the ids that are not plainly passing:
 
 ## Issues
 
-| Id | Severity | Where | Problem — breaks when | Evidence | Fix | Status |
-|---|---|---|---|---|---|---|
-| I-1 | blocker · major · minor | `path:line` | <defect> — <input or state> | run · read, not run | <direction> | ⬜ |
+### I-1 · blocker | major | minor · `path:line` · ⬜
+
+- **Problem:** <defect>
+- **Breaks when:** <input or state>
+- **Evidence:** <output or quote> — run · read, not run
+- **Fix:** <direction>
 
 +<n> more minor issues, not listed
 

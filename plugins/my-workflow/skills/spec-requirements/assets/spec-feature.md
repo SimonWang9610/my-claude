@@ -5,17 +5,31 @@ Kind: feature · Stack: <stack and versions> (stated | detected)
 
 ## Stories
 
-| Id | As a | I want | So that | Priority |
-|---|---|---|---|---|
-| US-1 | <actor> | <capability> | <benefit> | must · should · could |
+Each story, then its criteria: the main path first, then edges and failures.
 
-## Acceptance criteria
+### US-1 <short title> · must | should | could
 
-One row per observable behaviour: the main path first, then edges and failures.
+- **As a:** <actor>
+- **I want:** <capability>
+- **So that:** <benefit>
 
-| Id | Given | When | Then | Check |
-|---|---|---|---|---|
-| AC-1.1 | <starting state> | <action or event> | <what the actor observes> | ⬜ → `<command>` |
+#### AC-1.1 <short title>
+
+- **Given:** <starting state>
+- **When:** <action or event>
+- **Then:** <what the actor observes>
+- **Check:** ⬜ → `<command>`
+
+## Standalone criteria
+
+Criteria no story owns.
+
+### AC-2 <short title>
+
+- **Given:** <starting state>
+- **When:** <action or event>
+- **Then:** <what is observed>
+- **Check:** ⬜ → `<command>`
 
 ## Functionalities
 
@@ -35,7 +49,7 @@ What the system does to meet the criteria. The design maps each to units.
 
 | Id | Decision | Why or anchor | From |
 |---|---|---|---|
-| D-1 | <decision> | <why, `path:line` or doc §> | request · Q-<n> · history #<n> |
+| D-1 | <decision> | <why, `path:line` or doc §> | request · Q-<n> · discussions #<n> |
 
 ## Open questions
 

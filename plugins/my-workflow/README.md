@@ -59,7 +59,7 @@ agent builds.
 |---|---|
 | R1 | You review a coverage report, a dependency diagram and bounded units, not every line. |
 | R2 | Every requirement has an id, a test that names it and the code files that realize it; a script reports the gaps. |
-| R3 | The code runs under your linter and formatter, follows the approved design, and is reviewed with fresh eyes; every workaround needs your approval. |
+| R3 | The code runs under your linter and formatter, follows the design you approved, and is reviewed with fresh eyes; every workaround needs your approval. |
 | R4 | A readable design, a dependency map and a requirement-to-code mapping let a human pick the work up. |
 
 It cannot prove the requirements themselves are right, and it leaves some judgements (design quality,
@@ -212,7 +212,7 @@ flowchart TD
   C1 -->|"pass"| G1{{"You approve?"}}
   G1 -->|"revise"| REQ
   G1 -->|"yes"| DES["2 Design<br/>options weighed with you"]
-  DES --> C2{"spec-check design<br/>+ fresh-eyes review"}
+  DES --> C2{"spec-check design"}
   C2 -->|"fail"| DES
   C2 -->|"pass"| G2{{"You approve?"}}
   G2 -->|"revise"| DES
@@ -256,9 +256,12 @@ sequenceDiagram
   U-->>D: approve
   D->>A: design
   A-->>D: design.md
-  D->>R: review the design
-  R-->>D: verdict
   D->>U: design (gate)
+  opt you ask for a second opinion
+    D->>R: review the design
+    R-->>D: verdict
+    D->>U: verdict
+  end
   U-->>D: approve
   D->>T: write a batch's checks
   T-->>D: failing checks
@@ -283,7 +286,7 @@ What each step produces, by kind of task:
 
 - **Requirements gate** (a bug: the diagnosis). You approve, or send it back as often as you like.
 - **Design gate.** Options are weighed with you in the conversation; `design.md` records only what you
-  chose. At standard size a fresh reviewer checks the design before you see it.
+  chose. You review it; ask for a second opinion and a fresh reviewer checks it first.
 - **Before agents build**, when the plan hands batches to agents.
 - **A workaround, a waiver or a design gap.** An agent that cannot build the design as written, or
   would have to suppress a check, stops and asks. Only you approve these.
@@ -294,8 +297,9 @@ What each step produces, by kind of task:
 - **Light** — a few files and an existing pattern to follow: one `spec.md` plus `tasks.md`, one gate,
   no agents.
 - **Standard** — everything else: one file per step, the gates above.
-- **"Just do it"** lets a passing check stand in for your approval at the gates. It never approves a
-  workaround or a waiver.
+- **"Just do it"** lets a passing check stand in for your approval at the gates; drive-spec brings
+  in a reviewer on its own only for a design it judges risky. It never approves a workaround or a
+  waiver.
 - **Resume** by running drive-spec again. **Change direction** by saying so: it shows the impact,
   offers options and revises the spec.
 
@@ -353,14 +357,18 @@ results were checked and which were judged.
 |---|---|---|
 | `workflow.yaml` | drive-spec, then each step | kind, size, branch, artifact paths, each step's status, gate, model and mapped skills |
 | `spec.md` | step 1 | stories, criteria, functionalities, limits, decisions, approved workarounds and waivers (a bug: the diagnosis) |
-| `design.md` | `spec-design` | the chosen approach, units, their dependency diagram, contracts, wireframes |
+| `design.md` | `spec-design` | the high-level view: the chosen approach, the units index, the overview diagram, decisions |
+| `design/` | `spec-design` | one short file per unit (input, output, boundary, its neighbours, its interface), plus contracts, screens and flows when needed |
 | `tasks.md` | `spec-plan` | tasks with the ids and files of each, batches, progress |
 | `coverage.md` | `spec-check` | per id: planned, implemented, tested, passing |
 | `review.md` | `spec-review`, only when not accepted | checks, coverage gaps, issues |
 | `atlas/` | `audit-truth` | the existing code this spec touches, as units |
-| `history.md` | drive-spec and the steps, only when something came up | your questions, challenges and ideas, the options weighed and rejected, clarification rounds |
+| `discussions.md` | drive-spec and the steps, only once you have discussed something | your questions, challenges and ideas, the options weighed and why the rest lost; never a log of what was done |
+| `checks/` · `scratch/` | the steps | check scripts when the project has no test setup; probes, one-off scripts, measurements |
 
-The artifacts hold final decisions and outcomes only; the discussion behind them goes to `history.md`.
+The artifacts hold final decisions and outcomes only; the discussion behind them goes to `discussions.md`,
+one section per entry. Anything that needs your answer is shown in the reply under **Needs you**; a
+file only records it.
 Statuses show as symbols, with the legend at the top of `workflow.yaml`.
 
 ## Run one step
@@ -459,5 +467,5 @@ is redone. Copilot ignores the model names and runs agents on your session model
   with evidence.
 - **Steps and limits are defaults.** The model skips, merges or exceeds them when a task calls for
   it, and says why. Rules worded "never" or "only with approval" are not defaults.
-- **Replies are terse.** A saved file is not repeated in the chat: you get its path, the check's
-  result and the few lines you need to decide.
+- **Replies are terse, and what needs you leads.** A saved file is not repeated in the chat: you get
+  its path and the check's result, with any question, choice or approval first under **Needs you**.

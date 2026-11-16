@@ -1,113 +1,100 @@
 # Spec rules
 
-What drive-spec and the `spec-*` skills share, on top of `conventions.md`.
+For drive-spec and the `spec-*` skills, on top of `conventions.md`.
 
-## Spec mode
+## Mode
 
-A `spec-*` skill picks its mode and says which in one line. Its steps are the same in both.
-
-- **Spec mode** — a `workflow.yaml` is named, or exactly one spec under `specs/` is in progress
-  (several → the one whose `branch` is checked out, else ask):
-  1. Read it: kind, size, `folder`, `artifacts`, this step's `skills` and `model`.
-  2. Stage check: every earlier step is done or skipped, and this step is `current` or is being run
-     again. Else name the expected step and ask.
-  3. Mark the step in progress and `current`. Work complete → save the artifact from the skill's
-     `assets/` template at its `artifacts` path (size light → a section of `spec.md`; the plan always
-     in its own file), run the step's check (§ Checks), mark the step done, set `updated`. Moving
-     `current` on is drive-spec's job; run alone, set it to the next step not skipped.
-- **Standalone** — no `workflow.yaml`, or the user says "no spec": the input is the request, earlier
-  results in the session, or named files (several versions → the latest). Return the result in the
-  session; save nothing.
-
-Who writes: drive-spec and the step skills write spec files; every other skill returns its result
-(audit-truth: its atlas folder only). An agent writes only the files its definition names and returns
-the rest, status and rows included. Code, tests and scaffolding go where they belong.
-
-## Status
-
-pending · in progress · done · skipped · blocked, for the spec, its steps and task rows; a gate is
-waiting or approved (by the user, or auto). Spec artifacts show each as the symbol in the legend at the
-top of `workflow.yaml`; write the word everywhere else.
+- **Spec mode** — a `workflow.yaml` is named, or one spec under `specs/` is in progress (several →
+  the checked-out `branch`'s, else ask). Read its kind, size, `artifacts` and this step's `skills`.
+  An earlier step neither done nor skipped → name it and ask. Mark this step in progress; when the
+  work is complete save the artifact from the skill's `assets/` template at its `artifacts` path
+  (light size: a section of `spec.md`), run the step's check, mark it done. Run without drive-spec
+  → also move `current` on.
+- **Standalone** — no `workflow.yaml`, or "no spec": work from the request; return the result; save
+  nothing.
+- **Who writes** — drive-spec and the step skills write spec files; an agent writes only what its
+  definition names and returns the rest.
+- **Where files go** — only product code and tests in the project's own test setup go outside the
+  spec folder. Everything else a spec produces stays inside it: check scripts → `checks/`; probes,
+  one-off scripts, measurements, logs → `scratch/`. Standalone → a temp folder.
+- **Status** — pending · in progress · done · skipped · blocked; a gate: waiting · approved (user |
+  auto). Spec files show them as the symbols in `workflow.yaml`'s legend.
 
 ## Ids
 
-| Id | Is | Defined in |
-|---|---|---|
-| `US-<n>` | user story | spec |
-| `AC-<n>.<m>` | acceptance criterion of `US-<n>` · `AC-<n>`: standalone, no story owns it | spec |
-| `FN-<n>` | functionality: one thing the system does; serves criteria, or standalone (Serves `—`) | spec |
-| `R-<n>` | limit | spec |
-| `WA-<n>` | approved workaround | spec |
-| `UNIT-<n>` | design unit (`UNIT-<n>.<m>`: a unit inside it) | design |
-| `T-<n>` | task | plan |
-| `I-<n>` | issue | review |
+| Defined in | Ids |
+|---|---|
+| spec | `US-<n>` story · `AC-<n>.<m>` criterion of `US-<n>` (`AC-<n>`: standalone) · `FN-<n>` functionality (Serves `—`: standalone) · `R-<n>` limit · `WA-<n>` workaround |
+| design | `UNIT-<n>` unit (`UNIT-<n>.<m>`: a unit inside it) |
+| plan · review | `T-<n>` task · `I-<n>` issue |
 
-- One definition per id: its row, id in the first cell, in the table that defines it. Everything else
-  refers to it.
-- Unique within a spec. Assigned once; never reused or renumbered. Dropped → the row stays, its second
-  cell `dropped — <why>`. Continue from the highest id in the spec.
+- One definition each: a table row with the id first, or a heading that starts with the id over
+  `**Label:** value` lines. Everything else refers to it.
+- Unique per spec; never reused or renumbered; dropped → it stays, marked `dropped — <why>`.
 
 ## Checks
-
-`spec-check` decides a step's gate where a script can:
 
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/spec-check.py" <ids|design|plan|coverage> <workflow.yaml> [--run] [--write]
 ```
 
-Unexpanded: `scripts/spec-check.py` beside this file's folder. Run from the project root.
+Unexpanded: `../scripts/` from this folder. Run from the project root.
 
 | Check | Passes when |
 |---|---|
-| `ids` | templates valid · one definition per id, in its file · each `AC-<n>.<m>` has its `US` · each id an `FN` serves exists · no undefined id |
-| `design` | each unit states responsibility, input, output, boundary · the Mermaid diagram matches the unit list · no cycle · every `WA` approved |
+| `ids` | every id is defined once, in its file, with its fields · each `AC-<n>.<m>` has its `US` |
+| `design` | each unit states responsibility, input, output, boundary · the diagrams together match the unit list, at most 6 units each, no cycle |
 | `plan` | every `AC`, `FN`, `R` and changed `UNIT` is served by a task |
-| `coverage` | every `AC` and `FN` is planned, implemented (files tracked), tested and passing, or waived · every `WA` approved. `--run` runs each criterion's check (a standalone `FN`: its tasks' checks); `--write` saves `coverage.md` |
+| `coverage` | every `AC` and `FN` is planned, implemented, tested and passing, or waived. `--run` runs the checks; `--write` saves `coverage.md` |
 
-- Tested = a file listed in a task's Files, its path containing `test`, `spec`, `check` or `e2e`,
-  holds the literal id (`AC-1.2`).
-- Its result outranks an agent's judgement. Cite its output as the evidence.
-- Never report a step done while its check fails.
-- Cannot run it → do the same checks by hand and label the result "judged, not checked". Label any
-  result that rests on judgement, not a run, as judged.
+- Tested = a file in a task's Files, its path containing `test`, `spec`, `check` or `e2e`, holds the
+  literal id.
+- `design` and `coverage` also fail on an unapproved `WA`.
+- The script outranks judgement: cite its result; never call a step done while it fails. Cannot run
+  it → check by hand and label the result "judged".
 
 ## Workarounds and waivers
 
-Only the user approves these; `gates: auto` never does.
+Only the user approves; `gates: auto` never does. Inside an agent → return it as a gap.
 
-- **Workaround** — code or design that sidesteps a gap instead of solving it, a suppressed lint or
-  check included. Needed → stop. Show: the gap · why no proper fix · what the workaround does · when it
-  can go. The user steers the design to avoid it, or approves. Never adopt one unapproved.
-- **Waiver** — an `AC` or `FN` that cannot be tested or made to pass. Ask. Never self-approve.
-- Inside an agent or another skill → return it as a gap. Standalone → ask it as a question.
+- **Workaround** — anything that sidesteps a gap instead of solving it, a suppressed lint or check
+  included. Stop; show the gap · why no proper fix · what it does · when it can go.
+- **Waiver** — an `AC` or `FN` that cannot be tested or made to pass. Ask.
 
-Approved → a row in the spec, the section added on first use:
+Approved → recorded in the spec:
 
 ```markdown
 ## Workarounds
-| Id | Gap | Why no proper fix | Workaround | Where | Approved | Remove when |
-|---|---|---|---|---|---|---|
-| WA-1 | <design vs codebase> | <why> | <what it does> | `path` | <who>, <yyyy-mm-dd> | <condition> |
+
+### WA-1 <title>
+
+- **Gap:** <design vs codebase>
+- **Why no proper fix:** <why>
+- **Workaround:** <what it does>
+- **Where:** `path`
+- **Approved:** <who>, <yyyy-mm-dd>
+- **Remove when:** <condition>
 
 ## Waivers
+
 | Id | Waived | Why | Approved |
 |---|---|---|---|
 | AC-1.2 | untested · failing | <why> | <who>, <yyyy-mm-dd> |
 ```
 
-## History
+## Discussions
 
-Spec artifacts hold final decisions and outcomes only. The trail behind them goes to the spec's
-`history.md`: a question, challenge or idea from the user · options weighed and the ones rejected ·
-a clarification round. Created on the first entry; nothing to record → no file. Standalone → nothing
-saved.
+`discussions.md` exists only once the user has actually discussed something with you: a question, a
+challenge, an idea, a choice between options. Log only what no spec file holds: what was weighed and
+why the rest lost. Never what was done or which step ran (`workflow.yaml` tracks that), never what an
+artifact already states. Newest last; an entry still open is also asked under **Needs you**.
 
 ```markdown
-# History — <title>
+## <n> · <yyyy-mm-dd> · <step> · question | challenge | idea | option
 
-| # | Date | At step | Type | What came up | Considered | Outcome |
-|---|---|---|---|---|---|---|
-| 1 | <yyyy-mm-dd> | <step id> | question · challenge · idea · option · clarification | <the user's words, or the choice that was open> | <facts found, options weighed; rejected: <option> — <why>> | answered: <answer> · decided → D-<n> · rejected · parked: <until what> |
+**What came up:** <the user's words, or the choice that was open>
+
+**Considered:** <facts with anchors; options; rejected: <option> — <why>>
+
+**Outcome:** answered: <answer> · decided → D-<n> · rejected · parked: <until what> · open
 ```
-
-A decision is written in its artifact as a `D` and only referenced here.
