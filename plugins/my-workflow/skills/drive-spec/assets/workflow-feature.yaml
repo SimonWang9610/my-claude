@@ -1,5 +1,5 @@
 # This spec's metadata. drive-spec creates it; each step updates its own entry.
-# ⬜ pending · 🔄 in progress · ✅ done · ⏭️ skipped · ⛔ blocked · gate: ⏳ waiting · ✅ approved
+# ⬜ pending · 🔄 in progress · ✅ done · ⏭️ skipped · ⛔ blocked · gate: ⏳ waiting · ✅ user · ✅ auto
 spec: <task>
 title: <title>
 kind: feature
@@ -8,20 +8,20 @@ status: 🔄
 current: requirements
 branch: <branch | none>
 base: <base branch>
-gates: ask                  # ask | auto
+gates: ask                  # ask | auto (only when the user said so in advance)
 role: senior (inferred)     # senior | junior, (stated) or (inferred)
 stack: <stack and versions>
-atlas: none                 # path to an atlas INDEX.md
+atlas: none                 # path to an atlas folder
 updated: <yyyy-mm-dd>
 folder: <path>/specs/<task>  # where this spec's artifacts sit, from the project root
 
 artifacts:                  # paths inside `folder`; light: design and review point to spec.md
   spec: spec.md
-  clarifications: clarifications.md   # written only when clarifying takes more than one round
   design: design.md
   plan: tasks.md
   review: review.md         # written only when the verdict is not accept
-  questions: questions.md
+  history: history.md       # created on the first entry: questions, challenges, options rejected
+  coverage: coverage.md     # written by spec-check coverage --write
 
 steps:
   - id: requirements
@@ -29,7 +29,7 @@ steps:
     model: session
     skills: []              # - { name: <installed skill>, why: <one line> }
     status: ⬜
-    gate: ⏳                # the spec, held after the design when it runs
+    gate: ⏳                # the requirements, before any design
   - id: design
     skill: spec-design
     agent: none             # spec-architect when delegated
@@ -37,6 +37,7 @@ steps:
     level: none             # module | component | system
     skills: []
     status: ⬜
+    gate: ⏳                # the design, after its fresh-eyes review
   - id: plan
     skill: spec-plan
     model: session
