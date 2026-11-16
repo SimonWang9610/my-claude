@@ -2,14 +2,13 @@
 # ⬜ pending · 🔄 in progress · ✅ done · ⏭️ skipped · ⛔ blocked · gate: ⏳ waiting · ✅ user · ✅ auto
 spec: <task>
 title: <title>
-kind: improvement
+kind: feature               # feature | bug | improvement
 size: standard              # light | standard
 status: 🔄
-current: requirements
+current: requirements       # bug: diagnose
 branch: <branch | none>
 base: <base branch>
 gates: ask                  # ask | auto (only when the user said so in advance)
-role: senior (inferred)     # senior | junior, (stated) or (inferred)
 stack: <stack and versions>
 atlas: none                 # path to an atlas folder
 updated: <yyyy-mm-dd>
@@ -17,44 +16,34 @@ folder: <path>/specs/<task>  # where this spec's artifacts sit, from the project
 
 artifacts:                  # paths inside `folder`; light: design and review point to spec.md
   spec: spec.md
-  design: design.md         # the high-level view; unit files in design/; written only when the design step runs
+  design: design.md         # unit groups in design/ when needed
   plan: tasks.md
   review: review.md         # written only when the verdict is not accept
-  discussions: discussions.md   # only once the user has discussed something: what was weighed, what lost
+  discussions: discussions.md   # only once the user has discussed something
   coverage: coverage.md     # written by spec-check coverage --write
 
 steps:
-  - id: requirements
+  - id: requirements        # bug → id: diagnose, skill: spec-diagnose, and the two lines below
     skill: spec-requirements
-    model: session
-    skills: []              # - { name: <installed skill>, why: <one line> }
     status: ⬜
-    gate: ⏳                # the requirements, before any design
+    gate: ⏳
+    # verdict: none         # valid | needs reproduction | not a bug
+    # severity: none        # critical | high | medium | low
   - id: design
     skill: spec-design
-    agent: none
-    model: strong
-    level: none             # module | component | system
-    skills: []
-    status: ⏭️              # ⬜ when drive-spec finds a design is needed
-    gate: ⏳                # the design: the user reviews it
+    agent: none             # spec-architect when delegated
+    status: ⬜
+    gate: ⏳
   - id: plan
     skill: spec-plan
-    model: session
-    skills: []
     status: ⬜
-    gate: none              # ⏳ when teammates will implement
   - id: implement
     skill: spec-implement
-    agent: none
-    model: standard         # complex batches run strong
-    skills: []
+    agent: none             # spec-tester when it writes the acceptance tests
     status: ⬜
     progress: 0/0           # tasks ✅ / all
   - id: review
     skill: spec-review
     agent: spec-reviewer
-    model: strong
-    skills: []
     status: ⬜
     verdict: none           # accept | accept with fixes | rework

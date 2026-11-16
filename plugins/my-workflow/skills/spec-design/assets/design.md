@@ -1,21 +1,15 @@
 # Design — <title>
 
 **Approach:** <the approach the user chose, one line>
-Level: module | component | system · Stack: <stack>
+Stack: <stack>
 
-<!-- The high-level view only. Final choices, in phrases: no explanation, no options, no open questions.
-One unit (module level, light size): no design/ folder; add Input (from), Output (to) and Boundary
-columns to the Units table and put its Interface here.
-Sections by level; delete the rest.
-| Section      | module | component | system |
-| Context      | —      | —         | yes |
-| Units        | yes    | yes       | yes (per deployable) |
-| Dependencies | —      | yes       | yes |
-| Parts        | —      | as needed | as needed |
-| Quality      | —      | if a limit names it | yes |
--->
+<!-- Final choices only, in phrases: no explanation, no options, no open questions. Delete a section
+the design does not need. `design/<group>.md` only when units need a boundary, interface or inside
+that this table cannot hold. -->
 
 ## Context
+
+Only when several systems are involved.
 
 ```mermaid
 flowchart LR
@@ -29,14 +23,14 @@ flowchart LR
 
 Change: new · modify · reuse (untouched).
 
-| Id | Unit | Anchor | Responsibility | Change | Delivers | File |
+| Id | Unit | Anchor | Responsibility | Change | Delivers | Group |
 |---|---|---|---|---|---|---|
-| UNIT-1 | <name> | `path:symbol` | <what it solely owns> | new | FN-1 · AC-1.1 | design/UNIT-1-<name>.md |
+| UNIT-1 | <name> | `path:symbol` | <what it solely owns> | new | AC-1.1 | <group> |
 
 ## Dependencies
 
-The overview. Up to about 5 units → all of them; more → one node per group of units, each unit's own
-neighbours drawn in its file. Never more than 6 units in one diagram.
+The one place dependencies are stated: an edge is what crosses. Up to 6 units → all of them, here;
+more → one node per group here, its units drawn in `design/<group>.md`.
 
 ```mermaid
 flowchart TD

@@ -10,9 +10,8 @@ argument-hint: "[build | query | distill] <scope, question or claim> [sources]"
 
 # audit-truth
 
-Conventions: `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (unexpanded → `../../shared/conventions.md`);
-already loaded in this conversation → do not read it again.
-Other paths are relative to this folder.
+Conventions: `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (else `../../shared/`), read once per
+conversation. Other paths: this folder.
 
 Show how existing code works together (which units exist, how they affect each other, what each
 solely owns) so later steps open a few units instead of exploring again.

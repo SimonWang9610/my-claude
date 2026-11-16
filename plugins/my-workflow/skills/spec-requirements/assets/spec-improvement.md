@@ -15,19 +15,15 @@ Kind: improvement · Stack: <stack and versions> (stated | detected)
 
 ## Acceptance criteria
 
-### AC-1 <short title>
+### AC-1 When <the measure runs>, <the target holds>
 
 - **Given:** <the workload or code as it is>
-- **When:** <the measure runs>
-- **Then:** <the target holds>
-- **Check:** ⬜ → `<command>`
+- **Evidence:** ⬜ → `<command>` · observed: <what was done and seen>
 
-### AC-2 <short title>
+### AC-2 When <an invariant above is exercised>, <same result as before>
 
-- **Given:** <an invariant above>
-- **When:** <its check runs>
-- **Then:** <same result as before>
-- **Check:** ⬜ → `<command>`
+- **Given:** <only when it matters>
+- **Evidence:** ⬜ → `<command>` · observed: <what was done and seen>
 
 ## Limits
 

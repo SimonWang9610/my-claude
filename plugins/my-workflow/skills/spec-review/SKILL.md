@@ -11,8 +11,8 @@ argument-hint: "[code | design] [target] [path to a workflow.yaml]"
 
 # spec-review
 
-Rules: `conventions.md` and `spec-rules.md` in `${CLAUDE_PLUGIN_ROOT}/shared/` (unexpanded →
-`../../shared/`); already loaded in this conversation → do not read them again. Mode per the spec rules. Other paths are relative to this folder.
+Rules: `conventions.md`, `spec-rules.md` in `${CLAUDE_PLUGIN_ROOT}/shared/` (else `../../shared/`), read
+once per conversation. Mode per the spec rules. Other paths: this folder.
 
 - **Target** — the argument → the spec's branch against its base → this session's latest change → the
   uncommitted diff. No spec → the target's stated contract.
@@ -24,13 +24,14 @@ Rules: `conventions.md` and `spec-rules.md` in `${CLAUDE_PLUGIN_ROOT}/shared/` (
 
 1. **Independence** — this session wrote it and the size is not light → a fresh read-only context,
    given only paths and check commands; else mark the report "same context".
-2. **Test** (code) — the `Check` commands, lint and format, the existing tests for the area. Cannot
+2. **Test** (code) — the `Evidence` commands, lint and format, the existing tests for the area. Cannot
    run → unverifiable.
 3. **Validate** — `spec-check coverage --run` (design: `spec-check design`); each id not ok → an
-   issue unless waived. No spec → judge each criterion, labelled judged.
+   issue unless waived; each `observed` → repeat it and say whether you saw the same. No spec → judge each criterion, labelled judged.
 4. **Review** — against, highest first: the spec · project rules, quoted · the design · existing
    conventions · at most 5 axes of `references/standard.md`.
-   - code: error paths · tests a stub would pass · callers of changed code · departures from the
+   - code: error paths · tests a stub would pass, or weakened since first written (skips, looser
+     assertions) · callers of changed code · departures from the
      design · unapproved workarounds.
    - design: each unit has one responsibility and a human could take it over ·
      `../spec-design/references/answers.md` · no padding.

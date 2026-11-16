@@ -11,8 +11,8 @@ argument-hint: "<topic or problem>"
 
 # discuss
 
-Conventions: `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (unexpanded → `../../shared/conventions.md`);
-already loaded in this conversation → do not read it again.
+Conventions: `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (else `../../shared/`), read once per
+conversation.
 
 A conversation over several turns, toward a direction a later session will not reopen.
 

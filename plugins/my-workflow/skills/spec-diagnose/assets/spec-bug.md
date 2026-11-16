@@ -45,19 +45,15 @@ Also affected: <other callers of the same cause — or none>
 
 ## Acceptance criteria
 
-### AC-1 <short title>
+### AC-1 When <the reproduction runs>, <the expected behaviour>
 
 - **Given:** <the reproduction's state>
-- **When:** <its steps run>
-- **Then:** <the expected behaviour>
-- **Check:** ⬜ → `<command>`
+- **Evidence:** ⬜ → `<command>` · observed: <what was done and seen>
 
-### AC-2 <short title>
+### AC-2 When <a neighbouring case runs>, <still behaves as before>
 
-- **Given:** <a neighbouring case>
-- **When:** <action>
-- **Then:** <still behaves as before>
-- **Check:** ⬜ → `<command>`
+- **Given:** <only when it matters>
+- **Evidence:** ⬜ → `<command>` · observed: <what was done and seen>
 
 ## Decisions
 

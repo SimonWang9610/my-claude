@@ -19,7 +19,7 @@ Only the ids that are not plainly passing:
 
 | Id | Result | Evidence |
 |---|---|---|
-| AC-1.1 | ⛔ unplanned · unimplemented · untested · failing → I-2 · waived · judged done | <output or `path:line`> |
+| AC-1.1 | ⛔ not built · no evidence · failing → I-2 · observed: agrees | disagrees → I-3 · waived | <output or `path:line`> |
 
 ## Workarounds
 
@@ -39,6 +39,7 @@ Only the ids that are not plainly passing:
 - **Breaks when:** <input or state>
 - **Evidence:** <output or quote> — run · read, not run
 - **Fix:** <direction>
+- **Prevent:** <the lint rule, type or test that stops this class — or none>
 
 +<n> more minor issues, not listed
 
@@ -46,6 +47,6 @@ Only the ids that are not plainly passing:
 
 - Q-<n> <question> — default: <answer>
 
-**Recommended:** <up to 3 bullets: fix order, a missing check, a rule worth encoding as a lint>
+**Recommended:** <up to 3 bullets: fix order, missing evidence>
 Pre-existing defects on unchanged lines: <n>
 Open: <issues to fix, most severe first — or nothing>
