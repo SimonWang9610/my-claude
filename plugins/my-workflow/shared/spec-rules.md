@@ -5,7 +5,7 @@ For drive-spec and the `spec-*` skills, on top of `conventions.md`.
 ## Mode
 
 - **Spec mode** — a `workflow.yaml` is named, or one spec under `specs/` is in progress (several →
-  the checked-out `branch`'s, else ask). Read its kind, size, `artifacts` and this step's `skills`.
+  the checked-out `branch`'s, else ask). Read its kind, size and `artifacts`.
   An earlier step neither done nor skipped → name it and ask. Mark this step in progress; when the
   work is complete save the artifact from the skill's `assets/` template at its `artifacts` path
   (light size: a section of `spec.md`), run the step's check, mark it done. Run without drive-spec
@@ -14,9 +14,9 @@ For drive-spec and the `spec-*` skills, on top of `conventions.md`.
   nothing.
 - **Who writes** — drive-spec and the step skills write spec files; an agent writes only what its
   definition names and returns the rest.
-- **Where files go** — only product code and tests in the project's own test setup go outside the
-  spec folder. Everything else a spec produces stays inside it: check scripts → `checks/`; probes,
-  one-off scripts, measurements, logs → `scratch/`. Standalone → a temp folder.
+- **Where files go** — only product code and tests in the project's own suite go outside the spec
+  folder. The rest stays inside it: probes, measurements, logs → `scratch/`; output or screenshots
+  an observation cites → `evidence/`. Standalone → a temp folder.
 - **Status** — pending · in progress · done · skipped · blocked; a gate: waiting · approved (user |
   auto). Spec files show them as the symbols in `workflow.yaml`'s legend.
 
@@ -24,7 +24,7 @@ For drive-spec and the `spec-*` skills, on top of `conventions.md`.
 
 | Defined in | Ids |
 |---|---|
-| spec | `US-<n>` story · `AC-<n>.<m>` criterion of `US-<n>` (`AC-<n>`: standalone) · `FN-<n>` functionality (Serves `—`: standalone) · `R-<n>` limit · `WA-<n>` workaround |
+| spec | `US-<n>` story · `AC-<n>.<m>` criterion of `US-<n>` (`AC-<n>`: standalone) · `FN-<n>` functionality, optional, serving ≥1 `AC` · `R-<n>` limit · `WA-<n>` workaround |
 | design | `UNIT-<n>` unit (`UNIT-<n>.<m>`: a unit inside it) |
 | plan · review | `T-<n>` task · `I-<n>` issue |
 
@@ -42,16 +42,26 @@ Unexpanded: `../scripts/` from this folder. Run from the project root.
 
 | Check | Passes when |
 |---|---|
-| `ids` | every id is defined once, in its file, with its fields · each `AC-<n>.<m>` has its `US` |
-| `design` | each unit states responsibility, input, output, boundary · the diagrams together match the unit list, at most 6 units each, no cycle |
-| `plan` | every `AC`, `FN`, `R` and changed `UNIT` is served by a task |
-| `coverage` | every `AC` and `FN` is planned, implemented, tested and passing, or waived. `--run` runs the checks; `--write` saves `coverage.md` |
+| `ids` | every id is defined once, in its file · each `AC-<n>.<m>` has its `US` · each `FN` serves an `AC` |
+| `design` | every unit has a responsibility · the diagrams together match the unit list, at most 6 units each, no cycle · (feature) every `AC` is delivered by a unit |
+| `plan` | every `AC`, `R` and changed `UNIT` is served by a task |
+| `coverage` | every `AC` is built (its tasks done, their files in the repo) and evidenced, or waived. `--run` runs the evidence commands; `--write` saves `coverage.md` |
 
-- Tested = a file in a task's Files, its path containing `test`, `spec`, `check` or `e2e`, holds the
-  literal id.
 - `design` and `coverage` also fail on an unapproved `WA`.
 - The script outranks judgement: cite its result; never call a step done while it fails. Cannot run
   it → check by hand and label the result "judged".
+
+## Evidence
+
+Verification adds evidence about behaviour. Each `AC` carries one `Evidence` line, the strongest
+kind that fits:
+
+1. a test in the project's own suite — `<the command that runs it>`; it stays in the codebase;
+2. an existing project command whose result shows it — build, type-check, lint, benchmark, CLI;
+3. `observed: <what was done and seen>` — the product run by hand or a tool, only when 1 and 2
+   cannot reach it; the user judges it.
+
+Never write a script to check a criterion. Seen failing before the code and passing after: ⬜ → ✅.
 
 ## Workarounds and waivers
 
@@ -59,7 +69,7 @@ Only the user approves; `gates: auto` never does. Inside an agent → return it 
 
 - **Workaround** — anything that sidesteps a gap instead of solving it, a suppressed lint or check
   included. Stop; show the gap · why no proper fix · what it does · when it can go.
-- **Waiver** — an `AC` or `FN` that cannot be tested or made to pass. Ask.
+- **Waiver** — an `AC` that cannot be evidenced or made to pass. Ask.
 
 Approved → recorded in the spec:
 
@@ -79,7 +89,7 @@ Approved → recorded in the spec:
 
 | Id | Waived | Why | Approved |
 |---|---|---|---|
-| AC-1.2 | untested · failing | <why> | <who>, <yyyy-mm-dd> |
+| AC-1.2 | no evidence · failing | <why> | <who>, <yyyy-mm-dd> |
 ```
 
 ## Discussions

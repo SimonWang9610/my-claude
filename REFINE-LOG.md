@@ -48,6 +48,14 @@ decision → reason:
 
 `my-workflow` 2.2.0 replaces 2.1.0 with the entries above added after 2.1.0 shipped: **Needs you**, discussions as sections, the `design/` folder and split diagrams, sub-sections for text-heavy tables, the optional design review, the duplicate pass, the compaction to about 10,850 tokens, the spec-folder rule for intermediate files, the Settle step and no re-reading of loaded shared files. Still not run end to end on a real task.
 
+- User (2026-11-16) → design units are grouped: `design/<group>.md` holds the units that work together, one diagram per group, replacing one file per unit → a file per unit scattered a design across many tiny files.
+- User (2026-11-16) → verification is evidence about behaviour: each `AC` carries one `Evidence` line (a test in the project's suite · an existing command · `observed:`), `checks/` and per-spec check scripts are gone, coverage = built + evidenced per criterion → every spec was growing its own check scripts; the literal-id-in-test rule left spec ids in product tests.
+- First-principles pass (2026-11-16) → each design fact stated once: dependencies live only in the diagram; unit Input/Output prose and the check comparing them dropped → a check that only keeps two documents consistent means a fact is stated twice.
+- First-principles pass → `FN` optional (must serve an `AC`), story fields unchecked, criteria one sentence (`When <trigger>, <result>`), design levels dropped, `spec-implementer`, parallel batches and the check-file hash dropped → automation before the inner loop has run once; chain is now US → AC → UNIT → T.
+- Lauren Tan, "All Code Is Slop (Except Mine)" (ai.engineer, 2026-11-11) → adopted: review issues name what prevents their class (`Prevent:` lint rule, type or test); the example to copy is the current pattern, never a legacy one → corrections become checks; the codebase is input. Rejected: formal verification (TLA+, Lean), comment bans → project-specific, not workflow rules.
+- Practitioner posts on spec-driven and agentic workflows (Kiro/EARS, Tessl, verification-first; 2026) → adopted: one-sentence EARS-style criteria; tasks are vertical slices that leave the project working; reviewer looks for tests weakened after they were written; a spec over ~12 criteria is split. Rejected: strict EARS keywords, mutation testing, cross-model review rounds → cost without a matching gate.
+- Design-doc challenge (2026-11-16) → cut for lack of evidence: senior/junior role, per-step skill mapping and model fields, the prompt-routing hook; three workflow templates merged into `assets/workflow.yaml`; drive-spec's Stop list folded into Settle; skill headers shortened. Kept: `spec-architect`, `audit-truth distill`, coding principles → user-tuned or user-specified. `DESIGN.md` added as the team introduction.
+
 ---
 
 ## my-workflow 2.0 — a spec workflow by task kind; step skills own their artifacts

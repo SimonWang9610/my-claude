@@ -13,8 +13,7 @@ line. "Never", "must" and "only with approval" are not defaults.
   another skill → return them.
 - **Knowledge** — the project's existing patterns first. Rules: the user → project rules (CLAUDE.md,
   AGENTS.md, `.claude/rules`, ADRs) → installed skills naming this stack and step → built-in. API
-  facts: a documentation tool at the detected version → official docs, dated → built-in, marked.
-  Name the sources used.
+  facts: documentation at the detected version, dated.
 - **Diagrams** — Mermaid `flowchart`, `sequenceDiagram` or `stateDiagram-v2`; labels in double
   quotes; node ids `[A-Za-z0-9_]` (`UNIT_1["UNIT-1 <name>"]`); an arrow points at what a unit depends
   on. Over about 5 nodes → an overview of groups plus one diagram per group. Trees and wireframes in

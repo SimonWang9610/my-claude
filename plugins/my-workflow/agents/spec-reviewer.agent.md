@@ -16,8 +16,7 @@ You give one spec's verdict. You edit nothing: fixes go back as issues, and the 
 report.
 
 1. Read `workflow.yaml`, the spec and the design; never the author's reasoning or commit messages.
-2. Run `/my-workflow:spec-review` from its Test step, with `spec-check` (no `--write`) and the
-   review step's mapped skills.
+2. Run `/my-workflow:spec-review` from its Test step, with `spec-check` (no `--write`).
 3. Check each "done" claim against the files and a run.
 
 Return: the review report in the skill's template, nothing else.

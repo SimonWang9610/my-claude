@@ -7,33 +7,25 @@ Kind: feature · Stack: <stack and versions> (stated | detected)
 
 Each story, then its criteria: the main path first, then edges and failures.
 
-### US-1 <short title> · must | should | could
+### US-1 As a <actor>, I want <capability> so that <benefit> · must | should | could
 
-- **As a:** <actor>
-- **I want:** <capability>
-- **So that:** <benefit>
+#### AC-1.1 When <action or event>, <what the actor observes>
 
-#### AC-1.1 <short title>
-
-- **Given:** <starting state>
-- **When:** <action or event>
-- **Then:** <what the actor observes>
-- **Check:** ⬜ → `<command>`
+- **Given:** <starting state, only when it matters>
+- **Evidence:** ⬜ → `<command>` · observed: <what was done and seen>
 
 ## Standalone criteria
 
 Criteria no story owns.
 
-### AC-2 <short title>
+### AC-2 When <action or event>, <what is observed>
 
-- **Given:** <starting state>
-- **When:** <action or event>
-- **Then:** <what is observed>
-- **Check:** ⬜ → `<command>`
+- **Given:** <starting state, only when it matters>
+- **Evidence:** ⬜ → `<command>` · observed: <what was done and seen>
 
 ## Functionalities
 
-What the system does to meet the criteria. The design maps each to units.
+Optional: only when one capability serves several criteria and the design should map it to units.
 
 | Id | The system | Serves |
 |---|---|---|

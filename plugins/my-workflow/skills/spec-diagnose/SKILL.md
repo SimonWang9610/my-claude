@@ -11,8 +11,8 @@ argument-hint: "[bug report, trace or link | path to a workflow.yaml]"
 
 # spec-diagnose
 
-Rules: `conventions.md` and `spec-rules.md` in `${CLAUDE_PLUGIN_ROOT}/shared/` (unexpanded →
-`../../shared/`); already loaded in this conversation → do not read them again. Mode per the spec rules. Other paths are relative to this folder.
+Rules: `conventions.md`, `spec-rules.md` in `${CLAUDE_PLUGIN_ROOT}/shared/` (else `../../shared/`), read
+once per conversation. Mode per the spec rules. Other paths: this folder.
 
 ## Steps
 

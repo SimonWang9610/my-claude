@@ -3,15 +3,14 @@
 
   spec-check.py <ids|design|plan|coverage|all> <path/to/workflow.yaml> [--run] [--write]
 
-ids       templates valid; one definition per id, in its file; AC-<n>.<m> -> US-<n> and FN -> AC links
-          (AC-<n> and an FN serving nothing are standalone); no undefined id
-design    units state responsibility, input, output, boundary (in design.md, or in design/<unit>.md);
-          the Mermaid diagrams, taken together, match the unit list; none shows more than 6 units; no
-          cycle; every workaround approved; (feature) every FN, or AC when there is no FN, delivered by a unit
-plan      every AC, FN, R and changed UNIT is served by a task
-coverage  per AC and FN: planned, implemented (files tracked), tested (a test file names the id), passing,
-          or waived; every workaround approved. --run runs each criterion's Check command (else the
-          recorded status is used); --write saves coverage.md beside workflow.yaml
+ids       one definition per id, in its file; AC-<n>.<m> -> US-<n> (AC-<n> is standalone); every FN serves a
+          criterion; no undefined id
+design    every unit has a responsibility; the Mermaid diagrams, taken together, match the unit list; none
+          shows more than 6 units; no cycle; every workaround approved; (feature) every AC delivered by a unit
+plan      every AC, R and changed UNIT is served by a task (through an FN counts)
+coverage  per AC: built (its tasks done, their files in the repo) and evidenced, or waived; every workaround
+          approved. Evidence is a command in the project's own tooling (--run runs it; else its recorded
+          mark is used) or `observed: <what was done and seen>`. --write saves coverage.md
 Exit 0 = the gate passes; 1 = it fails; 2 = the spec could not be read."""
 import argparse, re, subprocess, sys
 from pathlib import Path
@@ -19,13 +18,11 @@ from pathlib import Path
 ID = r"(?:US|AC|FN|R|WA|UNIT|T)-\d+(?:\.\d+)*"
 ID_RE = re.compile(rf"(?<![\w-])({ID})(?!\w)(?!\.\d)")
 HOME = {"US": "spec", "AC": "spec", "FN": "spec", "R": "spec", "WA": "spec", "UNIT": "design", "T": "plan"}
-REQUIRED = {  # prefix -> header substrings that must exist and be filled
-    "US": ["as a", "i want", "so that"], "AC": ["given", "when", "then", "check"], "FN": ["serves"],
-    "R": ["checked"], "UNIT": ["responsibility"],  # input, output, boundary: the row or the unit's file
-    "T": ["serves", "files", "check", "status"], "WA": ["gap", "workaround", "approved", "remove"],
+REQUIRED = {  # prefix -> labels that must exist
+    "US": [], "AC": ["evidence"], "R": ["checked"], "UNIT": ["responsibility"],
+    "T": ["serves", "files", "status"], "WA": ["gap", "workaround", "approved", "remove"],
 }
 DEFAULTS = {"spec": "spec.md", "design": "design.md", "plan": "tasks.md", "coverage": "coverage.md"}
-TESTLIKE = re.compile(r"test|spec|check|e2e", re.I)
 MAX_NODES = 6  # units in one dependency diagram; more is unreadable: split it
 
 
@@ -109,7 +106,7 @@ class Spec:
         self.text = {k: self.path[k].read_text() if self.path[k].is_file() else "" for k in ("spec", "design", "plan")}
         self.root = self._root()
         self.defs, self.waived, self.errors = {}, {}, []
-        folder = self.path["design"].parent / "design"  # per-unit and part files beside design.md
+        folder = self.path["design"].parent / "design"  # group and part files beside design.md
         self.design_files = sorted(folder.glob("*.md")) if folder.is_dir() else []
         self.unit_text = {f: f.read_text() for f in self.design_files}
         self.design_all = "\n".join([self.text["design"], *self.unit_text.values()])
@@ -120,7 +117,10 @@ class Spec:
             if path in seen:
                 continue
             seen.add(path)
-            for head, rows in [*tables(body), (["id"], list(sections(body)))]:
+            heads = list(sections(body))
+            if path in self.unit_text:  # there a `## UNIT-n` heading is the unit's detail, not a definition
+                heads = [r for r in heads if prefix(r["_cells"][0]) != "UNIT"]
+            for head, rows in [*tables(body), (["id"], heads)]:
                 if not head or head[0] != "id":
                     continue
                 waiver = any("waived" in h for h in head)
@@ -160,21 +160,15 @@ class Spec:
             for need in REQUIRED[prefix(i)]:
                 if not any(need in k for k in self.defs[i] if k != "_cells" and not k.startswith("_")):
                     errs.append(f"{i}: no '{need}' column or line")
-                elif not filled(col(self.defs[i], need)) and need not in ("approved", "status", "check") and (i[:2], need) != ("FN", "serves"):
+                elif not filled(col(self.defs[i], need)) and need not in ("approved", "status", "evidence"):
                     errs.append(f"{i}: '{need}' is empty")
         return errs
 
-    def unit_file(self, unit):
-        return next((f for f in self.design_files if f.name == unit + ".md" or f.name.startswith(unit + "-")), None)
-
-    def field(self, unit, name):
-        """A unit's input, output or boundary: its table cell, else that section of its file."""
-        cell = col(self.defs[unit], name)
-        if filled(cell):
-            return cell
-        f = self.unit_file(unit)
-        m = re.search(rf"^##+\s*{name}\b[^\n]*\n(.*?)(?=^##|\Z)", prose(self.unit_text[f]), re.S | re.M | re.I) if f else None
-        return m.group(1).strip() if m else ""
+    def acs_of(self, i):
+        """The criteria a functionality serves."""
+        if prefix(i) != "FN" or i not in self.defs:
+            return []
+        return [a for a in ids_in(col(self.defs[i], "serves")) if prefix(a) == "AC"]
 
     def unapproved(self):
         return [f"{i}: workaround not approved by the user" for i in self.live("WA") if not filled(col(self.defs[i], "approved"))]
@@ -188,8 +182,6 @@ class Spec:
         us, ac, fn = self.live("US"), self.live("AC"), self.live("FN")
         if not ac and not self.not_a_bug:
             errs.append("no acceptance criterion (AC) is defined")
-        if self.kind == "feature" and not us:
-            errs.append("a feature needs at least one user story (US)")
         for a in ac:
             parent = "US-" + a.split("-")[1].split(".")[0]
             if "." in a and parent not in self.defs:  # AC-<n> with no dot is standalone
@@ -197,12 +189,7 @@ class Spec:
         for u in us:
             if not any(a.startswith("AC-" + u.split("-")[1] + ".") for a in ac):
                 errs.append(f"{u}: no acceptance criterion")
-        served = set()
-        for f in fn:
-            refs = [i for i in ids_in(col(self.defs[f], "serves")) if prefix(i) == "AC"]
-            served |= set(refs)  # none: a standalone functionality, proved by its tasks' checks
-        if fn and self.kind == "feature":
-            errs += [f"{a}: no functionality (FN) serves it" for a in ac if a not in served]
+        errs += [f"{f}: serves no criterion (state how it is observed as an AC)" for f in fn if not self.acs_of(f)]
         for name, body in [(self.path[k].name, self.text[k]) for k in ("spec", "design", "plan")] + [(f.name, t) for f, t in self.unit_text.items()]:
             for i in sorted(set(ids_in(prose(body)))):
                 if i not in self.defs:
@@ -249,10 +236,7 @@ class Spec:
         if not units:
             return errs + [f"{self.path['design'].name}: no unit (UNIT) is defined"] + self.unapproved()
         errs += self.template("UNIT")
-        top = [u for u in units if "." not in u]  # a unit inside another needs only its responsibility
-        for u in top:
-            errs += [f"{u}: no {name} (its row, or a '## {name.title()}' section in its design/ file)"
-                     for name in ("input", "output", "boundary") if not filled(self.field(u, name))]
+        top = [u for u in units if "." not in u]
         drawn, edges = set(), set()
         for n, e in self.flowcharts():
             drawn |= n; edges |= e
@@ -263,27 +247,23 @@ class Spec:
         if drawn:
             errs += [f"{u}: missing from every dependency diagram" for u in top if u not in drawn]
             errs += [f"{u}: in a diagram but not in the unit list" for u in sorted(drawn) if u not in units]
-            for u in top:
-                for cell in ("input", "output"):
-                    for other in ids_in(self.field(u, cell)):
-                        if prefix(other) == "UNIT" and other != u and (u, other) not in edges and (other, u) not in edges:
-                            errs.append(f"{u}: its {cell} names {other} but the diagram has no edge between them")
             cycle = find_cycle(edges)
             if cycle:
                 errs.append("dependency cycle: " + " → ".join(cycle))
         if self.kind == "feature":
-            delivered = {i for u in units for i in ids_in(col(self.defs[u], "delivers"))}
-            need = self.live("FN") or self.live("AC")
-            errs += [f"{i}: no unit delivers it" for i in need if i not in delivered]
+            delivered = {a for u in units for i in ids_in(col(self.defs[u], "delivers")) for a in [i, *self.acs_of(i)]}
+            errs += [f"{i}: no unit delivers it" for i in self.live("AC") if i not in delivered]
         return sorted(set(errs)) + self.unapproved()
 
     # ---- plan
     def serving(self):
-        """id -> the live tasks that serve it."""
+        """id -> the live tasks that serve it; serving an FN serves its criteria."""
         out = {}
         for t in self.live("T"):
             for i in ids_in(col(self.defs[t], "serves")):
-                out.setdefault(i, []).append(t)
+                for j in [i, *self.acs_of(i)]:
+                    if t not in out.setdefault(j, []):
+                        out[j].append(t)
         return out
 
     def check_plan(self):
@@ -296,7 +276,7 @@ class Spec:
         errs += [f"{t}: serves no id" for t in tasks if not ids_in(col(self.defs[t], "serves"))]
         errs += [f"{i}: served by {', '.join(ts)} but never defined" for i, ts in serving.items() if i not in self.defs]
         changed = [u for u in self.live("UNIT") if "." not in u and not col(self.defs[u], "change").lower().startswith("reuse")]
-        errs += [f"{i}: no task serves it" for i in self.live("AC", "FN", "R") + changed if i not in serving]
+        errs += [f"{i}: no task serves it" for i in self.live("AC", "R") + changed if i not in serving]
         return sorted(set(errs))
 
     # ---- coverage
@@ -314,75 +294,54 @@ class Spec:
                     found.append(p)
         return found
 
+    def evidence(self, ac, run):
+        """(kind, ok) of a criterion's Evidence line: a command exits 0 (--run; else its recorded mark), or an observation."""
+        v = col(self.defs[ac], "evidence")
+        if re.match(r"[^\w`]*observed\b", v, re.I):
+            return "observed", filled(re.sub(r"^[^\w`]*observed\W*", "", v, flags=re.I))
+        cmd = re.search(r"`([^`]+)`", v)
+        if not cmd or cmd.group(1).startswith("<"):
+            return "none", False
+        if not run:
+            return "recorded", "✅" in v
+        try:
+            return "run", subprocess.run(cmd.group(1), shell=True, cwd=self.root, capture_output=True, timeout=900).returncode == 0
+        except subprocess.TimeoutExpired:
+            return "run", False
+
     def check_coverage(self, run):
         serving = self.serving()
         files = {t: self.files_of(t) for t in self.live("T")}
-        tests = {}
-        for fs in files.values():
-            for f in fs:
-                if f not in tests and TESTLIKE.search(str(f.relative_to(self.root))):
-                    try:
-                        tests[f] = set(ids_in(f.read_text(errors="ignore")))
-                    except OSError:
-                        tests[f] = set()
-        rows, errs, result = [], [], {}
-
-        def passing(row, recorded):
-            """A row's Check command exits 0 (--run), else its recorded status."""
-            check = col(self.defs[row], "check")
-            cmd = re.search(r"`([^`]+)`", check)
-            if run:
-                if not cmd or cmd.group(1).startswith("<"):
-                    return False
-                try:
-                    return subprocess.run(cmd.group(1), shell=True, cwd=self.root, capture_output=True, timeout=900).returncode == 0
-                except subprocess.TimeoutExpired:
-                    return False
-            status = col(self.defs[row], recorded)
-            return "✅" in status or status.lower().startswith("done")
-
-        def fn_passing(fn, ts):
-            refs = [a for a in ids_in(col(self.defs[fn], "serves")) if a in ac_pass]
-            if refs:
-                return all(ac_pass[a] for a in refs)
-            return bool(ts) and all(passing(t, "status") for t in ts)  # standalone: its tasks' checks
-
-        ac_pass = {a: passing(a, "check") for a in self.live("AC")}
-        for i in self.live("AC", "FN"):
-            ts = serving.get(i, [])
-            own = sorted({f for t in ts for f in files[t]})
-            done = bool(ts) and all("✅" in col(self.defs[t], "status") or "done" in col(self.defs[t], "status").lower() for t in ts)
-            state = {
-                "planned": bool(ts),
-                "implemented": done and all(files[t] for t in ts),
-                "tested": any(i in found for found in tests.values()),
-                "passing": ac_pass[i] if prefix(i) == "AC" else fn_passing(i, ts),
-            }
-            missing = [k for k, ok in state.items() if not ok]
-            if not missing:
-                result[i] = "ok"
-            elif i in self.waived:
-                result[i] = f"waived ({self.waived[i]})"
-            else:
-                result[i] = "FAIL: " + ", ".join("not " + m for m in missing)
-                errs.append(f"{i}: " + ", ".join("not " + m for m in missing))
-            rows.append((i, state, own, result[i]))
-        table = ["| Id | Planned | Implemented | Tested | Passing | Files | Result |", "|---|---|---|---|---|---|---|"]
+        done = lambda t: "✅" in col(self.defs[t], "status") or "done" in col(self.defs[t], "status").lower()
+        bad = {"none": "no evidence", "observed": "the observation is empty", "recorded": "evidence not recorded as passing", "run": "evidence fails"}
         mark = lambda ok: "✅" if ok else "⛔"
-        for u in self.live("US"):
-            mine = [r for r in rows if r[0].startswith("AC-" + u.split("-")[1] + ".")]
-            own = sorted({f for r in mine for f in r[2]})
-            ok = bool(mine) and all(not r[3].startswith("FAIL") for r in mine)
-            table.append(f"| {u} | | | | | {self.show(own)} | {'ok' if ok else 'FAIL: see its criteria'} |")
-        for i, state, own, res in rows:
-            table.append(f"| {i} | " + " | ".join(mark(state[k]) for k in ("planned", "implemented", "tested", "passing")) + f" | {self.show(own)} | {res} |")
+        rows, errs, result = [], [], {}
+        for a in self.live("AC"):
+            ts = serving.get(a, [])
+            built = bool(ts) and all(done(t) and files[t] for t in ts)
+            kind, ok = self.evidence(a, run)
+            why = ([] if built else ["not built"]) + ([] if ok else [bad[kind]])
+            if not why:
+                result[a] = "ok — observed: yours to judge" if kind == "observed" else "ok"
+            elif a in self.waived:
+                result[a] = f"waived ({self.waived[a]})"
+            else:
+                result[a] = "FAIL: " + ", ".join(why)
+                errs.append(f"{a}: " + ", ".join(why))
+            rows.append(f"| {a} | {mark(built)} | {mark(ok)} {kind} | {self.show(sorted({f for t in ts for f in files[t]}))} | {result[a]} |")
+        table = ["| Id | Built | Evidence | Files | Result |", "|---|---|---|---|---|"]
+        groups = [(u, [a for a in result if a.startswith("AC-" + u.split("-")[1] + ".")]) for u in self.live("US")]
+        groups += [(f, [a for a in self.acs_of(f) if a in result]) for f in self.live("FN")]
+        for i, mine in groups:
+            ok = bool(mine) and not any(result[a].startswith("FAIL") for a in mine)
+            table.append(f"| {i} | | | | {'ok' if ok else 'FAIL'}: {' · '.join(mine) or 'no criterion'} |")
         was = [f"- {i} — approved: {col(self.defs[i], 'approved') if filled(col(self.defs[i], 'approved')) else '⛔ not approved'}" for i in self.live("WA")]
         errs += self.unapproved() + [e for e in self.errors if "waiver" in e]
-        how = "run by this script" if run else "recorded in the spec's Check cells by an agent, not run here (judged)"
+        how = "each command run by this script" if run else "the mark an agent recorded, not run here (judged)"
         report = "\n".join([
             f"# Coverage — {self.dir.name}", "",
             f"**Result:** {'pass' if not errs else f'fail — {len(errs)} to fix'}",
-            f"Checked by script: planned, implemented, tested. Passing: {how}.", "", *table, "",
+            f"Built: the serving tasks are done and their files are in the repo. Evidence: {how}.", "", *table, *rows, "",
             "## Workarounds", "", *(was or ["- none"]), ""])
         return errs, report
 
@@ -419,7 +378,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("check", choices=["ids", "design", "plan", "coverage", "all"])
     ap.add_argument("workflow", type=Path)
-    ap.add_argument("--run", action="store_true", help="coverage: run each criterion's Check command")
+    ap.add_argument("--run", action="store_true", help="coverage: run each criterion's Evidence command")
     ap.add_argument("--write", action="store_true", help="coverage: save coverage.md beside workflow.yaml")
     args = ap.parse_args()
     if not args.workflow.is_file():
