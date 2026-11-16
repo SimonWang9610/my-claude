@@ -5,7 +5,8 @@
 
 ids       templates valid; one definition per id, in its file; AC-<n>.<m> -> US-<n> and FN -> AC links
           (AC-<n> and an FN serving nothing are standalone); no undefined id
-design    units state responsibility, input, output, boundary; Mermaid diagram matches the unit list; no
+design    units state responsibility, input, output, boundary (in design.md, or in design/<unit>.md);
+          the Mermaid diagrams, taken together, match the unit list; none shows more than 6 units; no
           cycle; every workaround approved; (feature) every FN, or AC when there is no FN, delivered by a unit
 plan      every AC, FN, R and changed UNIT is served by a task
 coverage  per AC and FN: planned, implemented (files tracked), tested (a test file names the id), passing,
@@ -20,11 +21,12 @@ ID_RE = re.compile(rf"(?<![\w-])({ID})(?!\w)(?!\.\d)")
 HOME = {"US": "spec", "AC": "spec", "FN": "spec", "R": "spec", "WA": "spec", "UNIT": "design", "T": "plan"}
 REQUIRED = {  # prefix -> header substrings that must exist and be filled
     "US": ["as a", "i want", "so that"], "AC": ["given", "when", "then", "check"], "FN": ["serves"],
-    "R": ["checked"], "UNIT": ["responsibility", "input", "output", "boundary"],
+    "R": ["checked"], "UNIT": ["responsibility"],  # input, output, boundary: the row or the unit's file
     "T": ["serves", "files", "check", "status"], "WA": ["gap", "workaround", "approved", "remove"],
 }
 DEFAULTS = {"spec": "spec.md", "design": "design.md", "plan": "tasks.md", "coverage": "coverage.md"}
 TESTLIKE = re.compile(r"test|spec|check|e2e", re.I)
+MAX_NODES = 6  # units in one dependency diagram; more is unreadable: split it
 
 
 def prefix(i):
@@ -74,6 +76,17 @@ def tables(text):
         block = []
 
 
+def sections(text):
+    """Rows defined as sub-sections: a heading (level 2+) that starts with an id, then `**Label:** value` lines."""
+    text = re.sub(r"```.*?```", "", prose(text), flags=re.S)
+    parts = re.split(rf"^#{{2,6}}\s+`?({ID})`?(?!\w)(?!\.\d)[ \t]*([^\n]*)\n", text, flags=re.M)
+    for i in range(1, len(parts), 3):
+        body = re.split(r"^#{1,6}\s", parts[i + 2], maxsplit=1, flags=re.M)[0]
+        row = {m.group(1).strip().lower(): m.group(2).strip()
+               for m in re.finditer(r"^\s*(?:[-*]\s*)?\*\*([^*:]+):?\*\*:?[ \t]*(.*)$", body, flags=re.M)}
+        yield row | {"_cells": [parts[i], parts[i + 1].strip(" ·—-")]}
+
+
 def col(row, name):
     """The first cell whose header contains `name`."""
     return next((v for k, v in row.items() if k != "_cells" and name in k), "")
@@ -96,12 +109,18 @@ class Spec:
         self.text = {k: self.path[k].read_text() if self.path[k].is_file() else "" for k in ("spec", "design", "plan")}
         self.root = self._root()
         self.defs, self.waived, self.errors = {}, {}, []
+        folder = self.path["design"].parent / "design"  # per-unit and part files beside design.md
+        self.design_files = sorted(folder.glob("*.md")) if folder.is_dir() else []
+        self.unit_text = {f: f.read_text() for f in self.design_files}
+        self.design_all = "\n".join([self.text["design"], *self.unit_text.values()])
         seen = set()
-        for key in ("spec", "design", "plan"):
-            if self.path[key] in seen:
+        sources = [(k, self.path[k], self.text[k]) for k in ("spec", "design", "plan")]
+        sources += [("design", f, t) for f, t in self.unit_text.items()]
+        for key, path, body in sources:
+            if path in seen:
                 continue
-            seen.add(self.path[key])
-            for head, rows in tables(self.text[key]):
+            seen.add(path)
+            for head, rows in [*tables(body), (["id"], list(sections(body)))]:
                 if not head or head[0] != "id":
                     continue
                 waiver = any("waived" in h for h in head)
@@ -118,8 +137,8 @@ class Spec:
                     if first in self.defs:
                         self.errors.append(f"{first}: defined twice"); continue
                     home = HOME[prefix(first)]
-                    if self.path[home] != self.path[key]:
-                        self.errors.append(f"{first}: defined in {self.path[key].name}, belongs in {self.path[home].name}")
+                    if self.path[home] != path and not (home == "design" and path in self.unit_text):
+                        self.errors.append(f"{first}: defined in {path.name}, belongs in {self.path[home].name}")
                     row["_dropped"] = len(row["_cells"]) > 1 and row["_cells"][1].lower().startswith("dropped")
                     self.defs[first] = row
 
@@ -140,10 +159,22 @@ class Spec:
         for i in self.live(*prefixes):
             for need in REQUIRED[prefix(i)]:
                 if not any(need in k for k in self.defs[i] if k != "_cells" and not k.startswith("_")):
-                    errs.append(f"{i}: its table has no '{need}' column")
+                    errs.append(f"{i}: no '{need}' column or line")
                 elif not filled(col(self.defs[i], need)) and need not in ("approved", "status", "check") and (i[:2], need) != ("FN", "serves"):
                     errs.append(f"{i}: '{need}' is empty")
         return errs
+
+    def unit_file(self, unit):
+        return next((f for f in self.design_files if f.name == unit + ".md" or f.name.startswith(unit + "-")), None)
+
+    def field(self, unit, name):
+        """A unit's input, output or boundary: its table cell, else that section of its file."""
+        cell = col(self.defs[unit], name)
+        if filled(cell):
+            return cell
+        f = self.unit_file(unit)
+        m = re.search(rf"^##+\s*{name}\b[^\n]*\n(.*?)(?=^##|\Z)", prose(self.unit_text[f]), re.S | re.M | re.I) if f else None
+        return m.group(1).strip() if m else ""
 
     def unapproved(self):
         return [f"{i}: workaround not approved by the user" for i in self.live("WA") if not filled(col(self.defs[i], "approved"))]
@@ -172,15 +203,15 @@ class Spec:
             served |= set(refs)  # none: a standalone functionality, proved by its tasks' checks
         if fn and self.kind == "feature":
             errs += [f"{a}: no functionality (FN) serves it" for a in ac if a not in served]
-        for key in ("spec", "design", "plan"):
-            for i in sorted(set(ids_in(prose(self.text[key])))):
+        for name, body in [(self.path[k].name, self.text[k]) for k in ("spec", "design", "plan")] + [(f.name, t) for f, t in self.unit_text.items()]:
+            for i in sorted(set(ids_in(prose(body)))):
                 if i not in self.defs:
-                    errs.append(f"{i}: referenced in {self.path[key].name} but never defined")
+                    errs.append(f"{i}: referenced in {name} but never defined")
         return sorted(set(errs))
 
     # ---- design
     def flowcharts(self):
-        for block in re.findall(r"```mermaid\s*\n(.*?)```", prose(self.text["design"]), flags=re.S):
+        for block in re.findall(r"```mermaid\s*\n(.*?)```", prose(self.design_all), flags=re.S):
             if not re.match(r"\s*(flowchart|graph)\b", block):
                 continue
             nodes, edges = {}, set()
@@ -218,17 +249,23 @@ class Spec:
         if not units:
             return errs + [f"{self.path['design'].name}: no unit (UNIT) is defined"] + self.unapproved()
         errs += self.template("UNIT")
+        top = [u for u in units if "." not in u]  # a unit inside another needs only its responsibility
+        for u in top:
+            errs += [f"{u}: no {name} (its row, or a '## {name.title()}' section in its design/ file)"
+                     for name in ("input", "output", "boundary") if not filled(self.field(u, name))]
         drawn, edges = set(), set()
         for n, e in self.flowcharts():
             drawn |= n; edges |= e
-        if len(units) >= 2 and not drawn:
+            if len(n) > MAX_NODES:
+                errs.append(f"a diagram shows {len(n)} units ({', '.join(sorted(n)[:3])}, …): split it, at most {MAX_NODES} each")
+        if len(top) >= 2 and not drawn:
             errs.append("no Mermaid flowchart shows the units' dependencies")
         if drawn:
-            errs += [f"{u}: missing from the dependency diagram" for u in units if u not in drawn]
-            errs += [f"{u}: in the diagram but not in the unit list" for u in sorted(drawn) if u not in units]
-            for u in units:
+            errs += [f"{u}: missing from every dependency diagram" for u in top if u not in drawn]
+            errs += [f"{u}: in a diagram but not in the unit list" for u in sorted(drawn) if u not in units]
+            for u in top:
                 for cell in ("input", "output"):
-                    for other in ids_in(col(self.defs[u], cell)):
+                    for other in ids_in(self.field(u, cell)):
                         if prefix(other) == "UNIT" and other != u and (u, other) not in edges and (other, u) not in edges:
                             errs.append(f"{u}: its {cell} names {other} but the diagram has no edge between them")
             cycle = find_cycle(edges)
@@ -258,7 +295,7 @@ class Spec:
         serving = self.serving()
         errs += [f"{t}: serves no id" for t in tasks if not ids_in(col(self.defs[t], "serves"))]
         errs += [f"{i}: served by {', '.join(ts)} but never defined" for i, ts in serving.items() if i not in self.defs]
-        changed = [u for u in self.live("UNIT") if not col(self.defs[u], "change").lower().startswith("reuse")]
+        changed = [u for u in self.live("UNIT") if "." not in u and not col(self.defs[u], "change").lower().startswith("reuse")]
         errs += [f"{i}: no task serves it" for i in self.live("AC", "FN", "R") + changed if i not in serving]
         return sorted(set(errs))
 

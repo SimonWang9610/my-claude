@@ -37,22 +37,33 @@ Also affected: <other callers of the same cause — or none>
 
 ## Fix options
 
-| Option | Change | Files | Risk | Effort (S/M/L) |
-|---|---|---|---|---|
-| A (preferred) | <shape of the change> | <paths> | <what it could break> | S |
+### Option A (preferred) · effort S | M | L
+
+- **Change:** <shape of the change>
+- **Files:** <paths>
+- **Risk:** <what it could break>
 
 ## Acceptance criteria
 
-| Id | Given | When | Then | Check |
-|---|---|---|---|---|
-| AC-1 | <the reproduction's state> | <its steps run> | <the expected behaviour> | ⬜ → `<command>` |
-| AC-2 | <a neighbouring case> | <action> | <still behaves as before> | ⬜ → `<command>` |
+### AC-1 <short title>
+
+- **Given:** <the reproduction's state>
+- **When:** <its steps run>
+- **Then:** <the expected behaviour>
+- **Check:** ⬜ → `<command>`
+
+### AC-2 <short title>
+
+- **Given:** <a neighbouring case>
+- **When:** <action>
+- **Then:** <still behaves as before>
+- **Check:** ⬜ → `<command>`
 
 ## Decisions
 
 | Id | Decision | Why or anchor | From |
 |---|---|---|---|
-| D-1 | <decision> | <why> | request · Q-<n> · history #<n> |
+| D-1 | <decision> | <why> | request · Q-<n> · discussions #<n> |
 
 ## Open questions
 

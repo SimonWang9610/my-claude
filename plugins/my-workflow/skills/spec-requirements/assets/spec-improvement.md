@@ -15,10 +15,19 @@ Kind: improvement · Stack: <stack and versions> (stated | detected)
 
 ## Acceptance criteria
 
-| Id | Given | When | Then | Check |
-|---|---|---|---|---|
-| AC-1 | <the workload or code as it is> | <the measure runs> | <the target holds> | ⬜ → `<command>` |
-| AC-2 | <an invariant above> | <its check runs> | <same result as before> | ⬜ → `<command>` |
+### AC-1 <short title>
+
+- **Given:** <the workload or code as it is>
+- **When:** <the measure runs>
+- **Then:** <the target holds>
+- **Check:** ⬜ → `<command>`
+
+### AC-2 <short title>
+
+- **Given:** <an invariant above>
+- **When:** <its check runs>
+- **Then:** <same result as before>
+- **Check:** ⬜ → `<command>`
 
 ## Limits
 
@@ -30,7 +39,7 @@ Kind: improvement · Stack: <stack and versions> (stated | detected)
 
 | Id | Decision | Why or anchor | From |
 |---|---|---|---|
-| D-1 | <decision> | <why, `path:line` or doc §> | request · Q-<n> · history #<n> |
+| D-1 | <decision> | <why, `path:line` or doc §> | request · Q-<n> · discussions #<n> |
 
 ## Open questions
 
