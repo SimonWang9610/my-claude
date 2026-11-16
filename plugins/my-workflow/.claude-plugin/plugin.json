@@ -1,17 +1,19 @@
 {
   "name": "my-workflow",
-  "version": "2.0.0",
-  "description": "A spec-driven software workflow for Claude Code and GitHub Copilot. drive-spec decides the kind of task (feature, bug or improvement), creates specs/<task>/workflow.yaml as the spec's metadata and progress, maps your installed stack skills to each step, and runs that kind's steps through the spec-* skills: spec-requirements (user stories with acceptance criteria) or spec-diagnose (root cause before any fix), spec-design (module, component or system level), spec-plan (tasks.md, batches, delegation), spec-implement and spec-review (tests, validation, code review). Steps save their artifacts (spec.md, design.md, tasks.md, review.md) from templates and also work alone without a spec. The spec-architect, spec-tester, spec-implementer and spec-reviewer agents join when they pay off. Standalone skills: rephrase, discuss, audit-truth, scaffold-project-structure, design-component, analyze-ui-state. code-auditor builds a codebase atlas.",
+  "version": "2.1.0",
+  "description": "A spec-driven software workflow for Claude Code and GitHub Copilot that keeps a human in control of agent-written code. drive-spec decides the kind of task (feature, bug or improvement), keeps specs/<task>/workflow.yaml and runs that kind's steps through the spec-* skills: spec-requirements or spec-diagnose, spec-design, spec-plan, spec-implement and spec-review. Every story, criterion, functionality, design unit and workaround has a stable id; scripts/spec-check.py decides the gates and writes a coverage report (planned, implemented, tested, passing per id); you approve the requirements, the design, and any workaround or waiver. Steps also work alone without a spec. The spec-architect, spec-tester, spec-implementer and spec-reviewer agents join when they pay off. Standalone skills: rephrase, discuss, audit-truth (a unit atlas of existing code: build, query, distill), scaffold-project-structure, design-component, analyze-ui-state. code-auditor builds an atlas as a session agent.",
   "keywords": [
-    "workflow",
-    "spec",
+    "acceptance-tests",
+    "agent-skills",
     "agent-team",
     "architecture",
-    "acceptance-tests",
-    "review",
-    "quality",
-    "language-agnostic",
     "copilot",
-    "agent-skills"
+    "coverage",
+    "language-agnostic",
+    "quality",
+    "review",
+    "spec",
+    "traceability",
+    "workflow"
   ]
 }

@@ -1,6 +1,39 @@
 
 ---
 
+## my-workflow 2.1 — traceable ids, scripted gates, a unit atlas
+
+Applies the workflow plugin improvement guide (draft v5; the file was removed once applied, its
+reasoning is kept in `plugins/my-workflow/ai-development-workflow-overview.md`). Decisions, as source →
+decision → reason:
+
+- Guide TRC-01/03 → ids take a hyphen and add `FN-`, `UNIT-`, `WA-`; one definition per id, in the first cell of its table (`US`, `AC`, `FN`, `R`, `WA` in the spec; `UNIT` in the design; `T` in the plan) → a script can find every definition without a schema language.
+- User decision: `FN` = functionality → what the system does to meet criteria, in `spec.md`, each serving `AC`s; the design's units deliver them.
+- User decision (my default accepted): ids are unique per spec; a test carries the bare id and the script reads only the test files the plan's tasks list → two specs' `AC-1.1` never collide.
+- Guide TRC-02/05/07, DSN-06, DET-01 → one stdlib script, `scripts/spec-check.py` (`ids`, `design`, `plan`, `coverage`), stated once in `shared/spec-rules.md` § Checks → gates cite its exit code; where it cannot run, the result is labelled judged (DET-02).
+- Guide TRC-06 → no separate mapping file: implement rewrites each task's Files to what it touched and the script derives files per `AC` and `US` → one home for the fact.
+- Guide TRC-07 → the design's and the plan's hand-written Coverage tables are dropped; the units' Delivers column and `spec-check` replace them → the same fact is no longer kept twice.
+- Guide TRC-08, DSN-05, IMP-05 → workarounds and waivers live in `spec.md` (every kind has one), approved only by the user, never by `gates: auto`; a suppressed lint or check is a workaround.
+- Guide DSN-08 (my default accepted) → requirements and design each get a gate at standard size; light size gets one gate covering both. Rejected: two gates at every size → an extra stop on small tasks.
+- Guide DSN-07 → drive-spec sends a standard-size design to `spec-reviewer` before its gate; under auto its verdict is the judge.
+- User decision: `design.md` records only what the user finalized → the Approach options table, the recommendation line and Open questions leave the template; spec-design puts options and questions to the user in the conversation and writes the pick as a `D`; the architect returns options before writing → the file under review is the design, not the discussion.
+- User decision: `questions.md` becomes an optional `history.md` → created on the first entry only; logs the user's questions, challenges and ideas, options weighed and rejected, and clarification rounds, so stage artifacts keep only final decisions and outcomes. `clarifications.md` is merged into it (my call: one trail, not two); its row format lives once in `shared/spec-rules.md` § History, so no skill owns the template.
+- Token review → `shared/conventions.md` split: the spec-only rules (spec mode, status, ids, checks, workarounds, history) move to `shared/spec-rules.md`, loaded by drive-spec and the `spec-*` skills only → the six standalone skills load about 600 tokens of shared rules instead of about 2,100. The Workarounds and Waivers tables leave the three spec templates and are stated once in spec-rules. drive-spec's delegation brief and its history and change-of-direction handling move to `references/delegation.md` and `references/mid-spec.md`, read only when an agent is briefed or the user speaks up mid-spec → about 430 fewer tokens on every light spec. Rejected: shortening descriptions further → they carry the routing phrases the user asked for.
+- Fresh-eyes review (20 findings, all applied): agents were briefed with a "done when" they could not reach; a grep check or `test_AC_1_2` never counted as tested; an improvement with one `FN` failed `ids`; the pre-gate design review tripped the stage check; a spawned architect's options had no stop in drive-spec; the light-size gate fired before the design existed; audit-truth overrode a named atlas and wrote `workflow.yaml`; a parenthesis in a Mermaid label broke the diagram check; "not a bug" left steps pending; the prompt hook sent "audit X" and "review X" to drive-spec.
+- User decision: a criterion or functionality may be standalone → `AC-<n>` (no dot) has no parent story even beside stories; an `FN` may serve nothing (Serves `—`) and is then proved by its tasks' checks. Kept: a story still needs a criterion, and in a feature every criterion still needs a functionality.
+- User request: cut output tokens → `shared/conventions.md` § Output, stated once for every skill: no preamble, restated request or closing summary; a saved file is never repeated in the chat (path, check result, at most 5 lines); smallest edit instead of rewriting a file; a command's result line instead of its output; no narration between tool calls; agents return only their Outcome block.
+- my-react `driver` agent, second pass (2.0 took its shape) → adopted into drive-spec: the role line (judgement, not labour); read an artifact's body only to present a gate; gates show a summary and a path, never the body; a step skill's own stop is shown as raised; a design gap pauses only its task; earlier artifacts are authoritative and deeper facts go through audit-truth, never a re-scan. Into `references/delegation.md`: every dispatch is a fresh spawn (artifacts are the state, not a transcript); inline vs agent routing; sliced paths and never restating the agent's definition; a tampered check redoes only the affected task, not the batch. Rejected: phase playbooks inside the driver (step skills own the process), the worktree check, the lead choosing model and effort per dispatch (the plan sets batch models), a separate evaluator and unsaved evaluation reports, the E2E phase, and its spec-qa rules (they belong to spec-review, not the driver).
+- Guide DSN-03/04 → `design.md` § Units (responsibility, input, output, boundary, change, delivers) and § Dependencies replace § Components and § Coverage; design-component writes them.
+- Guide IMP-01/03/04 → spec-implement finds and runs the project's formatter, lint and type-check per task and never installs one; a design rule a lint can enforce becomes a task.
+- Guide Part C + my-react `audit` → audit-truth takes build / query / distill, the three tiers, frontmatter routing, heal-on-miss and the format check. Changed: notes are unit entries shaped `Output = Unit(Input)` with a graph-first index and one-line sub-units revealed on demand. Rejected from my-react: existing/legacy kinds and the REUSE/MODIFY/REPLACE verdict → design judgements, not audit facts.
+- `shared/atlas.md` → moved to `skills/audit-truth/references/format.md`; code-auditor becomes a thin session wrapper → the format has one owner.
+- User-provided description principles → every skill and agent description opens with "Use this skill/agent when…", lists the user's phrasings including indirect ones, then one line on the result and the "not for" pointer; all under 1,024 chars.
+- User request: bodies split into sections, terse → step skills share one shape: Input · Steps · Rules (or Stop and ask) · Output.
+
+`my-workflow` 2.1.0 replaces 2.0.0. `spec-check.py` was run on a sample spec; the workflow has not been run end to end on a real task.
+
+---
+
 ## my-workflow 2.0 — a spec workflow by task kind; step skills own their artifacts
 
 drive-spec becomes an orchestrator over six `spec-*` step skills; every spec starts with a

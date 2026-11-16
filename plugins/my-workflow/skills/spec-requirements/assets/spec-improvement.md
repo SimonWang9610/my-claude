@@ -17,22 +17,24 @@ Kind: improvement · Stack: <stack and versions> (stated | detected)
 
 | Id | Given | When | Then | Check |
 |---|---|---|---|---|
-| AC1 | <the workload or code as it is> | <the measure runs> | <the target holds> | ⬜ → `<command>` |
-| AC2 | <an invariant above> | <its check runs> | <same result as before> | ⬜ → `<command>` |
+| AC-1 | <the workload or code as it is> | <the measure runs> | <the target holds> | ⬜ → `<command>` |
+| AC-2 | <an invariant above> | <its check runs> | <same result as before> | ⬜ → `<command>` |
 
 ## Limits
 
-- R1 <hard number, compatibility, or what must never happen> — <how it is checked>
+| Id | Limit | Checked by |
+|---|---|---|
+| R-1 | <hard number, compatibility, or what must never happen> | <how> |
 
 ## Decisions
 
 | Id | Decision | Why or anchor | From |
 |---|---|---|---|
-| D1 | <decision> | <why, `path:line` or doc §> | request · Q<n> · clarification · questions.md #<n> |
+| D-1 | <decision> | <why, `path:line` or doc §> | request · Q-<n> · history #<n> |
 
 ## Open questions
 
-- Q1 <question> — default: <answer>
+- Q-1 <question> — default: <answer>
 
 ## Context
 

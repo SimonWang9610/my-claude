@@ -1,78 +1,67 @@
 # my-workflow conventions
 
-The rules every skill shares. Steps are defaults, not a script: skip, merge or reorder any step the
-task does not need, and say which in one line. Numbers in a skill (counts, budgets, caps) are defaults
-too: go past one when the task needs it, with the reason in one line. Rules worded "never" or "only
-with a `D`" are not defaults.
+Rules every skill shares. Steps and numbers (counts, budgets, caps) are defaults: skip, merge, reorder
+or exceed one when the task needs it, and say so in one line. Rules worded "never", "must" or "only
+with approval" are not defaults.
 
-## Spec mode
+## Facts
 
-A `spec-*` skill picks its mode itself and says which in one line. Its other steps are the same in
-both modes.
+A fact carries its anchor: `path:line`, `path:symbol`, `doc §`, `url (date)` or
+`run: <command> → <result>`. Not read → (inferred).
 
-- **Spec mode** — a `workflow.yaml` is named, or exactly one spec under `specs/` is in progress
-  (several → the one whose `branch` is checked out, else ask):
-  1. Read it: kind, size, `folder` and the artifact paths inside it, and this step's `skills` and
-     `model`.
-  2. Stage check: every earlier step is done or skipped, and this step is `current` or is being run
-     again. Else name the expected step and ask before going on.
-  3. Mark the step in progress and `current`. When its work is complete, save the artifact from the
-     skill's `assets/` template at the path `artifacts` names (size light → as a section of
-     `spec.md`; the plan always in its own file), mark the step done and set `updated`. Moving
-     `current` on is drive-spec's job; run alone, set it to the next step that is not skipped.
-- **Standalone** — no `workflow.yaml`, or the user says "no spec": the input is the request, earlier
-  results in the session, or files the user names (several versions → the latest). Return the result
-  in the session and save nothing.
+## Units
 
-Only drive-spec and the step skills write spec files; every other skill returns its result. Inside an
-agent, write only the files its definition names and return the rest. Code, tests and scaffolding are
-the work itself and go where they belong.
+A unit is a function, method, class, module or component, shaped `Output = Unit(Input)`:
 
-## Status
+- **Input** — what it receives, and from which units.
+- **Unit** — its own logic, and what it solely owns.
+- **Output** — what it delivers, and to which units.
 
-pending · in progress · done · skipped · blocked, for the spec, its steps and task rows; a gate is
-waiting or approved. Spec artifacts show each as the symbol in the legend at the top of
-`workflow.yaml`; write the symbol there, the word everywhere else.
+A unit may hold smaller units. Decompose until a human can understand one unit and take it over; no
+further.
 
-## Ids and facts
+## Questions and decisions
 
-- Ids only where a result will be referenced later; a small result uses plain bullets. `US<n>` story ·
-  `AC<n.m>` acceptance criterion of `US<n>` (`AC<n>` when there are no stories) · `R<n>` limit ·
-  `D<n> <decision> — <why>` · `Q<n> <question> — default: <answer>` · `T<n>` task · `I<n>` issue.
-  Assigned once, never renumbered; a dropped one stays as `<id> dropped — <why>`. A choice still open
-  is a `Q`, never also a `D`. Continue from the highest id already in the session or the spec's files.
-- A fact carries its anchor: `path:line`, `doc §`, `url (date)` or `run: <command> → <result>`; not
-  read → (inferred).
-
-## Questions
-
-At most 3 questions whose answers would change the result most, each with its default (any others
-listed as defaults). An answered or defaulted `Q` becomes a `D` in place, keeping its id. Inside an
-agent or another skill, return the questions instead of asking them.
+- `Q-<n> <question> — default: <answer>` · `D-<n> <decision> — <why>`. An open choice is a `Q`, never
+  also a `D`; answered or defaulted, it is recorded as a `D`. Numbered once, never renumbered; a
+  small result uses plain bullets.
+- Ask at most 3, the ones whose answers change the result most, each with its default; list the rest
+  as defaults.
+- Inside an agent or another skill → return the questions instead of asking.
 
 ## Output
 
-Markdown with short headings, one-line bullets and tables; an id leads its bullet; the why follows an
-em dash; empty sections omitted. End with `Open:` — what is still unresolved (questions, gaps,
-criteria not done), or `Open: nothing`.
+Output tokens cost the most. Say each thing once, in the fewest words that stay exact.
+
+- **Shape** — Markdown: short headings, one-line bullets, tables; an id leads its bullet; the why
+  follows an em dash; empty sections omitted. Phrases over sentences; a table cell is a phrase.
+- **Never** — a preamble, the request restated, a plan narrated before doing it, a closing summary,
+  the same fact in two places.
+- **Saved to a file** → never repeat it in the chat. Reply with: the path · the check's result line ·
+  at most 5 lines the reader must decide or know.
+- **Changing a file** → the smallest edit. Never rewrite a file to change a row or a status.
+- **A command's output** → cite its result line; on failure, the failing lines only. Never paste it.
+- **Between tool calls** → no narration; one line when the step changes.
+- **Inside an agent** → return only the Outcome block its definition gives.
+
+End with `Open:` — what is unresolved (questions, gaps, ids not
+covered), or `Open: nothing`.
 
 ## Knowledge
 
-Analysis and design name roles; a library or tool appears only where a step maps a role to it (an
-option, a `D`, the tree, a "maps to" or "enforced by" column, the spec's Context). Names and code
-follow the project's existing patterns first, then, for the question the step asks:
+Analysis and design name roles; a library or tool appears only where a step maps a role to it. Names
+and code follow the project's existing patterns first. Then, where sources conflict, the earlier wins:
 
-- Rules: the project's rules (CLAUDE.md, AGENTS.md, `.claude/rules`, ADRs) → installed skills (spec
-  mode: this step's `skills` list, which is available, not mandatory; standalone: one whose
-  description names the detected stack and this step) → built-in knowledge. Use an installed skill
-  only where it serves this step's goal: apply its rules, or run it for a section or a check. The
-  step keeps its own file, gates and questions.
-- API facts: a documentation tool (MCP) at the detected version → official docs, dated → built-in,
-  marked (built-in).
-- Name the sources you used in the output.
+- **Rules** — the user's instructions → the project's rules (CLAUDE.md, AGENTS.md, `.claude/rules`,
+  ADRs) → installed skills (in a spec: this step's `skills`, available not mandatory; else one whose
+  description names the stack and this step) → built-in knowledge. Load them before working. Use an
+  installed skill only where it serves the step: apply its rules, or run it for a section or check.
+- **API facts** — a documentation tool (MCP) at the detected version → official docs, dated →
+  built-in, marked (built-in).
+- Name the sources used in the output.
 
 ## Diagrams
 
-Mermaid `flowchart`, `sequenceDiagram` or `stateDiagram-v2` only; flowchart labels in double quotes,
-ids `[A-Za-z0-9_]`. Directory trees and screen wireframes in a `text` block. A table beside each
-diagram carries the meaning.
+Mermaid `flowchart`, `sequenceDiagram` or `stateDiagram-v2` only; labels in double quotes; node ids
+`[A-Za-z0-9_]` (a unit: `UNIT_1["UNIT-1 <name>"]`). An arrow points at what a unit depends on.
+Directory trees and wireframes in a `text` block. A table beside each diagram carries the meaning.

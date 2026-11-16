@@ -1,25 +1,22 @@
 # Design — <title>
 
-**Recommendation:** <one line> — would change if <…>.
-Level: module | component | system · Stack: <stack | open>
+**Approach:** <the approach the user chose, one line>
+Level: module | component | system · Stack: <stack>
 
-<!-- Sections by level; delete the rest. At most one diagram and one table per section.
-| Section            | module | component | system |
-| Approach           | if open    | if open       | if open |
+<!-- Final choices only: options, trade-offs and open questions stay in the conversation.
+Sections by level; delete the rest. At most one diagram and one table per section (Screens and UI
+state: as many as their screens and state units need).
+| Section            | module     | component     | system |
 | Context            | —          | —             | yes |
 | Structure          | —          | if new        | if new |
-| Components         | —          | yes           | yes (per deployable) |
-| Interface          | yes        | per component | — |
+| Units              | yes        | yes           | yes (per deployable) |
+| Dependencies       | ≥2 units   | yes           | yes |
+| Interface          | yes        | per new unit  | — |
 | Interactions       | if async   | yes           | yes |
 | Screens · UI state | —          | if UI         | if UI |
 | Contracts and data | if changed | if changed    | yes |
 | Quality            | —          | if a limit names it | yes |
 -->
-
-## Approach
-
-| Option | How | Pros | Cons | Effort (S/M/L) | Risk if it fails |
-|---|---|---|---|---|---|
 
 ## Context
 
@@ -33,12 +30,27 @@ flowchart LR
 
 ## Structure
 
-## Components
+## Units
+
+`Output = Unit(Input)`. Change: new · modify · reuse (untouched).
+
+| Id | Unit | Anchor | Responsibility | Input (from) | Output (to) | Boundary | Change | Delivers |
+|---|---|---|---|---|---|---|---|---|
+| UNIT-1 | <name> | `path:symbol` | <one sentence: what it solely owns> | <what> ← UNIT-2 · <actor> | <what> → UNIT-3 | <what it never does or exposes> | new | FN-1 · AC-1.1 |
+
+## Dependencies
+
+Every unit is a node, every dependency an edge, no cycle.
+
+```mermaid
+flowchart TD
+  UNIT_1["UNIT-1 <name>"] -->|"<what crosses>"| UNIT_2["UNIT-2 <name>"]
+```
 
 ## Interface
 
-| Operation | Input | Output | Errors | Invariant |
-|---|---|---|---|---|
+| Unit | Operation | Input | Output | Errors | Invariant |
+|---|---|---|---|---|---|
 
 ```text
 <signatures only, in the project's language>
@@ -49,7 +61,7 @@ flowchart LR
 ```mermaid
 sequenceDiagram
   participant A as <caller>
-  participant B as <component>
+  participant B as <unit>
   A->>B: <call>
   B-->>A: <result | error>
 ```
@@ -78,20 +90,12 @@ sequenceDiagram
 
 ## Quality
 
-- <axis the spec's limits name> — <how the design meets it>
-
-## Coverage
-
-| Story or criterion | Met by |
-|---|---|
-| US1 · AC1.1 | <section or component> |
+| Axis or rule | How the design meets it | Enforced by |
+|---|---|---|
+| <axis a limit names · rule the design sets> | <how> | <lint rule or check · review> |
 
 ## Decisions
 
-- D<n> <decision> — <why>
-
-## Open questions
-
-- Q<n> <question> — default: <answer>
-
-Open: <questions, and any requirement that must change — or nothing>
+| Id | Decision | Why |
+|---|---|---|
+| D-1 | <what the user chose> | <why> |

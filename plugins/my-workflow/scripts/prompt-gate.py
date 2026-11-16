@@ -6,14 +6,13 @@ short task request that opens with a task verb."""
 import json, re, sys
 
 GATE = re.compile(r"^(y(es)?|no?|ok(ay)?|go|continue|proceed|sure|agreed|use (the )?defaults?|option \w+)\b", re.I)
-TASK = re.compile(r"^(add|fix|build|implement|write|create|refactor|make|draft|design|scaffold|critique|review|"
-                  r"check|audit|assess)\b"
+TASK = re.compile(r"^(add|fix|build|implement|write|create|refactor|make|draft|design|scaffold)\b"
                   r"(?!\s+(it|them|this|that|these|those|all|both)\W*$)", re.I)
 HINTS = [
     (r"\bis (this|our|the) (design|plan|structure|architecture|code) (sound|ok|right)\b|\b(critique|review|"
      r"check|audit|assess) (this|the|our|my) (design|architecture|structure|code|diff|doc|change|pr|work|branch)",
      "Review: `/my-workflow:spec-review`."),
-    (r"\bdoes (it|this) meet the spec\b|\bverify (the )?(spec|requirements|criteria|AC\d)",
+    (r"\bdoes (it|this) meet the spec\b|\bverify (the )?(spec|requirements|criteria|AC-?\d)",
      "Validation: `/my-workflow:spec-review` checks every acceptance criterion."),
     (r"\bacceptance (tests?|checks?)\b",
      "Acceptance checks: `/my-workflow:spec-implement checks`."),

@@ -45,18 +45,18 @@ Also affected: <other callers of the same cause — or none>
 
 | Id | Given | When | Then | Check |
 |---|---|---|---|---|
-| AC1 | <the reproduction's state> | <its steps run> | <the expected behaviour> | ⬜ → `<command>` |
-| AC2 | <a neighbouring case> | <action> | <still behaves as before> | ⬜ → `<command>` |
+| AC-1 | <the reproduction's state> | <its steps run> | <the expected behaviour> | ⬜ → `<command>` |
+| AC-2 | <a neighbouring case> | <action> | <still behaves as before> | ⬜ → `<command>` |
 
 ## Decisions
 
 | Id | Decision | Why or anchor | From |
 |---|---|---|---|
-| D1 | <decision> | <why> | request · Q<n> · questions.md #<n> |
+| D-1 | <decision> | <why> | request · Q-<n> · history #<n> |
 
 ## Open questions
 
-- Q1 <question> — default: <answer>
+- Q-1 <question> — default: <answer>
 
 <!-- Light size only: the design and review live here instead of their own files. -->
 ## Design

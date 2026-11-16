@@ -7,7 +7,7 @@ Kind: feature · Stack: <stack and versions> (stated | detected)
 
 | Id | As a | I want | So that | Priority |
 |---|---|---|---|---|
-| US1 | <actor> | <capability> | <benefit> | must · should · could |
+| US-1 | <actor> | <capability> | <benefit> | must · should · could |
 
 ## Acceptance criteria
 
@@ -15,21 +15,31 @@ One row per observable behaviour: the main path first, then edges and failures.
 
 | Id | Given | When | Then | Check |
 |---|---|---|---|---|
-| AC1.1 | <starting state> | <action or event> | <what the actor observes> | ⬜ → `<command>` |
+| AC-1.1 | <starting state> | <action or event> | <what the actor observes> | ⬜ → `<command>` |
+
+## Functionalities
+
+What the system does to meet the criteria. The design maps each to units.
+
+| Id | The system | Serves |
+|---|---|---|
+| FN-1 | <verb + object> | AC-1.1 |
 
 ## Limits
 
-- R1 <hard number, compatibility, or what must never happen> — <how it is checked>
+| Id | Limit | Checked by |
+|---|---|---|
+| R-1 | <hard number, compatibility, or what must never happen> | <how> |
 
 ## Decisions
 
 | Id | Decision | Why or anchor | From |
 |---|---|---|---|
-| D1 | <decision> | <why, `path:line` or doc §> | request · Q<n> · clarification · questions.md #<n> |
+| D-1 | <decision> | <why, `path:line` or doc §> | request · Q-<n> · history #<n> |
 
 ## Open questions
 
-- Q1 <question> — default: <answer>
+- Q-1 <question> — default: <answer>
 
 ## Context
 
