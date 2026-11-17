@@ -10,9 +10,11 @@ line. "Never", "must" and "only with approval" are not defaults.
   for others to depend on. Decompose until a human can take one unit over; no further.
 - **Grounding** — read existing code the cheapest way that gives an anchored fact, and say which in
   one line. An atlas exists (a spec's `atlas`, or one named) → `/my-workflow:audit-truth query`,
-  first. None → grep and read; but a design that builds on or changes 3 or more existing units, an
-  improvement to existing units, or a question about how units work together →
-  `/my-workflow:audit-truth build`.
+  first. None → grep and read; a search likely to open more than 3 files → the
+  `my-workflow:code-scout` agent, every open question in one call (no agent tool → search
+  yourself): open only the anchors a decision rests on, and mark a fact you did not open (scout).
+  A design that builds on or changes 3 or more existing units, an improvement to existing units,
+  or a question about how units work together → `/my-workflow:audit-truth build`.
 - **Questions** — `Q-<n> <question> — default: <answer>`; answered → `D-<n> <decision> — <why>`. Ask
   at most 3, those that change the result most; give the rest as defaults. Inside an agent, or a
   skill called for part of another skill's step → return them.

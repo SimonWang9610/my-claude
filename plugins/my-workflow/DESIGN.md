@@ -43,7 +43,7 @@ Each part below names the risks it answers, beside its **Why**.
 
 | Risk | Skills | Agents | Techniques |
 |---|---|---|---|
-| R1 | `drive-spec` · `spec-design` · `spec-plan` · `discuss` | `spec-implementer` · `spec-design-reviewer` | two human gates · slices, test first · decide in the session, build in agents · the agent prompt · two sizes |
+| R1 | `drive-spec` · `spec-design` · `spec-plan` · `discuss` | `spec-implementer` · `spec-design-reviewer` · `code-scout` | two human gates · slices, test first · decide in the session, build in agents · the agent prompt · two sizes |
 | R2 | `drive-spec` · `spec-requirements` · `spec-diagnose` · `spec-plan` · `rephrase` | `spec-tester` · `spec-code-reviewer` | criteria with evidence · stable ids · a script decides when a step is done · slices, test first · decide in the session, build in agents · batches and fresh agents · the agent prompt · standing rules live in the agent's definition |
 | R3 | `spec-design` · `audit-truth` · `design-component` · `analyze-ui-state` · `scaffold-project-structure` | `spec-implementer` · `spec-design-reviewer` · `spec-code-reviewer` | a script decides when a step is done · bounded units and one diagram · decide in the session, build in agents · batches and fresh agents · roles: domain, discipline, level · standing rules live in the agent's definition · approved workarounds · the atlas of existing code |
 | R4 | `spec-design` · `audit-truth` · `design-component` · `scaffold-project-structure` | `code-auditor` | stable ids · bounded units and one diagram · approved workarounds · the atlas of existing code · grounding by cost |
@@ -234,6 +234,7 @@ conversation, which is the point: it cannot inherit the author's assumptions.
 | `spec-design-reviewer` | checks a design before it is approved | the author's reasoning | nothing | opus · high |
 | `spec-code-reviewer` | reruns the evidence and gives the verdict on a change | the author's reasoning | nothing | opus · high |
 | `code-auditor` | builds an atlas of a codebase, in its own session | — | the atlas | opus · low |
+| `code-scout` | finds things in existing code for the session | the conversation | nothing | sonnet · low |
 
 Copilot ignores the model names and runs agents on the session model.
 
@@ -282,6 +283,16 @@ Copilot ignores the model names and runs agents on the session model.
 - **Why · R4:** understanding unfamiliar code is a job of its own, best done before a spec starts and
   in a context that is not also trying to change the code.
 - **How:** it runs `audit-truth` in one context and ends with one line to paste into a new session.
+
+### code-scout
+
+- **What:** answers "where is X" and "what does this project use for Y" with a few anchored lines.
+- **Why · R1:** requirements and design run in the session, whose context is needed for the
+  person's decisions. A wide search fills it with files that only one line of the answer needed.
+- **How:** it greps, opens files only around the hits, and sends back at most 15 lines. It runs on
+  a cheaper model at low effort, so it only locates: a fact is what a line says, and a claim about the whole
+  project takes two anchors. The session opens the anchors a decision rests on and marks the rest
+  `(scout)`.
 
 ## 6. The techniques
 
@@ -513,9 +524,10 @@ sequenceDiagram
 - **What:** one rule for how to read existing code, shared by every skill.
 - **Why · R4:** mapping an area costs far more than finding one line; using the heavy tool for a small
   question wastes context.
-- **How:** an atlas exists → ask it first. None → grep and read. An atlas is built only for a
-  design that builds on or changes three or more existing units, an improvement to existing
-  units, or a question about how units work together.
+- **How:** an atlas exists → ask it first. None → grep and read, or hand a search that would open
+  more than three files to `code-scout`. An atlas is built only for a design that builds on or
+  changes three or more existing units, an improvement to existing units, or a question about
+  how units work together.
 
 ### Two sizes
 
@@ -614,7 +626,7 @@ by one rule:
 | `skills/drive-spec/` | the driver; `references/` has the spec rules, the agent prompt template, size and folder rules, steering; `assets/workflow.yaml` is the state template |
 | `skills/spec-*/` | the four steps the session runs; each `assets/` holds the file formats the script reads |
 | `skills/` (others) | `audit-truth`, `design-component`, `analyze-ui-state`, `scaffold-project-structure`, `discuss`, `rephrase` |
-| `agents/` | the four spec agents and `code-auditor` |
+| `agents/` | the four spec agents, `code-auditor` and `code-scout` |
 | `shared/conventions.md` | what every skill follows: anchors, units, grounding, questions, output |
 | `shared/domains.md` | the domains, with each one's discipline and typical concerns |
 | `scripts/spec-check.py` | the gates |
