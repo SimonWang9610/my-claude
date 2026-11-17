@@ -170,7 +170,7 @@ request and returns the result in the session.
 /my-workflow:spec-design which approach for offline sync?
 ```
 
-Tests, code and review are agents, not skills. Ask for one by name:
+Tests, code, review and wide searches are agents, not skills. Ask for one by name:
 
 ```text
 Use the my-workflow:spec-code-reviewer agent on the diff of this branch
@@ -183,6 +183,7 @@ Use the my-workflow:spec-design-reviewer agent on docs/design.md
 | `spec-implementer` | Build planned tasks against those tests, stopping at a gap. |
 | `spec-design-reviewer` | Check a design against its criteria and the code it builds on. |
 | `spec-code-reviewer` | Rerun the checks on a change and give a verdict with reproduced findings. |
+| `code-scout` | Find where something is in existing code, on a cheaper model, without the reading landing in your session. |
 
 ### Standalone skills
 

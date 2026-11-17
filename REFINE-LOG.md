@@ -1,6 +1,24 @@
 
 ---
 
+## my-workflow 3.2 — code-scout: wide searches leave the session (2026-11-17)
+
+User: file exploration during requirements and design bloats the main session; hand pure exploration to a cheap model and keep only the summary. Offered three routes (scout, atlas builds in a subagent, `code-auditor` dispatching its Locate); user chose the scout only. Source → decision → reason:
+
+- User → new `code-scout` agent, `disallowedTools: Agent, Edit, Write, Bash`; sonnet · low, the model set by the user directly (my draft said haiku); sends back at most 15 anchored lines → the session's context stays for the person's decisions.
+- My call → the route has one home, `shared/conventions.md` § Grounding: a search likely to open more than 3 files → the scout, every open question in one call; below that, grep and read → a subagent starts cold with its own prompt cache, so a few known reads are cheaper inline and one full call beats several small ones.
+- My call → the session opens only the anchors a decision rests on and marks the rest `(scout)`; the scout's body says a fact is what a line says, and a claim about the whole project takes two anchors → a cheaper model's summary can be wrong, and a decision must not rest on one. Same shape as `(from <file>)` in `build.md`.
+- My call → no Bash → Grep, Glob and Read need no permission prompt, which a subagent cannot answer, and the scout never runs project code.
+- Claude Code docs, sub-agents, skills and model-config (read 2026-11-17) → built-in Explore runs on the parent's model (Opus under a Fable session), no longer Haiku; a definition's `model` beats the session's and the per-call `model` parameter beats both; a session's effort does not carry to an agent on another model; subagents nest three levels deep by default → cheap has to be pinned in a definition, with `effort` beside it; the per-call parameter stays as the way to escalate one search.
+- Rejected: built-in Explore → not cheap any more, no control over what it sends back, absent on Copilot. `context: fork` on `audit-truth` → it is per skill, not per mode, and build has to ask the user. A `tools: Read, Grep, Glob` allowlist → cheaper to start, but untested on Copilot, where the plugin's agents all use `disallowedTools`.
+- Not done (user: scout only) → atlas builds stay in the session and `code-auditor` keeps `disallowedTools: Agent`; `audit-truth`'s "One context, no subagents" is unchanged, so a build never calls the scout.
+
+- Trial: the body as a prompt on haiku, three locate questions on this repo → every anchor checked was correct and each answer fit 15 lines; it reported what it could not search under its own label → `Not found:` now covers "could not search". Run without Grep or Glob and not from the installed definition.
+
+`my-workflow` 3.2.0 replaces 3.1.0. Nothing yet measures the context the scout saves in a real spec, or how often its anchors are wrong.
+
+---
+
 ## my-flutter 2.0 — a stack pack for my-workflow (2026-11-17)
 
 The same move as `my-react` 2.0, with the keep, merge and drop list approved before any edit. Source → decision → reason:
