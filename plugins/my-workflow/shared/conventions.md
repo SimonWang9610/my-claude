@@ -40,6 +40,6 @@ Output tokens cost the most: say each thing once, in phrases.
 - Saved to a file → reply with its path, the check's result line and at most 5 lines; never its
   content.
 - Change a file with the smallest edit. Cite a command's result line; never paste its output.
-- Inside an agent → deliver only what its prompt's Deliver line asks; none → what its definition
+- Inside an agent → send back only what its prompt's Send back line asks; none → what its definition
   says.
 - End with `Open:` what is unresolved, or `Open: nothing`.

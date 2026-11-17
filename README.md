@@ -169,6 +169,8 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
   review step's agent, or let `drive-spec` do it on resume.
 - An atlas written by 2.x uses Input and Output sections; rebuild it to get Depends on, Owns and
   Provides.
+- From 3.1, `tasks.md` needs a Batches table and `spec-check plan` fails without one: rerun
+  `/my-workflow:spec-plan` on a spec whose plan was written earlier.
 
 ---
 
@@ -456,7 +458,7 @@ my-claude/
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/    drive-spec (flow, delegation, the spec rules, workflow.yaml) · steps: spec-requirements · spec-diagnose · spec-design · spec-plan (artifact templates in each skill's assets/) · standalone: rephrase · discuss · audit-truth · 3 design skills
 │       ├── agents/    spec-tester · spec-implementer · spec-design-reviewer · spec-code-reviewer · code-auditor
-│       ├── shared/    conventions.md (facts, units, grounding, questions, knowledge, diagrams, output)
+│       ├── shared/    conventions.md (facts, units, grounding, questions, knowledge, diagrams, output) · domains.md (domains, their disciplines and typical concerns)
 │       └── scripts/   spec-check.py (the gates)
 ├── metrics/           local telemetry stack + stack.py (not plugin-shipped)
 ```

@@ -153,7 +153,7 @@ review to agents, each in its own context, and checks what they deliver.
 
 - Say "quick" or "deep" to set the size; "just do it" lets a passing check approve the gates.
 - At the design gate it says whether it recommends an independent design review; it runs only on
-  your yes.
+  your yes, or, after "just do it", when it judges the design heavy.
 - Run it again to resume. Say so to change direction.
 - The work lands in `specs/<task>/`; `coverage.md` there is the report you review.
 
@@ -192,7 +192,7 @@ They work without a spec. The step skills call the last four as they need them.
 | `rephrase <prompt>` | Put the main objective of a long prompt, or of the conversation so far, first. |
 | `discuss <topic>` | Talk a problem through and draft a direction a later session can spec. |
 | `audit-truth <scope or question>` | Map existing code as units and their dependencies into an atlas, or answer a question from one. |
-| `scaffold-project-structure` | Lay out a project by its kind, or fit new code into an existing layout. |
+| `scaffold-project-structure` | Lay out a project by its domain, or fit new code into an existing layout. |
 | `design-component` | Split a system into units by the decision each hides. |
 | `analyze-ui-state` | Decide where each piece of UI state lives and how it changes. |
 

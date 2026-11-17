@@ -277,6 +277,16 @@ class Spec:
         errs += [f"{i}: served by {', '.join(ts)} but never defined" for i, ts in serving.items() if i not in self.defs]
         changed = [u for u in self.live("UNIT") if "." not in u and not col(self.defs[u], "change").lower().startswith("reuse")]
         errs += [f"{i}: no task serves it" for i in self.live("AC", "R") + changed if i not in serving]
+        batches = [rows for head, rows in tables(self.text["plan"]) if head and head[0] == "batch"]
+        if not batches:
+            return sorted(set(errs + [f"{self.path['plan'].name}: no Batches table"]))
+        held = {}
+        for row in (r for rows in batches for r in rows):
+            if "implement" in col(row, "step").lower():
+                for t in ids_in(col(row, "holds")):
+                    held.setdefault(t, []).append(row["_cells"][0])
+        errs += [f"{t}: in no implement batch" for t in tasks if t not in held]
+        errs += [f"{t}: in {len(b)} implement batches ({', '.join(b)})" for t, b in held.items() if len(b) > 1]
         return sorted(set(errs))
 
     # ---- coverage

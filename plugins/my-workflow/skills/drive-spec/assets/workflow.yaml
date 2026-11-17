@@ -33,7 +33,7 @@ steps:                      # skill: you run it · agent: delegated, with the sk
     skill: spec-design
     status: ⬜
     gate: ⏳
-    design_review: none     # by spec-design-reviewer, when asked: accept | accept with fixes | rework
+    design_review: none     # by spec-design-reviewer, on a yes or by gates: auto: accept | accept with fixes | rework
   - id: plan
     skill: spec-plan
     status: ⬜
