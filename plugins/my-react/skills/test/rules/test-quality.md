@@ -2,16 +2,6 @@
 
 Each rule closes a way a green test can lie.
 
-## Labels carry the requirement ID
-
-Every test embeds its AC/NFR/journey ID verbatim at the front of its label —
-`grep -r "AC-2.1"` answers "is it covered?".
-
-```ts
-// ✗ it('sorts on header click')
-// ✓ describe('AC-14.3: clicking a header sorts the table', …)
-```
-
 ## Assert outcomes, not implementation
 
 The primary assertion is the observable signal the contract exposes (rendered text,
@@ -34,9 +24,9 @@ drift silently.
 const dev = { id: '1', name: 'Door', online: true } satisfies Device
 ```
 
-## Pattern-ban NFRs are resident CI guards
+## Pattern bans are resident CI guards
 
-A "no occurrences of X in source" NFR is a checked-in glob-scan test or lint rule running
+A "no occurrences of X in source" limit is a checked-in glob-scan test or lint rule running
 on every change — a one-shot review grep vanishes after merge.
 
 ## The mutation litmus

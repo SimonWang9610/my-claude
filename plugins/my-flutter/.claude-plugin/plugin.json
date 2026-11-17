@@ -1,7 +1,18 @@
 {
   "name": "my-flutter",
-  "description": "Spec-driven development for Flutter/Dart: acceptance-criteria authoring, architecture design (P1–P8 rule corpus), Riverpod idioms, task design, test contract/forensics, implementation, and PR review skills. Architecture and test-quality rule files ship inside the plugin.",
-  "version": "1.0.0",
-  "author": { "name": "SimonWang9610" },
-  "keywords": ["flutter", "dart", "riverpod", "spec-driven", "pr-review"]
+  "description": "Flutter and Dart knowledge for coding agents: five skills of rules and no process. design (the eight architecture principles: four layers, one source of truth, state at the right level, sealed async state, disposal, a testability seam for every unit), implement (rebuilds, build cost, jank, lists, images, animations, theming), riverpod (Riverpod 3 with code generation), test (what makes a Flutter test able to fail) and review (the rules per kind of unit, the three structural defects that block a change, dishonest tests). Use the skills alone, or with my-workflow, whose steps and agents pick them up by stack.",
+  "version": "2.0.0",
+  "author": {
+    "name": "SimonWang9610"
+  },
+  "keywords": [
+    "flutter",
+    "dart",
+    "riverpod",
+    "skills",
+    "rules",
+    "testing",
+    "review",
+    "stack-pack"
+  ]
 }

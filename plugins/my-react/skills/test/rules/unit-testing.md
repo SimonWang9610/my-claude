@@ -19,7 +19,7 @@ mock exercises nothing. A unit that *needs* its host to run has a missing seam: 
 ## Mock at the boundary the design named
 
 Network via MSW handlers typed with production response types — not `vi.mock` of the api
-module, not a mocked query hook (that bypasses the cache config NFRs specify). Config NFRs
+module, not a mocked query hook (that bypasses the cache config the limits specify). Config limits
 (`staleTime`, `retry`, `refetchOnWindowFocus`) run against a **real QueryClientProvider**.
 
 ```ts

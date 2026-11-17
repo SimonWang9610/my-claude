@@ -9,6 +9,7 @@ What it solves, how it works and why it is built this way: **[DESIGN.md](DESIGN.
 
 - [Install](#install)
 - [Use](#use)
+- [Migrating to 3.x](#migrating-to-3x)
 
 ## Install
 
@@ -212,3 +213,23 @@ description names your stack and the step's job (design, implement, test, review
 steps they are listed per step in `workflow.yaml`, where you can edit them. Rules come from,
 first match: your instructions, your project's rules (CLAUDE.md, AGENTS.md, `.claude/rules`, ADRs),
 those skills, built-in knowledge.
+
+This repo has two such sets, both still under development: [my-react](../my-react/README.md) for
+React and TypeScript, and [my-flutter](../my-flutter/README.md) for Flutter and Dart.
+
+## Migrating to 3.x
+
+Breaking changes since 2.3:
+
+- `/my-workflow:spec-implement` and `/my-workflow:spec-review` are removed. Tests, code and review
+  are agents: `my-workflow:spec-tester`, `my-workflow:spec-implementer`,
+  `my-workflow:spec-code-reviewer`.
+- `my-workflow:spec-reviewer` is split into `my-workflow:spec-design-reviewer` and
+  `my-workflow:spec-code-reviewer`; `my-workflow:spec-architect` is removed, design runs in your
+  session through `/my-workflow:spec-design`.
+- A spec in progress: add a `test` step before `implement` in its `workflow.yaml` and rename the
+  review step's agent, or let `drive-spec` do it on resume.
+- An atlas written by 2.x uses Input and Output sections; rebuild it to get Depends on, Owns and
+  Provides.
+- From 3.1, `tasks.md` needs a Batches table and `spec-check plan` fails without one: rerun
+  `/my-workflow:spec-plan` on a spec whose plan was written earlier.

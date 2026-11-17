@@ -4,18 +4,18 @@
     "name": "SimonWang9610"
   },
   "metadata": {
-    "description": "Plugins for Claude Code and GitHub Copilot: my-react (React/TS contract flow + driver agents), my-flutter (Flutter/Dart rules + skills), my-workflow (language-agnostic spec-driven workflow by task kind, led by drive-spec with optional agents), my-invest (financial advisor and analyst for US stocks, cited). Install any subset with setup.py."
+    "description": "Plugins for Claude Code and GitHub Copilot: my-react (React/TS rule skills that pair with my-workflow), my-flutter (Flutter/Dart rule skills that pair with my-workflow), my-workflow (language-agnostic spec-driven workflow by task kind, led by drive-spec with optional agents), my-invest (financial advisor and analyst for US stocks, cited). Install any subset with setup.py."
   },
   "plugins": [
     {
       "name": "my-react",
       "source": "./plugins/my-react",
-      "description": "React/TS spec-driven workflow: driver-embedded phase process, contract skills, atlas auditor, driver + worker agents."
+      "description": "React and TypeScript knowledge for coding agents: design, implement, test, review and figma skills of rules, with no process. Use alone or with my-workflow, whose steps and agents pick them up by stack."
     },
     {
       "name": "my-flutter",
       "source": "./plugins/my-flutter",
-      "description": "Flutter/Dart spec-driven skills: AC authoring, architecture design (P1\u2013P8), Riverpod, test quality, PR review."
+      "description": "Flutter and Dart knowledge for coding agents: design, implement, riverpod, test and review skills of rules, with no process. Use alone or with my-workflow, whose steps and agents pick them up by stack."
     },
     {
       "name": "my-workflow",

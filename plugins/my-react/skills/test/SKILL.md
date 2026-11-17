@@ -1,56 +1,31 @@
 ---
 name: test
-description: >
-  Authors React unit tests that prove contracts (Vitest · RTL · MSW) — driving each unit
-  through its test seam, asserting the states its contract exposes, and naming every test
-  for the AC it verifies. Use when writing unit tests for new or changed React code or
-  hardening weak coverage. Not for implementing the code under test (use
-  my-react:implement), checking coverage after (use my-react:evaluate),
-  or E2E journey tests (the dedicated e2e agent owns those). Output: test files, each
-  named for the AC it proves.
+description: >-
+  Use this skill when writing or fixing tests for React and TypeScript code: "write tests for this
+  component or hook", "an acceptance test for this screen", "a journey test", "this test is
+  flaky", with Vitest, React Testing Library, MSW and user-event. Gives the rules for the harness
+  per kind of unit, mocking at the boundary, async discipline, journey tests over the mounted app,
+  and what makes a green test honest. Knowledge only: it runs no process (with my-workflow, the
+  spec-tester and spec-implementer agents do). Not for the code under test (use
+  my-react:implement).
 ---
 
 # test
 
-Tests prove the contract: each test exercises a unit through its **Test seam** and asserts
-the **observable signals** its contract exposes, labeled by the **AC** it verifies. A test
-that can't be written that way is a design finding, not a testing problem — raise it.
-Unit tests only — journey/E2E tests are authored from the approved plan by the dedicated
-e2e agent, not here.
+React testing rules. Which behaviour to test comes from the task; these are the rules for how.
 
-## Inputs
-
-- **design.md + contracts** — the Test strategy table (AC → level → location) is the work
-  list (unit-level rows only); each contract's Test seam is the harness; States exposed
-  are the assertion targets. Absent → derive from the ACs and the code's observed
-  conventions.
-- **Direct instructions** — caller steering; narrows scope, never waives quality rules.
+- A test drives a unit through its **test seam** and asserts the **states its contract exposes**
+  (the design names both; see `my-react:design`). A test that cannot be written that way is a
+  design finding: raise it as a gap, never work around it.
+- **Pick the level by the surface.** Behaviour a user sees on a screen or across a flow → a
+  journey test over the mounted app. A unit's own behaviour → a unit test through its seam.
+- **Name a test by the behaviour it proves.**
+- A failing test is fixed in the code, never by weakening the test.
 
 ## Rules
 
-Read before authoring; cite rules in review notes:
-
-- [rules/unit-testing.md](./rules/unit-testing.md) — harness per seam, MSW at the boundary,
-  async discipline, lifecycle & leak guards
-- [rules/test-quality.md](./rules/test-quality.md) — cross-cutting: labels, assertions,
-  fixtures, the mutation litmus
-
-## Procedure
-
-1. **Scope** — walk the Test strategy table's unit-level rows; each uncovered row is a
-   work item at its stated location. No table → derive one from ACs + contracts.
-2. **Author unit tests** — per [rules/unit-testing.md](./rules/unit-testing.md) and
-   [rules/test-quality.md](./rules/test-quality.md), one file per owning unit. An
-   `Update:` marker names an existing test asserting superseded behavior — rewrite it to
-   the amended AC (cite it); a `DELETE` disposition removes it; never drop coverage
-   silently.
-3. **Self-check** — every AC row covered (coverage is a grep for the ID); suite
-   deterministic — async awaited, no sleeps, no order dependence. The tests rubric runs
-   once at evaluation, after implementation completes.
-4. **Steer** — raise and pause, never work around:
-   - a unit only exercisable by standing up its host → **missing seam** (design gap);
-   - an assertion only possible via implementation details → missing observable signal in
-     the contract.
-
-**Output:** test files only — coverage IS the grep of the ID-carrying labels; no manifest
-is authored. Concise and goal-accurate — no redundant cases, no snapshot dumps.
+| Card | Read when |
+|---|---|
+| [unit-testing.md](./rules/unit-testing.md) | a component, hook, store or service test: the harness per seam, mocking at the boundary, async, leaks |
+| [journey-testing.md](./rules/journey-testing.md) | an acceptance or end-to-end test of a screen or flow |
+| [test-quality.md](./rules/test-quality.md) | every test: assertions, fixtures, the mutation litmus |

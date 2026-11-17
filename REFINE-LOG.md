@@ -1,6 +1,41 @@
 
 ---
 
+## my-flutter 2.0 — a stack pack for my-workflow (2026-11-17)
+
+The same move as `my-react` 2.0, with the keep, merge and drop list approved before any edit. Source → decision → reason:
+
+- `acceptance-criteria` and `tasks` skills → dropped → `spec-requirements` and `spec-plan` do that job. Rejected: carrying `tasks`' leaf-first ordering by layer into `design` → `my-workflow` plans vertical slices, and the two disagree.
+- `rules/architecture-principles.md` → `design/rules/principles.md`, with the eight principles listed in `design`'s body; the 11 core cards, the violation signals and the examples move to `design/rules/` → each skill is self-contained, nothing reads a folder outside it. The installer never installed the top-level `rules/` folder.
+- `design-procedure.md` and `gate-procedure.md` → the decision order and the three blocking triggers move into `design`'s `SKILL.md` as "per feature, in order" and "a design is not ready while"; the gate's report formats and justification records are dropped → `my-workflow` owns the format and the gate.
+- `test-contract` → renamed `test`; its rules are stated once, in `rules/flutter-tests.md`. They had been written three times: `rules/test-quality.md`, the skill body and the reference → one home.
+- `test-forensics` → folded into `review` as three cards: tests that miss the behaviour, false-positive tests, false-positive signals with the mutation check. Rejected: pass 1 (coverage by requirement id), the finding formats and confidence table → the reviewer agent owns coverage, format and severity.
+- `review` → rewritten: which rules apply to each kind of unit, and the order of checks. Rejected: PR scoping, the three severity tiers, the report template, GitHub posting, and its two files that were identical copies of `design`'s.
+- Requirement ids in `group` labels → rule removed in all four places; the cards' example test names lose their id prefixes → the same conflict with `my-workflow` settled for `my-react`.
+- Skill names → `design`, `implement`, `test`, `review` match `my-react`'s, plus `riverpod` as the package skill → `drive-spec` routes by stack and step.
+- `references/` → `rules/` in every skill → one folder name across both packs. The external source-link lists are dropped → source material is input, not content.
+
+`my-flutter` 2.0.0 replaces 1.0.0: about 4,800 lines down to about 2,700. Not yet run with `my-workflow` on a real spec.
+
+---
+
+## my-react 2.0 — a stack pack for my-workflow (2026-11-17)
+
+User: make my-react and my-flutter tech-specific collections that my-workflow uses, in place of each carrying its own process. Keep, merge and drop list approved before any edit. Source → decision → reason:
+
+- `design`, `implement`, `test` rule cards → kept as they were → the React knowledge already sat in `rules/`, apart from the process around it.
+- Each `SKILL.md` → rewritten as a short index: when to read which card, capabilities first, no procedure and no file format → the process is `my-workflow`'s; a description that names the stack and the step is what `drive-spec` routes by.
+- `design/references/design.md` → the per-unit decision order, the mechanism picker and what a unit's interface states (surface, states exposed, test seam, must-nots) move into `design`'s `SKILL.md`; the `design.md` and contract templates are dropped → `my-workflow` owns the format, but the test and implement cards rely on a design naming exposed states and a test seam.
+- `e2e` agent → its rules become `test/rules/journey-testing.md`, each with its runtime reason and a look-alike that is fine → `my-workflow` has no stage for a separate e2e agent; `spec-tester` writes acceptance tests at the outermost surface.
+- `review` references and the `evaluate` rubrics → one `review` skill: `checklist.md` (the React checks of the implementation and tests rubrics), `behavior.md`, `quality.md`, `performance-check.md`. Rejected: axis scores, the PASS / CONDITIONAL / BLOCK verdict, the foundation signal, the spec-drift checks, PR scoping, the governance scope-creep list → the reviewer agent owns severity, verdict and scope.
+- Test labels carrying requirement ids → rule removed (user approved) → `my-workflow` forbids spec ids in product tests because they go stale.
+- `audit`, `requirements`, `plan` skills and all seven agents → dropped → `audit-truth`, `spec-requirements`, `spec-plan`, `drive-spec` and the four spec agents. Per-codebase agent memory and parallel waves go with them.
+- Vocabulary → "contract" stays, defined once per skill as what the design states about a unit; `NFR` → limit; `DESIGN GAP` → gap.
+
+`my-react` 2.0.0 replaces 1.3.0: about 3,500 lines down to about 1,500. Not yet run with `my-workflow` on a real spec, so nothing confirms that the skills are found and reach the agents.
+
+---
+
 ## my-workflow 3.0 — decide in the session, build in agents (2026-11-16)
 
 Discussed topic by topic with the user before any file changed. Source → decision → reason:

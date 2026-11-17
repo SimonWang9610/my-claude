@@ -1,5 +1,8 @@
 # my-invest
 
+> **Under development.** This plugin is not ready for regular use yet; expect gaps and breaking
+> changes. The ready one in this repo is [my-workflow](../my-workflow/README.md).
+
 A financial advisor for a beginner in US stocks and funds, built as a Claude Code plugin. You ask in plain
 words; it answers with what to do first, as three options you can choose between, then the analysis that
 backs it, with every figure linked to where it came from.

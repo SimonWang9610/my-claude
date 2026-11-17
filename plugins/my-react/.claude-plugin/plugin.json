@@ -1,15 +1,17 @@
 {
   "name": "my-react",
-  "description": "Spec-driven development for React/TypeScript: the spec-driven phase process (preflight \u2192 requirements \u2192 clarify \u2192 design \u2192 tasks \u2192 implement \u2192 spec-qa) embedded in its driver agents, contract skills (requirements, design, plan, test, implement, evaluate, review), the code-flow atlas auditor, and the driver + worker agents that orchestrate them.",
-  "version": "1.3.0",
+  "description": "React and TypeScript knowledge for coding agents: five skills of rules and no process. design (state ownership, cutting components and hooks, services and boundaries, what a unit's interface must state), implement (using, building and optimizing hooks and components; store and service bodies), test (unit tests through a seam, journey tests over the mounted app, test honesty), review (a React checklist, silent failures, waterfalls, a performance diagnostic) and figma (a screen broken into existing, partial and new components). Use the skills alone, or with my-workflow, whose steps and agents pick them up by stack.",
+  "version": "2.0.0",
   "author": {
     "name": "SimonWang9610"
   },
   "keywords": [
     "react",
     "typescript",
-    "spec-driven",
-    "spec-driven-workflow",
-    "contracts"
+    "skills",
+    "rules",
+    "testing",
+    "review",
+    "stack-pack"
   ]
 }

@@ -66,23 +66,23 @@ Target `flutter_riverpod ^3` / `riverpod_annotation ^3` / `riverpod_generator ^3
 When reviewing or generating Riverpod code, apply these five idiom areas in order:
 
 1. **ref.watch vs ref.read** — subscribe in `build`, snapshot in callbacks.
-   See `references/ref-watch-vs-read.md`.
+   See `rules/ref-watch-vs-read.md`.
 
 2. **Provider declaration & lifetime** — declare with `@riverpod` codegen; `autoDispose`
    is the default; opt into `keepAlive` only when all three gates pass.
-   See `references/provider-declaration.md`.
+   See `rules/provider-declaration.md`.
 
 3. **AsyncNotifier + AsyncValue** — user-driven async state uses `AsyncNotifier`; consume
    exhaustively with `switch` pattern-matching (sealed in 3.0); `.when()` is a secondary option.
-   See `references/asyncnotifier-async-state.md`.
+   See `rules/asyncnotifier-async-state.md`.
 
 4. **`.select` for narrow rebuilds** — project only the field a widget reads; avoid full
    state subscriptions on high-frequency providers.
-   See `references/select-narrow-rebuilds.md`.
+   See `rules/select-narrow-rebuilds.md`.
 
 5. **Test override discipline** — override deps, not the unit; subclass Notifier fakes;
    listen before bare-reading autoDispose providers.
-   See `references/testing.md`.
+   See `rules/testing.md`.
 
 ## For another package
 
@@ -105,8 +105,8 @@ signals and description.
 
 | File | Covers |
 |---|---|
-| `references/ref-watch-vs-read.md` | `ref.watch` in build, `ref.read` in callbacks, `ref.mounted` after await |
-| `references/provider-declaration.md` | top-level declaration, `autoDispose`, keepAlive 3-gate, pause/resume, invalidation cascade |
-| `references/asyncnotifier-async-state.md` | `AsyncNotifier`, `AsyncValue.guard`, `.when()` exhaustive handling |
-| `references/select-narrow-rebuilds.md` | `.select()` projection, `==` short-circuit, derived booleans |
-| `references/testing.md` | `ProviderContainer` overrides, Notifier subclass fakes, listen-before-read, pause/resume verify caveat |
+| `rules/ref-watch-vs-read.md` | `ref.watch` in build, `ref.read` in callbacks, `ref.mounted` after await |
+| `rules/provider-declaration.md` | top-level declaration, `autoDispose`, keepAlive 3-gate, pause/resume, invalidation cascade |
+| `rules/asyncnotifier-async-state.md` | `AsyncNotifier`, `AsyncValue.guard`, `.when()` exhaustive handling |
+| `rules/select-narrow-rebuilds.md` | `.select()` projection, `==` short-circuit, derived booleans |
+| `rules/testing.md` | `ProviderContainer` overrides, Notifier subclass fakes, listen-before-read, pause/resume verify caveat |
