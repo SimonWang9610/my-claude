@@ -10,7 +10,8 @@ Claude Code and GitHub Copilot that answers this with one claim: **trust should 
 about behaviour, and each rule should be enforced by the strongest thing able to enforce it.** The
 plugin turns that claim into eight mechanisms: criteria backed by evidence, two human gates, a
 script that decides each step's gate, a design made of bounded units, working slices built test
-first, fresh-context agents, approved workarounds, and a map of existing code. This document
+first, agents that build and judge in their own context, approved workarounds, and a map of
+existing code. This document
 states the problem, explains each mechanism and why it has its shape, and names what the design
 cannot do.
 
@@ -70,7 +71,7 @@ ideas to one or more of the risks.
 | 5 | A script decides the gates | R2, R3 |
 | 6 | Bounded units and one diagram | R3, R4 |
 | 7 | Working slices, test first | R1, R2 |
-| 8 | Fresh eyes | R2, R3 |
+| 8 | Decide in the session, build in agents | R1, R2, R3 |
 | 9 | Approved workarounds | R3, R4 |
 | 10 | An atlas of existing code | R4 |
 
@@ -84,7 +85,8 @@ author says it is.
 (`US-1`) or stand alone. Each carries exactly one evidence line, the strongest kind that fits:
 
 1. a test in the project's own suite;
-2. an existing project command whose result shows it, such as a build, type-check or benchmark;
+2. an existing project command that fails when the criterion does not hold, such as a build or
+   type-check;
 3. an observation: the product was run, and what was seen is recorded.
 
 Ids make the path from requirement to code traceable:
@@ -192,48 +194,68 @@ criterion to the files that realize it.
 
 **Limit.** "It failed first" is a written rule. Nothing scripted proves it.
 
-## 8. Fresh eyes
+## 8. Decide in the session, build in agents
 
 **Problem.** An author's tests can pass for the wrong reason, and an author's review inherits the
-author's blind spots.
+author's blind spots. A session that also writes the code spends its context on details, when the
+person needs it for the two decisions only they can make.
 
-**Mechanism.** Two agents work without the author's reasoning. `spec-tester` writes the acceptance
-tests from the criteria alone, before the code. `spec-reviewer` reruns the evidence, repeats each
-observation, reproduces every finding before reporting it, looks for tests weakened after they were
-written, and names what would prevent each issue's class: a lint rule, a type or a test. At the
-design gate the person may ask the reviewer for a second opinion.
+**Mechanism.** The session settles the requirements, the design and the plan with the person, then
+hands the rest to agents, each in its own context:
+
+| Agent | Does | Never sees |
+|---|---|---|
+| `spec-tester` | writes one test per criterion before the code, each seen failing where behaviour is missing | the plan, the implementation |
+| `spec-implementer` | builds the tasks in order against those tests | — |
+| `spec-code-reviewer` | reruns the evidence, reproduces its findings or marks them unverified, gives the verdict | the author's reasoning |
+| `spec-design-reviewer` | checks a design against the criteria and the code it builds on | the author's reasoning |
+
+Every hand-off is one prompt in one fixed format: goal, tasks, context, facts, rules, skills,
+verification. The rules that must hold are written into the prompt itself, copied word for word from
+one list, so an agent starts with them and a person can read exactly what it was told. The prompt
+also says when the agent is done and what it must deliver; the session treats that delivery as a
+claim and runs the check itself.
+
+The design review runs only when the person says yes. At the design gate the session says whether
+it recommends one: a design is heavy when it has more than six units, changes several existing
+units, departs from an existing pattern or spans several deployables.
 
 ```mermaid
 sequenceDiagram
   participant U as You
   participant D as drive-spec
-  participant A as spec-architect
-  participant R as spec-reviewer
+  participant DR as spec-design-reviewer
   participant T as spec-tester
+  participant I as spec-implementer
+  participant CR as spec-code-reviewer
   U->>D: task
   D->>U: requirements (gate)
   U-->>D: approve
-  D->>A: design
-  A-->>D: design.md
-  D->>U: design (gate)
-  opt you ask for a second opinion
-    D->>R: review the design
-    R-->>D: verdict
+  D->>U: design (gate), review recommended or not
+  opt you say yes
+    D->>DR: review the design
+    DR-->>D: verdict
     D->>U: verdict
   end
   U-->>D: approve
+  D->>D: plan
   D->>T: write the acceptance tests
   T-->>D: failing tests
-  D->>D: implement against them
-  D->>R: review the work
-  R-->>D: report
+  D->>I: build the tasks
+  I-->>D: files, evidence, gaps
+  D->>CR: review the change
+  CR-->>D: report
   D->>U: coverage.md, verdict
 ```
 
-**Rationale.** Independence is the cheapest check on an author. While this plugin was being built,
-a fresh-context review found 20 inconsistencies the authoring context had missed.
+**Rationale.** Independence is the cheapest check on an author, and here it comes from what each
+agent is given, not from starting a new one every time: a follow-up continues the same agent, which
+keeps what it learned. Context that the session does not spend on code stays available for the
+person's questions. While this plugin was being built, a fresh-context review found 20
+inconsistencies the authoring context had missed.
 
-**Limit.** A reviewer is still a model. Its findings count only when reproduced.
+**Limit.** A reviewer is still a model. Its findings count only when reproduced. A context-free
+agent is only as good as the artifacts and the prompt it is given.
 
 ## 9. Approved workarounds
 
@@ -256,26 +278,38 @@ reviewer.
 
 **Problem.** A design made against code that was guessed at often cannot be built.
 
-**Mechanism.** `audit-truth` maps existing code as units, each described as what it receives, what
-it solely owns and what it delivers, with a dependency graph. The map is saved and read in three
-tiers: an index, then unit entries, then the source through their anchors. Later steps open only
-the units they need.
+**Mechanism.** `audit-truth` maps existing code as units. A unit is `Unit = F(Unit_A, Unit_B, …)`:
+the units it depends on and what it takes from each, the logic it solely owns, and what it provides
+for others to depend on. The map is saved and read in three tiers: an index with the dependency
+graph, then unit entries, then the source through their anchors. Each dependency is written once,
+by the unit that depends.
 
 | Mode | Does |
 |---|---|
-| `build` | maps a scope top-down; smaller units are revealed only where a question needs them |
+| `build` | maps a scope top-down along its dependencies; smaller units are revealed only where a question needs them |
 | `query` | answers from the atlas; on a miss reads exactly that spot and adds it |
 | `distill` | lifts the relevant units from another atlas, with no source read |
 
+An atlas is built only when the work must understand existing units to change them: a design that
+builds on or changes three or more of them, an improvement to them, or a question about how they
+work together. A location or a single claim is a grep. Once an atlas exists, every later step and agent asks it first.
+
+The atlas is a snapshot of the code as audited. It grows; it is never rewritten to follow the
+changes a spec makes. The reviewers use exactly that: the design reviewer checks that the code
+provides what the design takes from it, and the code reviewer compares each changed unit with its
+entry to find a boundary that moved without the design saying so.
+
 **Rationale.** Every step grounds itself in the same map instead of exploring again, and the map
-is something a person can read.
+is something a person can read. Writing each dependency once, on the dependent's side, is what lets
+the map grow without edits to what is already there.
 
 **Limit.** This is the least proven mechanism. Nothing yet measures how much exploration it saves.
 
 ## 11. The workflow as a whole
 
 `drive-spec` decides the kind of task (feature, bug or improvement), creates the spec folder and
-runs the steps in order. Each step skill also works on its own, without a spec.
+runs the steps in order. The four step skills and the four agents also work on their own, without
+a spec.
 
 ```mermaid
 flowchart TD
@@ -293,25 +327,29 @@ flowchart TD
   G2 -->|"yes"| PLAN["3 Plan"]
   PLAN --> C3{"spec-check plan"}
   C3 -->|"fail"| PLAN
-  C3 -->|"pass"| IMPL["4 Implement"]
+  C3 -->|"pass"| TEST["4 Test<br/>spec-tester"]
+  TEST --> IMPL["5 Implement<br/>spec-implementer"]
   IMPL --> C4{"spec-check coverage"}
   C4 -->|"fail"| IMPL
-  C4 -->|"pass"| REV["5 Review"]
+  C4 -->|"pass"| REV["6 Review<br/>spec-code-reviewer"]
   REV --> C5{"coverage passes,<br/>verdict accept"}
   C5 -->|"fixes"| IMPL
   C5 -->|"yes"| DONE["Done: you review coverage.md,<br/>the units and the workarounds"]
 ```
 
-| Step | Skill | Feature | Bug | Improvement |
+| Step | Run by | Feature | Bug | Improvement |
 |---|---|---|---|---|
 | 1 | `spec-requirements` · `spec-diagnose` | stories and criteria, clarified first | reproduce, root cause, fix options | current vs target; what must not change |
 | 2 | `spec-design` | units and their diagram | only when a choice is open | only when a choice is open |
-| 3 | `spec-plan` | tasks, each a working slice | reproduction test, then the fix | steps each shippable alone |
-| 4 | `spec-implement` | test first, then the code | failing reproduction first | tests green before and after |
-| 5 | `spec-review` | evidence rerun, code review | reproduction rerun, regression | behaviour preserved, target measured |
+| 3 | `spec-plan` | tasks, each a working slice | the fix, covering its neighbours | steps each shippable alone |
+| 4 | `spec-tester` | a failing test per criterion | the failing reproduction | invariants green, the target failing |
+| 5 | `spec-implementer` | the tasks, against the tests | the fix | steps with tests green after each |
+| 6 | `spec-code-reviewer` | evidence rerun, code review | reproduction rerun, regression | behaviour preserved, target measured |
 
-The workflow scales down. A small task with an existing pattern to follow runs "light": one spec
-file, one gate, no agents. It also adapts: a decision the person states is kept, a claim the work
+The workflow scales down. A small task with an existing pattern to follow runs "light": the design
+sits in the spec file, there is one gate, and no separate tester, so the implementer writes each
+failing test first. A
+trivial fix of a few lines the session may make itself. It also adapts: a decision the person states is kept, a claim the work
 rests on is verified first, and steps and numeric limits are defaults the agent may skip or exceed
 with a one-line reason. Rules worded "never" or "only with approval" are not defaults.
 
@@ -327,9 +365,16 @@ Each of these was built or considered, then removed because nothing showed it he
 - **A required "functionality" layer** between criteria and units. It is optional (`FN-1`); most
   specs map criteria straight to units.
 - **Input and output prose per unit.** It repeated the diagram's edges.
-- **Parallel implementer agents.** Speeding up a loop that has not yet proven itself adds risk.
-- **Design levels, a senior or junior role, per-step model and skill settings, a prompt-routing
-  hook.** The model, the agent definitions and the skill descriptions already handle these.
+- **Parallel implementer agents.** One implementer works the plan in order. Speeding up a loop that
+  has not yet proven itself adds risk.
+- **A design agent.** Design is where the person's judgement is needed; an agent in between only
+  relayed options and answers.
+- **Implement and review as skills the session runs.** The session that discussed the work is the
+  wrong context to build or judge it in.
+- **"A fresh agent every time".** Independence comes from what an agent is given; discarding what
+  it learned only costs.
+- **Design levels, a senior or junior role, per-step model settings, a prompt-routing hook.** The
+  model, the agent definitions and the skill descriptions already handle these.
 
 ## 13. Limitations
 
@@ -361,7 +406,9 @@ for adding anything:
 | `FN-1` | functionality, optional: one capability that serves several criteria | `spec.md` |
 | `UNIT-1` | design unit | `design.md` |
 | `T-1` | task | `tasks.md` |
+| `R-1` | limit: a hard number or a never-event | `spec.md` |
 | `WA-1` | approved workaround | `spec.md` |
+| `I-1` | review issue | the review report |
 
 ## Appendix B. The spec folder
 
@@ -375,8 +422,8 @@ for adding anything:
 | `design/` | `spec-design` | only when needed: a file per group of units, plus contracts, screens and flows |
 | `tasks.md` | `spec-plan` | tasks with the ids and files of each, progress |
 | `coverage.md` | `spec-check` | per criterion: built, evidenced, the files |
-| `review.md` | `spec-review`, only when not accepted | evidence results, coverage gaps, issues |
-| `atlas/` | `audit-truth` | the existing code this spec touches, as units |
+| `review.md` | drive-spec, from the code reviewer's latest report, once a round is not accepted | evidence results, coverage gaps, issues |
+| `atlas/` | `audit-truth` | a snapshot of the existing code this spec touches, as units |
 | `discussions.md` | only once you have discussed something | what was weighed and why the rest lost |
 | `scratch/` · `evidence/` | the steps | probes and measurements; output an observation cites |
 
@@ -384,18 +431,19 @@ for adding anything:
 
 | Part | What it holds |
 |---|---|
-| `drive-spec` | the order of steps, the gates, when to stop |
-| Six `spec-*` skills | how each step is done |
-| `shared/` | rules every skill follows: ids, evidence, output, workarounds |
+| `drive-spec` | the order of steps, the gates, delegation, when to stop; its references hold the spec rules and the agent prompt template |
+| Four `spec-*` skills | how each step the session runs is done: requirements, diagnose, design, plan |
+| `shared/conventions.md` | what every skill follows: anchors, units, grounding, questions, output |
 | Templates in each skill's `assets/` | the fixed file formats the script reads |
 | `scripts/spec-check.py` | the gates |
 | Standalone skills | `audit-truth`, `design-component`, `analyze-ui-state`, `scaffold-project-structure`, `discuss`, `rephrase` |
 
 | Agent | Owns | Writes | Model · effort |
 |---|---|---|---|
-| `spec-architect` | the design step | `design.md`, the spec's atlas | opus · high |
 | `spec-tester` | the acceptance tests, before any code | test files in your suite | session |
-| `spec-reviewer` | the verdict, on a design or on code | nothing | opus · high |
+| `spec-implementer` | the tasks, in order | product code; tests when none were given | session |
+| `spec-design-reviewer` | the verdict on a design, on your yes | nothing | opus · high |
+| `spec-code-reviewer` | the verdict on the change | nothing | opus · high |
 | `code-auditor` | a codebase atlas; runs on its own | the atlas | opus · low |
 
 Copilot ignores the model names and runs agents on the session model.

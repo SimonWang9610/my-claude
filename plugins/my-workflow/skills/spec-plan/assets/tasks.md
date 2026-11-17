@@ -1,7 +1,5 @@
 # Tasks — <title>
 
-Progress: 0/<n> ✅
-
 Each task is one slice: it makes its criteria's evidence pass and leaves the project working.
 Files: planned paths, tests included; implement replaces them with the files actually touched.
 
@@ -9,4 +7,4 @@ Files: planned paths, tests included; implement replaces them with the files act
 |---|---|---|---|---|---|
 | T-1 | <what> | AC-1.1 · UNIT-2 | <paths> | — | ⬜ |
 
-Open: <uncovered ids, undecided points — or nothing>
+Uncovered: <ids no task serves — or none>

@@ -10,17 +10,18 @@ argument-hint: "[request | path to a workflow.yaml]"
 
 # spec-requirements
 
-Rules: `conventions.md`, `spec-rules.md` in `${CLAUDE_PLUGIN_ROOT}/shared/` (else `../../shared/`), read
-once per conversation. Mode per the spec rules. Other paths: this folder.
+Rules: `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (else `../../shared/`) and
+`../drive-spec/references/spec-rules.md`, read once per conversation. Mode per the spec rules. Other
+paths: this folder.
 Template: improvement → `assets/spec-improvement.md`, else `assets/spec-feature.md`.
 
 ## Steps
 
 1. **Gather** — the request and what it points to; what it already decides is a `D`.
-2. **Ground** — `/my-workflow:audit-truth` on what is left open. A user claim a decision rests on is
-   checked; refuted → correct it with the anchor, or stop when fixes compete.
+2. **Ground** — what is left open, per the conventions' Grounding. A user claim a decision rests on
+   is checked; refuted → correct it with the anchor, or stop when fixes compete.
 3. **Clarify** — ambiguous terms, sources that disagree, missing actors, edges or failures, the goal
-   behind the ask. Ask; spec mode: an answer that was weighed goes to discussions.
+   behind the ask. Ask.
 4. **Stories** — feature: one `US` per actor goal, one line, with a priority; about 5. Improvement:
    no stories; per quality the current value (measured now), the target, what must not change.
 5. **Criteria** — one sentence each, `When <trigger>, <observable result>`, at the outermost surface;

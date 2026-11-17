@@ -1,7 +1,8 @@
 # <group> — <what these units do together>
 
-<!-- design/<group>.md. A group = units that work together (a slice, a layer, a deployable), at most
-6. Phrases, one line each; omit a section that does not apply. -->
+<!-- design/<group>.md. A group = units that work together (a slice, a layer, a deployable): at most
+6 nodes in its diagram, the outside units it touches included. Phrases, one line each; omit a
+section that does not apply. -->
 
 ## Dependencies
 

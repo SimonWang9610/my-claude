@@ -11,7 +11,7 @@ to shipped, evaluated code.
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `my-react`    | 9 React/TS contract skills + 1 driver agent + 6 worker agents + the evaluation framework                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | stable                                                                        |
 | `my-flutter`  | 8 `fl-`derived skills + the Flutter rule files (read via `${CLAUDE_PLUGIN_ROOT}/rules/`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ⚠️ **work in progress — incomplete** (no agents, no evaluation framework yet) |
-| `my-workflow` | language- and framework-agnostic software workflow for Claude Code **and GitHub Copilot**, led by the `drive-spec` skill in your session, which decides the kind of task (feature, bug, improvement), keeps `specs/<task>/workflow.yaml` and runs that kind's steps through the `spec-*` skills (`spec-requirements` or `spec-diagnose`, `spec-design`, `spec-plan`, `spec-implement`, `spec-review`), bringing in `spec-architect`, `spec-tester` and `spec-reviewer` when a task warrants it; standalone skills — `rephrase`, `discuss`, `audit-truth`, `scaffold-project-structure`, `design-component`, `analyze-ui-state`; maps the stack skills you have installed to each step — see [plugins/my-workflow/README.md](plugins/my-workflow/README.md) (renamed from `my-spec`) | new                                                                           |
+| `my-workflow` | language- and framework-agnostic software workflow for Claude Code **and GitHub Copilot**, led by the `drive-spec` skill in your session, which decides the kind of task (feature, bug, improvement), keeps `specs/<task>/workflow.yaml` and settles the requirements (or a bug's diagnosis), the design and the plan with you through the `spec-*` skills (`spec-requirements` or `spec-diagnose`, `spec-design`, `spec-plan`), then delegates tests, code and review to the `spec-tester`, `spec-implementer` and `spec-code-reviewer` agents, with `spec-design-reviewer` on your yes; standalone skills — `rephrase`, `discuss`, `audit-truth`, `scaffold-project-structure`, `design-component`, `analyze-ui-state`; maps the stack skills you have installed to each step — see [plugins/my-workflow/README.md](plugins/my-workflow/README.md) (renamed from `my-spec`) | new                                                                           |
 | `my-invest` | a financial advisor for a beginner in US stocks and funds: the `advisor` skill reads what your question asks (one stock, your holdings from a broker CSV, a sector, the market), delegates the six dimensions (SEC fundamentals, a three-scenario DCF, price statistics, macro and politics, industry, sentiment) to the `analyst` agent, and answers result-first with three options (conservative, moderate, aggressive) in tables shaped by the question, each with a confidence score out of 100 from evidence, agreement and the plugin's own track record against the index; the `digest` skill reads your holdings each day; every figure links to its source; one SQLite database and HTML reports under `<project>/data/`; holdings never stored — see [plugins/my-invest/README.md](plugins/my-invest/README.md) | rebuilt |
 
 It is built on one idea: **skills carry the judgment, agents carry the execution, the driver
@@ -106,9 +106,8 @@ need no update step — edit and `/reload-plugins`. Breaking renames between ver
 listed in this README's migration notes; skill/agent names are the stable API, so a
 version that renames them will always say so here.
 
-Coding principles ship with `my-workflow` as
-[`principles.md`](plugins/my-workflow/skills/spec-implement/references/principles.md), which its
-spec-implement skill follows. The old user-level `rules/preferences.md` is merged into it and removed; setup clears a
+Coding principles ship with `my-workflow` in its
+[`spec-implementer`](plugins/my-workflow/agents/spec-implementer.agent.md) agent. The old user-level `rules/preferences.md` is merged into it and removed; setup clears a
 leftover link.
 
 ### TypeScript language server
@@ -157,6 +156,19 @@ The `link.sh` / `unlink.sh` symlink installer is removed. To migrate:
    The `/sflow` phase skill and `my-specflow-driver` are removed — the lean driver embeds the
    phase playbooks.
 5. `rules/preferences.md` is gone; its rules live in my-workflow's coding principles.
+
+### Migrating to my-workflow 3.0 (breaking change)
+
+- `/my-workflow:spec-implement` and `/my-workflow:spec-review` are removed. Tests, code and review
+  are agents: `my-workflow:spec-tester`, `my-workflow:spec-implementer`,
+  `my-workflow:spec-code-reviewer`.
+- `my-workflow:spec-reviewer` is split into `my-workflow:spec-design-reviewer` and
+  `my-workflow:spec-code-reviewer`; `my-workflow:spec-architect` is removed, design runs in your
+  session through `/my-workflow:spec-design`.
+- A spec in progress: add a `test` step before `implement` in its `workflow.yaml` and rename the
+  review step's agent, or let `drive-spec` do it on resume.
+- An atlas written by 2.x uses Input and Output sections; rebuild it to get Depends on, Owns and
+  Provides.
 
 ---
 
@@ -442,9 +454,9 @@ my-claude/
 │   │   └── rules/     architecture-principles.md · test-quality.md
 │   └── my-workflow/
 │       ├── .claude-plugin/plugin.json
-│       ├── skills/    drive-spec (flow, workflow.yaml) · steps: spec-requirements · spec-diagnose · spec-design · spec-plan · spec-implement · spec-review (artifact templates in each skill's assets/) · standalone: rephrase · discuss · audit-truth · 3 design skills
-│       ├── agents/    spec-architect · spec-tester · spec-reviewer · code-auditor
-│       ├── shared/    conventions.md (spec mode, status, ids, questions, output, knowledge, diagrams) · atlas.md
+│       ├── skills/    drive-spec (flow, delegation, the spec rules, workflow.yaml) · steps: spec-requirements · spec-diagnose · spec-design · spec-plan (artifact templates in each skill's assets/) · standalone: rephrase · discuss · audit-truth · 3 design skills
+│       ├── agents/    spec-tester · spec-implementer · spec-design-reviewer · spec-code-reviewer · code-auditor
+│       ├── shared/    conventions.md (facts, units, grounding, questions, knowledge, diagrams, output)
 │       └── scripts/   spec-check.py (the gates)
 ├── metrics/           local telemetry stack + stack.py (not plugin-shipped)
 ```

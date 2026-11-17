@@ -21,7 +21,7 @@ Audited: <date> at <commit>
 ## Graph
 ```mermaid
 flowchart TD
-  UNIT_1["UNIT-1 <name>"] -->|"<what crosses>"| UNIT_2["UNIT-2 <name>"]
+  UNIT_1["UNIT-1 <name>"] -->|"<what it takes>"| UNIT_2["UNIT-2 <name>"]
 ```
 
 ## Units
@@ -36,10 +36,11 @@ flowchart TD
 - <unit or area not audited> — <why>
 ````
 
-- Graph: top-level units only; every top-level table row is a node; an arrow points at what a unit depends on,
-  labelled with what crosses. Too big to read → one diagram per connected group.
+- Graph: top-level units only; every top-level table row is a node; an arrow points at what a unit
+  depends on, labelled with what it takes. Too big to read → one diagram per connected group.
+- Flows hold what the graph cannot: the order things run in and the way data moves.
 - "Start here": at most 5 lines.
-- A unit touched by several flows is a hub: say so in its row.
+- A unit many others depend on is a hub: say so in its row.
 
 ## Unit entry
 
@@ -50,28 +51,34 @@ title: UNIT-<n> <name> — <what it is for>
 anchor: <path:symbol>
 keywords: <2–3-word search terms, comma-separated>
 owns: <the logic it solely owns, one line>
+depends: <the unit ids under Depends on, comma-separated; omit when none>
 source: <omit when read from source · distilled from <path>>
 ---
 
-## Input
-- <what> ← UNIT-<m> `path:symbol` · <boundary: actor, request, timer, table, key, event>
+## Depends on
+- UNIT-<a> <name> — takes `<the surface it uses>` · <what for>
+- <boundary: framework, endpoint, table, key, event> — <exact surface and shape>
 
-## Unit
-- Owns solely: <rule, decision or state no other unit has>
-- <what it does with the input: steps, guards, state it reads or writes>
+## Owns
+- Solely: <rule, decision or state no other unit has>
+- <how it combines what it takes: steps, guards, state it reads or writes>
 
-## Output
-- <what> → UNIT-<k> · <boundary: exact surface and shape>
-- <case: error · empty · race · permission> → <result, state changed where>
+## Provides
+- `<surface a dependent can take>` — <what it gets> · <case: error · empty · race · permission → result>
+- Entered by: <actor, request, timer or event>
 
-## Sub-units
-- UNIT-<n>.<m> <name> — `path:symbol` — <input → output, one line> · not revealed
+## Inside
+- UNIT-<n>.<m> <name> — `path:symbol` — <what it owns, one line> · exposed | private · not revealed
 
 ## Dive
 - `path:symbol` — <what deeper detail lives there>
 ```
 
-- A sub-unit is a one-line row until a question needs it; then it gets its own entry
+- An edge is written once, by the unit that depends. Who uses a unit is never stored: it is the
+  entries whose `depends` names it, plus the Graph.
+- `Entered by`: entry points only.
+- Inside: `exposed` is part of what the unit provides; `private` is not to be used from outside. A
+  row stays one line until a question needs it; then it gets its own entry
   (`units/UNIT-<n>.<m>-<name>.md`), an index row, and stays listed under its parent.
 - Omit a section that does not apply.
 - Untagged = read from source · (from <file>) = from notes, unchecked · (inferred) = deduced ·
@@ -83,6 +90,9 @@ source: <omit when read from source · distilled from <path>>
 find <atlas> -name '*.md'                                    # INDEX.md and exactly the indexed entries
 grep -rL '^id: ' --include='*.md' <atlas> | grep -v INDEX.md  # must print nothing
 grep -o 'UNIT_[0-9]*' <atlas>/INDEX.md | sort -u              # the graph's nodes = the table's top-level rows
+grep -rh '^depends:' <atlas> | grep -oE 'UNIT-[0-9.]+' | sort -u  # each has an index row
 ```
 
-Index rows and entry files match one to one. Fix every violation before returning.
+Entry files and the index rows that name a file match one to one; the graph's edges are the
+top-level units' `depends`.
+Fix every violation before returning.

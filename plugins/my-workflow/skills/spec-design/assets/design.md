@@ -4,8 +4,7 @@
 Stack: <stack>
 
 <!-- Final choices only, in phrases: no explanation, no options, no open questions. Delete a section
-the design does not need. `design/<group>.md` only when units need a boundary, interface or inside
-that this table cannot hold. -->
+the design does not need. -->
 
 ## Context
 

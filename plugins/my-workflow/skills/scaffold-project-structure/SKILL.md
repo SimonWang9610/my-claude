@@ -16,8 +16,8 @@ conversation. Other paths: this folder.
 
 ## Steps
 
-1. **Frame** — per deployable its kind (`references/layouts.md`); the stack and its rules
-   (`/my-workflow:audit-truth`).
+1. **Frame** — per deployable its kind (`references/layouts.md`); the stack and its rules,
+   per the conventions' Grounding.
 2. **Place** — existing code: beside the closest example; change the layout only when the task
    cannot fit. New: the archetype's containers the requirements need; slices by feature; one
    composition root per entry; one home each for config, errors and logging.
@@ -25,7 +25,7 @@ conversation. Other paths: this folder.
    enforces them; none known → a `Q`.
 4. **Write** — § Structure: the tree (`text`, a `# role` per entry), the rules (from · may import ·
    enforced by), the changes in shipping order.
-5. **Scaffold** — new layouts, after a yes: folders, a stub per public entry, the enforcement
+5. **Scaffold** — standalone only, new layouts, after a yes: folders, a stub per public entry, the enforcement
    config. Done when the stubs compile, the entry starts and the enforcer passes; never install.
 
 ## Check before writing

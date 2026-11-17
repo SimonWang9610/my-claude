@@ -1,6 +1,32 @@
 
 ---
 
+## my-workflow 3.0 — decide in the session, build in agents (2026-11-16)
+
+Discussed topic by topic with the user before any file changed. Source → decision → reason:
+
+- User → `spec-architect` removed; requirements, design and plan run in the main session → the person's judgement is needed there, and an agent in between only relayed options.
+- User → the `spec-implement` and `spec-review` skills are removed; test, implement and review are always agents (`spec-tester`, `spec-implementer` restored, `spec-code-reviewer`); the session writes code only as a trivial fix → its context stays for requirements and design. The implementer is restored sequential only; parallel batches stay rejected.
+- User → `spec-reviewer` split into `spec-design-reviewer` and `spec-code-reviewer` → input, method and output all differ. Rejected: a reviewer per quality axis → same input and method, cost with no evidence.
+- User → the design review runs only on the user's yes; drive-spec recommends it when the design is heavy (`context.md` § Heavy design); under `gates: auto` the session decides. Rejected (my proposal): run it by default at standard size.
+- User → every delegation is one prompt template (Goal · Tasks · Context · Facts · Rules · Skills · Verification) in `drive-spec/references/agent-prompt-template.md`; rules are embedded word for word, not given as file paths → the prompt is the agent's context, so hard rules load eagerly, and a person can read what an agent was told. Rejected: a standalone `prompt-for-agent` skill (user: fold it as a reference); saving prompts to files → the agent call already shows them.
+- User → `shared/spec-rules.md` moves to `drive-spec/references/`; a bullet an agent needs carries a stage tag (`T I D C`) and is copied from there, so there is no second list. `shared/conventions.md` stays → six standalone skills read it.
+- My call → agent bodies hold craft only: the prompt's Verification (Done when · Deliver) replaces their `Return:` lines; test-first craft sits in the tester and implementer bodies and not in the tagged rules; the code reviewer keeps its report template in its body → too long to embed per prompt.
+- User → `test` is its own step in `workflow.yaml`; light size skips it and the implementer writes each failing test first; one implementer works the plan in order.
+- User → "a fresh agent every time" is dropped: a follow-up continues the same agent; independence comes from what each agent is given (tagged rules; never one agent's prose to another).
+- Claude Code docs, sub-agents and plugins reference (read 2026-11-16) → a subagent can invoke a skill its definition does not list; it loads `CLAUDE.md` itself; a resumed one keeps its history → a Skills line needs only a name and a when, project rules are not copied into prompts, continuing an agent is practical. Not checked on Copilot.
+- User → audit-truth is no longer hard-wired per step: `conventions.md` § Grounding (an atlas exists → query first; a location or one claim → grep; components on top of existing units, or improving them → build). Agents never build. The skill's description drops "where is X" and "is it true that X".
+- User → an atlas is a snapshot of the code as audited: it grows and is never rewritten to follow a spec's changes; agents fold in only facts about files the spec has not changed; the reviewers compare it with the design and the diff.
+- User → no predefined atlas location (`.docs/atlas/` removed): given → the spec's → inferred → ask, or save nothing.
+- User → the unit formula is `Unit = F(Unit_A, Unit_B, …)`, replacing `Output = Unit(Input)`: entry sections Depends on · Owns · Provides · Inside and a `depends:` line; who uses a unit is not stored → each edge is written once, on the dependent's side, which lets a snapshot grow without edits. design-component adopts the wording.
+- User → `mid-spec.md` is renamed `steering.md`; drive-spec is rewritten around Flow, Gates and Delegate.
+
+- Fresh-eyes review of 3.0 (35 findings, one reviewer agent, each checked before fixing) → fixed: the implement check ran before the task rows it reads were recorded (Each step is now run · record · verify · settle · gate · close); `spec-check ids` crashed on any `FN`; the tester's "only sources" did not exist when design was skipped; the test step's done-when contradicted tests that must pass today; the plan gave a bug or improvement a test-only `T-1` the tester had already written; a light-size review saved into `spec.md` redefined its criteria, so `review.md` is always its own file; the design gate asked one question for two answers; the light-size gate depended on a later decision; "needs reproduction" had no next move; kind-2 evidence passed on exit code alone; the review target was an uncommitted branch diff; stage tags `T I D C` collided with the `T-`, `I-`, `D-` ids and are now agent names; agent-only rules read as binding the session and now sit under § Agents. A second round by the same reviewer found 10 more, caused by the fixes, also fixed: a delivered gap failed Verify before the user was asked; the reworded plan lines created tasks that touch no file; the light-size gate had no place in `workflow.yaml` (the first step now has no `gate` line); reviewers could fold facts into the atlas. Then, on the user's word, the four items first left alone: a step's questions are asked before its artifact is saved and a spec file holds no open question (the templates' Open questions sections and `Open:` lines are gone; a default taken is a `D`); the diagnosis result is `diagnosis`, not `verdict`, in `workflow.yaml`, `spec.md` and the script, which still accepts the old name; when to log a discussion is stated only in the spec rules; the light-size layout is stated once (the path in `context.md`, how to save at it in the spec rules), and the spec templates no longer carry a `## Design` placeholder.
+
+`my-workflow` 3.0.1 replaces 2.3.0: 3.0.0 plus the review fixes above. Not run end to end on a real task.
+
+---
+
 ## my-workflow 2.1 — traceable ids, scripted gates, a unit atlas
 
 Applies the workflow plugin improvement guide (draft v5; the file was removed once applied, its

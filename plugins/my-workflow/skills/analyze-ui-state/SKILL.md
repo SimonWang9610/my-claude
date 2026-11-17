@@ -17,7 +17,7 @@ conversation. Other paths: this folder.
 ## Steps
 
 1. **Screens** — the navigation map; per screen the facts it shows or edits. Existing code →
-   `/my-workflow:audit-truth` on its routes and state owners first.
+   ground its routes and state owners first, per the conventions' Grounding.
 2. **State units** — facts that change together form one.
 3. **Decide** per unit, only what no existing pattern answers:
    - Origin — derived · server · URL · draft · device or stream · client data with meaning · UI-only.

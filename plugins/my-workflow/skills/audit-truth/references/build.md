@@ -15,13 +15,19 @@ taken from them is marked (from <file>) until checked against source.
 
 ## 2. Walk — top-down, one hop at a time
 
-Per unit, from its entry:
+Per unit, from its anchor:
 
-- **Input** — what it receives, and who hands it over (grep the callers).
-- **Unit** — the facts it reads or writes, the decisions it makes; which of them no other unit has.
-- **Output** — what it returns, emits or writes, and who receives it.
+- **Depends on** — its arguments: what it imports, is injected with or names (a route, key, event),
+  and what it uses from each. Each is a unit already walked, a new unit, or a boundary.
+- **Owns** — the facts it reads or writes and the decisions it makes that none of its arguments has.
+- **Provides** — what it lets out for others to take, and each case a dependent must handle; an
+  entry point: what enters it from outside.
 
-Go one level down only where a purpose question is still open. Stop a branch when it is:
+An edge is what the code names, never what happens to run first: a publisher and a subscriber both
+depend on the event, not on each other. Callers are grepped only when the purpose asks what a change
+would break; the walk already arrives from them.
+
+Go one argument down only where a purpose question is still open. Stop a branch when it is:
 
 - understood, or already walked;
 - off-purpose → record its name under Gaps;
@@ -41,7 +47,7 @@ Per `format.md`:
 - One flow line per trigger the purpose names, as a chain of units.
 - Keep a fact only if it changes what the reader does next: a file to touch, a decision, a risk, a rule.
 - Indirection: name the whole chain; open the hops the purpose needs, leave the rest as one-line
-  sub-units.
+  rows under Inside.
 - Deepen an existing entry in place; never a second entry for one unit. Checking a distilled entry
   against source drops its `source` mark.
 - Record the audited commit. Run the Format check.
