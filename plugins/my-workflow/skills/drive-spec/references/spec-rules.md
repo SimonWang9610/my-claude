@@ -2,10 +2,6 @@
 
 For drive-spec and the `spec-*` skills, on top of `conventions.md`.
 
-A bullet ending in `→` and agent names is written for those agents: drive-spec copies it into their
-prompts when its bracketed condition holds (`agent-prompt-template.md`). Outside § Agents it binds
-you as well. Agents: tester · implementer · design reviewer · code reviewer.
-
 ## Mode
 
 - **Spec mode** — a `workflow.yaml` is named, or one spec under `specs/` is in progress (several →
@@ -25,7 +21,9 @@ you as well. Agents: tester · implementer · design reviewer · code reviewer.
 ## Files
 
 - drive-spec and the step skills write the spec files.
-- Only product code and tests in the project's own suite go outside the spec folder; probes, measurements and logs go to its `scratch/`, output or screenshots an observation cites to its `evidence/`. → all agents
+- Only product code and tests in the project's own suite go outside the spec folder; probes,
+  measurements and logs go to its `scratch/`, output or screenshots an observation cites to its
+  `evidence/`.
 
 ## Ids
 
@@ -33,14 +31,14 @@ you as well. Agents: tester · implementer · design reviewer · code reviewer.
 |---|---|
 | spec | `US-<n>` story · `AC-<n>.<m>` criterion of `US-<n>` (`AC-<n>`: standalone) · `FN-<n>` functionality, optional, serving ≥1 `AC` · `R-<n>` limit · `WA-<n>` workaround |
 | design | `UNIT-<n>` unit (`UNIT-<n>.<m>`: a unit inside it) |
-| plan | `T-<n>` task |
+| plan | `T-<n>` task · `TB-<n>` test batch · `IB-<n>` implement batch |
 
 - One definition each: a table row with the id first, or a heading that starts with the id over
   `**Label:** value` lines. Everything else refers to it.
 - Unique per spec; never reused or renumbered; dropped → it stays, its title replaced by
   `dropped — <why>`.
 - The script reads none of these: `D-<n>` decisions, numbered on across the spec's files; `Q-<n>`
-  questions, which live in the conversation and an agent's delivery; `I-<n>` issues, unique per
+  questions, which live in the conversation and in what an agent sends back; `I-<n>` issues, unique per
   review report.
 
 ## Checks
@@ -55,7 +53,7 @@ Unexpanded: `../../../scripts/` from this folder. Without git, run it from the p
 |---|---|
 | `ids` | every id is defined once, in its file · each `AC-<n>.<m>` has its `US` · each `FN` serves an `AC` |
 | `design` | every unit has a responsibility · the diagrams together match the unit list, at most 6 units each, no cycle · (feature) every `AC` is delivered by a unit |
-| `plan` | every `AC`, `R` and changed `UNIT` is served by a task |
+| `plan` | every `AC`, `R` and changed `UNIT` is served by a task · every task sits in exactly one implement batch |
 | `coverage` | every `AC` is built (its tasks done, their files in the repo) and evidenced, or waived. `--run` runs the evidence commands; `--write` saves `coverage.md` |
 
 - `design` and `coverage` also fail on an unapproved `WA`.
@@ -64,8 +62,11 @@ Unexpanded: `../../../scripts/` from this folder. Without git, run it from the p
 
 ## Evidence
 
-- Each `AC` carries one `Evidence` line, the strongest kind that fits: (1) a test in the project's own suite, by the command that runs it; (2) an existing project command that fails when the criterion does not hold; (3) `observed: <what was done and seen>`, only when 1 and 2 cannot reach it. → tester, implementer, code reviewer
-- Never write a script to check a criterion. → tester, implementer, code reviewer
+- Each `AC` carries one `Evidence` line, the strongest kind that fits: (1) a test in the project's
+  own suite, by the command that runs it; (2) an existing project command that fails when the
+  criterion does not hold; (3) `observed: <what was done and seen>`, only when 1 and 2 cannot
+  reach it.
+- Never write a script to check a criterion.
 - The line is marked ⬜ until its evidence passes, then ✅. A kind-1 test stays in the codebase; an
   observation is the user's to judge.
 
@@ -97,16 +98,6 @@ Approved → recorded in the spec:
 |---|---|---|---|
 | AC-1.2 | no evidence · failing | <why> | <who>, <yyyy-mm-dd> |
 ```
-
-## Agents
-
-- Never edit a spec file (`workflow.yaml`, `spec.md`, the design, `tasks.md`); deliver what should be recorded. → all agents
-- Write each test from its criterion and the surface it names: the design's Interface or contracts, else the existing public surface in the code; a bug: the spec's Reproduction. Never read the plan, or code written for this spec. → tester
-- Never edit the acceptance tests the tester wrote; one that looks wrong is a gap. → implementer [a tester ran]
-- Never read the author's reasoning, commit messages or `discussions.md`; judge the files and what a run shows. → design reviewer, code reviewer
-- The atlas is a snapshot of the code as audited: query it before reading source; never build one or rewrite an entry. → all agents [`atlas` set]
-- Fold into the atlas only facts about files this spec has not changed. → tester, implementer [`atlas` set]
-- Never write the atlas; keep new facts in your delivery. → design reviewer, code reviewer [`atlas` set]
 
 ## Discussions
 

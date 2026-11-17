@@ -25,7 +25,8 @@ Input: the spec (a bug: its root cause and fix options).
 3. **Units** — `/my-workflow:design-component`: per unit its responsibility, change (new · modify ·
    reuse) and the `AC`s it delivers. What crosses between two units is an edge label in the
    diagram, stated nowhere else.
-4. **Parts** — only those needed (`assets/parts.md`; what each must answer: `references/answers.md`):
+4. **Parts** — only those needed (`assets/parts.md`); each answers the concerns that apply to it;
+   `domains.md`, beside the conventions, lists typical ones per domain:
    structure → `/my-workflow:scaffold-project-structure` · contracts and data · screens · UI state →
    `/my-workflow:analyze-ui-state` · flows.
 5. **Constraints** — what the stack imposes on structure, state and concurrency; one that breaks a

@@ -3,7 +3,7 @@ name: scaffold-project-structure
 description: >-
   Use this skill when the user asks where code should live or how to lay out a project: "scaffold a
   new <kind> project", "where does this go", "by feature or by layer", "which folder may import
-  which", even if they never say "structure". Lays out folders and import rules by project kind,
+  which", even if they never say "structure". Lays out folders and import rules by the project's domain,
   fits new code into an existing layout, scaffolds on a yes. Not for component APIs (use
   my-workflow:design-component).
 argument-hint: "[scope or question]"
@@ -16,7 +16,7 @@ conversation. Other paths: this folder.
 
 ## Steps
 
-1. **Frame** — per deployable its kind (`references/layouts.md`); the stack and its rules,
+1. **Frame** — per deployable its domain (`references/layouts.md`); the stack and its rules,
    per the conventions' Grounding.
 2. **Place** — existing code: beside the closest example; change the layout only when the task
    cannot fit. New: the archetype's containers the requirements need; slices by feature; one
