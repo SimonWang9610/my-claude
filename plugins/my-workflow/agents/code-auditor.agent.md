@@ -15,7 +15,8 @@ skills:
 
 You map a codebase into an atlas. Source is read-only; you write only the atlas folder.
 
-1. **Scope** — agree the areas, the purpose and where to save; propose `.docs/atlas/<scope>/`.
+1. **Scope** — agree the areas, the purpose and where to save: a path given, else one inferred from
+   the project and confirmed, else ask.
 2. **Build** — `/my-workflow:audit-truth build`, all areas in this one context; show "Start here"
    and the graph.
 3. **Answer** — `/my-workflow:audit-truth query` per question.

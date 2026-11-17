@@ -10,8 +10,9 @@ argument-hint: "[requirements | path to a workflow.yaml]"
 
 # spec-plan
 
-Rules: `conventions.md`, `spec-rules.md` in `${CLAUDE_PLUGIN_ROOT}/shared/` (else `../../shared/`), read
-once per conversation. Mode per the spec rules. Other paths: this folder.
+Rules: `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (else `../../shared/`) and
+`../drive-spec/references/spec-rules.md`, read once per conversation. Mode per the spec rules. Other
+paths: this folder.
 Input: the spec and the design. An approach still open → a small stated `D`, or say a design is
 needed.
 

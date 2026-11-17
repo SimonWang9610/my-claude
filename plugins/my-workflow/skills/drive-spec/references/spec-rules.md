@@ -2,6 +2,10 @@
 
 For drive-spec and the `spec-*` skills, on top of `conventions.md`.
 
+A bullet ending in a tag is also an agent's rule: drive-spec copies it into the prompt of each
+tagged stage whose bracketed condition holds (`agent-prompt-template.md`). `T` tester ·
+`I` implementer · `D` design reviewer · `C` code reviewer.
+
 ## Mode
 
 - **Spec mode** — a `workflow.yaml` is named, or one spec under `specs/` is in progress (several →
@@ -11,14 +15,15 @@ For drive-spec and the `spec-*` skills, on top of `conventions.md`.
   (light size: a section of `spec.md`), run the step's check, mark it done. Run without drive-spec
   → also move `current` on.
 - **Standalone** — no `workflow.yaml`, or "no spec": work from the request; return the result; save
-  nothing.
-- **Who writes** — drive-spec and the step skills write spec files; an agent writes only what its
-  definition names and returns the rest.
-- **Where files go** — only product code and tests in the project's own suite go outside the spec
-  folder. The rest stays inside it: probes, measurements, logs → `scratch/`; output or screenshots
-  an observation cites → `evidence/`. Standalone → a temp folder.
+  nothing. Its probes go to a temp folder.
 - **Status** — pending · in progress · done · skipped · blocked; a gate: waiting · approved (user |
   auto). Spec files show them as the symbols in `workflow.yaml`'s legend.
+
+## Files
+
+- drive-spec and the step skills write the spec files.
+- Never edit a spec file (`workflow.yaml`, `spec.md`, the design, `tasks.md`); deliver what should be recorded. `T I D C`
+- Only product code and tests in the project's own suite go outside the spec folder; probes, measurements and logs go to its `scratch/`, output or screenshots an observation cites to its `evidence/`. `T I D C`
 
 ## Ids
 
@@ -38,7 +43,7 @@ For drive-spec and the `spec-*` skills, on top of `conventions.md`.
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/spec-check.py" <ids|design|plan|coverage> <workflow.yaml> [--run] [--write]
 ```
 
-Unexpanded: `../scripts/` from this folder. Run from the project root.
+Unexpanded: `../../../scripts/` from this folder. Run from the project root.
 
 | Check | Passes when |
 |---|---|
@@ -53,22 +58,19 @@ Unexpanded: `../scripts/` from this folder. Run from the project root.
 
 ## Evidence
 
-Verification adds evidence about behaviour. Each `AC` carries one `Evidence` line, the strongest
-kind that fits:
+Verification adds evidence about behaviour.
 
-1. a test in the project's own suite — `<the command that runs it>`; it stays in the codebase;
-2. an existing project command whose result shows it — build, type-check, lint, benchmark, CLI;
-3. `observed: <what was done and seen>` — the product run by hand or a tool, only when 1 and 2
-   cannot reach it; the user judges it.
-
-Never write a script to check a criterion. Seen failing before the code and passing after: ⬜ → ✅.
+- Each `AC` carries one `Evidence` line, the strongest kind that fits: (1) a test in the project's own suite, by the command that runs it; (2) an existing project command whose result shows it; (3) `observed: <what was done and seen>`, only when 1 and 2 cannot reach it. `T I C`
+- Never write a script to check a criterion. `T I C`
+- A kind-1 test stays in the codebase; an observation is the user's to judge. Seen failing before
+  the code and passing after: ⬜ → ✅.
 
 ## Workarounds and waivers
 
-Only the user approves; `gates: auto` never does. Inside an agent → return it as a gap.
+Only the user approves; `gates: auto` never does.
 
-- **Workaround** — anything that sidesteps a gap instead of solving it, a suppressed lint or check
-  included. Stop; show the gap · why no proper fix · what it does · when it can go.
+- A workaround (anything that sidesteps a gap instead of solving it, a suppressed lint or loosened test included) or a criterion that cannot be evidenced or made to pass: stop that task and deliver it as a gap with its evidence; never decide it. `T I`
+- **Workaround** — stop; show the gap · why no proper fix · what it does · when it can go.
 - **Waiver** — an `AC` that cannot be evidenced or made to pass. Ask.
 
 Approved → recorded in the spec:
@@ -91,6 +93,17 @@ Approved → recorded in the spec:
 |---|---|---|---|
 | AC-1.2 | no evidence · failing | <why> | <who>, <yyyy-mm-dd> |
 ```
+
+## Independence
+
+- Never read the plan, the implementation or anyone's reasoning about them; the criteria and the design's contracts are your only sources. `T`
+- Never edit the acceptance tests the tester wrote; one that looks wrong is a gap. `I` [a tester ran]
+- Never read the author's reasoning, commit messages or `discussions.md`; judge the files and what a run shows. `D C`
+
+## Atlas
+
+- The atlas is a snapshot of the code as audited; never build one. Query it first; fold in only facts about files this spec has not changed; never rewrite an entry. `T I` [`atlas` set]
+- The atlas is a snapshot of the code as audited; never build one. Query it first and keep new facts in your delivery. `D C` [`atlas` set]
 
 ## Discussions
 

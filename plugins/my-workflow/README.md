@@ -147,24 +147,41 @@ Update: `git pull` in the clone, then run the installer again with `--update`.
 /my-workflow:drive-spec add rate limiting to the upload API
 ```
 
-It runs requirements (for a bug, a diagnosis), design, plan, implementation and review, and stops
-for your approval of the requirements and the design.
+It settles the requirements (for a bug, a diagnosis), the design and the plan with you, stopping
+for your approval of the requirements and the design. Then it hands the tests, the code and the
+review to agents, each in its own context, and checks what they deliver.
 
 - Say "quick" or "deep" to set the size; "just do it" lets a passing check approve the gates.
+- At the design gate it says whether it recommends an independent design review; it runs only on
+  your yes.
 - Run it again to resume. Say so to change direction.
 - The work lands in `specs/<task>/`; `coverage.md` there is the report you review.
 
 ### Run one step
 
-Every `spec-*` skill picks its mode itself. With a `workflow.yaml` it checks that it is the current
-step, saves its artifact, runs its check and updates its status. Without one it runs the same
-procedure on your request and returns the result in the session.
+The four step skills (`spec-requirements`, `spec-diagnose`, `spec-design`, `spec-plan`) pick their
+mode themselves. With a `workflow.yaml` a skill checks that it is the current step, saves its
+artifact, runs its check and updates its status. Without one it runs the same procedure on your
+request and returns the result in the session.
 
 ```text
 /my-workflow:spec-diagnose uploads fail with a 500 after the second retry
 /my-workflow:spec-design which approach for offline sync?
-/my-workflow:spec-review the diff on this branch
 ```
+
+Tests, code and review are agents, not skills. Ask for one by name:
+
+```text
+Use the my-workflow:spec-code-reviewer agent on the diff of this branch
+Use the my-workflow:spec-design-reviewer agent on docs/design.md
+```
+
+| Agent | Use it to |
+|---|---|
+| `spec-tester` | Write a failing acceptance test per criterion, before the code. |
+| `spec-implementer` | Build planned tasks against those tests, stopping at a gap. |
+| `spec-design-reviewer` | Check a design against its criteria and the code it builds on. |
+| `spec-code-reviewer` | Rerun the checks on a change and give a verdict with reproduced findings. |
 
 ### Standalone skills
 
@@ -174,7 +191,7 @@ They work without a spec. The step skills call the last four as they need them.
 |---|---|
 | `rephrase <prompt>` | Put the main objective of a long prompt, or of the conversation so far, first. |
 | `discuss <topic>` | Talk a problem through and draft a direction a later session can spec. |
-| `audit-truth <scope or question>` | Map existing code as units into an atlas, or answer a question from one. |
+| `audit-truth <scope or question>` | Map existing code as units and their dependencies into an atlas, or answer a question from one. |
 | `scaffold-project-structure` | Lay out a project by its kind, or fit new code into an existing layout. |
 | `design-component` | Split a system into units by the decision each hides. |
 | `analyze-ui-state` | Decide where each piece of UI state lives and how it changes. |
@@ -191,6 +208,7 @@ ends with a line to paste into a new session: `Atlas: <path>/INDEX.md — read i
 ### Your stack's skills
 
 my-workflow names no language or framework. Each step uses the skills you have installed whose
-description names your stack and the step's job (design, implement, test, review). Rules come from,
+description names your stack and the step's job (design, implement, test, review). For the agent
+steps they are listed per step in `workflow.yaml`, where you can edit them. Rules come from,
 first match: your instructions, your project's rules (CLAUDE.md, AGENTS.md, `.claude/rules`, ADRs),
 those skills, built-in knowledge.

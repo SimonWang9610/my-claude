@@ -23,7 +23,8 @@ A conversation over several turns, toward a direction a later session will not r
 
 1. **Frame** (first) — the problem behind the ask, the goal, who it is for, what is already fixed;
    restate it in 2–3 lines.
-2. **Research** — `/my-workflow:audit-truth` and dated external sources; never ask what can be found.
+2. **Research** — the code, per the conventions' Grounding, and dated external sources; never ask
+   what can be found.
 3. **Weigh** — the 1–3 points that most change the direction: 2–3 options, trade-offs, one
    recommendation, what would flip it. Push back with evidence.
 4. **Ledger** — settled (`D-<n> <decision> — <why>; rejected: <option> — <why>`) and open (`Q-<n>`

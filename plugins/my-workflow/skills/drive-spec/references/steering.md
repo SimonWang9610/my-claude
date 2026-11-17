@@ -1,4 +1,4 @@
-# Mid-spec
+# Steering
 
 - A question, challenge or idea that is not an instruction → answer it, grounded; add a discussions
   entry (spec rules).

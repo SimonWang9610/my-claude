@@ -5,9 +5,14 @@ line. "Never", "must" and "only with approval" are not defaults.
 
 - **Facts** — each carries an anchor: `path:line`, `path:symbol`, `doc §`, `url (date)` or
   `run: <command> → <result>`. Not read → (inferred).
-- **Units** — a function, class, module or component, shaped `Output = Unit(Input)`: what it receives
-  and from whom · the logic it solely owns · what it delivers and to whom. Decompose until a human
-  can take one unit over; no further.
+- **Units** — a function, class, module or component, shaped `Unit = F(Unit_A, Unit_B, …)`: the
+  units it depends on and what it takes from each · the logic `F` it solely owns · what it provides
+  for others to depend on. Decompose until a human can take one unit over; no further.
+- **Grounding** — read existing code the cheapest way that gives an anchored fact, and say which in
+  one line. An atlas exists (a spec's `atlas`, or one named) → `/my-workflow:audit-truth query`,
+  first. None, and the need is a location, one claim or a pattern to copy → grep and read. None, and
+  the work adds units that interact with several existing ones, or improves, modifies or reuses
+  existing units → `/my-workflow:audit-truth build`. Inside an agent → never build.
 - **Questions** — `Q-<n> <question> — default: <answer>`; answered → `D-<n> <decision> — <why>`. Ask
   at most 3, those that change the result most; give the rest as defaults. Inside an agent or
   another skill → return them.
@@ -34,5 +39,6 @@ Output tokens cost the most: say each thing once, in phrases.
 - Saved to a file → reply with its path, the check's result line and at most 5 lines; never its
   content.
 - Change a file with the smallest edit. Cite a command's result line; never paste its output.
-- Inside an agent → return only what its definition's Return line asks.
+- Inside an agent → deliver only what its prompt's Deliver line asks; none → what its definition
+  says.
 - End with `Open:` what is unresolved, or `Open: nothing`.

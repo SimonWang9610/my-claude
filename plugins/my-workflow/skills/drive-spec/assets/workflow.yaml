@@ -22,7 +22,7 @@ artifacts:                  # paths inside `folder`; light: design and review po
   discussions: discussions.md   # only once the user has discussed something
   coverage: coverage.md     # written by spec-check coverage --write
 
-steps:
+steps:                      # skill: you run it · agent: delegated, with the skills its prompt names
   - id: requirements        # bug → id: diagnose, skill: spec-diagnose, and the two lines below
     skill: spec-requirements
     status: ⬜
@@ -31,19 +31,23 @@ steps:
     # severity: none        # critical | high | medium | low
   - id: design
     skill: spec-design
-    agent: none             # spec-architect when delegated
     status: ⬜
     gate: ⏳
+    review: none            # by spec-design-reviewer, on a yes: accept | accept with fixes | rework
   - id: plan
     skill: spec-plan
     status: ⬜
+  - id: test
+    agent: spec-tester
+    skills: []              # installed skills for this stack and step; yours to edit
+    status: ⬜
   - id: implement
-    skill: spec-implement
-    agent: none             # spec-tester when it writes the acceptance tests
+    agent: spec-implementer
+    skills: []
     status: ⬜
     progress: 0/0           # tasks ✅ / all
   - id: review
-    skill: spec-review
-    agent: spec-reviewer
+    agent: spec-code-reviewer
+    skills: []
     status: ⬜
     verdict: none           # accept | accept with fixes | rework

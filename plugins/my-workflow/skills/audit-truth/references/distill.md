@@ -9,7 +9,8 @@ Inputs: the external atlas path · the purpose.
 1. **Pick** — read the external `INDEX.md`; select only the units the purpose needs.
 2. **Rewrite** — per unit, a local entry per `format.md`: keep the anchors, trim to the purpose, refit
    `keywords` and `owns` to the questions, add `source: distilled from <path>`. Renumber into the
-   local ids.
+   local ids, `depends` included. An argument that was not picked becomes a boundary line naming its
+   external entry, so every argument still resolves.
 3. **Index** — add each to the local `INDEX.md`: graph node, edges, table row. Run the Format check.
 
 ## Rules

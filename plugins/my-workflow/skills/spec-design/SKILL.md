@@ -4,24 +4,25 @@ description: >-
   Use this skill when the user must decide how to build something: "design X", "which approach",
   "which stack", "how should we structure this", "what are the options", even if they never say
   "design". Weighs options with you, then records only what you chose: a short design.md with a
-  small dependency diagram, plus a file per group of units only when needed. Not for reviewing a design (use
-  my-workflow:spec-review).
+  small dependency diagram, plus a file per group of units only when needed. Not for reviewing a
+  design (use the my-workflow:spec-design-reviewer agent).
 argument-hint: "[question or requirements | path to a workflow.yaml]"
 ---
 
 # spec-design
 
-Rules: `conventions.md`, `spec-rules.md` in `${CLAUDE_PLUGIN_ROOT}/shared/` (else `../../shared/`), read
-once per conversation. Mode per the spec rules. Other paths: this folder.
+Rules: `${CLAUDE_PLUGIN_ROOT}/shared/conventions.md` (else `../../shared/`) and
+`../drive-spec/references/spec-rules.md`, read once per conversation. Mode per the spec rules. Other
+paths: this folder.
 Input: the spec (a bug: its root cause and fix options).
 
 ## Steps
 
-1. **Ground** — `/my-workflow:audit-truth` on what the design touches; an existing unit keeps its
+1. **Ground** — what the design touches, per the conventions' Grounding; an existing unit keeps its
    atlas id.
 2. **Approach** — only when open: 2–3 options with trade-offs and one recommendation, in the
-   conversation. The pick → a `D`; spec mode: log what the user weighed to discussions. Inside an
-   agent → return them. `gates: auto` → the recommendation.
+   conversation. The pick → a `D`; spec mode: log what the user weighed to discussions.
+   `gates: auto` → the recommendation.
 3. **Units** — `/my-workflow:design-component`: per unit its responsibility, change (new · modify ·
    reuse) and the `AC`s it delivers. What crosses between two units is an edge label in the
    diagram, stated nowhere else.
