@@ -1,94 +1,85 @@
 ---
 name: design
-description: >
-  Authors design.md and contracts/ for Flutter features by applying architecture rules P1–P8:
-  four-layer structure (UI → Provider → Data → Service), three-tier state-ownership
-  (setState → InheritedWidget → Riverpod provider), SSOT repository with DTO→domain mapping,
-  immutable domain models, and testability seams. At phase exit runs the verifiable-unit gate
-  (P8): checks the three blocking triggers and writes PASS or records an extraction plan.
-  Riverpod idioms use @riverpod code-gen with Notifier/AsyncNotifier; StateNotifier,
-  StateProvider, and ChangeNotifierProvider are legacy. Full rule corpus and gate procedure
-  are under references/.
-  Trigger: "design this feature's architecture"; structuring widgets,
-  Notifier/AsyncNotifier holders, repositories, services, or domain models for any feature.
+description: >-
+  Use this skill when designing Flutter and Dart units or reviewing such a design: "how should this
+  feature be layered", "where does this state live", "setState, InheritedWidget or a provider",
+  "what should this repository or notifier expose", "is this widget testable", or the design step
+  of a Flutter app. Gives the eight architecture principles (four layers, one source of truth,
+  state at the right level, sealed async state, disposal, a testability seam for every unit), a
+  rule card per decision, and the signals of a violation. Knowledge only: it writes no design file
+  and runs no process (with my-workflow, spec-design does). Not for widget build and performance
+  idioms (use my-flutter:implement) or Riverpod APIs (use my-flutter:riverpod).
 ---
 
 # design
 
-**Design AGAINST the rules proactively, so the verify step rarely has to block.**
+Flutter architecture rules. The design's format and steps belong to whoever runs the design; this
+skill says what a sound Flutter design decides. It is agnostic of the state-management package:
+package idioms live in that package's skill, such as `my-flutter:riverpod`.
 
-Author `design.md` and `contracts/<unit>.md` such that at phase exit, each blocking trigger is already a non-issue: no god-widgets, no layer violations, no unit lacking a testability seam. This skill both authors the design and runs the verifiable-unit gate (P8) at phase exit.
+## The eight principles
 
-A seam missing from the design cannot be tested in the implementation; catch it here.
+Four layers, one dependency direction: UI → Provider → Data → Service. The reason behind each
+principle: [rules/principles.md](./rules/principles.md).
 
-Write both artifacts terse — later phases re-read them each turn: terse prose, reference rule/AC
-IDs instead of restating them; identifiers and paths exact; no invented abbreviations. Gate
-verdicts and justifications are human-read: clear full sentences.
+- **P1** Respect the four-layer boundary; dependencies point one way only.
+- **P2** The service layer isolates each raw data source and adds no business logic.
+- **P3** One repository is the single source of truth per data type; it maps raw DTOs to immutable,
+  pure-Dart domain models.
+- **P4** The provider layer owns observable UI state; widgets hold no business logic.
+- **P5** Place state at the right level: local `setState` → `InheritedWidget` scope → provider.
+- **P6** Widgets compose and render; `build` is a pure function of its inputs.
+- **P7** Dispose every listener, controller and subscription; model async as a sealed
+  loading / data / error type; never swallow errors.
+- **P8** Every unit is independently verifiable in isolation.
 
----
+## Per feature, in order
 
-## Instructions
+1. **Layers** — list every unit with its layer and role (`*Screen`, `*Widget`, `*Notifier`,
+   `*Repository`, `*ApiClient`), and domain models apart from DTOs. An arrow that skips or reverses
+   a layer is redesigned first.
+2. **State tier** — per piece of state, the narrowest that works: local `setState` (one widget,
+   dies with it) · `InheritedWidget` scope (a subtree on one page, no navigation crossing) ·
+   provider (crosses pages, survives navigation, or app-wide). One owner per fact; derive the rest.
+3. **Data path** — service: stateless, raw DTOs or a raw stream, transport errors mapped at the
+   boundary. Repository: one per domain type, DTO → domain model, owns caching, retry and throttle;
+   no DTO escapes it. Domain models: immutable, pure Dart, value-equal.
+4. **Holders and widgets** — a holder exposes a sealed `loading | data | error` state and named
+   commands, receives repositories by constructor, and disposes what it creates. Widgets are small
+   named `const StatelessWidget` classes with a pure `build`.
+5. **Seam per unit** — state how each unit runs in isolation: a widget through `pumpWidget` with
+   an injected fake holder; a holder, repository or service in pure `dart test` with
+   constructor-injected fakes; a domain model directly. A unit with no seam is a design defect: add
+   an interface at the boundary and inject it.
+6. **Shared widgets** — each one taken from `lib/core/` or another feature is reused as it is, or
+   copied into this feature and adapted; never modified in place.
 
-### 1. Load the rule index first
+## A design is not ready while
 
-Open `references/how-to-use-bundled-rules.md` — it lists all 11 `core/` rules (always applied).
-Keep it at hand throughout.
+Each of these needs a unit extracted or a boundary moved, not a note.
 
-### 2. Follow the design procedure
+- **A god-widget, a god-holder, or logic in `build`** — a large `build` mixing concerns, business
+  logic or IO in `build`, or a holder mixing data fetching, UI state and lifecycle effects with no
+  seam. Check: can its behaviour run in an isolated test without pumping or mocking the whole host?
+- **A layer violation or two sources of truth** — a widget calling a repository or service, server
+  data cached in a holder field instead of read from the repository, or two owners of one fact.
+  Check: is there one authoritative owner for every fact?
+- **A missing testability seam** — a behaviour reachable only by mocking the parent, a singleton
+  looked up inside a class body, or a `BuildContext` passed into a service or repository. Check:
+  could each behaviour be exercised without the host?
 
-Open `references/design-procedure.md` and work through all 8 steps in order.
+## Rules
 
-### 3. Key decisions
+Read the card before deciding; never cite one from memory.
 
-- **Layer assignment** — `references/core/layering-and-structure.md`
-- **State-ownership tier** (setState / InheritedWidget / provider) — `references/core/state-ownership-decision.md`
-- **One owner per fact, derive the rest** — `references/core/state-placement.md`
-- **Service returns raw DTOs only** — `references/core/service-isolation.md`
-- **Repository = SSOT; DTO→domain; cache/retry here** — `references/core/repository-ssot.md`
-- **Domain models immutable + value-equal** — `references/core/domain-models-immutable.md`
-- **Holders: sealed async + dispose with ref.onDispose()** — `references/core/state-flow-and-async.md`, `references/core/state-boundary-and-lifecycle.md`
-- **Widgets: compose small named classes** — `references/core/widget-composition.md`
-- **Inject collaborators via constructors** — `references/core/dependency-injection.md`
-- **Every unit independently verifiable (P8)** — `references/core/testability-seam.md`
-
-For Riverpod package idioms, load the separate **`/my-flutter:riverpod`** skill. For widget build idioms
-and performance, load the separate **`/my-flutter:implement`** skill.
-
-### 4. Verify — the verifiable-unit gate (P8)
-
-At design exit (and again at validate), confirm the gate QUESTION and check the THREE BLOCKING
-TRIGGERS. Read `references/gate-procedure.md` for the full procedure and report formats (this
-is a lightweight read — do NOT re-open the full corpus under `core/` at this step).
-
-**Gate question:** Does each spec behavior map onto an independently verifiable unit — a widget
-renderable via `pumpWidget` with injected fakes, or a state holder / repository / service
-invocable in pure `dart test` with constructor-injected fakes — without mocking its host?
-
-**Blocking trigger 1 — God-widget / God-holder / logic-in-build:** A widget with a very large
-`build()` mixing multiple concerns, business logic or IO inside `build()`, or a state holder
-mixing data-fetching + UI-state + lifecycle side-effects with no isolation seam.
-
-**Blocking trigger 2 — Layer violation / dual-source-of-truth:** A widget calling a repository
-or service directly (P1 break), server data cached in a holder field instead of read from the
-repository SSOT (P3 break), or two owners for the same fact.
-
-**Blocking trigger 3 — Testability seam missing:** A behavior reachable only by mocking the
-entire parent widget or holder; a hidden singleton (`Service.instance` looked up inside a class);
-or a `BuildContext` passed into a service or repository.
-
-Write PASS, or record an extraction plan / justification per `references/gate-procedure.md`.
-If this skill was applied correctly throughout Steps 1–3, the gate should PASS with no
-justifications.
-
----
-
-## References
-
-| Resource | Path |
-|----------|------|
-| Rule index (read first) | `references/how-to-use-bundled-rules.md` |
-| Step-by-step design procedure | `references/design-procedure.md` |
-| Core rules (11, universal) | `references/core/` |
-| Right/wrong principle sketches | `references/principle-examples.md` |
-| Per-principle violation signals | `references/principle-checks.md` |
-| Verification procedure + report formats | `references/gate-procedure.md` |
+| Card | Read when |
+|---|---|
+| [principles.md](./rules/principles.md) | first: the eight principles with their reasons |
+| [layering-and-structure.md](./rules/layering-and-structure.md) | assigning units to layers; feature folders |
+| [state-ownership-decision.md](./rules/state-ownership-decision.md) · [state-placement.md](./rules/state-placement.md) | choosing the state tier; one owner per fact |
+| [service-isolation.md](./rules/service-isolation.md) · [repository-ssot.md](./rules/repository-ssot.md) · [domain-models-immutable.md](./rules/domain-models-immutable.md) | the data path |
+| [state-flow-and-async.md](./rules/state-flow-and-async.md) · [state-boundary-and-lifecycle.md](./rules/state-boundary-and-lifecycle.md) | a holder's state shape, async and disposal |
+| [widget-composition.md](./rules/widget-composition.md) | cutting widgets |
+| [dependency-injection.md](./rules/dependency-injection.md) · [testability-seam.md](./rules/testability-seam.md) | wiring collaborators; the seam per unit |
+| [principle-checks.md](./rules/principle-checks.md) | checking a design or code against one principle: its violation signals and the card to open |
+| [principle-examples.md](./rules/principle-examples.md) | a compact right and wrong sketch per principle |

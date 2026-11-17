@@ -1,64 +1,33 @@
 ---
 name: review
-description: >
-  Reviews a React PR, branch, or diff on three axes — spec ↔ code honesty, code behavior
-  (contract conformance, silent failures, test honesty, N+1), and quality (rules, scope
-  creep, build) — producing severity-classified findings with evidence and a verdict that
-  gates block. Use to review a pull request or working diff before merge, to re-verify
-  claimed fixes, or to audit whether the code still matches its spec. Not for
-  post-implementation conformance checking without a merge verdict (use
-  my-react:evaluate). Output: severity findings + a block/pass verdict.
+description: >-
+  Use this skill when reviewing React and TypeScript code or its tests: "review this React diff",
+  "is this component correct", "why is this slow", "are these tests honest". Gives the React
+  checks: a unit keeping its contract, silent failures, state and effect standards, request
+  waterfalls, test honesty, and a performance diagnostic that finds the level a cause lives at.
+  Knowledge only: the verdict, severity scale and report belong to the reviewer (with
+  my-workflow, the spec-code-reviewer agent). Not for writing the fix (use my-react:implement).
 ---
 
 # review
 
-A review is a statement of fact: every finding carries evidence (`file:line`, command
-output), every verdict passes the gates. **Merge-readiness and story-completeness are
-different questions** — a clean approve must never imply both.
+React review checks. Scope, severity and the report's shape belong to the reviewer; these say what
+to look for in React code and how to prove it.
 
-## Scope — authoritative primitives only
+- **Capabilities first** — read `package.json` once; a check for an absent library, or for the
+  wrong React or compiler setup, does not apply.
+- **A finding cites its rule.** The standard is the cards of the other skills:
+  `../design/rules/`, `../implement/rules/`, `../test/rules/`.
+- **Executed evidence outranks reading.** Run the named tests, the type-check and the greps before
+  judging what cannot be run.
+- **Find the level a cause lives at.** A defect the design mandates is a design gap, not a finding
+  against the code; one that predates the diff is inherited, not the author's.
 
-What changed comes from commit-scoped sources, never range diffs (they mix PR content
-with merge-base drift):
+## Rules
 
-- PR: `gh api repos/<o>/<r>/pulls/<n>/files --paginate --jq '.[].filename'`
-- Local: `git show <sha> --name-only` per commit, or `git log <base>..<head> --name-only`
-- Forbidden for scope/governance claims: `git diff <base>..<head> --name-only`
-
-Any governance alarm (CI files, CODEOWNERS, `.claude/`, workflow/steering files) is
-re-verified via the primitive before it's cited.
-
-## Procedure
-
-1. **Scope** — the changed-file list via the primitives above. A massive PR (10k+ lines)
-   splits into focused modules — one reviewer agent per module with a scoped file list.
-2. **Review the three axes** — read the matching reference before each pass:
-   - [references/specflow.md](./references/specflow.md) — spec artifacts honest and
-     aligned with the code; the mandatory gates
-   - [references/behavior.md](./references/behavior.md) — the code does what the
-     contracts/ACs say, and fails loudly
-   - [references/quality.md](./references/quality.md) — rules conformance, scope creep,
-     build verification
-3. **Verify findings before posting** — re-read both sides of every falsifiable claim
-   ("design says X, code says Y") from source. Large PRs: spawn an independent
-   second-opinion agent that has not seen your findings; reconcile.
-4. **Verdict** — per the policy below. Re-reviews use the fix-verification matrix:
-   `| Finding | Previous | Fix claim | Verified? | Evidence |`.
-
-## Severity → verdict
-
-| Severity | Meaning | Effect |
-|----------|---------|--------|
-| CRITICAL | broken build/behavior · dishonest spec or tests | block |
-| HIGH | contract violated · unmet AC · unbounded N+1 · silent write failure | request changes |
-| WARNING | rule violation · bounded N+1 · missing edge/parity coverage | approve-with-notes |
-| LOW | advisory | note |
-
-The specflow gates can force a verdict regardless of code quality. Unmet ACs are
-enumerated on the review itself — never silently routed into follow-up tickets.
-
-## Output
-
-Findings most-severe first — `<severity> · <file:line> — <what> — <evidence>` — then the
-verdict and gate outcomes. Terse: no restating unchanged code; cap advisory findings so
-the top severities stay visible; the human-facing summary in clear full sentences.
+| Card | Read when |
+|---|---|
+| [checklist.md](./rules/checklist.md) | every review: run each check that applies |
+| [behavior.md](./rules/behavior.md) | the code does what its contract says and fails loudly: silent failures, waterfalls, test honesty, races |
+| [quality.md](./rules/quality.md) | state, effect, component and boundary standards; the type-check |
+| [performance-check.md](./rules/performance-check.md) | a hot path, a performance limit, a diff touching subscriptions, services or caches, or a reported symptom |
