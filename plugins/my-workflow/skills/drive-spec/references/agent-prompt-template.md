@@ -1,7 +1,8 @@
 # Agent prompt template
 
 Every delegation is this prompt, in this order. The agent's definition holds its craft; the prompt
-holds this run. One format for every stage, so the user can read any of them.
+holds this run. One format for every stage, so the user can read any of them. A stage is a
+delegated step, or the design review.
 
 ## Template
 
@@ -26,8 +27,8 @@ Not yours: <what to leave alone>
 ## Rules
 - Every fact you report carries an anchor: `path:line`, `path:symbol` or `run: <command> → <result>`; not read → (inferred).
 - A question is delivered as `Q-<n> <question> — default: <answer>`, never asked.
-- <each rule of `spec-rules.md` tagged for this stage whose condition holds>
-- <the spec's binding `D`, `R` and approved `WA`; what the user constrained>
+- <each bullet of `spec-rules.md` written for this agent whose condition holds>
+- <the spec's binding decisions, limits and approved workarounds; what the user constrained>
 
 ## Skills
 - `<skill>` — <when in this run to use it>
@@ -41,14 +42,13 @@ Not yours: <what to leave alone>
 
 - **Embed or point** — what must hold and what to do is embedded (Rules, Tasks, copied with their
   ids); what to consult is a path (artifacts), from the project root.
-- **Rules** — tagged bullets are copied verbatim, without the tag; never paraphrased. Never a
-  project rule the agent loads itself (CLAUDE.md, `.claude/rules`).
-- **Facts** — only what you established, anchored; never your reasoning, never another agent's
-  prose. Commands are written resolved: `spec-check` with its full path.
-- **Skills** — the step's `skills` in `workflow.yaml`, the session's skills that name this stack
-  and stage, and those the conversation named; each with its when. `atlas` set →
-  `my-workflow:audit-truth query <question>` — a fact not under Facts.
-- Nothing the agent's definition already says; an empty section is omitted.
+- **Rules** — a `spec-rules.md` bullet is copied verbatim, without its `→` part; never paraphrased.
+  Never a project rule the agent loads itself (CLAUDE.md, `.claude/rules`).
+- **Facts** — only what you established, anchored; never your reasoning. Commands are written
+  resolved: `spec-check` with its full path.
+- **Skills** — the step's `skills` in `workflow.yaml` and those the conversation named since; each
+  with its when. `atlas` set → `my-workflow:audit-truth query <question>` — a fact not under Facts.
+- Nothing of the role's craft: the agent's definition holds it. An empty section is omitted.
 - Written once, straight into the agent call; never printed first.
 - **Follow-up** — a continued agent gets Goal, Tasks, Verification and any section that changed. A
   new agent gets every section, the earlier artifact named under Facts.
@@ -57,22 +57,25 @@ Not yours: <what to leave alone>
 
 ### test — `spec-tester`
 
-- **Tasks:** one line per `AC` in scope, its sentence copied from `spec.md`.
-- **Read first:** the criteria in `spec.md`; the design's contracts.
+- **Tasks:** one line per `AC`, its sentence copied from `spec.md`.
+- **Read first:** the criteria in `spec.md`; the design's Interface and contracts, where it has
+  them; a bug: the Reproduction.
 - **Facts:** the test runner, its command, where tests live, a test to copy.
-- **Done when:** every `AC` in scope has a test, run and failing for the missing behaviour.
-- **Deliver:** per `AC`: test file · command · the failure line. Then gaps with their evidence, `Q`s.
+- **Done when:** every `AC` a test can reach has one, run: failing for missing behaviour, passing
+  for what must not change.
+- **Deliver:** per `AC`: test file · command · its result line; an `AC` no test can reach: the
+  evidence kind that fits. Then gaps with their evidence, `Q`s.
 
 ### implement — `spec-implementer`
 
-- **Tasks:** the `T` rows in order, copied from `tasks.md`. Not yours: the acceptance tests.
+- **Tasks:** the `T` rows in order, copied from `tasks.md`; a fix round: the review's issues.
 - **Read first:** the criteria served in `spec.md`; the design files of the units touched.
 - **Facts:** the acceptance tests and their failing run, or that none exist; the pattern to copy;
   the format, lint and type-check commands.
-- **Done when:** each task's evidence, lint and type-check pass; then `spec-check coverage --run`
-  exits 0.
-- **Deliver:** per `T`: files touched · evidence command → result. Then gaps with their evidence,
-  `Q`s.
+- **Done when:** the tasks' tests, lint and type-check pass, each as its command and result.
+- **Deliver:** per `T`: files touched; per `AC` served: evidence command → result, or
+  `observed: <what was done and seen>`; a fix round: per `I`, the files touched and the `T` they
+  belong to. Then gaps with their evidence, `Q`s.
 
 ### design review — `spec-design-reviewer`
 
@@ -86,7 +89,8 @@ Not yours: <what to leave alone>
 
 ### review — `spec-code-reviewer`
 
-- **Tasks:** review the diff of `<branch>` against `<base>`; check each task `tasks.md` marks done.
+- **Tasks:** review the change: the working tree against `<base>`, untracked files included (no
+  git: the files `tasks.md` lists); check each task `tasks.md` marks done.
 - **Read first:** `spec.md`, the design, `tasks.md`.
 - **Facts:** the evidence, lint and test commands; the `spec-check coverage --run` command; second
   round: the earlier `I` ids.

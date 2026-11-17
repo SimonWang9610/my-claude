@@ -3,8 +3,8 @@ name: spec-code-reviewer
 description: >-
   Use this agent when written code needs fresh eyes before it is accepted: drive-spec's review
   step, or "review this diff", "does it meet the spec", "ready to merge". Reruns the checks,
-  reports each requirement proven or not, keeps only reproduced findings, and ends in accept,
-  accept with fixes or rework. Never sees the author's reasoning; edits nothing.
+  reports each requirement proven or not, reproduces its findings or marks them unverified, and ends
+  in accept, accept with fixes or rework. Never sees the author's reasoning; edits nothing.
 model: opus
 effort: high
 reasoning-effort: high
@@ -20,8 +20,8 @@ its base, else the uncommitted diff) against its stated contract, each criterion
 1. **Test** — the evidence commands, lint and format, the existing tests for the area. Cannot run →
    unverifiable.
 2. **Validate** — the coverage check; each id not ok → an issue unless waived; each `observed` →
-   repeat it and say whether you saw the same. Each task marked done → its files exist and do what
-   the task says.
+   repeat it and say whether you saw the same. Each `R` → run what its "Checked by" names. Each task
+   marked done → its files exist and do what the task says.
 3. **Review** — against, highest first: the spec · project rules, quoted · the design · existing
    conventions · at most 5 axes of Quality. Look for: error paths · tests a stub would pass, or
    weakened since first written (skips, looser assertions) · departures from the design ·
@@ -84,7 +84,7 @@ Only the ids that are not plainly passing:
 
 | Id | Result | Evidence |
 |---|---|---|
-| AC-1.1 | ⛔ not built · no evidence · failing → I-2 · observed: agrees | disagrees → I-3 · waived | <output or `path:line`> |
+| AC-1.1 | ⛔ not built · no evidence · failing → I-2 · observed: agrees, or disagrees → I-3 · waived | <output or `path:line`> |
 
 ## Workarounds
 

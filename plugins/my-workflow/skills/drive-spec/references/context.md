@@ -3,14 +3,14 @@
 ## Folder and branch
 
 `specs/<task>/` (kebab-case) under the place the user or the project's context files name, else the
-project root; git-ignore a new `specs/` unless asked. Propose branch `<kind>/<task>`; declined or no
-git → `branch: none`.
+project root; git-ignore a new `specs/` unless asked. Propose branch `<kind>/<task>`, `base` the
+branch it is cut from; declined → `branch: none`, `base` the current branch; no git → both `none`.
 
 ## Size
 
-- **Light** — a few files, an existing pattern, no open approach. Design and review live in
-  `spec.md` (`artifacts.design` and `artifacts.review` → `spec.md`); one gate, on the design step
-  when it runs, else on the first step.
+- **Light** — a few files, an existing pattern, no open approach.
+  `artifacts.design` → `spec.md`; one gate: the first step has no `gate` line, and the design
+  step's gate covers both, asked even when the design is skipped.
 - **Standard** — the rest: the template as it is.
 
 "Quick" or "deep" sets it; "just do it" sets `gates: auto`.

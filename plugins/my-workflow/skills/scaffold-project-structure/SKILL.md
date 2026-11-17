@@ -25,7 +25,7 @@ conversation. Other paths: this folder.
    enforces them; none known → a `Q`.
 4. **Write** — § Structure: the tree (`text`, a `# role` per entry), the rules (from · may import ·
    enforced by), the changes in shipping order.
-5. **Scaffold** — new layouts, after a yes: folders, a stub per public entry, the enforcement
+5. **Scaffold** — standalone only, new layouts, after a yes: folders, a stub per public entry, the enforcement
    config. Done when the stubs compile, the entry starts and the enforcer passes; never install.
 
 ## Check before writing

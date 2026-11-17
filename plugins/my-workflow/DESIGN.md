@@ -85,7 +85,8 @@ author says it is.
 (`US-1`) or stand alone. Each carries exactly one evidence line, the strongest kind that fits:
 
 1. a test in the project's own suite;
-2. an existing project command whose result shows it, such as a build, type-check or benchmark;
+2. an existing project command that fails when the criterion does not hold, such as a build or
+   type-check;
 3. an observation: the product was run, and what was seen is recorded.
 
 Ids make the path from requirement to code traceable:
@@ -204,9 +205,9 @@ hands the rest to agents, each in its own context:
 
 | Agent | Does | Never sees |
 |---|---|---|
-| `spec-tester` | writes one failing test per criterion, before the code | the plan, the implementation |
+| `spec-tester` | writes one test per criterion before the code, each seen failing where behaviour is missing | the plan, the implementation |
 | `spec-implementer` | builds the tasks in order against those tests | — |
-| `spec-code-reviewer` | reruns the evidence, reproduces every finding, gives the verdict | the author's reasoning |
+| `spec-code-reviewer` | reruns the evidence, reproduces its findings or marks them unverified, gives the verdict | the author's reasoning |
 | `spec-design-reviewer` | checks a design against the criteria and the code it builds on | the author's reasoning |
 
 Every hand-off is one prompt in one fixed format: goal, tasks, context, facts, rules, skills,
@@ -290,8 +291,8 @@ by the unit that depends.
 | `distill` | lifts the relevant units from another atlas, with no source read |
 
 An atlas is built only when the work must understand existing units to change them: a design that
-adds components on top of several of them, or an improvement to them. A location or a single claim
-is a grep. Once an atlas exists, every later step and agent asks it first.
+builds on or changes three or more of them, an improvement to them, or a question about how they
+work together. A location or a single claim is a grep. Once an atlas exists, every later step and agent asks it first.
 
 The atlas is a snapshot of the code as audited. It grows; it is never rewritten to follow the
 changes a spec makes. The reviewers use exactly that: the design reviewer checks that the code
@@ -340,13 +341,14 @@ flowchart TD
 |---|---|---|---|---|
 | 1 | `spec-requirements` · `spec-diagnose` | stories and criteria, clarified first | reproduce, root cause, fix options | current vs target; what must not change |
 | 2 | `spec-design` | units and their diagram | only when a choice is open | only when a choice is open |
-| 3 | `spec-plan` | tasks, each a working slice | reproduction test, then the fix | steps each shippable alone |
+| 3 | `spec-plan` | tasks, each a working slice | the fix, covering its neighbours | steps each shippable alone |
 | 4 | `spec-tester` | a failing test per criterion | the failing reproduction | invariants green, the target failing |
 | 5 | `spec-implementer` | the tasks, against the tests | the fix | steps with tests green after each |
 | 6 | `spec-code-reviewer` | evidence rerun, code review | reproduction rerun, regression | behaviour preserved, target measured |
 
-The workflow scales down. A small task with an existing pattern to follow runs "light": one spec
-file, one gate, and no separate tester, so the implementer writes each failing test first. A
+The workflow scales down. A small task with an existing pattern to follow runs "light": the design
+sits in the spec file, there is one gate, and no separate tester, so the implementer writes each
+failing test first. A
 trivial fix of a few lines the session may make itself. It also adapts: a decision the person states is kept, a claim the work
 rests on is verified first, and steps and numeric limits are defaults the agent may skip or exceed
 with a one-line reason. Rules worded "never" or "only with approval" are not defaults.
@@ -404,7 +406,9 @@ for adding anything:
 | `FN-1` | functionality, optional: one capability that serves several criteria | `spec.md` |
 | `UNIT-1` | design unit | `design.md` |
 | `T-1` | task | `tasks.md` |
+| `R-1` | limit: a hard number or a never-event | `spec.md` |
 | `WA-1` | approved workaround | `spec.md` |
+| `I-1` | review issue | the review report |
 
 ## Appendix B. The spec folder
 
@@ -418,7 +422,7 @@ for adding anything:
 | `design/` | `spec-design` | only when needed: a file per group of units, plus contracts, screens and flows |
 | `tasks.md` | `spec-plan` | tasks with the ids and files of each, progress |
 | `coverage.md` | `spec-check` | per criterion: built, evidenced, the files |
-| `review.md` | drive-spec, from the code reviewer's report, only when not accepted | evidence results, coverage gaps, issues |
+| `review.md` | drive-spec, from the code reviewer's latest report, once a round is not accepted | evidence results, coverage gaps, issues |
 | `atlas/` | `audit-truth` | a snapshot of the existing code this spec touches, as units |
 | `discussions.md` | only once you have discussed something | what was weighed and why the rest lost |
 | `scratch/` · `evidence/` | the steps | probes and measurements; output an observation cites |

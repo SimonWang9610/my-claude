@@ -1,6 +1,6 @@
 # <title>
 
-**Verdict:** valid | needs reproduction | not a bug — <why, in one line>
+**Diagnosis:** valid | needs reproduction | not a bug — <why, in one line>
 Kind: bug · Severity: critical | high | medium | low — <impact, reach, data risk> · Source: <link or
 "pasted report">
 
@@ -59,15 +59,4 @@ Also affected: <other callers of the same cause — or none>
 
 | Id | Decision | Why or anchor | From |
 |---|---|---|---|
-| D-1 | <decision> | <why> | request · Q-<n> · discussions #<n> |
-
-## Open questions
-
-- Q-1 <question> — default: <answer>
-
-<!-- Light size only: the design and review live here instead of their own files. -->
-## Design
-
-## Review
-
-Open: <questions, and what stayed unverified — or nothing>
+| D-1 | <decision> | <why> | request · answer · default · discussions #<n> |

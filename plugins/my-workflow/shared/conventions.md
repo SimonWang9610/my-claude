@@ -10,18 +10,19 @@ line. "Never", "must" and "only with approval" are not defaults.
   for others to depend on. Decompose until a human can take one unit over; no further.
 - **Grounding** — read existing code the cheapest way that gives an anchored fact, and say which in
   one line. An atlas exists (a spec's `atlas`, or one named) → `/my-workflow:audit-truth query`,
-  first. None, and the need is a location, one claim or a pattern to copy → grep and read. None, and
-  the work adds units that interact with several existing ones, or improves, modifies or reuses
-  existing units → `/my-workflow:audit-truth build`. Inside an agent → never build.
+  first. None → grep and read; but a design that builds on or changes 3 or more existing units, an
+  improvement to existing units, or a question about how units work together →
+  `/my-workflow:audit-truth build`.
 - **Questions** — `Q-<n> <question> — default: <answer>`; answered → `D-<n> <decision> — <why>`. Ask
-  at most 3, those that change the result most; give the rest as defaults. Inside an agent or
-  another skill → return them.
+  at most 3, those that change the result most; give the rest as defaults. Inside an agent, or a
+  skill called for part of another skill's step → return them.
 - **Knowledge** — the project's existing patterns first. Rules: the user → project rules (CLAUDE.md,
   AGENTS.md, `.claude/rules`, ADRs) → installed skills naming this stack and step → built-in. API
   facts: documentation at the detected version, dated.
 - **Diagrams** — Mermaid `flowchart`, `sequenceDiagram` or `stateDiagram-v2`; labels in double
   quotes; node ids `[A-Za-z0-9_]` (`UNIT_1["UNIT-1 <name>"]`); an arrow points at what a unit depends
-  on. Over about 5 nodes → an overview of groups plus one diagram per group. Trees and wireframes in
+  on. More than 6 nodes → an overview of groups plus one diagram per group; in a design `spec-check`
+  enforces it. Trees and wireframes in
   a `text` block.
 
 ## Output

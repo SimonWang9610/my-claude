@@ -25,11 +25,11 @@ paths: this folder.
 4. **Root cause** — where the fault starts, not where it surfaces; the evidence; a confidence (high:
    reproduced and traced · medium: traced · low: inferred); the change that introduced it; other
    callers it hits.
-5. **Verdict** — valid · needs reproduction · not a bug (why), and a severity. Not a bug → write and
+5. **Diagnosis** — valid · needs reproduction · not a bug (why), and a severity. Not a bug → write and
    stop.
 6. **Fix** — the preferred fix, 1–2 alternatives when it is not obvious, files, what it could break.
    `AC-1`: the reproduction passes; then one `AC` per neighbour that must still hold.
-7. **Write** — `assets/spec-bug.md`. Spec mode: `verdict`, `severity`, `spec-check ids`.
+7. **Write** — `assets/spec-bug.md`. Spec mode: `diagnosis`, `severity`, `spec-check ids`.
 
 ## Rules
 

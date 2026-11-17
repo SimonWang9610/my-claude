@@ -22,10 +22,11 @@ needed.
    pass and leaves the project working. Per task: what · the ids served (`AC`, `R`, `UNIT`) ·
    files, tests included · depends on.
    - feature — a new layout → `T-1` scaffolds it.
-   - bug — `T-1` the failing reproduction as a test, then the fix, then the neighbours.
-   - improvement — `T-1` the invariants passing and the baseline measured; each later task
-     shippable alone.
+   - bug — the fix, serving `AC-1` and the neighbours it could break.
+   - improvement — each task shippable alone, the invariants passing after it.
    - a design rule a lint enforces → a task that encodes it.
+   - never a task that only writes tests: the test step writes them, else the implementer does,
+     first in each task.
 2. **Write** — `assets/tasks.md`. Spec mode: `spec-check plan`.
 
 ## Rules

@@ -2,9 +2,9 @@
 
 For drive-spec and the `spec-*` skills, on top of `conventions.md`.
 
-A bullet ending in a tag is also an agent's rule: drive-spec copies it into the prompt of each
-tagged stage whose bracketed condition holds (`agent-prompt-template.md`). `T` tester ·
-`I` implementer · `D` design reviewer · `C` code reviewer.
+A bullet ending in `→` and agent names is written for those agents: drive-spec copies it into their
+prompts when its bracketed condition holds (`agent-prompt-template.md`). Outside § Agents it binds
+you as well. Agents: tester · implementer · design reviewer · code reviewer.
 
 ## Mode
 
@@ -12,8 +12,11 @@ tagged stage whose bracketed condition holds (`agent-prompt-template.md`). `T` t
   the checked-out `branch`'s, else ask). Read its kind, size and `artifacts`.
   An earlier step neither done nor skipped → name it and ask. Mark this step in progress; when the
   work is complete save the artifact from the skill's `assets/` template at its `artifacts` path
-  (light size: a section of `spec.md`), run the step's check, mark it done. Run without drive-spec
-  → also move `current` on.
+  (a design whose path is `spec.md`: a `## Design` section of it, headings one level down), run the
+  step's check, mark it done. Run without drive-spec → also ask the step's gate, when it has one,
+  then move `current` on.
+- **Questions first** — a step's questions are asked (conventions) before its artifact is saved; an
+  answer, or a default taken, becomes a `D`. A spec file holds no open question.
 - **Standalone** — no `workflow.yaml`, or "no spec": work from the request; return the result; save
   nothing. Its probes go to a temp folder.
 - **Status** — pending · in progress · done · skipped · blocked; a gate: waiting · approved (user |
@@ -22,8 +25,7 @@ tagged stage whose bracketed condition holds (`agent-prompt-template.md`). `T` t
 ## Files
 
 - drive-spec and the step skills write the spec files.
-- Never edit a spec file (`workflow.yaml`, `spec.md`, the design, `tasks.md`); deliver what should be recorded. `T I D C`
-- Only product code and tests in the project's own suite go outside the spec folder; probes, measurements and logs go to its `scratch/`, output or screenshots an observation cites to its `evidence/`. `T I D C`
+- Only product code and tests in the project's own suite go outside the spec folder; probes, measurements and logs go to its `scratch/`, output or screenshots an observation cites to its `evidence/`. → all agents
 
 ## Ids
 
@@ -31,11 +33,15 @@ tagged stage whose bracketed condition holds (`agent-prompt-template.md`). `T` t
 |---|---|
 | spec | `US-<n>` story · `AC-<n>.<m>` criterion of `US-<n>` (`AC-<n>`: standalone) · `FN-<n>` functionality, optional, serving ≥1 `AC` · `R-<n>` limit · `WA-<n>` workaround |
 | design | `UNIT-<n>` unit (`UNIT-<n>.<m>`: a unit inside it) |
-| plan · review | `T-<n>` task · `I-<n>` issue |
+| plan | `T-<n>` task |
 
 - One definition each: a table row with the id first, or a heading that starts with the id over
   `**Label:** value` lines. Everything else refers to it.
-- Unique per spec; never reused or renumbered; dropped → it stays, marked `dropped — <why>`.
+- Unique per spec; never reused or renumbered; dropped → it stays, its title replaced by
+  `dropped — <why>`.
+- The script reads none of these: `D-<n>` decisions, numbered on across the spec's files; `Q-<n>`
+  questions, which live in the conversation and an agent's delivery; `I-<n>` issues, unique per
+  review report.
 
 ## Checks
 
@@ -43,7 +49,7 @@ tagged stage whose bracketed condition holds (`agent-prompt-template.md`). `T` t
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/spec-check.py" <ids|design|plan|coverage> <workflow.yaml> [--run] [--write]
 ```
 
-Unexpanded: `../../../scripts/` from this folder. Run from the project root.
+Unexpanded: `../../../scripts/` from this folder. Without git, run it from the project root.
 
 | Check | Passes when |
 |---|---|
@@ -58,19 +64,17 @@ Unexpanded: `../../../scripts/` from this folder. Run from the project root.
 
 ## Evidence
 
-Verification adds evidence about behaviour.
-
-- Each `AC` carries one `Evidence` line, the strongest kind that fits: (1) a test in the project's own suite, by the command that runs it; (2) an existing project command whose result shows it; (3) `observed: <what was done and seen>`, only when 1 and 2 cannot reach it. `T I C`
-- Never write a script to check a criterion. `T I C`
-- A kind-1 test stays in the codebase; an observation is the user's to judge. Seen failing before
-  the code and passing after: ⬜ → ✅.
+- Each `AC` carries one `Evidence` line, the strongest kind that fits: (1) a test in the project's own suite, by the command that runs it; (2) an existing project command that fails when the criterion does not hold; (3) `observed: <what was done and seen>`, only when 1 and 2 cannot reach it. → tester, implementer, code reviewer
+- Never write a script to check a criterion. → tester, implementer, code reviewer
+- The line is marked ⬜ until its evidence passes, then ✅. A kind-1 test stays in the codebase; an
+  observation is the user's to judge.
 
 ## Workarounds and waivers
 
 Only the user approves; `gates: auto` never does.
 
-- A workaround (anything that sidesteps a gap instead of solving it, a suppressed lint or loosened test included) or a criterion that cannot be evidenced or made to pass: stop that task and deliver it as a gap with its evidence; never decide it. `T I`
-- **Workaround** — stop; show the gap · why no proper fix · what it does · when it can go.
+- **Workaround** — anything that sidesteps a gap instead of solving it, a suppressed lint or
+  loosened test included. Stop; show the gap · why no proper fix · what it does · when it can go.
 - **Waiver** — an `AC` that cannot be evidenced or made to pass. Ask.
 
 Approved → recorded in the spec:
@@ -94,21 +98,21 @@ Approved → recorded in the spec:
 | AC-1.2 | no evidence · failing | <why> | <who>, <yyyy-mm-dd> |
 ```
 
-## Independence
+## Agents
 
-- Never read the plan, the implementation or anyone's reasoning about them; the criteria and the design's contracts are your only sources. `T`
-- Never edit the acceptance tests the tester wrote; one that looks wrong is a gap. `I` [a tester ran]
-- Never read the author's reasoning, commit messages or `discussions.md`; judge the files and what a run shows. `D C`
-
-## Atlas
-
-- The atlas is a snapshot of the code as audited; never build one. Query it first; fold in only facts about files this spec has not changed; never rewrite an entry. `T I` [`atlas` set]
-- The atlas is a snapshot of the code as audited; never build one. Query it first and keep new facts in your delivery. `D C` [`atlas` set]
+- Never edit a spec file (`workflow.yaml`, `spec.md`, the design, `tasks.md`); deliver what should be recorded. → all agents
+- Write each test from its criterion and the surface it names: the design's Interface or contracts, else the existing public surface in the code; a bug: the spec's Reproduction. Never read the plan, or code written for this spec. → tester
+- Never edit the acceptance tests the tester wrote; one that looks wrong is a gap. → implementer [a tester ran]
+- Never read the author's reasoning, commit messages or `discussions.md`; judge the files and what a run shows. → design reviewer, code reviewer
+- The atlas is a snapshot of the code as audited: query it before reading source; never build one or rewrite an entry. → all agents [`atlas` set]
+- Fold into the atlas only facts about files this spec has not changed. → tester, implementer [`atlas` set]
+- Never write the atlas; keep new facts in your delivery. → design reviewer, code reviewer [`atlas` set]
 
 ## Discussions
 
-`discussions.md` exists only once the user has actually discussed something with you: a question, a
-challenge, an idea, a choice between options. Log only what no spec file holds: what was weighed and
+Whenever the user asks, challenges, proposes or picks between options, in a step, at a gate or
+mid-spec, add an entry to `discussions.md`; a plain approval is not one, and the file exists only
+once there is an entry. Log only what no spec file holds: what was weighed and
 why the rest lost. Never what was done or which step ran (`workflow.yaml` tracks that), never what an
 artifact already states. Newest last; an entry still open is also asked under **Needs you**.
 

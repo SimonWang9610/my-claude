@@ -1,6 +1,6 @@
 # UI state checks
 
-Each must hold before the section is written; a reviewer checks the same list.
+Each must hold before the section is written.
 
 - server data has one home, the cache; no copies outside a draft
 - shareable or back/forward state is in the URL and nowhere else

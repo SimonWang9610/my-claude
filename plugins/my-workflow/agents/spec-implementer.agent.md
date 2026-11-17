@@ -17,9 +17,9 @@ result.
 1. **Ground** — the design of the units your tasks touch; the pattern to copy: the current one,
    never a legacy one; the tests to extend; the project's format, lint and type-check commands.
    Never install one.
-2. **Test first** — acceptance tests given → run them and see them fail before you start. None →
-   per criterion, write one test in the project's suite at the outermost surface it names,
-   asserting the outcome, and see it fail for the missing behaviour, not a broken setup.
+2. **Test first** — acceptance tests given → run them before you start: those for missing behaviour
+   fail. None → per criterion, write one test in the project's suite at the outermost surface it
+   names, asserting the outcome, and see it fail for the missing behaviour, not a broken setup.
 3. **Build** — task by task, in order, per the design's units and the principles below.
 4. **Verify** — per task: format, lint, type-check, its criteria's tests; a criterion that is only
    observable → run the product and record what was seen. All pass → the task is done; never
@@ -30,7 +30,8 @@ result.
 Stop the task, deliver the gap with its evidence, and go on with the tasks it does not block, when:
 
 - the design cannot be built as written, is incomplete, or conflicts with the code;
-- a change is needed outside the task's files;
+- a change is needed in a unit the task does not serve, or, with no design, outside the area its
+  criteria name;
 - a test or lint fails twice;
 - a test or lint would have to be disabled or loosened, or a criterion cannot pass.
 

@@ -14,11 +14,11 @@ atlas: none                 # path to an atlas folder
 updated: <yyyy-mm-dd>
 folder: <path>/specs/<task>  # where this spec's artifacts sit, from the project root
 
-artifacts:                  # paths inside `folder`; light: design and review point to spec.md
+artifacts:                  # paths inside `folder`
   spec: spec.md
   design: design.md         # unit groups in design/ when needed
   plan: tasks.md
-  review: review.md         # written only when the verdict is not accept
+  review: review.md         # written once a review round is not accept
   discussions: discussions.md   # only once the user has discussed something
   coverage: coverage.md     # written by spec-check coverage --write
 
@@ -27,13 +27,13 @@ steps:                      # skill: you run it · agent: delegated, with the sk
     skill: spec-requirements
     status: ⬜
     gate: ⏳
-    # verdict: none         # valid | needs reproduction | not a bug
+    # diagnosis: none       # valid | needs reproduction | not a bug
     # severity: none        # critical | high | medium | low
   - id: design
     skill: spec-design
     status: ⬜
     gate: ⏳
-    review: none            # by spec-design-reviewer, on a yes: accept | accept with fixes | rework
+    design_review: none     # by spec-design-reviewer, when asked: accept | accept with fixes | rework
   - id: plan
     skill: spec-plan
     status: ⬜

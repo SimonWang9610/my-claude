@@ -19,20 +19,20 @@ Input: the spec (a bug: its root cause and fix options).
 ## Steps
 
 1. **Ground** — what the design touches, per the conventions' Grounding; an existing unit keeps its
-   atlas id.
+   atlas id, a new one is numbered after the atlas's highest.
 2. **Approach** — only when open: 2–3 options with trade-offs and one recommendation, in the
-   conversation. The pick → a `D`; spec mode: log what the user weighed to discussions.
-   `gates: auto` → the recommendation.
+   conversation. The pick → a `D`. `gates: auto` → the recommendation.
 3. **Units** — `/my-workflow:design-component`: per unit its responsibility, change (new · modify ·
    reuse) and the `AC`s it delivers. What crosses between two units is an edge label in the
    diagram, stated nowhere else.
 4. **Parts** — only those needed (`assets/parts.md`; what each must answer: `references/answers.md`):
    structure → `/my-workflow:scaffold-project-structure` · contracts and data · screens · UI state →
    `/my-workflow:analyze-ui-state` · flows.
-5. **Limits** — the stack's limits on structure, state and concurrency; one that breaks a unit →
-   revise it with a `D`. A rule a lint can enforce → name it under Quality.
+5. **Constraints** — what the stack imposes on structure, state and concurrency; one that breaks a
+   unit → revise it with a `D`. A rule a lint can enforce → name it under Quality.
 6. **Write** — `design.md` (`assets/design.md`). `design/<group>.md` (`assets/group.md`) only for
-   units that need a boundary, interface or inside; `design/<part>.md` per part. Spec mode:
+   units that need a boundary or inside, and for each whose surface is new or changed: its
+   Interface, which the tests are written from; `design/<part>.md` per part. Spec mode:
    `spec-check design`.
 
 ## Rules
@@ -41,5 +41,4 @@ Input: the spec (a bug: its root cause and fix options).
   criteria and limits.
 - Files hold only what the user finalized, stated not explained: one line per item, a why only on a
   `D`.
-- At most 6 units per diagram; more → groups.
 - It needs a workaround → the spec rules. A requirement must change → a `Q`.

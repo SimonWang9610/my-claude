@@ -19,7 +19,7 @@ ID = r"(?:US|AC|FN|R|WA|UNIT|T)-\d+(?:\.\d+)*"
 ID_RE = re.compile(rf"(?<![\w-])({ID})(?!\w)(?!\.\d)")
 HOME = {"US": "spec", "AC": "spec", "FN": "spec", "R": "spec", "WA": "spec", "UNIT": "design", "T": "plan"}
 REQUIRED = {  # prefix -> labels that must exist
-    "US": [], "AC": ["evidence"], "R": ["checked"], "UNIT": ["responsibility"],
+    "US": [], "AC": ["evidence"], "FN": ["serves"], "R": ["checked"], "UNIT": ["responsibility"],
     "T": ["serves", "files", "status"], "WA": ["gap", "workaround", "approved", "remove"],
 }
 DEFAULTS = {"spec": "spec.md", "design": "design.md", "plan": "tasks.md", "coverage": "coverage.md"}
@@ -100,7 +100,7 @@ class Spec:
         self.dir = wf.parent
         kind = re.search(r"^kind:\s*(\w+)", text, re.M)
         self.kind = kind.group(1) if kind else "feature"
-        self.not_a_bug = bool(re.search(r"^\s*verdict:\s*not a bug", text, re.M))
+        self.not_a_bug = bool(re.search(r"^\s*(?:diagnosis|verdict):\s*not a bug", text, re.M))
         arts = dict(re.findall(r"^\s+(spec|design|plan|coverage):\s*([^\s#]+)", text, re.M))
         self.path = {k: self.dir / arts.get(k, v) for k, v in DEFAULTS.items()}
         self.text = {k: self.path[k].read_text() if self.path[k].is_file() else "" for k in ("spec", "design", "plan")}

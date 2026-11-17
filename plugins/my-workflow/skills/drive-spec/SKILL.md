@@ -26,22 +26,22 @@ Agents build and judge: tests, code, review. You own `workflow.yaml`, `discussio
 | Step | Run by | Done when | Skip when |
 |---|---|---|---|
 | requirements | you · `spec-requirements` | `spec-check ids` passes · gate | never |
-| diagnose (bug) | you · `spec-diagnose` | cause with evidence; verdict set; `spec-check ids` passes · gate | never |
+| diagnose (bug) | you · `spec-diagnose` | cause with evidence; diagnosis set; `spec-check ids` passes · gate | never |
 | design | you · `spec-design` | `spec-check design` passes · gate | nothing is open: approach, structure, unit, contract, screen |
 | plan | you · `spec-plan` | `spec-check plan` passes | never |
-| test | `spec-tester` | every `AC` in scope has a test seen failing | light size · no test suite |
+| test | `spec-tester` | each delivered test, rerun, fails for missing behaviour or passes for what must not change | light size · no test suite |
 | implement | `spec-implementer` | every task done; `spec-check coverage --run --write` passes | never |
 | review | `spec-code-reviewer` | the same check passes; verdict accept | the user turned it off |
 
 ## Setup
 
-In order; no code exploration yet.
+In order, reading no code beyond the manifests that name the stack.
 
 1. **Resume** — a `workflow.yaml` is named, or a spec is in progress → Each step, at `current`.
 2. **Kind** — feature (new or changed behaviour) · bug (behaviour is broken) · improvement
    (behaviour stays, a quality improves). Mixed → the main one, the rest a follow-up spec. Not
    software → answer and stop.
-3. **Size, folder, branch** — § Size, § Folder and branch.
+3. **Size, folder, branch** — § Size, § Folder and branch. The first step may correct the size.
 4. **Initialize** — `workflow.yaml` from `assets/workflow.yaml`, fitted to the kind and size; per
    delegated step, the installed skills that name this stack and step → its `skills`. Show kind,
    size and steps in one line.
@@ -49,28 +49,33 @@ In order; no code exploration yet.
 ## Each step
 
 1. **Skip?** — per the table, with a one-line reason.
-2. **Run** — a step you run: its skill. A delegated step: Delegate, below.
-3. **Verify** — run the step's check yourself; an agent's "done" is a claim. Read an artifact's
-   body only to present a gate. Fails twice → stop.
-4. **Settle** — put to the user under **Needs you** what the step left for them: open `Q`s with
-   their defaults · options to choose between · a conflict with what they said · a gap an agent
+2. **Run** — a step you run: its skill, which saves its own artifact. A delegated step: Delegate,
+   below.
+3. **Record** — what an agent delivered, as delivered, which only you write: task rows with the
+   files touched, `Evidence` lines, `progress`.
+4. **Verify** — run the step's check yourself; set back to ⬜ what it shows failing. Read an
+   artifact's body only to present a gate. A failure a delivered gap explains → Settle. Any other →
+   back through the step once, the failure as its task; fails again → stop.
+5. **Settle** — put to the user under **Needs you** what the step left for them: `Q`s an agent delivered,
+   with their defaults · options to choose between · a conflict with what they said · a gap an agent
    delivered (a workaround, a waiver, a design that does not fit; it pauses only its task). Answers
    go back through the step, then recheck.
-5. **Gate** — requirements (a bug: the diagnosis) and design: Gates, below.
-6. **Record** — the step's status and result fields; what the agent delivered (task rows, files
-   touched, `Evidence` lines, `progress`, `verdict`); move `current`.
+6. **Gate** — a step with a `gate` in `workflow.yaml`, even when skipped: Gates, below.
+7. **Close** — the step's `status`, `gate` and its `diagnosis`, `severity`, `design_review` or
+   `verdict`; `updated`;
+   move `current`. The last step → the spec's `status: ✅`.
 
 ## Gates
 
-A compact summary, the artifact's path, the check's result, then `Approve, or tell me what to
-change?`. Any answer but yes → revise through the step, recheck, ask again. Never pass a waiting
-gate or a failing check.
+Ask under **Needs you**: `Approve, or tell me what to change?`, with a compact summary, the defaults
+taken, the artifact's path and the check's result. Any answer but an approval → revise through the step,
+recheck, ask again. Never pass a waiting gate or a failing check.
 
-- **Design review** — the design gate adds one line: `Design review: recommended — <why>` when the
-  design is heavy (§ Heavy design), else `not needed — <why>`. Run `spec-design-reviewer` only on a
-  yes; show its findings; ask the gate again.
+- **Design review** — the design gate also says `Design review: recommended — <why>` when the
+  design is heavy (§ Heavy design), else `not needed — <why>`, and asks `Approve, review it first,
+  or tell me what to change?`. "Review" → `spec-design-reviewer`; show its findings; ask again.
 - **`gates: auto`** (granted in advance) — a passing check approves. A heavy design → run the
-  design review; its verdict decides; not accepted → revise and rerun once.
+  design review; accept → approved; else revise and rerun it once.
 
 ## Delegate
 
@@ -78,25 +83,24 @@ The test, implement and review steps, and the design review: always their agent,
 You write no test and no review yourself, and product code only as a trivial fix: a few lines in
 one file with no new behaviour to test. Say so in one line and run the same checks.
 
-1. **Prompt** — `references/agent-prompt-template.md`, filled from the step's entry in
-   `workflow.yaml` (`agent`, `skills`), the template's entry for this stage, and the tasks in scope.
-2. **Start or continue** — a step's first run starts its agent. A follow-up in the same step
-   continues that agent, with only the sections that changed. Its context is spent, or it failed
-   twice → a new agent, the full template.
-3. **Receive** — a delivery is claims and gaps: verify, record, settle. Never hand one agent's
-   prose to another.
+1. **Prompt** — `references/agent-prompt-template.md`.
+2. **Start or continue** — an agent's first run starts it; a follow-up continues it; one that can
+   no longer be continued → a new agent.
+3. **Receive** — a delivery is claims and gaps, never proof. Never hand one agent's prose to
+   another.
 
 - **test** — before any code exists. Skipped → the implementer writes each failing test first.
 - **implement** — one implementer, the tasks in order. A plan too large for one context →
   consecutive batches, cut where no task depends across; never two at once.
-- **review** — not accept → its issues are the implementer's next Tasks, then the same reviewer's
-  second round. Save its report to `review.md` only when the verdict is not accept.
+- **review** — not accept → continue the implementer with the issues as its Tasks, then the same
+  reviewer for a second round; `current` stays on review. Once a round is not accept, save the
+  latest report to `review.md`.
 
 ## Stop
 
-- "Not a bug" → skip the remaining steps with that reason.
-- A review, of the design or the code, not accepted twice · a check that keeps failing · a missing
-  or ambiguous input.
+- "Not a bug" → skip the remaining steps with that reason. "Needs reproduction" → stop for what is
+  missing.
+- A review, of the design or the code, not accepted twice · a missing or ambiguous input.
 - Anything irreversible: commit, push, pull request, delete.
 
 ## Rules
@@ -104,9 +108,8 @@ one file with no new behaviour to test. Say so in one line and run the same chec
 - This spec only; note out-of-scope findings.
 - A step is skipped only by the table or the user; an artifact changes only through its step.
 - Earlier artifacts are authoritative: ground in them first, then per the conventions' Grounding;
-  an atlas built here → `atlas` in `workflow.yaml`. One that looks wrong is raised, never silently
-  diverged from.
-- One round of questions, one report; push back with evidence.
+  an atlas built or named here → `atlas` in `workflow.yaml`. One that looks wrong is raised, never
+  silently diverged from.
 - The user asks, challenges or redirects mid-spec → `references/steering.md`.
 
 ## Outcome

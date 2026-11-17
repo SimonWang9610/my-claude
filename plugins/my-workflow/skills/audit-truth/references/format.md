@@ -93,5 +93,6 @@ grep -o 'UNIT_[0-9]*' <atlas>/INDEX.md | sort -u              # the graph's node
 grep -rh '^depends:' <atlas> | grep -oE 'UNIT-[0-9.]+' | sort -u  # each has an index row
 ```
 
-Index rows and entry files match one to one; the graph's edges are the top-level units' `depends`.
+Entry files and the index rows that name a file match one to one; the graph's edges are the
+top-level units' `depends`.
 Fix every violation before returning.

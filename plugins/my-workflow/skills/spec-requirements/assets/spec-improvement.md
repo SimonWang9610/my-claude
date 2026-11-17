@@ -35,11 +35,7 @@ Kind: improvement · Stack: <stack and versions> (stated | detected)
 
 | Id | Decision | Why or anchor | From |
 |---|---|---|---|
-| D-1 | <decision> | <why, `path:line` or doc §> | request · Q-<n> · discussions #<n> |
-
-## Open questions
-
-- Q-1 <question> — default: <answer>
+| D-1 | <decision> | <why, `path:line` or doc §> | request · answer · default · discussions #<n> |
 
 ## Context
 
@@ -49,10 +45,3 @@ Kind: improvement · Stack: <stack and versions> (stated | detected)
 ## Out of scope
 
 - <item>
-
-<!-- Light size only: the design and review live here instead of their own files. -->
-## Design
-
-## Review
-
-Open: <questions, and what is still undecided — or nothing>

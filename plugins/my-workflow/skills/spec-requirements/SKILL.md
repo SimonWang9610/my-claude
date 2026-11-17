@@ -21,7 +21,7 @@ Template: improvement → `assets/spec-improvement.md`, else `assets/spec-featur
 2. **Ground** — what is left open, per the conventions' Grounding. A user claim a decision rests on
    is checked; refuted → correct it with the anchor, or stop when fixes compete.
 3. **Clarify** — ambiguous terms, sources that disagree, missing actors, edges or failures, the goal
-   behind the ask. Ask; spec mode: an answer that was weighed goes to discussions.
+   behind the ask. Ask.
 4. **Stories** — feature: one `US` per actor goal, one line, with a priority; about 5. Improvement:
    no stories; per quality the current value (measured now), the target, what must not change.
 5. **Criteria** — one sentence each, `When <trigger>, <observable result>`, at the outermost surface;
